@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#05080e">
+<title>DEWAN Admin</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#05080e; }
+#root { min-height:100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+const API = "https://restaurante1-n8n.bqspdc.easypanel.host/webhook/admin-api";
+const REFRESH_INTERVAL = 15000;
+
+const post = async (body) => {
+  try {
+    const r = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    return await r.json();
+  } catch { return { ok: false, error: "Error de conexión" }; }
+};
+
+// ============================================================
+// STYLES
+// ============================================================
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+:root {
+  --bg: #05080e; --bg2: #0b1120; --bg3: #111827; --bg4: #1e293b;
+  --accent: #10b981; --accent2: #059669; --accent-soft: rgba(16,185,129,0.08);
+  --warn: #f59e0b; --danger: #ef4444; --info: #3b82f6; --purple: #8b5cf6;
+  --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+  --radius: 14px; --radius-sm: 10px;
+  --font: 'DM Sans', sans-serif; --mono: 'JetBrains Mono', monospace;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; }
+.admin-app { max-width:1400px; margin:0 auto; padding:16px; }
+
+/* LOGIN */
+.login-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+.login-box { background:var(--bg2); border:1px solid rgba(255,255,255,0.06); border-radius:20px; padding:48px 40px; width:100%; max-width:420px; box-shadow:var(--shadow); }
+.login-logo { font-size:42px; text-align:center; margin-bottom:8px; }
+.login-title { text-align:center; font-size:22px; font-weight:800; margin-bottom:4px; }
+.login-sub { text-align:center; color:var(--text3); font-size:13px; margin-bottom:32px; }
+.input-group { margin-bottom:18px; }
+.input-group label { display:block; font-size:12px; font-weight:600; color:var(--text2); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px; }
+.input-group input { width:100%; padding:14px 16px; background:var(--bg3); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-sm); color:var(--text); font-size:15px; font-family:var(--font); outline:none; transition:border 0.2s; }
+.input-group input:focus { border-color:var(--accent); }
+.btn-login { width:100%; padding:16px; background:var(--accent); color:#000; font-weight:700; font-size:15px; border:none; border-radius:var(--radius-sm); cursor:pointer; font-family:var(--font); transition:all 0.2s; }
+.btn-login:hover { background:var(--accent2); transform:translateY(-1px); }
+.btn-login:disabled { opacity:0.6; cursor:not-allowed; }
+.login-error { color:var(--danger); text-align:center; font-size:13px; margin-top:12px; }
+
+/* HEADER */
+.admin-header { display:flex; justify-content:space-between; align-items:center; padding:16px 0; margin-bottom:24px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.admin-brand { display:flex; align-items:center; gap:12px; }
+.admin-brand-icon { font-size:28px; }
+.admin-brand h1 { font-size:20px; font-weight:800; }
+.admin-brand span { font-size:11px; color:var(--text3); font-weight:500; }
+.admin-user { display:flex; align-items:center; gap:12px; }
+.admin-user-name { font-size:13px; color:var(--text2); }
+.btn-logout { padding:8px 16px; background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.2); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); }
+
+/* TABS */
+.admin-tabs { display:flex; gap:4px; background:var(--bg2); border-radius:12px; padding:4px; margin-bottom:24px; overflow-x:auto; }
+.admin-tab { flex:1; padding:12px 16px; text-align:center; font-size:13px; font-weight:600; color:var(--text3); background:transparent; border:none; border-radius:10px; cursor:pointer; font-family:var(--font); transition:all 0.2s; white-space:nowrap; }
+.admin-tab.active { background:var(--accent); color:#000; }
+.admin-tab:hover:not(.active) { color:var(--text); background:var(--bg3); }
+
+/* STAT CARDS */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+.stat-card { background:var(--bg2); border:1px solid rgba(255,255,255,0.05); border-radius:var(--radius); padding:20px; position:relative; overflow:hidden; }
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.stat-card.green::before { background:var(--accent); }
+.stat-card.yellow::before { background:var(--warn); }
+.stat-card.blue::before { background:var(--info); }
+.stat-card.red::before { background:var(--danger); }
+.stat-card.purple::before { background:var(--purple); }
+.stat-icon { font-size:24px; margin-bottom:8px; }
+.stat-value { font-size:28px; font-weight:800; font-family:var(--mono); margin-bottom:2px; }
+.stat-label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; font-weight:600; }
+
+/* TABLE */
+.table-wrap { background:var(--bg2); border:1px solid rgba(255,255,255,0.05); border-radius:var(--radius); overflow:hidden; margin-bottom:24px; }
+.table-header { padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; }
+.table-title { font-size:16px; font-weight:700; }
+.table-count { font-size:12px; color:var(--text3); background:var(--bg3); padding:4px 10px; border-radius:20px; font-family:var(--mono); }
+table { width:100%; border-collapse:collapse; }
+th { text-align:left; padding:12px 16px; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text3); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.06); background:var(--bg3); }
+td { padding:12px 16px; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:middle; }
+tr:hover td { background:rgba(255,255,255,0.02); }
+.table-scroll { overflow-x:auto; }
+
+/* BADGES */
+.badge { display:inline-block; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.badge-entregado { background:rgba(16,185,129,0.15); color:var(--accent); }
+.badge-en_camino { background:rgba(59,130,246,0.15); color:var(--info); }
+.badge-aceptado { background:rgba(139,92,246,0.15); color:var(--purple); }
+.badge-pendiente { background:rgba(245,158,11,0.15); color:var(--warn); }
+.badge-confirmado { background:rgba(245,158,11,0.15); color:var(--warn); }
+
+.badge-disponible { background:rgba(16,185,129,0.15); color:var(--accent); }
+.badge-ocupado { background:rgba(239,68,68,0.15); color:var(--danger); }
+
+.money { font-family:var(--mono); font-weight:700; }
+.money-green { color:var(--accent); }
+.money-red { color:var(--danger); }
+.money-yellow { color:var(--warn); }
+
+/* COMISIONES */
+.comision-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:24px; }
+.comision-card { background:var(--bg2); border:1px solid rgba(255,255,255,0.05); border-radius:var(--radius); padding:20px; }
+.comision-card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.comision-moto-name { font-size:16px; font-weight:700; }
+.comision-entregas { font-size:12px; color:var(--text3); background:var(--bg3); padding:3px 10px; border-radius:20px; }
+.comision-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.comision-row:last-child { border-bottom:none; }
+.comision-row-label { font-size:13px; color:var(--text2); }
+.comision-row-value { font-family:var(--mono); font-weight:700; font-size:14px; }
+
+/* REFRESH BAR */
+.refresh-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.refresh-info { font-size:11px; color:var(--text3); }
+.btn-refresh { padding:8px 16px; background:var(--bg3); color:var(--text2); border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.2s; }
+.btn-refresh:hover { background:var(--bg4); color:var(--text); }
+
+/* SPINNER */
+.spinner { width:20px; height:20px; border:2px solid var(--bg4); border-top-color:var(--accent); border-radius:50%; animation:spin 0.6s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.loading-center { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px; gap:12px; color:var(--text3); }
+
+/* EMPTY STATE */
+.empty-state { text-align:center; padding:60px 20px; color:var(--text3); }
+.empty-state-icon { font-size:48px; margin-bottom:12px; }
+.empty-state-text { font-size:14px; }
+
+/* FILTER BAR */
+.filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.filter-btn { padding:6px 14px; background:var(--bg3); color:var(--text3); border:1px solid rgba(255,255,255,0.06); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.15s; }
+.filter-btn.active { background:var(--accent); color:#000; border-color:var(--accent); }
+
+@media (max-width:768px) {
+  .stats-grid { grid-template-columns:repeat(2, 1fr); }
+  .admin-header { flex-direction:column; gap:12px; text-align:center; }
+  .stat-value { font-size:22px; }
+  th, td { padding:8px 10px; font-size:12px; }
+}
+`;
+
+// ============================================================
+// LOGIN SCREEN
+// ============================================================
+function LoginScreen({ onLogin }) {
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true); setError("");
+    const res = await post({ action: "login", user, pass });
+    if (res.ok) { onLogin({ nombre: res.nombre, user }); }
+    else { setError(res.error || "Error al iniciar sesión"); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="login-wrap">
+      <form className="login-box" onSubmit={handleLogin}>
+        <div className="login-logo">🏢</div>
+        <div className="login-title">DEWAN Admin</div>
+        <div className="login-sub">Panel de Administración</div>
+        <div className="input-group">
+          <label>Usuario</label>
+          <input type="text" value={user} onChange={(e) => setUser(e.target.value)} placeholder="admin" autoFocus />
+        </div>
+        <div className="input-group">
+          <label>Contraseña</label>
+          <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="••••••••" />
+        </div>
+        <button className="btn-login" type="submit" disabled={loading || !user || !pass}>
+          {loading ? <span className="spinner" /> : "Iniciar Sesión"}
+        </button>
+        {error && <div className="login-error">{error}</div>}
+      </form>
+    </div>
+  );
+}
+
+// ============================================================
+// STAT CARD
+// ============================================================
+function StatCard({ icon, value, label, color = "green", prefix = "" }) {
+  return (
+    <div className={`stat-card ${color}`}>
+      <div className="stat-icon">{icon}</div>
+      <div className="stat-value">{prefix}{value}</div>
+      <div className="stat-label">{label}</div>
+    </div>
+  );
+}
+
+// ============================================================
+// DASHBOARD TAB
+// ============================================================
+function DashboardTab({ data }) {
+  if (!data) return <div className="loading-center"><div className="spinner" /><span>Cargando...</span></div>;
+  const d = data.dashboard;
+  return (
+    <>
+      <div className="stats-grid">
+        <StatCard icon="📦" value={d.pedidos_hoy} label="Pedidos hoy" color="blue" />
+        <StatCard icon="✅" value={d.entregados_hoy} label="Entregados" color="green" />
+        <StatCard icon="🚀" value={d.en_proceso} label="En proceso" color="purple" />
+        <StatCard icon="⏳" value={d.pendientes} label="Pendientes" color="yellow" />
+        <StatCard icon="💰" value={d.ingresos_hoy.toFixed(2)} label="Ingresos totales" color="green" prefix="$" />
+        <StatCard icon="🏢" value={d.comision_dewan_hoy.toFixed(2)} label="Comisión DEWAN (30%)" color="red" prefix="$" />
+        <StatCard icon="🏍️" value={d.motorizados_disponibles + "/" + d.motorizados_activos} label="Motos disponibles" color="green" />
+        <StatCard icon="🔴" value={d.motorizados_ocupados} label="Motos ocupados" color="red" />
+      </div>
+
+      {data.comisiones_por_motorizado && data.comisiones_por_motorizado.length > 0 && (
+        <>
+          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>💳 Comisiones de hoy por motorizado</h3>
+          <div className="comision-cards">
+            {data.comisiones_por_motorizado.map((c, i) => (
+              <div className="comision-card" key={i}>
+                <div className="comision-card-head">
+                  <div className="comision-moto-name">🏍️ {c.nombre}</div>
+                  <div className="comision-entregas">{c.entregas} entregas</div>
+                </div>
+                <div className="comision-row">
+                  <span className="comision-row-label">Ingresos totales</span>
+                  <span className="comision-row-value money-green">${c.ingresos.toFixed(2)}</span>
+                </div>
+                <div className="comision-row">
+                  <span className="comision-row-label">Debe a DEWAN (30%)</span>
+                  <span className="comision-row-value money-red">${c.comision.toFixed(2)}</span>
+                </div>
+                <div className="comision-row">
+                  <span className="comision-row-label">Ganancia motorizado</span>
+                  <span className="comision-row-value money-yellow">${(c.ingresos - c.comision).toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+// ============================================================
+// PEDIDOS TAB
+// ============================================================
+function PedidosTab({ data }) {
+  const [filter, setFilter] = useState("todos");
+  if (!data?.pedidos) return <div className="loading-center"><div className="spinner" /><span>Cargando...</span></div>;
+
+  const pedidos = filter === "todos" ? data.pedidos : data.pedidos.filter(p => p.estado === filter);
+  const counts = {};
+  data.pedidos.forEach(p => { counts[p.estado] = (counts[p.estado] || 0) + 1; });
+
+  const intentionLabel = { pedido_comida: "🍽️ Comida", encomienda: "📦 Encomienda", compras_supermercado: "🛒 Compras", compras: "🛒 Compras", pagos: "💳 Pagos", motorizado: "🏍️ Moto" };
+  const estadoLabel = { pendiente: "Pendiente", confirmado: "Nuevo", aceptado: "Aceptado", en_camino: "En Camino", entregado: "Entregado" };
+
+  return (
+    <>
+      <div className="filter-bar">
+        <button className={`filter-btn ${filter === "todos" ? "active" : ""}`} onClick={() => setFilter("todos")}>Todos ({data.pedidos.length})</button>
+        {["pendiente", "aceptado", "en_camino", "entregado"].map(s => (
+          <button key={s} className={`filter-btn ${filter === s ? "active" : ""}`} onClick={() => setFilter(s)}>
+            {estadoLabel[s]} ({counts[s] || 0})
+          </button>
+        ))}
+      </div>
+      <div className="table-wrap">
+        <div className="table-header">
+          <div className="table-title">Pedidos</div>
+          <div className="table-count">{pedidos.length} resultados</div>
+        </div>
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tipo</th>
+                <th>Cliente</th>
+                <th>Motorizado</th>
+                <th>Estado</th>
+                <th>Precio</th>
+                <th>Comisión</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pedidos.length === 0 ? (
+                <tr><td colSpan="8" style={{ textAlign: "center", padding: 40, color: "var(--text3)" }}>No hay pedidos</td></tr>
+              ) : pedidos.map(p => (
+                <tr key={p.id}>
+                  <td><strong>#{p.id}</strong></td>
+                  <td>{intentionLabel[p.intencion] || "📋 Otro"}</td>
+                  <td>{p.cliente}<br /><span style={{ fontSize: 11, color: "var(--text3)" }}>{p.telefono}</span></td>
+                  <td>{p.motorizado}</td>
+                  <td><span className={`badge badge-${p.estado}`}>{estadoLabel[p.estado] || p.estado}</span></td>
+                  <td className="money money-green">{p.precio ? `$${p.precio.toFixed(2)}` : "-"}</td>
+                  <td className="money money-red">{p.comision ? `$${p.comision.toFixed(2)}` : "-"}</td>
+                  <td style={{ fontSize: 12, color: "var(--text3)" }}>{p.fecha ? new Date(p.fecha).toLocaleString("es-EC", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ============================================================
+// MOTORIZADOS TAB
+// ============================================================
+function MotorizadosTab({ data }) {
+  if (!data?.motorizados) return <div className="loading-center"><div className="spinner" /><span>Cargando...</span></div>;
+  const motos = data.motorizados;
+
+  return (
+    <div className="table-wrap">
+      <div className="table-header">
+        <div className="table-title">Motorizados</div>
+        <div className="table-count">{motos.length} registrados</div>
+      </div>
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th>Pedidos Activos</th>
+              <th>Zona</th>
+              <th>Activo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {motos.map(m => (
+              <tr key={m.id}>
+                <td><strong>#{m.id}</strong></td>
+                <td>🏍️ {m.nombre}</td>
+                <td style={{ fontFamily: "var(--mono)", fontSize: 12 }}>{m.telefono}</td>
+                <td><span className={`badge badge-${m.estado}`}>{m.estado}</span></td>
+                <td style={{ fontFamily: "var(--mono)", textAlign: "center" }}>{m.pedidos_activos}</td>
+                <td>{m.zona || "-"}</td>
+                <td>{m.activo ? "✅" : "❌"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// COMISIONES TAB
+// ============================================================
+function ComisionesTab({ data }) {
+  if (!data?.pedidos) return <div className="loading-center"><div className="spinner" /><span>Cargando...</span></div>;
+
+  const entregados = data.pedidos.filter(p => p.estado === "entregado" && p.precio > 0);
+
+  // Group by motorizado
+  const porMoto = {};
+  entregados.forEach(p => {
+    const key = p.motorizado || "Sin asignar";
+    if (!porMoto[key]) porMoto[key] = { entregas: 0, ingresos: 0, comision: 0 };
+    porMoto[key].entregas++;
+    porMoto[key].ingresos += p.precio;
+    porMoto[key].comision += p.comision || p.precio * 0.3;
+  });
+
+  const totalIngresos = entregados.reduce((s, p) => s + p.precio, 0);
+  const totalComision = entregados.reduce((s, p) => s + (p.comision || p.precio * 0.3), 0);
+
+  return (
+    <>
+      <div className="stats-grid" style={{ marginBottom: 24 }}>
+        <StatCard icon="📊" value={entregados.length} label="Total entregas" color="green" />
+        <StatCard icon="💰" value={totalIngresos.toFixed(2)} label="Ingresos totales" color="blue" prefix="$" />
+        <StatCard icon="🏢" value={totalComision.toFixed(2)} label="Comisión DEWAN total" color="red" prefix="$" />
+        <StatCard icon="🏍️" value={(totalIngresos - totalComision).toFixed(2)} label="Pagado a motorizados" color="yellow" prefix="$" />
+      </div>
+
+      <div className="comision-cards">
+        {Object.entries(porMoto).map(([nombre, d]) => (
+          <div className="comision-card" key={nombre}>
+            <div className="comision-card-head">
+              <div className="comision-moto-name">🏍️ {nombre}</div>
+              <div className="comision-entregas">{d.entregas} entregas</div>
+            </div>
+            <div className="comision-row">
+              <span className="comision-row-label">Ingresos</span>
+              <span className="comision-row-value money-green">${d.ingresos.toFixed(2)}</span>
+            </div>
+            <div className="comision-row">
+              <span className="comision-row-label">Debe a DEWAN (30%)</span>
+              <span className="comision-row-value money-red">${d.comision.toFixed(2)}</span>
+            </div>
+            <div className="comision-row">
+              <span className="comision-row-label">Su ganancia (70%)</span>
+              <span className="comision-row-value money-yellow">${(d.ingresos - d.comision).toFixed(2)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {entregados.length > 0 && (
+        <div className="table-wrap" style={{ marginTop: 24 }}>
+          <div className="table-header">
+            <div className="table-title">Detalle de entregas</div>
+          </div>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Cliente</th><th>Motorizado</th><th>Precio</th><th>Comisión DEWAN</th><th>Ganancia Moto</th><th>Fecha</th></tr>
+              </thead>
+              <tbody>
+                {entregados.map(p => (
+                  <tr key={p.id}>
+                    <td>#{p.id}</td>
+                    <td>{p.cliente}</td>
+                    <td>{p.motorizado}</td>
+                    <td className="money">${p.precio.toFixed(2)}</td>
+                    <td className="money money-red">${(p.comision || p.precio * 0.3).toFixed(2)}</td>
+                    <td className="money money-green">${(p.precio - (p.comision || p.precio * 0.3)).toFixed(2)}</td>
+                    <td style={{ fontSize: 12, color: "var(--text3)" }}>{p.fecha_entrega ? new Date(p.fecha_entrega).toLocaleString("es-EC") : p.fecha ? new Date(p.fecha).toLocaleString("es-EC") : "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+function App() {
+  const [admin, setAdmin] = useState(() => {
+    try { return JSON.parse(null); } catch { return null; }
+  });
+  const [tab, setTab] = useState("dashboard");
+  const [data, setData] = useState(null);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = (info) => {
+    setAdmin(info);
+    // session saved
+  };
+
+  const handleLogout = () => {
+    setAdmin(null);
+    setData(null);
+    // session cleared
+  };
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    const res = await post({ action: "dashboard" });
+    if (res.ok) { setData(res); setLastUpdate(new Date()); }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!admin) return;
+    fetchData();
+    const interval = setInterval(fetchData, REFRESH_INTERVAL);
+    return () => clearInterval(interval);
+  }, [admin, fetchData]);
+
+  if (!admin) return (<><style>{CSS}</style><LoginScreen onLogin={handleLogin} /></>);
+
+  return (
+    <>
+      <style>{CSS}</style>
+      <div className="admin-app">
+        <div className="admin-header">
+          <div className="admin-brand">
+            <div className="admin-brand-icon">🏢</div>
+            <div>
+              <h1>DEWAN Admin</h1>
+              <span>Panel de Control</span>
+            </div>
+          </div>
+          <div className="admin-user">
+            <span className="admin-user-name">👤 {admin.nombre}</span>
+            <button className="btn-logout" onClick={handleLogout}>Cerrar sesión</button>
+          </div>
+        </div>
+
+        <div className="admin-tabs">
+          {[
+            { id: "dashboard", label: "📊 Dashboard" },
+            { id: "pedidos", label: "📦 Pedidos" },
+            { id: "motorizados", label: "🏍️ Motorizados" },
+            { id: "comisiones", label: "💳 Comisiones" },
+          ].map(t => (
+            <button key={t.id} className={`admin-tab ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="refresh-bar">
+          <div className="refresh-info">
+            {lastUpdate ? `Actualizado: ${lastUpdate.toLocaleTimeString("es-EC")}` : ""}
+            {loading && <span style={{ marginLeft: 8 }}><span className="spinner" style={{ width: 14, height: 14 }} /></span>}
+          </div>
+          <button className="btn-refresh" onClick={fetchData}>🔄 Actualizar</button>
+        </div>
+
+        {tab === "dashboard" && <DashboardTab data={data} />}
+        {tab === "pedidos" && <PedidosTab data={data} />}
+        {tab === "motorizados" && <MotorizadosTab data={data} />}
+        {tab === "comisiones" && <ComisionesTab data={data} />}
+      </div>
+    </>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

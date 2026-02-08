@@ -1,0 +1,17 @@
+{
+  "name": "DEWAN Motorizado",
+  "short_name": "DEWAN",
+  "description": "App de motorizados DEWAN Delivery",
+  "start_url": "/app/",
+  "display": "standalone",
+  "background_color": "#05080e",
+  "theme_color": "#10b981",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2305080e' width='100' height='100' rx='20'/><text x='50' y='58' font-size='55' text-anchor='middle' dominant-baseline='middle'>🏍️</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
