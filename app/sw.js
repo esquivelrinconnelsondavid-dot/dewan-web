@@ -1,44 +1,26 @@
-// DEWAN Motorizado - Service Worker v1.0
-// Este archivo DEBE estar en /app/sw.js
-
-const CACHE_NAME = 'dewan-moto-v2';
-
-// Install - cache basic assets
-self.addEventListener('install', (event) => {
-  console.log('[SW] Instalado');
+self.addEventListener('install', function(event) {
   self.skipWaiting();
 });
 
-// Activate - clean old caches
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activado');
-  event.waitUntil(
-    caches.keys().then((names) => {
-      return Promise.all(
-        names.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
-      );
-    })
-  );
+self.addEventListener('activate', function(event) {
   self.clients.claim();
 });
 
-// PUSH - Recibir notificación push (FUNCIONA CON APP CERRADA)
-self.addEventListener('push', (event) => {
-  console.log('[SW] Push recibido');
-
-  let data = {
-    title: '🏍️ DEWAN',
+self.addEventListener('push', function(event) {
+  var data = {
+    title: 'DEWAN',
     body: 'Tienes un nuevo pedido',
-    icon: '/app/icon-192.png',
-    badge: '/app/icon-192.png',
     tag: 'dewan-pedido',
     data: { url: '/app/' }
   };
 
   try {
     if (event.data) {
-      const payload = event.data.json();
-      data = { ...data, ...payload };
+      var payload = event.data.json();
+      if (payload.title) data.title = payload.title;
+      if (payload.body) data.body = payload.body;
+      if (payload.tag) data.tag = payload.tag;
+      if (payload.data) data.data = payload.data;
     }
   } catch (e) {
     if (event.data) {
@@ -46,18 +28,16 @@ self.addEventListener('push', (event) => {
     }
   }
 
-  const options = {
+  var options = {
     body: data.body,
-    icon: data.icon || '/app/icon-192.png',
-    badge: data.badge || '/app/icon-192.png',
-    tag: data.tag || 'dewan-pedido',
+    tag: data.tag,
     vibrate: [300, 100, 300, 100, 400],
     requireInteraction: true,
     actions: [
-      { action: 'open', title: '📱 Ver pedido' },
-      { action: 'dismiss', title: '❌ Cerrar' }
+      { action: 'open', title: 'Ver pedido' },
+      { action: 'dismiss', title: 'Cerrar' }
     ],
-    data: data.data || { url: '/app/' }
+    data: data.data
   };
 
   event.waitUntil(
@@ -65,448 +45,20 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Click en notificación - abrir la app
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Click en notificación');
+self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
   if (event.action === 'dismiss') return;
 
-  const urlToOpen = event.notification.data?.url || '/app/';
-
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Si la app ya está abierta, enfocarla
-      for (const client of windowClients) {
-        if (client.url.includes('/app') && 'focus' in client) {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
+      for (var i = 0; i < windowClients.length; i++) {
+        var client = windowClients[i];
+        if (client.url.indexOf('/app') !== -1 && 'focus' in client) {
           return client.focus();
         }
       }
-      // Si no, abrir nueva ventana
-      return clients.openWindow(urlToOpen);
+      return clients.openWindow('/app/');
     })
   );
 });
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#05080e">
-<title>DEWAN Motorizado</title>
-<link rel="manifest" href="/app/manifest.json">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>U0001f3cd️</text></svg>">
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#05080e}#root{min-height:100vh}</style>
-</head>
-<body>
-<div id="root"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-<script type="text/babel">
-const { useState, useEffect, useRef, useCallback, useMemo } = React;
-
-const API_BASE = "https://restaurante1-n8n.bqspdc.easypanel.host/webhook";
-const API = {
-  login: `${API_BASE}/moto-login`,
-  pedidos: `${API_BASE}/pedidos-motorizado`,
-  aceptar: `${API_BASE}/pedido-aceptado`,
-  rechazar: `${API_BASE}/pedido-rechazado`,
-  enCamino: `${API_BASE}/motorizado-en-camino`,
-  llego: `${API_BASE}/motorizado-llego`,
-  entregado: `${API_BASE}/motorizado-entregado`,
-  enviarMensaje: `${API_BASE}/enviar-mensaje-cliente`,
-  obtenerMensajes: `${API_BASE}/obtener-mensajes`,
-  enviarFoto: `${API_BASE}/enviar-foto-cliente`,
-  calcularPrecio: `${API_BASE}/calcular-precio`,
-  ranking: `${API_BASE}/ranking-motorizados`,
-  pushSubscribe: `${API_BASE}/push-subscribe`,
-  pushNotify: `${API_BASE}/push-notify`,
-};
-
-const TOKEN_KEY = "dewan_moto_token";
-const USER_KEY = "dewan_moto_user";
-function saveSession(user) { const token = btoa(JSON.stringify({ ...user, ts: Date.now() })); localStorage.setItem(TOKEN_KEY, token); localStorage.setItem(USER_KEY, JSON.stringify(user)); }
-function getSession() { try { const token = localStorage.getItem(TOKEN_KEY); if (!token) return null; const data = JSON.parse(atob(token)); if (Date.now() - data.ts > 86400000) { clearSession(); return null; } return JSON.parse(localStorage.getItem(USER_KEY)); } catch { clearSession(); return null; } }
-function clearSession() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY); }
-const VAPID_PUBLIC = 'BNoYANZydW3jshTIvAq4yiIL-Kp2FC4mSSMn0W3zn1OdVEYL1pIqNofOyoZG7RlOIz11WafNIUywd6rV1N-lOuA';
-function urlBase64ToUint8Array(base64String) { const padding = '='.repeat((4 - base64String.length % 4) % 4); const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/'); const rawData = window.atob(base64); const outputArray = new Uint8Array(rawData.length); for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i); return outputArray; }
-async function registerPushNotifications(motorizadoId) {
-  try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) { console.log('Push no soportado'); return false; }
-    const registration = await navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' });
-    await navigator.serviceWorker.ready;
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') { console.log('Permiso denegado'); return false; }
-    let subscription = await registration.pushManager.getSubscription();
-    if (!subscription) {
-      subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC) });
-    }
-    await apiCall(API.pushSubscribe, { motorizado_id: motorizadoId, subscription: subscription.toJSON() });
-    console.log('Push registrado OK');
-    return true;
-  } catch (err) { console.error('Error push:', err); return false; }
-}
-async function apiCall(url, body = {}) { try { const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const text = await res.text(); try { return JSON.parse(text); } catch { if (!res.ok) return { ok: false, error: `Error del servidor (${res.status})` }; return { ok: false, error: "Respuesta inválida del servidor" }; } } catch (err) { console.error("API Error:", err); return { ok: false, error: "Sin conexión al servidor" }; } }
-function cleanStr(val) { if (typeof val === "string") return val.replace(/^=/, "").trim(); return val; }
-
-const NotificationManager = {
-  _audioCtx: null,
-  getAudioCtx() { if (!this._audioCtx) this._audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return this._audioCtx; },
-  playNewOrderSound() { try { const ctx = this.getAudioCtx(); [0, 0.15, 0.3].forEach((delay, i) => { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = "sine"; osc.frequency.value = [523, 659, 784][i]; gain.gain.setValueAtTime(0.3, ctx.currentTime + delay); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4); osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.4); }); } catch (e) {} },
-  playActionSound() { try { const ctx = this.getAudioCtx(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = "sine"; osc.frequency.value = 880; gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2); osc.start(); osc.stop(ctx.currentTime + 0.2); } catch (e) {} },
-  vibrate(pattern = [200, 100, 200]) { try { navigator?.vibrate?.(pattern); } catch (e) {} },
-  notifyNewOrder() { this.playNewOrderSound(); this.vibrate([200, 100, 200, 100, 300]); }
-};
-
-const globalStyles = `
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-:root{--bg-primary:#06090f;--bg-secondary:#0c1018;--bg-card:#111620;--bg-card-hover:#161d2c;--bg-elevated:#1a2130;--bg-input:#0a0f18;--accent:#22d3a7;--accent-dim:#1aab87;--accent-soft:rgba(34,211,167,0.08);--accent-glow:rgba(34,211,167,0.15);--accent-glow-strong:rgba(34,211,167,0.35);--danger:#f43f5e;--danger-soft:rgba(244,63,94,0.1);--warning:#f59e0b;--warning-soft:rgba(245,158,11,0.1);--info:#3b82f6;--info-soft:rgba(59,130,246,0.1);--success:#22d3a7;--purple:#a78bfa;--purple-soft:rgba(167,139,250,0.1);--text-primary:#f0f4f8;--text-secondary:#8b9bb4;--text-muted:#556077;--border:rgba(255,255,255,0.06);--border-light:rgba(255,255,255,0.1);--radius:16px;--radius-sm:12px;--radius-xs:8px;--shadow:0 4px 30px rgba(0,0,0,0.4);--shadow-lg:0 20px 60px rgba(0,0,0,0.5);--transition:all 0.25s cubic-bezier(0.4,0,0.2,1);--font:'Outfit',sans-serif;--font-mono:'JetBrains Mono',monospace}
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--font);background:var(--bg-primary);color:var(--text-primary);-webkit-font-smoothing:antialiased;overflow-x:hidden}
-.app-container{max-width:520px;margin:0 auto;min-height:100vh;position:relative;background:var(--bg-primary)}
-@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}@keyframes slideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}@keyframes glow{0%,100%{box-shadow:0 0 8px var(--accent-glow)}50%{box-shadow:0 0 24px var(--accent-glow-strong)}}@keyframes scaleIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}@keyframes newPedido{0%{opacity:0;transform:translateX(-20px) scale(0.95);border-color:var(--accent);box-shadow:0 0 30px var(--accent-glow-strong)}100%{opacity:1;transform:translateX(0) scale(1)}}
-.fade-in{animation:fadeIn .4s ease-out}.slide-up{animation:slideUp .5s ease-out}.scale-in{animation:scaleIn .3s ease-out}
-.spinner{width:24px;height:24px;border:2.5px solid var(--border-light);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}.spinner-sm{width:16px;height:16px;border-width:2px}
-.login-screen{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:32px 28px;background:radial-gradient(ellipse at 50% 0%,rgba(34,211,167,0.06) 0%,transparent 60%),var(--bg-primary)}
-.login-logo{text-align:center;margin-bottom:52px}.login-logo-icon{width:88px;height:88px;background:linear-gradient(135deg,var(--accent),#10b981);border-radius:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;color:var(--bg-primary);box-shadow:0 12px 40px rgba(34,211,167,0.25);font-size:36px}
-.login-logo h1{font-size:30px;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.login-logo p{color:var(--text-muted);font-size:14px;margin-top:8px;font-weight:400;letter-spacing:2px;text-transform:uppercase}
-.login-form{display:flex;flex-direction:column;gap:20px}.input-group label{display:block;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}.input-group input{width:100%;padding:15px 18px;background:var(--bg-input);border:1.5px solid var(--border-light);border-radius:var(--radius-sm);color:var(--text-primary);font-size:16px;font-family:var(--font);transition:var(--transition);outline:none}.input-group input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}.input-group input::placeholder{color:var(--text-muted)}
-.btn{padding:13px 20px;border:none;border-radius:var(--radius-xs);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}.btn:active{transform:scale(0.96)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#10b981);color:var(--bg-primary);box-shadow:0 4px 20px rgba(34,211,167,0.3)}.btn-primary:hover:not(:disabled){box-shadow:0 6px 28px rgba(34,211,167,0.45);transform:translateY(-1px)}
-.btn-danger{background:var(--danger);color:white}.btn-danger:hover:not(:disabled){box-shadow:0 4px 20px rgba(244,63,94,0.3)}.btn-warning{background:linear-gradient(135deg,var(--warning),#d97706);color:var(--bg-primary)}.btn-ghost{background:transparent;color:var(--text-secondary);border:1.5px solid var(--border-light)}.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-.btn-sm{padding:10px 16px;font-size:13px}.btn-icon{width:42px;height:42px;padding:0;border-radius:var(--radius-sm)}.btn-full{width:100%}
-.header{position:sticky;top:0;z-index:100;background:rgba(6,9,15,0.88);backdrop-filter:blur(20px) saturate(1.2);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
-.header-left{display:flex;align-items:center;gap:14px}.header-avatar{width:40px;height:40px;border-radius:14px;background:linear-gradient(135deg,var(--accent-glow),var(--accent-soft));border:1.5px solid rgba(34,211,167,0.2);display:flex;align-items:center;justify-content:center;font-size:18px}
-.header-title{font-size:16px;font-weight:700;letter-spacing:-.2px}.header-subtitle{font-size:10px;color:var(--text-muted);font-family:var(--font-mono);font-weight:500;display:flex;align-items:center;gap:6px;margin-top:2px}
-.status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;display:inline-block}.header-right{display:flex;align-items:center;gap:6px}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 20px 8px}.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 12px;text-align:center;position:relative;overflow:hidden;transition:var(--transition)}.stat-card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40px;height:3px;border-radius:0 0 4px 4px}.stat-card:nth-child(1)::before{background:var(--accent)}.stat-card:nth-child(2)::before{background:var(--warning)}.stat-card:nth-child(3)::before{background:var(--info)}
-.stat-number{font-size:28px;font-weight:800;font-family:var(--font-mono);line-height:1}.stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600}
-.tabs{display:flex;padding:4px;background:var(--bg-secondary);border-radius:var(--radius-sm);margin:12px 20px;gap:4px}.tab{flex:1;padding:11px 8px;border:none;background:transparent;color:var(--text-muted);font-family:var(--font);font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:7px}.tab.active{background:var(--bg-elevated);color:var(--accent);box-shadow:0 2px 10px rgba(0,0,0,0.25)}.tab-badge{background:var(--accent);color:var(--bg-primary);font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center;font-family:var(--font-mono)}
-.pedido-list{padding:8px 20px 120px;display:flex;flex-direction:column;gap:12px}.pedido-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:0;transition:var(--transition);animation:fadeIn .4s ease-out;overflow:hidden}.pedido-card:hover{border-color:var(--border-light)}.pedido-card.new-pedido{animation:newPedido .6s ease-out}
-.pedido-card-top{padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border)}.pedido-type-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.pedido-type-comida{background:rgba(245,158,11,0.1)}.pedido-type-encomienda{background:rgba(59,130,246,0.1)}.pedido-type-compras{background:rgba(167,139,250,0.1)}.pedido-type-pagos{background:rgba(244,63,94,0.1)}.pedido-type-motorizado{background:rgba(34,211,167,0.1)}
-.pedido-top-left{display:flex;align-items:center;gap:12px}.pedido-id{font-family:var(--font-mono);font-size:13px;color:var(--text-primary);font-weight:700}.pedido-type-label{font-size:11px;color:var(--text-muted);margin-top:2px;text-transform:capitalize}
-.pedido-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--font-mono)}.badge-aceptado{background:var(--info-soft);color:#60a5fa}.badge-en_camino{background:var(--warning-soft);color:#fbbf24}.badge-entregado{background:var(--accent-soft);color:var(--accent)}.badge-pendiente{background:rgba(255,255,255,0.05);color:var(--text-secondary)}.badge-confirmado{background:var(--purple-soft);color:var(--purple)}
-.pedido-card-body{padding:14px 18px;display:flex;flex-direction:column;gap:10px}.pedido-row{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text-secondary)}.pedido-row-icon{width:20px;flex-shrink:0;text-align:center;margin-top:1px;font-size:14px}.pedido-row strong{color:var(--text-primary);font-weight:500}
-.pedido-detail{background:var(--bg-input);border-radius:var(--radius-xs);padding:10px 14px;font-size:13px;color:var(--text-secondary);line-height:1.5;border-left:3px solid var(--accent-dim)}
-.pedido-map{height:140px;border-radius:var(--radius-xs);overflow:hidden;background:var(--bg-input);margin-top:4px;position:relative;border:1px solid var(--border)}.pedido-map img{width:100%;height:100%;object-fit:cover}.pedido-map-overlay{position:absolute;bottom:8px;right:8px;background:rgba(6,9,15,0.85);backdrop-filter:blur(8px);padding:4px 10px;border-radius:20px;font-size:11px;color:var(--accent);font-weight:600;cursor:pointer;border:1px solid var(--border-light);display:flex;align-items:center;gap:4px;transition:var(--transition)}.pedido-map-overlay:hover{background:rgba(34,211,167,0.15)}
-.pedido-actions{padding:12px 18px 16px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border)}.pedido-actions .btn{flex:1;min-width:0}
-.chat-screen{display:flex;flex-direction:column;height:100vh;background:var(--bg-primary)}.chat-header{background:rgba(6,9,15,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px}.chat-header-info{flex:1}.chat-header-name{font-size:15px;font-weight:600}.chat-header-sub{font-size:12px;color:var(--text-muted);font-family:var(--font-mono)}
-.chat-messages{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:6px}.chat-msg{max-width:78%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;animation:fadeIn .2s ease-out}.chat-msg.incoming{align-self:flex-start;background:var(--bg-card);border-bottom-left-radius:4px}.chat-msg.outgoing{align-self:flex-end;background:linear-gradient(135deg,var(--accent-dim),#10b981);border-bottom-right-radius:4px;color:var(--bg-primary)}.chat-msg-time{font-size:10px;opacity:.5;margin-top:4px;font-family:var(--font-mono)}.chat-msg img{max-width:100%;border-radius:8px;margin-top:6px}
-.chat-input-bar{background:var(--bg-secondary);border-top:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:8px}.chat-input{flex:1;padding:11px 16px;background:var(--bg-input);border:1.5px solid var(--border-light);border-radius:24px;color:var(--text-primary);font-size:14px;font-family:var(--font);outline:none;transition:var(--transition)}.chat-input:focus{border-color:var(--accent)}.chat-btn{width:40px;height:40px;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition)}.chat-btn-photo{background:var(--bg-elevated);color:var(--text-secondary)}.chat-btn-send{background:var(--accent);color:var(--bg-primary)}.chat-btn:disabled{opacity:.4}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;z-index:200;animation:fadeIn .2s}.modal{background:var(--bg-card);border:1px solid var(--border-light);border-radius:24px 24px 0 0;padding:28px 24px 32px;width:100%;max-width:520px;animation:slideUp .3s ease-out}.modal-handle{width:40px;height:4px;background:var(--border-light);border-radius:2px;margin:0 auto 20px}.modal-title{font-size:18px;font-weight:700;margin-bottom:16px}
-.modal textarea{width:100%;min-height:100px;padding:14px;background:var(--bg-input);border:1.5px solid var(--border-light);border-radius:var(--radius-sm);color:var(--text-primary);font-size:14px;font-family:var(--font);resize:vertical;outline:none}.modal textarea:focus{border-color:var(--accent)}.modal-actions{display:flex;gap:10px;margin-top:20px}.modal-actions .btn{flex:1}
-.map-modal{padding:0;border-radius:24px 24px 0 0;overflow:hidden}.map-modal-header{padding:20px 24px 12px;display:flex;justify-content:space-between;align-items:center}.map-modal-header h3{font-size:16px;font-weight:700}.map-frame{width:100%;height:50vh;border:none}.map-modal-actions{padding:16px 24px 28px;display:flex;gap:10px}.map-modal-actions .btn{flex:1}
-.history-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 20px;margin-bottom:16px}.history-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}.history-stat-value{font-size:24px;font-weight:800;font-family:var(--font-mono)}.history-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;font-weight:600}.history-stat-icon{font-size:24px;margin-bottom:8px}
-.empty-state{text-align:center;padding:60px 40px;animation:fadeIn .5s}.empty-icon{font-size:48px;margin-bottom:20px;opacity:.4}.empty-title{font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text-primary)}.empty-text{color:var(--text-muted);font-size:14px;line-height:1.5}
-.toast-container{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;width:90%;max-width:480px}.toast{padding:14px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;animation:slideDown .3s ease-out;backdrop-filter:blur(16px);border:1px solid var(--border-light)}.toast-success{background:rgba(34,211,167,0.15);color:var(--accent);border-color:rgba(34,211,167,0.2)}.toast-error{background:rgba(244,63,94,0.15);color:var(--danger);border-color:rgba(244,63,94,0.2)}.toast-info{background:rgba(59,130,246,0.15);color:var(--info);border-color:rgba(59,130,246,0.2)}.toast-new{background:rgba(34,211,167,0.2);color:var(--accent);border-color:rgba(34,211,167,0.3);font-weight:700}
-.loading-overlay{display:flex;align-items:center;justify-content:center;padding:60px}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:4px}
-`;
-const I = {
-  moto: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="5" cy="17" r="2"/><circle cx="19" cy="17" r="2"/><path d="M12 7h3l3 5h-1M7 17h2l2-5H7l-2 5M19 12h-4l-3-5M5 12h4"/></svg>,
-  check: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-  x: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-  chat: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-  camera: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
-  send: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
-  logout: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
-  refresh: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>,
-  back: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
-  map: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
-  nav: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>,
-  history: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>,
-  pkg: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>,
-  alert: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
-  clock: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  external: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
-};
-
-function ToastContainer({ toasts }) {
-  return (<div className="toast-container">{toasts.map((t) => (<div key={t.id} className={`toast toast-${t.type}`}>{t.type === "success" && I.check}{t.type === "error" && I.alert}{t.type === "info" && I.clock}{t.type === "new" && "\u{1F514}"}<span>{t.message}</span></div>))}</div>);
-}
-
-function LoginScreen({ onLogin, toast }) {
-  const [telefono, setTelefono] = useState("");
-  const [pin, setPin] = useState("");
-  const [loading, setLoading] = useState(false);
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (!telefono || !pin) { toast("Ingresa teléfono y PIN", "error"); return; }
-    setLoading(true);
-    try {
-      const res = await apiCall(API.login, { telefono, pin });
-      if (res.ok) { const user = { motorizado_id: cleanStr(String(res.motorizado_id)), nombre: cleanStr(res.nombre), telefono }; saveSession(user); onLogin(user); toast(`¡Bienvenido, ${user.nombre}!`, "success"); registerPushNotifications(user.motorizado_id).then(ok => { if(ok) toast("🔔 Notificaciones activadas", "info"); }); }
-      else { toast(res.error || "Credenciales incorrectas", "error"); }
-    } catch { toast("Error de conexión", "error"); }
-    setLoading(false);
-  };
-  return (
-    <div className="login-screen fade-in">
-      <div className="login-logo"><div className="login-logo-icon">🏍️</div><h1>DEWAN</h1><p>App Motorizado</p></div>
-      <form className="login-form" onSubmit={handleLogin}>
-        <div className="input-group"><label>Teléfono</label><input type="tel" placeholder="0999999999" value={telefono} onChange={(e) => setTelefono(e.target.value)} autoComplete="tel" /></div>
-        <div className="input-group"><label>PIN de acceso</label><input type="password" placeholder="••••" value={pin} onChange={(e) => setPin(e.target.value)} maxLength={6} inputMode="numeric" /></div>
-        <button type="submit" className="btn btn-primary btn-full" disabled={loading} style={{ marginTop: 8, height: 52 }}>{loading ? <div className="spinner spinner-sm" /> : "Iniciar Sesión"}</button>
-      </form>
-    </div>
-  );
-}
-
-function MapModal({ direccion, onClose }) {
-  const encoded = encodeURIComponent(direccion + ", Riobamba, Ecuador");
-  const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${encoded}&zoom=16`;
-  const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`;
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal map-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="map-modal-header"><h3>📍 {direccion}</h3><button className="btn btn-ghost btn-icon" onClick={onClose} style={{ width: 32, height: 32 }}>{I.x}</button></div>
-        <iframe className="map-frame" src={mapUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-        <div className="map-modal-actions"><a href={navUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm btn-full" style={{ textDecoration: "none" }}>{I.nav} Abrir en Google Maps</a></div>
-      </div>
-    </div>
-  );
-}
-
-function PedidoCard({ pedido, user, onAction, toast, isNew }) {
-  const [loadingAction, setLoadingAction] = useState(null);
-  const [showMap, setShowMap] = useState(false);
-  const [precioInfo, setPrecioInfo] = useState(null);
-  const getGPS = () => new Promise((resolve) => { if (!navigator.geolocation) { resolve(null); return; } navigator.geolocation.getCurrentPosition((pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }), () => resolve(null), { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }); });
-  const handleAction = async (action, extraBody = {}) => {
-    setLoadingAction(action); NotificationManager.playActionSound();
-    let url, body;
-    if (action === "en_camino") { toast("📍 Obteniendo tu ubicación...", "info"); const gps = await getGPS(); url = API.enCamino; body = { pedido_id: pedido.pedido_id, motorizado_lat: gps?.lat || "", motorizado_lng: gps?.lng || "", destino: pedido.direccion || "", destino_lat: pedido.ubicacion_lat || "", destino_lng: pedido.ubicacion_lng || "" }; }
-    else { switch (action) { case "aceptar": url = API.aceptar; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id }; break; case "llego": url = API.llego; body = { pedido_id: pedido.pedido_id }; break; case "entregado": url = API.entregado; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id }; break; case "rechazar": url = API.rechazar; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id, ...extraBody }; break; default: return; } }
-    const res = await apiCall(url, body);
-    if (res.ok) {
-      if (action === "en_camino" && res.precio_texto) { setPrecioInfo(res); toast(`Precio: ${res.precio_texto} (${res.distancia_texto})`, "success"); }
-      else if (action === "entregado" && res.comision_dewan) { toast(`✅ Entregado | Tu ganancia: $${res.ganancia_motorizado?.toFixed(2)} | Comisión DEWAN: $${res.comision_dewan?.toFixed(2)}`, "success"); }
-      else if (action === "rechazar" && res.reasignado) { toast(`Rechazado → Reasignado a ${res.nuevo_motorizado}`, "info"); }
-      else { toast(res.mensaje || "Acción realizada", "success"); }
-      onAction();
-    } else { toast(res.error || "Error al procesar", "error"); }
-    setLoadingAction(null);
-  };
-  const estadoLabel = { pendiente: "Pendiente", confirmado: "Nuevo", aceptado: "Aceptado", en_camino: "En Camino", entregado: "Entregado" };
-  const typeConfig = { pedido_comida: { icon: "🍽️", label: "Pedido de comida", cls: "comida" }, encomienda: { icon: "📦", label: "Encomienda", cls: "encomienda" }, compras_supermercado: { icon: "🛒", label: "Compras", cls: "compras" }, compras: { icon: "🛒", label: "Compras", cls: "compras" }, pagos: { icon: "💳", label: "Pago / Trámite", cls: "pagos" }, motorizado: { icon: "🏍️", label: "Motorizado", cls: "motorizado" } };
-  const tc = typeConfig[pedido.intencion] || { icon: "📋", label: "Servicio", cls: "motorizado" };
-  const hasDir = pedido.direccion && pedido.direccion !== "Sin dirección" && pedido.direccion !== "null, null";
-  return (
-    <>
-      <div className={`pedido-card ${isNew ? "new-pedido" : ""}`}>
-        <div className="pedido-card-top">
-          <div className="pedido-top-left"><div className={`pedido-type-icon pedido-type-${tc.cls}`}>{tc.icon}</div><div><div className="pedido-id">#{pedido.pedido_id}</div><div className="pedido-type-label">{tc.label}</div></div></div>
-          <span className={`pedido-badge badge-${pedido.estado}`}>{estadoLabel[pedido.estado] || pedido.estado}</span>
-        </div>
-        <div className="pedido-card-body">
-          <div className="pedido-row"><span className="pedido-row-icon">👤</span><span><strong>{pedido.cliente}</strong> {pedido.telefono && <span style={{ color: "var(--text-muted)", fontSize: 12 }}>{pedido.telefono}</span>}</span></div>
-          {pedido.direccion_retiro && <div className="pedido-row"><span className="pedido-row-icon" style={{ color: "var(--info)" }}>📍</span><span><strong>Retiro:</strong> {pedido.direccion_retiro}</span></div>}
-          {hasDir && <div className="pedido-row"><span className="pedido-row-icon" style={{ color: "var(--accent)" }}>📍</span><span><strong>Entrega:</strong> {pedido.direccion}</span></div>}
-          {pedido.detalle && <div className="pedido-detail">📝 {pedido.detalle}</div>}
-          {precioInfo ? (
-            <div style={{ background: "var(--accent-soft)", border: "1px solid rgba(34,211,167,0.15)", borderRadius: "var(--radius-xs)", padding: "12px 14px", marginTop: 4 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div><div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Precio carrera</div><div style={{ fontSize: 22, fontWeight: 800, color: "var(--accent)", fontFamily: "var(--font-mono)", marginTop: 2 }}>{precioInfo.precio_texto}</div></div>
-                <div style={{ textAlign: "right", fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6 }}>{precioInfo.distancia_texto && <div>📏 {precioInfo.distancia_texto}</div>}{precioInfo.duracion_texto && <div>⏱️ {precioInfo.duracion_texto}</div>}{precioInfo.km_extra > 0 && <div style={{ color: "var(--text-muted)" }}>+{precioInfo.km_extra} km extra</div>}</div>
-              </div>
-            </div>
-          ) : pedido.precio_calculado ? (
-            <div style={{ background: "var(--accent-soft)", border: "1px solid rgba(34,211,167,0.15)", borderRadius: "var(--radius-xs)", padding: "10px 14px", marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div><div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600 }}>PRECIO</div><div style={{ fontSize: 20, fontWeight: 800, color: "var(--accent)", fontFamily: "var(--font-mono)" }}>${Number(pedido.precio_calculado).toFixed(2)}</div></div>
-              {pedido.distancia_km && <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>📏 {pedido.distancia_km} km</div>}
-            </div>
-          ) : pedido.total && pedido.total !== "0.00" ? (
-            <div className="pedido-row"><span className="pedido-row-icon">💰</span><strong style={{ color: "var(--accent)", fontSize: 15 }}>${pedido.total}</strong></div>
-          ) : pedido.estado !== "entregado" && hasDir && pedido.direccion_retiro && !precioInfo ? (
-            <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", marginTop: 4, textAlign: "center" }}>💡 El precio se calcula al marcar "En Camino"</div>
-          ) : null}
-          {hasDir && pedido.estado !== "entregado" && (
-            <div className="pedido-map" onClick={() => setShowMap(true)}>
-              <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&zoom=15&size=600x200&scale=2&maptype=roadmap&style=feature:all|element:geometry|color:0x1a1a2e&style=feature:all|element:labels.text.fill|color:0x8b9bb4&style=feature:water|color:0x0c1018&style=feature:road|element:geometry|color:0x2a2a4a&markers=color:0x22d3a7|${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs`} alt="Mapa" onError={(e) => { e.target.style.display = "none"; }} />
-              <div className="pedido-map-overlay">{I.nav} Ver mapa</div>
-            </div>
-          )}
-        </div>
-        {pedido.estado !== "entregado" && (
-          <div className="pedido-actions">
-            {(pedido.estado === "pendiente" || pedido.estado === "confirmado") && <><button className="btn btn-primary btn-sm" onClick={() => handleAction("aceptar")} disabled={!!loadingAction}>{loadingAction === "aceptar" ? <div className="spinner spinner-sm" /> : <>{I.check} Aceptar</>}</button><button className="btn btn-danger btn-sm" onClick={() => onAction("rechazar", pedido)} disabled={!!loadingAction}>{I.x} Rechazar</button></>}
-            {pedido.estado === "aceptado" && <><button className="btn btn-primary btn-sm" onClick={() => handleAction("en_camino")} disabled={!!loadingAction}>{loadingAction === "en_camino" ? <div className="spinner spinner-sm" /> : "🚀 En Camino"}</button>{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
-            {pedido.estado === "en_camino" && <><button className="btn btn-warning btn-sm" onClick={() => handleAction("llego")} disabled={!!loadingAction}>{loadingAction === "llego" ? <div className="spinner spinner-sm" /> : "📍 Llegué"}</button><button className="btn btn-primary btn-sm" onClick={() => handleAction("entregado")} disabled={!!loadingAction}>{loadingAction === "entregado" ? <div className="spinner spinner-sm" /> : <>{I.check} Entregado</>}</button>{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
-          </div>
-        )}
-      </div>
-      {showMap && hasDir && <MapModal direccion={pedido.direccion} onClose={() => setShowMap(false)} />}
-    </>
-  );
-}
-
-function ChatScreen({ chatInfo, user, onBack, toast }) {
-  const [mensajes, setMensajes] = useState([]);
-  const [texto, setTexto] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const intervalRef = useRef(null);
-  const cargarMensajes = useCallback(async () => { const res = await apiCall(API.obtenerMensajes, { conversation_id: chatInfo.conversation_id }); if (res.ok) setMensajes(res.mensajes || []); setLoading(false); }, [chatInfo.conversation_id]);
-  useEffect(() => { cargarMensajes(); intervalRef.current = setInterval(cargarMensajes, 8000); return () => clearInterval(intervalRef.current); }, [cargarMensajes]);
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [mensajes]);
-  const enviarMensaje = async () => { if (!texto.trim() || sending) return; setSending(true); const res = await apiCall(API.enviarMensaje, { conversation_id: chatInfo.conversation_id, motorizado_nombre: user.nombre, mensaje: texto.trim() }); if (res.ok) { setTexto(""); setTimeout(cargarMensajes, 500); } else toast(res.error || "Error al enviar", "error"); setSending(false); };
-  const enviarFoto = async (e) => { const file = e.target.files?.[0]; if (!file) return; setSending(true); const reader = new FileReader(); reader.onload = async () => { const res = await apiCall(API.enviarFoto, { conversation_id: chatInfo.conversation_id, imagen_base64: reader.result, motorizado_nombre: user.nombre, caption: "📸 Foto del motorizado" }); if (res.ok) { toast("Foto enviada", "success"); setTimeout(cargarMensajes, 1000); } else toast("Error al enviar foto", "error"); setSending(false); }; reader.readAsDataURL(file); e.target.value = ""; };
-  return (
-    <div className="chat-screen">
-      <div className="chat-header"><button className="btn btn-ghost btn-icon" onClick={onBack} style={{ width: 36, height: 36 }}>{I.back}</button><div className="chat-header-info"><div className="chat-header-name">{chatInfo.cliente}</div><div className="chat-header-sub">Pedido #{chatInfo.pedido_id}</div></div></div>
-      <div className="chat-messages">{loading ? <div className="loading-overlay"><div className="spinner" /></div> : mensajes.length === 0 ? <div className="empty-state"><div className="empty-icon">💬</div><div className="empty-text">Sin mensajes aún</div></div> : mensajes.map((m, i) => (<div key={m.id || i} className={`chat-msg ${m.de === "cliente" ? "incoming" : "outgoing"}`}>{m.tipo === "imagen" && m.imagen_url && <img src={m.imagen_url} alt="Foto" loading="lazy" />}{m.texto && <div>{m.texto}</div>}<div className="chat-msg-time">{m.hora}</div></div>))}<div ref={messagesEndRef} /></div>
-      <div className="chat-input-bar"><input type="file" accept="image/*" capture="environment" ref={fileInputRef} style={{ display: "none" }} onChange={enviarFoto} /><button className="chat-btn chat-btn-photo" onClick={() => fileInputRef.current?.click()} disabled={sending}>{I.camera}</button><input className="chat-input" placeholder="Escribe un mensaje..." value={texto} onChange={(e) => setTexto(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && enviarMensaje()} disabled={sending} /><button className="chat-btn chat-btn-send" onClick={enviarMensaje} disabled={sending || !texto.trim()}>{sending ? <div className="spinner spinner-sm" /> : I.send}</button></div>
-    </div>
-  );
-}
-
-function RejectModal({ pedido, user, onClose, onDone, toast }) {
-  const [motivo, setMotivo] = useState("");
-  const [loading, setLoading] = useState(false);
-  const handleReject = async () => { setLoading(true); const res = await apiCall(API.rechazar, { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id, motivo: motivo || "No especificado" }); if (res.ok) { toast("Pedido rechazado", "info"); onDone(); } else toast(res.error || "Error al rechazar", "error"); setLoading(false); };
-  return (
-    <div className="modal-overlay" onClick={onClose}><div className="modal" onClick={(e) => e.stopPropagation()}><div className="modal-handle" /><div className="modal-title">Rechazar Pedido #{pedido.pedido_id}</div><textarea placeholder="Motivo del rechazo (opcional)..." value={motivo} onChange={(e) => setMotivo(e.target.value)} /><div className="modal-actions"><button className="btn btn-ghost btn-sm" onClick={onClose}>Cancelar</button><button className="btn btn-danger btn-sm" onClick={handleReject} disabled={loading}>{loading ? <div className="spinner spinner-sm" /> : "Confirmar Rechazo"}</button></div></div></div>
-  );
-}
-
-function HistoryStats({ pedidos }) {
-  const entregados = pedidos.filter((p) => p.estado === "entregado");
-  const hoy = new Date().toDateString();
-  const entregadosHoy = entregados.filter((p) => { try { return new Date(p.fecha).toDateString() === hoy; } catch { return false; } });
-  const gananciaHoy = entregadosHoy.reduce((sum, p) => sum + (p.ganancia_motorizado || (p.precio_calculado ? p.precio_calculado * 0.7 : 0)), 0);
-  const comisionHoy = entregadosHoy.reduce((sum, p) => sum + (p.comision_dewan || (p.precio_calculado ? p.precio_calculado * 0.3 : 0)), 0);
-  const tiposCount = {}; entregados.forEach((p) => { const t = p.intencion || "otro"; tiposCount[t] = (tiposCount[t] || 0) + 1; });
-  const topTipo = Object.entries(tiposCount).sort((a, b) => b[1] - a[1])[0];
-  const topLabel = { pedido_comida: "Comida", encomienda: "Encomiendas", compras_supermercado: "Compras", compras: "Compras", pagos: "Pagos", motorizado: "Motorizado" };
-  return (
-    <div className="history-stats">
-      <div className="history-stat"><div className="history-stat-icon">📊</div><div className="history-stat-value" style={{ color: "var(--accent)" }}>{entregados.length}</div><div className="history-stat-label">Total entregas</div></div>
-      <div className="history-stat"><div className="history-stat-icon">📅</div><div className="history-stat-value" style={{ color: "var(--warning)" }}>{entregadosHoy.length}</div><div className="history-stat-label">Entregas hoy</div></div>
-      <div className="history-stat"><div className="history-stat-icon">💰</div><div className="history-stat-value" style={{ color: "var(--accent)", fontFamily: "var(--font-mono)" }}>${gananciaHoy.toFixed(2)}</div><div className="history-stat-label">Tu ganancia hoy</div></div>
-      <div className="history-stat"><div className="history-stat-icon">🏢</div><div className="history-stat-value" style={{ color: "#f87171", fontFamily: "var(--font-mono)" }}>${comisionHoy.toFixed(2)}</div><div className="history-stat-label">Debes a DEWAN hoy</div></div>
-      {topTipo && <div className="history-stat" style={{ gridColumn: "span 2" }}><div className="history-stat-icon">⭐</div><div className="history-stat-value" style={{ color: "var(--purple)", fontSize: 18 }}>{topLabel[topTipo[0]] || topTipo[0]}</div><div className="history-stat-label">Servicio más frecuente ({topTipo[1]})</div></div>}
-    </div>
-  );
-}
-
-function RankingScreen({ user, onBack }) {
-  const [ranking, setRanking] = useState([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { (async () => { const res = await apiCall(API.ranking, {}); if (res.ok) setRanking(res.ranking || []); setLoading(false); })(); }, []);
-  const getMedal = (i) => i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`;
-  const getStars = (n) => { const full = Math.floor(n); const half = n - full >= 0.5; return "★".repeat(full) + (half ? "½" : "") + "☆".repeat(5 - full - (half ? 1 : 0)); };
-  return (
-    <div className="app-container">
-      <div className="header"><div className="header-left"><button className="btn btn-ghost btn-icon" onClick={onBack} style={{ width: 36, height: 36 }}>{I.back}</button><div><div className="header-title">🏆 Ranking</div><div className="header-subtitle">Calificaciones de motorizados</div></div></div></div>
-      {loading ? <div className="loading-overlay"><div className="spinner" /></div> : ranking.length === 0 ? (
-        <div className="empty-state fade-in"><div className="empty-icon">🏆</div><div className="empty-title">Sin datos de ranking</div><div className="empty-text">Las calificaciones aparecerán cuando los clientes califiquen</div></div>
-      ) : (
-        <div style={{ padding: "12px 16px 100px" }}>
-          {(() => { const myRank = ranking.findIndex(r => r.id === parseInt(user.motorizado_id)); const myData = myRank >= 0 ? ranking[myRank] : null; if (!myData) return null; return (
-            <div className="fade-in" style={{ marginBottom: 16, background: "linear-gradient(135deg, var(--accent), #7c3aed)", borderRadius: "var(--radius)", padding: "18px 20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ fontSize: 32 }}>{getMedal(myRank)}</div>
-                <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 16, color: "#fff" }}>Tu posición: #{myRank + 1}</div><div style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 2 }}><span style={{ color: "#fbbf24", letterSpacing: 1 }}>{getStars(myData.calificacion_promedio)}</span> {myData.calificacion_promedio}/5</div><div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginTop: 2 }}>{myData.total_entregas} entregas · {myData.total_calificaciones} calificaciones</div></div>
-              </div>
-            </div>
-          ); })()}
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontSize: 18 }}>📊</span><span style={{ fontWeight: 600, fontSize: 14 }}>Tabla de Posiciones</span></div>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                <thead><tr style={{ background: "var(--bg-secondary)", color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px" }}><th style={{ padding: "10px 12px", textAlign: "center", width: 40 }}>#</th><th style={{ padding: "10px 12px", textAlign: "left" }}>Motorizado</th><th style={{ padding: "10px 12px", textAlign: "center" }}>⭐</th><th style={{ padding: "10px 12px", textAlign: "center" }}>Entregas</th><th style={{ padding: "10px 12px", textAlign: "center" }}>Estado</th></tr></thead>
-                <tbody>{ranking.map((r, i) => { const isMe = r.id === parseInt(user.motorizado_id); return (
-                  <tr key={r.id} style={{ background: isMe ? "rgba(99,102,241,0.12)" : i % 2 === 0 ? "transparent" : "var(--bg-secondary)", borderLeft: isMe ? "3px solid var(--accent)" : "3px solid transparent" }}>
-                    <td style={{ padding: "10px 12px", textAlign: "center", fontWeight: 700, fontSize: i < 3 ? 18 : 13 }}>{getMedal(i)}</td>
-                    <td style={{ padding: "10px 12px", fontWeight: isMe ? 700 : 400 }}>{r.nombre} {isMe && <span style={{ fontSize: 10, color: "var(--accent)", marginLeft: 4 }}>TÚ</span>}</td>
-                    <td style={{ padding: "10px 12px", textAlign: "center" }}><div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ color: "#fbbf24", fontWeight: 700 }}>{r.calificacion_promedio}</span><span style={{ fontSize: 9, color: "var(--text-muted)" }}>{r.total_calificaciones} calif.</span></div></td>
-                    <td style={{ padding: "10px 12px", textAlign: "center", fontWeight: 600 }}>{r.total_entregas}{r.entregas_hoy > 0 && <span style={{ fontSize: 10, color: "var(--success)", display: "block" }}>+{r.entregas_hoy} hoy</span>}</td>
-                    <td style={{ padding: "10px 12px", textAlign: "center" }}><span style={{ padding: "2px 8px", borderRadius: 10, fontSize: 10, fontWeight: 600, background: r.estado === "disponible" ? "rgba(34,197,94,0.15)" : "rgba(249,115,22,0.15)", color: r.estado === "disponible" ? "var(--success)" : "var(--warning)" }}>{r.estado === "disponible" ? "🟢" : "🟡"} {r.estado}</span></td>
-                  </tr>
-                ); })}</tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Dashboard({ user, onLogout, toast }) {
-  const [pedidos, setPedidos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("activos");
-  const [chatInfo, setChatInfo] = useState(null);
-  const [rejectPedido, setRejectPedido] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [showRanking, setShowRanking] = useState(false);
-  const [newPedidoIds, setNewPedidoIds] = useState(new Set());
-  const prevPedidoIdsRef = useRef(new Set());
-  const intervalRef = useRef(null);
-  const cargarPedidos = useCallback(async (showLoader = false) => {
-    if (showLoader) setLoading(true);
-    const res = await apiCall(API.pedidos, { motorizado_id: user.motorizado_id });
-    if (res.ok) {
-      const nuevos = res.pedidos || [];
-      const currentIds = new Set(nuevos.filter((p) => p.estado !== "entregado").map((p) => p.pedido_id));
-      const prevIds = prevPedidoIdsRef.current;
-      const brandNew = [...currentIds].filter((id) => !prevIds.has(id) && prevIds.size > 0);
-      if (brandNew.length > 0) { NotificationManager.notifyNewOrder(); toast(`🔔 ${brandNew.length} pedido${brandNew.length > 1 ? "s" : ""} nuevo${brandNew.length > 1 ? "s" : ""}!`, "new"); setNewPedidoIds(new Set(brandNew)); setTimeout(() => setNewPedidoIds(new Set()), 5000); }
-      prevPedidoIdsRef.current = currentIds;
-      setPedidos(nuevos);
-    }
-    setLoading(false); setRefreshing(false);
-  }, [user.motorizado_id, toast]);
-  useEffect(() => { cargarPedidos(true); intervalRef.current = setInterval(() => cargarPedidos(false), 12000); return () => clearInterval(intervalRef.current); }, [cargarPedidos]);
-  const handleRefresh = () => { setRefreshing(true); cargarPedidos(false); };
-  const handleAction = (action, data) => { if (action === "chat") setChatInfo(data); else if (action === "rechazar") setRejectPedido(data); else cargarPedidos(false); };
-  if (showRanking) return <RankingScreen user={user} onBack={() => setShowRanking(false)} />;
-  if (chatInfo) return <ChatScreen chatInfo={chatInfo} user={user} onBack={() => setChatInfo(null)} toast={toast} />;
-  const pedidosActivos = pedidos.filter((p) => p.estado !== "entregado");
-  const pedidosHistorial = pedidos.filter((p) => p.estado === "entregado");
-  const pendientes = pedidos.filter((p) => p.estado === "pendiente" || p.estado === "confirmado").length;
-  const enProceso = pedidos.filter((p) => p.estado === "aceptado" || p.estado === "en_camino").length;
-  const listaPedidos = tab === "activos" ? pedidosActivos : pedidosHistorial;
-  return (
-    <div className="app-container">
-      <div className="header"><div className="header-left"><div className="header-avatar">🏍️</div><div><div className="header-title">{user.nombre}</div><div className="header-subtitle"><span className="status-dot" /> EN LÍNEA</div></div></div><div className="header-right"><button className="btn btn-ghost btn-icon" onClick={handleRefresh} style={{ animation: refreshing ? "spin .6s linear infinite" : "none" }}>{I.refresh}</button><button className="btn btn-ghost btn-icon" onClick={() => { clearSession(); onLogout(); }} style={{ color: "var(--danger)" }}>{I.logout}</button></div></div>
-      <div className="stats-row"><div className="stat-card"><div className="stat-number" style={{ color: "var(--accent)" }}>{pedidosActivos.length}</div><div className="stat-label">Activos</div></div><div className="stat-card"><div className="stat-number" style={{ color: "var(--warning)" }}>{pendientes}</div><div className="stat-label">Pendientes</div></div><div className="stat-card"><div className="stat-number" style={{ color: "var(--info)" }}>{enProceso}</div><div className="stat-label">En Proceso</div></div></div>
-      <div className="tabs">
-        <button className={`tab ${tab === "activos" ? "active" : ""}`} onClick={() => setTab("activos")}>{I.pkg} Activos {pedidosActivos.length > 0 && <span className="tab-badge">{pedidosActivos.length}</span>}</button>
-        <button className={`tab ${tab === "historial" ? "active" : ""}`} onClick={() => setTab("historial")}>{I.history} Historial {pedidosHistorial.length > 0 && <span className="tab-badge" style={{ background: "var(--text-muted)", color: "var(--bg-primary)" }}>{pedidosHistorial.length}</span>}</button>
-        <button className="tab" onClick={() => setShowRanking(true)} style={{ color: "#fbbf24" }}>🏆 Ranking</button>
-      </div>
-      {tab === "historial" && pedidosHistorial.length > 0 && <HistoryStats pedidos={pedidos} />}
-      {loading ? <div className="loading-overlay"><div className="spinner" /></div> : listaPedidos.length === 0 ? (
-        <div className="empty-state fade-in"><div className="empty-icon">{tab === "activos" ? "📦" : "📊"}</div><div className="empty-title">{tab === "activos" ? "Sin pedidos activos" : "Sin entregas aún"}</div><div className="empty-text">{tab === "activos" ? "Los nuevos pedidos aparecerán aquí automáticamente" : "Las entregas completadas se mostrarán aquí"}</div></div>
-      ) : <div className="pedido-list">{listaPedidos.map((p) => <PedidoCard key={p.pedido_id} pedido={p} user={user} onAction={handleAction} toast={toast} isNew={newPedidoIds.has(p.pedido_id)} />)}</div>}
-      {rejectPedido && <RejectModal pedido={rejectPedido} user={user} onClose={() => setRejectPedido(null)} onDone={() => { setRejectPedido(null); cargarPedidos(false); }} toast={toast} />}
-    </div>
-  );
-}
-
-function App() {
-  const [user, setUser] = useState(() => getSession());
-  const [toasts, setToasts] = useState([]);
-  const addToast = useCallback((message, type = "info") => { const id = Date.now(); setToasts((prev) => [...prev, { id, message, type }]); setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000); }, []);
-  useEffect(() => { if (user?.motorizado_id) { registerPushNotifications(user.motorizado_id); } }, [user]);
-  return (
-    <>
-      <style>{globalStyles}</style>
-      <ToastContainer toasts={toasts} />
-      {user ? <Dashboard user={user} onLogout={() => setUser(null)} toast={addToast} /> : <LoginScreen onLogin={setUser} toast={addToast} />}
-    </>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-</script>
-</body>
-</html>
