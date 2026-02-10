@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -48,6 +49,9 @@ async function registerPushNotifications(motorizadoId) {
   try {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) { console.log('Push no soportado'); return false; }
     const registration = await navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' });
+    await navigator.serviceWorker.ready;
+    // Check for SW updates
+    registration.update();
     await navigator.serviceWorker.ready;
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') { console.log('Permiso denegado'); return false; }
@@ -166,16 +170,36 @@ function LoginScreen({ onLogin, toast }) {
   );
 }
 
-function MapModal({ direccion, onClose }) {
-  const encoded = encodeURIComponent(direccion + ", Riobamba, Ecuador");
-  const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${encoded}&zoom=16`;
-  const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${encoded}&travelmode=driving`;
+function MapModal({ direccion, lat, lng, direccionRetiro, onClose }) {
+  const hasCoords = lat && lng && lat !== "" && lng !== "" && lat !== "undefined" && lng !== "undefined";
+  const coordStr = hasCoords ? `${lat},${lng}` : null;
+  const encoded = hasCoords ? coordStr : encodeURIComponent(direccion + ", Riobamba, Ecuador");
+  const mapUrl = hasCoords
+    ? `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${lat},${lng}&zoom=17`
+    : `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&zoom=16`;
+  const navUrl = hasCoords
+    ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
+    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&travelmode=driving`;
+  const wazeUrl = hasCoords
+    ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`
+    : `https://waze.com/ul?q=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&navigate=yes`;
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal map-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="map-modal-header"><h3>📍 {direccion}</h3><button className="btn btn-ghost btn-icon" onClick={onClose} style={{ width: 32, height: 32 }}>{I.x}</button></div>
+        <div className="map-modal-header">
+          <div>
+            <h3 style={{ fontSize: 15 }}>📍 Entrega: {direccion}</h3>
+            {direccionRetiro && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>📦 Retiro: {direccionRetiro}</div>}
+            {hasCoords && <div style={{ fontSize: 10, color: "var(--accent)", marginTop: 2, fontFamily: "var(--font-mono)" }}>GPS: {Number(lat).toFixed(6)}, {Number(lng).toFixed(6)}</div>}
+            {!hasCoords && <div style={{ fontSize: 10, color: "var(--warning)", marginTop: 2 }}>⚠️ Sin GPS, ubicación aproximada por texto</div>}
+          </div>
+          <button className="btn btn-ghost btn-icon" onClick={onClose} style={{ width: 32, height: 32, flexShrink: 0 }}>{I.x}</button>
+        </div>
         <iframe className="map-frame" src={mapUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-        <div className="map-modal-actions"><a href={navUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm btn-full" style={{ textDecoration: "none" }}>{I.nav} Abrir en Google Maps</a></div>
+        <div className="map-modal-actions" style={{ flexDirection: "column", gap: 8 }}>
+          <a href={navUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm btn-full" style={{ textDecoration: "none" }}>{I.nav} Navegar con Google Maps</a>
+          <a href={wazeUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm btn-full" style={{ textDecoration: "none", color: "var(--info)" }}>🗺️ Abrir en Waze</a>
+        </div>
       </div>
     </div>
   );
@@ -193,7 +217,7 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
     else { switch (action) { case "aceptar": url = API.aceptar; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id }; break; case "llego": url = API.llego; body = { pedido_id: pedido.pedido_id }; break; case "entregado": url = API.entregado; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id }; break; case "rechazar": url = API.rechazar; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id, ...extraBody }; break; default: return; } }
     const res = await apiCall(url, body);
     if (res.ok) {
-      if (action === "en_camino" && res.precio_texto) { setPrecioInfo(res); toast(`Precio: ${res.precio_texto} (${res.distancia_texto})`, "success"); }
+      if (action === "en_camino" && res.precio_texto) { setPrecioInfo(res); toast(`Precio: ${res.precio_texto} (${res.distancia_texto})`, "success"); const hasCoords = pedido.ubicacion_lat && pedido.ubicacion_lng && pedido.ubicacion_lat !== ""; const navUrl = hasCoords ? `https://www.google.com/maps/dir/?api=1&destination=${pedido.ubicacion_lat},${pedido.ubicacion_lng}&travelmode=driving` : pedido.direccion ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&travelmode=driving` : null; if (navUrl) setTimeout(() => { if (confirm("¿Abrir navegación GPS?")) window.open(navUrl, '_blank'); }, 500); }
       else if (action === "entregado" && res.comision_dewan) { toast(`✅ Entregado | Tu ganancia: $${res.ganancia_motorizado?.toFixed(2)} | Comisión DEWAN: $${res.comision_dewan?.toFixed(2)}`, "success"); }
       else if (action === "rechazar" && res.reasignado) { toast(`Rechazado → Reasignado a ${res.nuevo_motorizado}`, "info"); }
       else { toast(res.mensaje || "Acción realizada", "success"); }
@@ -204,7 +228,7 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
   const estadoLabel = { pendiente: "Pendiente", confirmado: "Nuevo", asignado: "🔔 Nuevo", aceptado: "Aceptado", en_camino: "En Camino", entregado: "Entregado" };
   const typeConfig = { pedido_comida: { icon: "🍽️", label: "Pedido de comida", cls: "comida" }, encomienda: { icon: "📦", label: "Encomienda", cls: "encomienda" }, compras_supermercado: { icon: "🛒", label: "Compras", cls: "compras" }, compras: { icon: "🛒", label: "Compras", cls: "compras" }, pagos: { icon: "💳", label: "Pago / Trámite", cls: "pagos" }, motorizado: { icon: "🏍️", label: "Motorizado", cls: "motorizado" } };
   const tc = typeConfig[pedido.intencion] || { icon: "📋", label: "Servicio", cls: "motorizado" };
-  const hasDir = pedido.direccion && pedido.direccion !== "Sin dirección" && pedido.direccion !== "null, null";
+  const hasDir = (pedido.direccion && pedido.direccion !== "Sin dirección" && pedido.direccion !== "null, null" && pedido.direccion !== "N/A" && pedido.direccion.trim() !== "" && pedido.direccion !== ", ") || (pedido.ubicacion_lat && pedido.ubicacion_lng && pedido.ubicacion_lat !== "" && pedido.ubicacion_lng !== "");
   return (
     <>
       <div className={`pedido-card ${isNew ? "new-pedido" : ""}`}>
@@ -234,22 +258,28 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
           ) : pedido.estado !== "entregado" && hasDir && pedido.direccion_retiro && !precioInfo ? (
             <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", marginTop: 4, textAlign: "center" }}>💡 El precio se calcula al marcar "En Camino"</div>
           ) : null}
-          {hasDir && pedido.estado !== "entregado" && (
+          {hasDir && pedido.estado !== "entregado" && (() => {
+            const hasCoords = pedido.ubicacion_lat && pedido.ubicacion_lng && pedido.ubicacion_lat !== "" && pedido.ubicacion_lng !== "" && pedido.ubicacion_lat !== "undefined";
+            const mapCenter = hasCoords ? `${pedido.ubicacion_lat},${pedido.ubicacion_lng}` : encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador");
+            const markerPos = hasCoords ? `${pedido.ubicacion_lat},${pedido.ubicacion_lng}` : encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador");
+            const zoom = hasCoords ? 17 : 15;
+            return (
             <div className="pedido-map" onClick={() => setShowMap(true)}>
-              <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&zoom=15&size=600x200&scale=2&maptype=roadmap&style=feature:all|element:geometry|color:0x1a1a2e&style=feature:all|element:labels.text.fill|color:0x8b9bb4&style=feature:water|color:0x0c1018&style=feature:road|element:geometry|color:0x2a2a4a&markers=color:0x22d3a7|${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs`} alt="Mapa" onError={(e) => { e.target.style.display = "none"; }} />
-              <div className="pedido-map-overlay">{I.nav} Ver mapa</div>
+              <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${mapCenter}&zoom=${zoom}&size=600x200&scale=2&maptype=roadmap&style=feature:all|element:geometry|color:0x1a1a2e&style=feature:all|element:labels.text.fill|color:0x8b9bb4&style=feature:water|color:0x0c1018&style=feature:road|element:geometry|color:0x2a2a4a&markers=color:0x22d3a7|${markerPos}&key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs`} alt="Mapa" onError={(e) => { e.target.style.display = "none"; }} />
+              <div className="pedido-map-overlay">{I.nav} Ver mapa {hasCoords && <span style={{ fontSize: 9, opacity: 0.7 }}>GPS</span>}</div>
             </div>
-          )}
+            );
+          })()}
         </div>
         {pedido.estado !== "entregado" && (
           <div className="pedido-actions">
             {(pedido.estado === "pendiente" || pedido.estado === "confirmado" || pedido.estado === "asignado") && <><button className="btn btn-primary btn-sm" onClick={() => handleAction("aceptar")} disabled={!!loadingAction}>{loadingAction === "aceptar" ? <div className="spinner spinner-sm" /> : <>{I.check} Aceptar</>}</button><button className="btn btn-danger btn-sm" onClick={() => onAction("rechazar", pedido)} disabled={!!loadingAction}>{I.x} Rechazar</button></>}
-            {pedido.estado === "aceptado" && <><button className="btn btn-primary btn-sm" onClick={() => handleAction("en_camino")} disabled={!!loadingAction}>{loadingAction === "en_camino" ? <div className="spinner spinner-sm" /> : "🚀 En Camino"}</button>{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
-            {pedido.estado === "en_camino" && <><button className="btn btn-warning btn-sm" onClick={() => handleAction("llego")} disabled={!!loadingAction}>{loadingAction === "llego" ? <div className="spinner spinner-sm" /> : "📍 Llegué"}</button><button className="btn btn-primary btn-sm" onClick={() => handleAction("entregado")} disabled={!!loadingAction}>{loadingAction === "entregado" ? <div className="spinner spinner-sm" /> : <>{I.check} Entregado</>}</button>{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
+            {pedido.estado === "aceptado" && <><button className="btn btn-primary btn-sm" onClick={() => handleAction("en_camino")} disabled={!!loadingAction}>{loadingAction === "en_camino" ? <div className="spinner spinner-sm" /> : "🚀 En Camino"}</button>{hasDir && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setShowMap(true)} title="Ver mapa">{I.map}</button>}{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
+            {pedido.estado === "en_camino" && <><button className="btn btn-warning btn-sm" onClick={() => handleAction("llego")} disabled={!!loadingAction}>{loadingAction === "llego" ? <div className="spinner spinner-sm" /> : "📍 Llegué"}</button><button className="btn btn-primary btn-sm" onClick={() => handleAction("entregado")} disabled={!!loadingAction}>{loadingAction === "entregado" ? <div className="spinner spinner-sm" /> : <>{I.check} Entregado</>}</button>{hasDir && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => { const hasCoords = pedido.ubicacion_lat && pedido.ubicacion_lng && pedido.ubicacion_lat !== ""; const navUrl = hasCoords ? `https://www.google.com/maps/dir/?api=1&destination=${pedido.ubicacion_lat},${pedido.ubicacion_lng}&travelmode=driving` : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&travelmode=driving`; window.open(navUrl, '_blank'); }} title="Navegar">{I.nav}</button>}{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
           </div>
         )}
       </div>
-      {showMap && hasDir && <MapModal direccion={pedido.direccion} onClose={() => setShowMap(false)} />}
+      {showMap && hasDir && <MapModal direccion={pedido.direccion} lat={pedido.ubicacion_lat} lng={pedido.ubicacion_lng} direccionRetiro={pedido.direccion_retiro} onClose={() => setShowMap(false)} />}
     </>
   );
 }
