@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -70,122 +69,117 @@ function cleanStr(val) { if (typeof val === "string") return val.replace(/^=/, "
 const NotificationManager = {
   _audio: null,
   _vibrating: false,
-  _alarmInterval: null,
+  _playing: false,
+  _unlocked: false,
 
-  // Inicializar con un audio element HTML (se desbloquea con interacción)
   init() {
     if (this._audio) return;
-    this._audio = new Audio();
+    this._audio = document.createElement('audio');
+    this._audio.setAttribute('playsinline', '');
+    this._audio.setAttribute('webkit-playsinline', '');
     this._audio.volume = 1.0;
-    // Generar sonido de alarma como WAV en base64
-    this._alarmDataUrl = this._generateAlarmWav();
-    // Pre-cargar con audio silencioso para desbloquear en móvil
-    this._audio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
-    this._audio.load();
-    console.log('[ALARM] Sistema de alarma inicializado');
+    document.body.appendChild(this._audio);
+    console.log('[ALARM] Init OK');
   },
 
-  // Desbloquear audio en móvil (llamar en cualquier toque del usuario)
+  // CRITICAL: Llamar en CUALQUIER toque del usuario
   unlock() {
+    if (this._unlocked) return;
     if (!this._audio) this.init();
+    // Reproducir silencio para desbloquear
+    this._audio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
     const p = this._audio.play();
-    if (p) p.catch(() => {});
-    this._audio.pause();
-    this._audio.currentTime = 0;
-    console.log('[ALARM] Audio desbloqueado');
+    if (p) p.then(() => { this._audio.pause(); this._unlocked = true; console.log('[ALARM] Audio DESBLOQUEADO en móvil'); }).catch(() => {});
   },
 
-  // Generar un WAV de alarma tipo sirena (funciona sin archivos externos)
-  _generateAlarmWav() {
-    const sampleRate = 22050;
-    const duration = 3; // 3 segundos
-    const numSamples = sampleRate * duration;
-    const buffer = new ArrayBuffer(44 + numSamples * 2);
-    const view = new DataView(buffer);
-    
-    // WAV header
-    const writeStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
-    writeStr(0, 'RIFF');
-    view.setUint32(4, 36 + numSamples * 2, true);
-    writeStr(8, 'WAVE');
-    writeStr(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeStr(36, 'data');
-    view.setUint32(40, numSamples * 2, true);
-    
-    // Generar sirena (frecuencia que sube y baja)
-    for (let i = 0; i < numSamples; i++) {
-      const t = i / sampleRate;
-      // Sirena: oscila entre 600Hz y 1200Hz
-      const freq = 800 + 400 * Math.sin(2 * Math.PI * 2 * t);
-      const sample = Math.sin(2 * Math.PI * freq * t) * 0.8;
-      // Agregar pulso para que sea más urgente
-      const pulse = (Math.sin(2 * Math.PI * 8 * t) > 0) ? 1 : 0.3;
-      view.setInt16(44 + i * 2, sample * pulse * 32767, true);
+  // Generar WAV de alarma FUERTE (5 segundos, sirena agresiva)
+  _makeAlarmWav() {
+    const sr = 22050, dur = 5, n = sr * dur;
+    const buf = new ArrayBuffer(44 + n * 2);
+    const v = new DataView(buf);
+    // Header
+    [...'RIFF'].forEach((c, i) => v.setUint8(i, c.charCodeAt(0)));
+    v.setUint32(4, 36 + n * 2, true);
+    [...'WAVE'].forEach((c, i) => v.setUint8(8 + i, c.charCodeAt(0)));
+    [...'fmt '].forEach((c, i) => v.setUint8(12 + i, c.charCodeAt(0)));
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    [...'data'].forEach((c, i) => v.setUint8(36 + i, c.charCodeAt(0)));
+    v.setUint32(40, n * 2, true);
+    // Sirena agresiva: sube y baja rápido, volumen máximo
+    for (let i = 0; i < n; i++) {
+      const t = i / sr;
+      // Frecuencia que oscila rápido entre 700 y 1400 Hz
+      const freq = 1050 + 350 * Math.sin(2 * Math.PI * 3 * t);
+      // Onda principal
+      const wave = Math.sin(2 * Math.PI * freq * t);
+      // Pulso on/off rápido (beep-beep-beep)
+      const beat = Math.sin(2 * Math.PI * 4 * t) > 0 ? 1.0 : 0.15;
+      // Armónico para que suene más fuerte/agudo
+      const harmonic = Math.sin(2 * Math.PI * freq * 2 * t) * 0.3;
+      const sample = (wave + harmonic) * beat * 0.95;
+      v.setInt16(44 + i * 2, Math.max(-32768, Math.min(32767, sample * 32767)), true);
     }
-    
-    // Convertir a base64
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return 'data:audio/wav;base64,' + btoa(binary);
+    const bytes = new Uint8Array(buf);
+    let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return 'data:audio/wav;base64,' + btoa(bin);
   },
 
-  // Reproducir alarma en loop
+  // INICIAR ALARMA - suena en loop hasta que se pare
   startAlarm() {
+    if (this._playing) return;
     if (!this._audio) this.init();
-    try {
-      this._audio.src = this._alarmDataUrl;
-      this._audio.loop = true;
+    this._playing = true;
+    const wavUrl = this._makeAlarmWav();
+
+    const playOnce = () => {
+      if (!this._playing) return;
+      this._audio.src = wavUrl;
       this._audio.volume = 1.0;
+      this._audio.currentTime = 0;
       const p = this._audio.play();
-      if (p) p.catch(e => console.log('[ALARM] No se pudo reproducir:', e.message));
-      
-      // Vibración continua
-      this._vibrating = true;
-      this._vibrateLoop();
-      
-      console.log('[ALARM] 🔊 Alarma iniciada');
-    } catch(e) {
-      console.error('[ALARM] Error:', e);
-    }
+      if (p) p.catch(e => console.log('[ALARM] play error:', e.message));
+      // Cuando termina, volver a reproducir
+      this._audio.onended = () => {
+        if (this._playing) playOnce();
+      };
+    };
+    playOnce();
+
+    // Vibración en loop
+    this._vibrating = true;
+    const vibrateLoop = () => {
+      if (!this._vibrating) return;
+      try { navigator.vibrate([800, 200, 800, 200, 800]); } catch(e) {}
+      setTimeout(vibrateLoop, 3000);
+    };
+    vibrateLoop();
+
+    console.log('[ALARM] 🔊🔊🔊 ALARMA INICIADA');
   },
 
-  _vibrateLoop() {
-    if (!this._vibrating) return;
-    try { navigator?.vibrate?.([500, 200, 500, 200, 500]); } catch(e) {}
-    setTimeout(() => this._vibrateLoop(), 2000);
-  },
-
-  // Detener alarma
+  // DETENER ALARMA
   stopAlarm() {
+    this._playing = false;
+    this._vibrating = false;
     if (this._audio) {
       this._audio.pause();
       this._audio.currentTime = 0;
-      this._audio.loop = false;
+      this._audio.onended = null;
     }
-    this._vibrating = false;
-    try { navigator?.vibrate?.(0); } catch(e) {}
+    try { navigator.vibrate(0); } catch(e) {}
     console.log('[ALARM] Alarma detenida');
   },
 
   playActionSound() {
-    if (!this._audio) this.init();
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine"; osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-      osc.start(); osc.stop(ctx.currentTime + 0.2);
+      osc.frequency.value = 880; gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+      osc.start(); osc.stop(ctx.currentTime + 0.15);
     } catch(e) {}
   }
 };
@@ -497,24 +491,33 @@ function AlarmOverlay({ pedidos, onDismiss }) {
   if (!pedidos || pedidos.length === 0) return null;
   const p = pedidos[0];
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, animation: "pulse 1s infinite" }}>
-      <div style={{ fontSize: 72, marginBottom: 16, animation: "scaleIn 0.3s ease-out" }}>🔔</div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: "#22d3a7", textAlign: "center", marginBottom: 8 }}>¡NUEVO PEDIDO!</div>
-      <div style={{ fontSize: 16, color: "#8b9bb4", textAlign: "center", marginBottom: 24 }}>
-        {p.cliente && <div style={{ fontSize: 18, color: "#f0f4f8", fontWeight: 600 }}>👤 {p.cliente}</div>}
-        {p.detalle && <div style={{ marginTop: 8 }}>📝 {p.detalle}</div>}
-        {p.direccion && <div style={{ marginTop: 4 }}>📍 {p.direccion}</div>}
-        {p.direccion_retiro && <div style={{ marginTop: 4, color: "#3b82f6" }}>🏪 Retiro: {p.direccion_retiro}</div>}
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#000", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <style>{`
+        @keyframes alarmPulse { 0%,100%{background:#000} 50%{background:#1a0000} }
+        @keyframes bellShake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(20deg)} 75%{transform:rotate(-20deg)} }
+        @keyframes btnGlow { 0%,100%{box-shadow:0 0 20px rgba(34,211,167,0.3)} 50%{box-shadow:0 0 60px rgba(34,211,167,0.8)} }
+        .alarm-bg { animation: alarmPulse 0.5s infinite !important; }
+        .alarm-bell { animation: bellShake 0.3s infinite !important; }
+        .alarm-btn { animation: btnGlow 1s infinite !important; }
+      `}</style>
+      <div className="alarm-bg" style={{ position:"absolute", inset:0, zIndex:-1 }} />
+      <div className="alarm-bell" style={{ fontSize: 80, marginBottom: 12 }}>🔔</div>
+      <div style={{ fontSize: 32, fontWeight: 900, color: "#ff4444", textAlign: "center", marginBottom: 4, textTransform: "uppercase", letterSpacing: 2 }}>¡NUEVO PEDIDO!</div>
+      <div style={{ fontSize: 14, color: "#ff8888", marginBottom: 20 }}>🔊 Alarma activa</div>
+      <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 16, padding: 20, width: "100%", maxWidth: 340, marginBottom: 24 }}>
+        {p.cliente && <div style={{ fontSize: 20, color: "#fff", fontWeight: 700, marginBottom: 8 }}>👤 {p.cliente}</div>}
+        {p.detalle && <div style={{ fontSize: 14, color: "#aaa", marginBottom: 6 }}>📝 {p.detalle}</div>}
+        {p.direccion && p.direccion !== "Sin dirección" && <div style={{ fontSize: 14, color: "#aaa", marginBottom: 6 }}>📍 {p.direccion}</div>}
+        {p.direccion_retiro && <div style={{ fontSize: 14, color: "#6ea8fe" }}>🏪 {p.direccion_retiro}</div>}
       </div>
-      <button onClick={onDismiss} style={{
-        width: "100%", maxWidth: 320, padding: "18px 24px", border: "none", borderRadius: 16,
-        background: "linear-gradient(135deg, #22d3a7, #10b981)", color: "#05080e",
-        fontSize: 18, fontWeight: 800, cursor: "pointer", fontFamily: "var(--font)",
-        boxShadow: "0 0 40px rgba(34,211,167,0.4)", animation: "glow 2s infinite"
+      <button className="alarm-btn" onClick={onDismiss} style={{
+        width: "100%", maxWidth: 340, padding: "20px 24px", border: "none", borderRadius: 16,
+        background: "linear-gradient(135deg, #22d3a7, #10b981)", color: "#000",
+        fontSize: 20, fontWeight: 900, cursor: "pointer", fontFamily: "var(--font)",
+        textTransform: "uppercase", letterSpacing: 1
       }}>
-        👀 VER PEDIDO
+        👀 VER PEDIDO — SILENCIAR
       </button>
-      <div style={{ marginTop: 16, fontSize: 12, color: "#556077" }}>Toca para silenciar la alarma</div>
     </div>
   );
 }
@@ -582,7 +585,7 @@ function Dashboard({ user, onLogout, toast }) {
   return (
     <div className="app-container">
       {alarmPedidos.length > 0 && <AlarmOverlay pedidos={alarmPedidos} onDismiss={dismissAlarm} />}
-      <div className="header"><div className="header-left"><div className="header-avatar">🏍️</div><div><div className="header-title">{user.nombre}</div><div className="header-subtitle"><span className="status-dot" /> EN LÍNEA</div></div></div><div className="header-right"><button className="btn btn-ghost btn-icon" onClick={handleRefresh} style={{ animation: refreshing ? "spin .6s linear infinite" : "none" }}>{I.refresh}</button><button className="btn btn-ghost btn-icon" onClick={() => { clearSession(); onLogout(); }} style={{ color: "var(--danger)" }}>{I.logout}</button></div></div>
+      <div className="header"><div className="header-left"><div className="header-avatar">🏍️</div><div><div className="header-title">{user.nombre}</div><div className="header-subtitle"><span className="status-dot" /> EN LÍNEA</div></div></div><div className="header-right"><button className="btn btn-ghost btn-icon" onClick={() => { NotificationManager.unlock(); NotificationManager.startAlarm(); setAlarmPedidos([{cliente:"TEST", detalle:"Prueba de alarma", direccion:"Test"}]); }} title="Probar alarma" style={{ color: "var(--warning)", fontSize: 14 }}>🔔</button><button className="btn btn-ghost btn-icon" onClick={handleRefresh} style={{ animation: refreshing ? "spin .6s linear infinite" : "none" }}>{I.refresh}</button><button className="btn btn-ghost btn-icon" onClick={() => { clearSession(); onLogout(); }} style={{ color: "var(--danger)" }}>{I.logout}</button></div></div>
       <div className="stats-row"><div className="stat-card"><div className="stat-number" style={{ color: "var(--accent)" }}>{pedidosActivos.length}</div><div className="stat-label">Activos</div></div><div className="stat-card"><div className="stat-number" style={{ color: "var(--warning)" }}>{pendientes}</div><div className="stat-label">Pendientes</div></div><div className="stat-card"><div className="stat-number" style={{ color: "var(--info)" }}>{enProceso}</div><div className="stat-label">En Proceso</div></div></div>
       <div className="tabs">
         <button className={`tab ${tab === "activos" ? "active" : ""}`} onClick={() => setTab("activos")}>{I.pkg} Activos {pedidosActivos.length > 0 && <span className="tab-badge">{pedidosActivos.length}</span>}</button>
