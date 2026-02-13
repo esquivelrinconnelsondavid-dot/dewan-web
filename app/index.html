@@ -47,7 +47,8 @@ function urlBase64ToUint8Array(base64String) { const padding = '='.repeat((4 - b
 async function registerPushNotifications(motorizadoId) {
   try {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) { console.log('Push no soportado'); return false; }
-    const registration = await navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' });
+    const registration = await navigator.serviceWorker.register('/app/sw.js?v=4', { scope: '/app/' });
+
     await navigator.serviceWorker.ready;
     // Check for SW updates
     registration.update();
