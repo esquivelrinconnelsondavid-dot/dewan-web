@@ -73,7 +73,7 @@ const NotificationManager = {
   playNewOrderSound() { try { const ctx = this.getAudioCtx(); [0, 0.15, 0.3].forEach((delay, i) => { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = "sine"; osc.frequency.value = [523, 659, 784][i]; gain.gain.setValueAtTime(0.3, ctx.currentTime + delay); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4); osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.4); }); } catch (e) {} },
   playActionSound() { try { const ctx = this.getAudioCtx(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = "sine"; osc.frequency.value = 880; gain.gain.setValueAtTime(0.2, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2); osc.start(); osc.stop(ctx.currentTime + 0.2); } catch (e) {} },
   vibrate(pattern = [200, 100, 200]) { try { navigator?.vibrate?.(pattern); } catch (e) {} },
-  notifyNewOrder() { this.playNewOrderSound(); this.vibrate([200, 100, 200, 100, 300]); }
+  notifyNewOrder(pedidoInfo) { this.playNewOrderSound(); this.vibrate([200, 100, 200, 100, 300]); try { if ('Notification' in window && Notification.permission === 'granted') { const n = new Notification('🆕 Nuevo Pedido DEWAN', { body: pedidoInfo || 'Tienes un nuevo pedido asignado', icon: '/app/icon-192.png', badge: '/app/icon-72.png', vibrate: [200, 100, 200, 100, 300], tag: 'nuevo-pedido-' + Date.now(), renotify: true, requireInteraction: true }); n.onclick = () => { window.focus(); n.close(); }; setTimeout(() => n.close(), 15000); } } catch(e) { console.log('Notification API no disponible'); } }
 };
 
 const globalStyles = `
@@ -171,18 +171,29 @@ function LoginScreen({ onLogin, toast }) {
 }
 
 function MapModal({ direccion, lat, lng, direccionRetiro, onClose }) {
-  const hasCoords = lat && lng && lat !== "" && lng !== "" && lat !== "undefined" && lng !== "undefined";
-  const coordStr = hasCoords ? `${lat},${lng}` : null;
-  const encoded = hasCoords ? coordStr : encodeURIComponent(direccion + ", Riobamba, Ecuador");
+  // Limpiar y validar coordenadas
+  const cleanCoord = (v) => { if (!v || v === "" || v === "undefined" || v === "null" || v === "N/A") return null; const n = parseFloat(String(v).trim()); return isNaN(n) ? null : n; };
+  const cLat = cleanCoord(lat);
+  const cLng = cleanCoord(lng);
+  // Validar que sean coordenadas de Riobamba (lat: -1.5 a -1.8, lng: -78.5 a -78.8)
+  const isValidRiobamba = cLat !== null && cLng !== null && cLat >= -2.0 && cLat <= -1.0 && cLng >= -79.5 && cLng <= -78.0;
+  // Detectar si están invertidas (lat/lng swapped)
+  let finalLat = cLat, finalLng = cLng;
+  if (cLat !== null && cLng !== null && !isValidRiobamba) {
+    if (cLng >= -2.0 && cLng <= -1.0 && cLat >= -79.5 && cLat <= -78.0) { finalLat = cLng; finalLng = cLat; console.log("GPS corregido: coordenadas estaban invertidas"); }
+  }
+  const hasCoords = finalLat !== null && finalLng !== null && (isValidRiobamba || (finalLat >= -2.0 && finalLat <= -1.0));
+  const coordStr = hasCoords ? `${finalLat},${finalLng}` : null;
+  const encoded = hasCoords ? coordStr : encodeURIComponent((direccion || "Riobamba") + ", Riobamba, Ecuador");
   const mapUrl = hasCoords
-    ? `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${lat},${lng}&zoom=17`
-    : `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&zoom=16`;
+    ? `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${finalLat},${finalLng}&zoom=17`
+    : `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${encodeURIComponent((direccion || "Riobamba") + ", Riobamba, Ecuador")}&zoom=16`;
   const navUrl = hasCoords
-    ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
-    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&travelmode=driving`;
+    ? `https://www.google.com/maps/dir/?api=1&destination=${finalLat},${finalLng}&travelmode=driving`
+    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent((direccion || "Riobamba") + ", Riobamba, Ecuador")}&travelmode=driving`;
   const wazeUrl = hasCoords
-    ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`
-    : `https://waze.com/ul?q=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&navigate=yes`;
+    ? `https://waze.com/ul?ll=${finalLat},${finalLng}&navigate=yes`
+    : `https://waze.com/ul?q=${encodeURIComponent((direccion || "Riobamba") + ", Riobamba, Ecuador")}&navigate=yes`;
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal map-modal" onClick={(e) => e.stopPropagation()}>
@@ -190,7 +201,7 @@ function MapModal({ direccion, lat, lng, direccionRetiro, onClose }) {
           <div>
             <h3 style={{ fontSize: 15 }}>📍 Entrega: {direccion}</h3>
             {direccionRetiro && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>📦 Retiro: {direccionRetiro}</div>}
-            {hasCoords && <div style={{ fontSize: 10, color: "var(--accent)", marginTop: 2, fontFamily: "var(--font-mono)" }}>GPS: {Number(lat).toFixed(6)}, {Number(lng).toFixed(6)}</div>}
+            {hasCoords && <div style={{ fontSize: 10, color: "var(--accent)", marginTop: 2, fontFamily: "var(--font-mono)" }}>GPS: {finalLat.toFixed(6)}, {finalLng.toFixed(6)}</div>}
             {!hasCoords && <div style={{ fontSize: 10, color: "var(--warning)", marginTop: 2 }}>⚠️ Sin GPS, ubicación aproximada por texto</div>}
           </div>
           <button className="btn btn-ghost btn-icon" onClick={onClose} style={{ width: 32, height: 32, flexShrink: 0 }}>{I.x}</button>
@@ -217,7 +228,7 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
     else { switch (action) { case "aceptar": url = API.aceptar; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id }; break; case "llego": url = API.llego; body = { pedido_id: pedido.pedido_id }; break; case "entregado": url = API.entregado; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id }; break; case "rechazar": url = API.rechazar; body = { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id, ...extraBody }; break; default: return; } }
     const res = await apiCall(url, body);
     if (res.ok) {
-      if (action === "en_camino" && res.precio_texto) { setPrecioInfo(res); toast(`Precio: ${res.precio_texto} (${res.distancia_texto})`, "success"); const hasCoords = pedido.ubicacion_lat && pedido.ubicacion_lng && pedido.ubicacion_lat !== ""; const navUrl = hasCoords ? `https://www.google.com/maps/dir/?api=1&destination=${pedido.ubicacion_lat},${pedido.ubicacion_lng}&travelmode=driving` : pedido.direccion ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&travelmode=driving` : null; if (navUrl) setTimeout(() => { if (confirm("¿Abrir navegación GPS?")) window.open(navUrl, '_blank'); }, 500); }
+      if (action === "en_camino" && res.precio_texto) { setPrecioInfo(res); toast(`Precio: ${res.precio_texto} (${res.distancia_texto})`, "success"); const cleanC = (v) => { if (!v || v === "" || v === "undefined") return null; const n = parseFloat(String(v).trim()); return isNaN(n) ? null : n; }; let pLat = cleanC(pedido.ubicacion_lat), pLng = cleanC(pedido.ubicacion_lng); if (pLat !== null && pLng !== null && !(pLat >= -2.0 && pLat <= -1.0)) { if (pLng >= -2.0 && pLng <= -1.0) { const t = pLat; pLat = pLng; pLng = t; } } const hasCoords = pLat !== null && pLng !== null && pLat >= -2.0 && pLat <= -1.0; const navUrl = hasCoords ? `https://www.google.com/maps/dir/?api=1&destination=${pLat},${pLng}&travelmode=driving` : pedido.direccion ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&travelmode=driving` : null; if (navUrl) setTimeout(() => { if (confirm("¿Abrir navegación GPS?")) window.open(navUrl, '_blank'); }, 500); }
       else if (action === "entregado" && res.comision_dewan) { toast(`✅ Entregado | Tu ganancia: $${res.ganancia_motorizado?.toFixed(2)} | Comisión DEWAN: $${res.comision_dewan?.toFixed(2)}`, "success"); }
       else if (action === "rechazar" && res.reasignado) { toast(`Rechazado → Reasignado a ${res.nuevo_motorizado}`, "info"); }
       else { toast(res.mensaje || "Acción realizada", "success"); }
@@ -259,9 +270,12 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
             <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", marginTop: 4, textAlign: "center" }}>💡 El precio se calcula al marcar "En Camino"</div>
           ) : null}
           {hasDir && pedido.estado !== "entregado" && (() => {
-            const hasCoords = pedido.ubicacion_lat && pedido.ubicacion_lng && pedido.ubicacion_lat !== "" && pedido.ubicacion_lng !== "" && pedido.ubicacion_lat !== "undefined";
-            const mapCenter = hasCoords ? `${pedido.ubicacion_lat},${pedido.ubicacion_lng}` : encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador");
-            const markerPos = hasCoords ? `${pedido.ubicacion_lat},${pedido.ubicacion_lng}` : encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador");
+            const cleanC = (v) => { if (!v || v === "" || v === "undefined" || v === "null") return null; const n = parseFloat(String(v).trim()); return isNaN(n) ? null : n; };
+            let pLat = cleanC(pedido.ubicacion_lat), pLng = cleanC(pedido.ubicacion_lng);
+            if (pLat !== null && pLng !== null && !(pLat >= -2.0 && pLat <= -1.0 && pLng >= -79.5 && pLng <= -78.0)) { if (pLng >= -2.0 && pLng <= -1.0 && pLat >= -79.5 && pLat <= -78.0) { const t = pLat; pLat = pLng; pLng = t; } }
+            const hasCoords = pLat !== null && pLng !== null && pLat >= -2.0 && pLat <= -1.0;
+            const mapCenter = hasCoords ? `${pLat},${pLng}` : encodeURIComponent((pedido.direccion || "Riobamba") + ", Riobamba, Ecuador");
+            const markerPos = hasCoords ? `${pLat},${pLng}` : encodeURIComponent((pedido.direccion || "Riobamba") + ", Riobamba, Ecuador");
             const zoom = hasCoords ? 17 : 15;
             return (
             <div className="pedido-map" onClick={() => setShowMap(true)}>
@@ -275,7 +289,7 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
           <div className="pedido-actions">
             {(pedido.estado === "pendiente" || pedido.estado === "confirmado" || pedido.estado === "asignado") && <><button className="btn btn-primary btn-sm" onClick={() => handleAction("aceptar")} disabled={!!loadingAction}>{loadingAction === "aceptar" ? <div className="spinner spinner-sm" /> : <>{I.check} Aceptar</>}</button><button className="btn btn-danger btn-sm" onClick={() => onAction("rechazar", pedido)} disabled={!!loadingAction}>{I.x} Rechazar</button></>}
             {pedido.estado === "aceptado" && <><button className="btn btn-primary btn-sm" onClick={() => handleAction("en_camino")} disabled={!!loadingAction}>{loadingAction === "en_camino" ? <div className="spinner spinner-sm" /> : "🚀 En Camino"}</button>{hasDir && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setShowMap(true)} title="Ver mapa">{I.map}</button>}{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
-            {pedido.estado === "en_camino" && <><button className="btn btn-warning btn-sm" onClick={() => handleAction("llego")} disabled={!!loadingAction}>{loadingAction === "llego" ? <div className="spinner spinner-sm" /> : "📍 Llegué"}</button><button className="btn btn-primary btn-sm" onClick={() => handleAction("entregado")} disabled={!!loadingAction}>{loadingAction === "entregado" ? <div className="spinner spinner-sm" /> : <>{I.check} Entregado</>}</button>{hasDir && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => { const hasCoords = pedido.ubicacion_lat && pedido.ubicacion_lng && pedido.ubicacion_lat !== ""; const navUrl = hasCoords ? `https://www.google.com/maps/dir/?api=1&destination=${pedido.ubicacion_lat},${pedido.ubicacion_lng}&travelmode=driving` : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&travelmode=driving`; window.open(navUrl, '_blank'); }} title="Navegar">{I.nav}</button>}{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
+            {pedido.estado === "en_camino" && <><button className="btn btn-warning btn-sm" onClick={() => handleAction("llego")} disabled={!!loadingAction}>{loadingAction === "llego" ? <div className="spinner spinner-sm" /> : "📍 Llegué"}</button><button className="btn btn-primary btn-sm" onClick={() => handleAction("entregado")} disabled={!!loadingAction}>{loadingAction === "entregado" ? <div className="spinner spinner-sm" /> : <>{I.check} Entregado</>}</button>{hasDir && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => { const cleanC = (v) => { if (!v || v === "" || v === "undefined") return null; const n = parseFloat(String(v).trim()); return isNaN(n) ? null : n; }; let pLat = cleanC(pedido.ubicacion_lat), pLng = cleanC(pedido.ubicacion_lng); if (pLat !== null && pLng !== null && !(pLat >= -2.0 && pLat <= -1.0)) { if (pLng >= -2.0 && pLng <= -1.0) { const t = pLat; pLat = pLng; pLng = t; } } const hasCoords = pLat !== null && pLng !== null && pLat >= -2.0 && pLat <= -1.0; const navUrl = hasCoords ? `https://www.google.com/maps/dir/?api=1&destination=${pLat},${pLng}&travelmode=driving` : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&travelmode=driving`; window.open(navUrl, '_blank'); }} title="Navegar">{I.nav}</button>}{pedido.conversation_id && <button className="btn btn-ghost btn-sm btn-icon" onClick={() => onAction("chat", { conversation_id: pedido.conversation_id, cliente: pedido.cliente, pedido_id: pedido.pedido_id })}>{I.chat}</button>}</>}
           </div>
         )}
       </div>
@@ -398,13 +412,13 @@ function Dashboard({ user, onLogout, toast }) {
       const currentIds = new Set(nuevos.filter((p) => p.estado !== "entregado").map((p) => p.pedido_id));
       const prevIds = prevPedidoIdsRef.current;
       const brandNew = [...currentIds].filter((id) => !prevIds.has(id) && prevIds.size > 0);
-      if (brandNew.length > 0) { NotificationManager.notifyNewOrder(); toast(`🔔 ${brandNew.length} pedido${brandNew.length > 1 ? "s" : ""} nuevo${brandNew.length > 1 ? "s" : ""}!`, "new"); setNewPedidoIds(new Set(brandNew)); setTimeout(() => setNewPedidoIds(new Set()), 5000); }
+      if (brandNew.length > 0) { const firstNew = nuevos.find(p => brandNew.includes(p.pedido_id)); NotificationManager.notifyNewOrder(firstNew ? `${firstNew.cliente || 'Cliente'} - ${firstNew.detalle || firstNew.direccion || 'Nuevo pedido'}` : null); toast(`🔔 ${brandNew.length} pedido${brandNew.length > 1 ? "s" : ""} nuevo${brandNew.length > 1 ? "s" : ""}!`, "new"); setNewPedidoIds(new Set(brandNew)); setTimeout(() => setNewPedidoIds(new Set()), 5000); }
       prevPedidoIdsRef.current = currentIds;
       setPedidos(nuevos);
     }
     setLoading(false); setRefreshing(false);
   }, [user.motorizado_id, toast]);
-  useEffect(() => { cargarPedidos(true); intervalRef.current = setInterval(() => cargarPedidos(false), 12000); return () => clearInterval(intervalRef.current); }, [cargarPedidos]);
+  useEffect(() => { cargarPedidos(true); intervalRef.current = setInterval(() => cargarPedidos(false), 12000); if ('Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); } return () => clearInterval(intervalRef.current); }, [cargarPedidos]);
   const handleRefresh = () => { setRefreshing(true); cargarPedidos(false); };
   const handleAction = (action, data) => { if (action === "chat") setChatInfo(data); else if (action === "rechazar") setRejectPedido(data); else cargarPedidos(false); };
   if (showRanking) return <RankingScreen user={user} onBack={() => setShowRanking(false)} />;
