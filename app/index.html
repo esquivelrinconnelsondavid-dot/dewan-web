@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -522,8 +523,49 @@ function AlarmOverlay({ pedidos, onDismiss }) {
   );
 }
 
+// ─── Tarjeta de pedido DISPONIBLE (broadcast) ──────────────────────────────
+function DisponibleCard({ pedido, user, onAceptado, toast }) {
+  const [loading, setLoading] = useState(false);
+  const typeConfig = { pedido_comida: { icon: "🍽️", label: "Pedido de comida" }, encomienda: { icon: "📦", label: "Encomienda" }, compras_supermercado: { icon: "🛒", label: "Compras" }, compras: { icon: "🛒", label: "Compras" }, pagos: { icon: "💳", label: "Pago / Trámite" }, motorizado: { icon: "🏍️", label: "Motorizado" } };
+  const tc = typeConfig[pedido.intencion] || { icon: "📋", label: "Servicio" };
+  const handleAceptar = async () => {
+    setLoading(true);
+    const res = await apiCall(API.aceptar, { pedido_id: pedido.pedido_id, motorizado_id: user.motorizado_id });
+    if (res.ok) { toast("✅ ¡Pedido aceptado! Ya es tuyo.", "success"); onAceptado(); }
+    else { toast(res.error || "⚡ Ya fue tomado por otro motorizado", "error"); onAceptado(); }
+    setLoading(false);
+  };
+  return (
+    <div style={{ background: "linear-gradient(135deg, rgba(34,211,167,0.08), rgba(34,211,167,0.03))", border: "1.5px solid rgba(34,211,167,0.3)", borderRadius: "var(--radius)", padding: 0, overflow: "hidden", animation: "newPedido .5s ease-out" }}>
+      <div style={{ background: "rgba(34,211,167,0.1)", padding: "10px 16px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(34,211,167,0.15)" }}>
+        <span style={{ fontSize: 18 }}>📡</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: 1 }}>Disponible — Sé el primero</span>
+        <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>#{pedido.pedido_id}</span>
+      </div>
+      <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 22 }}>{tc.icon}</span>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)" }}>👤 {pedido.cliente}</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{tc.label}</div>
+          </div>
+        </div>
+        {pedido.direccion_retiro && <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>🏪 <strong>Retiro:</strong> {pedido.direccion_retiro}</div>}
+        {pedido.direccion && pedido.direccion !== "Sin dirección" && <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>📍 <strong>Entrega:</strong> {pedido.direccion}</div>}
+        {pedido.detalle && <div style={{ fontSize: 13, color: "var(--text-muted)", background: "var(--bg-input)", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid var(--accent-dim)" }}>📝 {pedido.detalle}</div>}
+      </div>
+      <div style={{ padding: "0 16px 16px" }}>
+        <button className="btn btn-primary btn-full" onClick={handleAceptar} disabled={loading} style={{ height: 48, fontSize: 15, fontWeight: 800 }}>
+          {loading ? <div className="spinner spinner-sm" /> : "🚀 ACEPTAR ESTE PEDIDO"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Dashboard({ user, onLogout, toast }) {
   const [pedidos, setPedidos] = useState([]);
+  const [disponibles, setDisponibles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("activos");
   const [chatInfo, setChatInfo] = useState(null);
@@ -533,7 +575,10 @@ function Dashboard({ user, onLogout, toast }) {
   const [newPedidoIds, setNewPedidoIds] = useState(new Set());
   const [alarmPedidos, setAlarmPedidos] = useState([]);
   const prevPedidoIdsRef = useRef(new Set());
+  const prevDispIdsRef = useRef(new Set());
   const intervalRef = useRef(null);
+  const wakeLockRef = useRef(null);
+  const keepaliveRef = useRef(null);
 
   // Desbloquear audio al primer toque
   useEffect(() => {
@@ -542,6 +587,48 @@ function Dashboard({ user, onLogout, toast }) {
     document.addEventListener('click', unlockAudio, { once: true });
     NotificationManager.init();
     return () => { document.removeEventListener('touchstart', unlockAudio); document.removeEventListener('click', unlockAudio); };
+  }, []);
+
+  // Wake Lock — mantiene la pantalla encendida
+  useEffect(() => {
+    const acquireWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLockRef.current = await navigator.wakeLock.request('screen');
+          console.log('[WAKELOCK] Pantalla bloqueada activa');
+          wakeLockRef.current.addEventListener('release', () => {
+            console.log('[WAKELOCK] Liberado, reintentando...');
+            setTimeout(acquireWakeLock, 3000);
+          });
+        }
+      } catch (e) { console.log('[WAKELOCK] No disponible:', e.message); }
+    };
+    acquireWakeLock();
+    const onVisChange = () => { if (document.visibilityState === 'visible') acquireWakeLock(); };
+    document.addEventListener('visibilitychange', onVisChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisChange);
+      if (wakeLockRef.current) { wakeLockRef.current.release().catch(() => {}); }
+    };
+  }, []);
+
+  // Audio keepalive cada 20s para mantener audio activo en móvil
+  useEffect(() => {
+    keepaliveRef.current = setInterval(() => {
+      if (NotificationManager._unlocked && !NotificationManager._playing) {
+        // Reproducir silencio corto para que el sistema no duerma el audio
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const buf = ctx.createBuffer(1, 1, 22050);
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          src.connect(ctx.destination);
+          src.start(0);
+          setTimeout(() => ctx.close().catch(() => {}), 200);
+        } catch(e) {}
+      }
+    }, 20000);
+    return () => clearInterval(keepaliveRef.current);
   }, []);
 
   const dismissAlarm = useCallback(() => {
@@ -553,14 +640,13 @@ function Dashboard({ user, onLogout, toast }) {
     if (showLoader) setLoading(true);
     const res = await apiCall(API.pedidos, { motorizado_id: user.motorizado_id });
     if (res.ok) {
+      // ─── Pedidos propios del motorizado ───
       const nuevos = res.pedidos || [];
       const currentIds = new Set(nuevos.filter((p) => p.estado !== "entregado").map((p) => p.pedido_id));
       const prevIds = prevPedidoIdsRef.current;
       const brandNew = [...currentIds].filter((id) => !prevIds.has(id) && prevIds.size > 0);
       if (brandNew.length > 0) {
-        // Encontrar los pedidos nuevos completos
         const pedidosNuevos = nuevos.filter(p => brandNew.includes(p.pedido_id));
-        // ALARMA FUERTE
         NotificationManager.startAlarm();
         setAlarmPedidos(pedidosNuevos);
         toast(`🔔 ${brandNew.length} pedido${brandNew.length > 1 ? "s" : ""} nuevo${brandNew.length > 1 ? "s" : ""}!`, "new");
@@ -569,10 +655,26 @@ function Dashboard({ user, onLogout, toast }) {
       }
       prevPedidoIdsRef.current = currentIds;
       setPedidos(nuevos);
+
+      // ─── Pedidos disponibles (broadcast) ───
+      const disp = res.disponibles || [];
+      const dispIds = new Set(disp.map(p => p.pedido_id));
+      const prevDisp = prevDispIdsRef.current;
+      const dispNuevos = [...dispIds].filter(id => !prevDisp.has(id) && prevDisp.size > 0);
+      if (dispNuevos.length > 0) {
+        // Alarma también para disponibles nuevos
+        const pedDisp = disp.filter(p => dispNuevos.includes(p.pedido_id));
+        NotificationManager.startAlarm();
+        setAlarmPedidos(pedDisp);
+        toast(`📡 ${dispNuevos.length} pedido${dispNuevos.length > 1 ? "s" : ""} disponible${dispNuevos.length > 1 ? "s" : ""}!`, "new");
+      }
+      prevDispIdsRef.current = dispIds;
+      setDisponibles(disp);
     }
     setLoading(false); setRefreshing(false);
   }, [user.motorizado_id, toast]);
-  useEffect(() => { cargarPedidos(true); intervalRef.current = setInterval(() => cargarPedidos(false), 8000); return () => clearInterval(intervalRef.current); }, [cargarPedidos]);
+
+  useEffect(() => { cargarPedidos(true); intervalRef.current = setInterval(() => cargarPedidos(false), 5000); return () => clearInterval(intervalRef.current); }, [cargarPedidos]);
   const handleRefresh = () => { setRefreshing(true); cargarPedidos(false); };
   const handleAction = (action, data) => { if (action === "chat") setChatInfo(data); else if (action === "rechazar") setRejectPedido(data); else cargarPedidos(false); };
   if (showRanking) return <RankingScreen user={user} onBack={() => setShowRanking(false)} />;
@@ -587,6 +689,24 @@ function Dashboard({ user, onLogout, toast }) {
       {alarmPedidos.length > 0 && <AlarmOverlay pedidos={alarmPedidos} onDismiss={dismissAlarm} />}
       <div className="header"><div className="header-left"><div className="header-avatar">🏍️</div><div><div className="header-title">{user.nombre}</div><div className="header-subtitle"><span className="status-dot" /> EN LÍNEA</div></div></div><div className="header-right"><button className="btn btn-ghost btn-icon" onClick={() => { NotificationManager.unlock(); NotificationManager.startAlarm(); setAlarmPedidos([{cliente:"TEST", detalle:"Prueba de alarma", direccion:"Test"}]); }} title="Probar alarma" style={{ color: "var(--warning)", fontSize: 14 }}>🔔</button><button className="btn btn-ghost btn-icon" onClick={handleRefresh} style={{ animation: refreshing ? "spin .6s linear infinite" : "none" }}>{I.refresh}</button><button className="btn btn-ghost btn-icon" onClick={() => { clearSession(); onLogout(); }} style={{ color: "var(--danger)" }}>{I.logout}</button></div></div>
       <div className="stats-row"><div className="stat-card"><div className="stat-number" style={{ color: "var(--accent)" }}>{pedidosActivos.length}</div><div className="stat-label">Activos</div></div><div className="stat-card"><div className="stat-number" style={{ color: "var(--warning)" }}>{pendientes}</div><div className="stat-label">Pendientes</div></div><div className="stat-card"><div className="stat-number" style={{ color: "var(--info)" }}>{enProceso}</div><div className="stat-label">En Proceso</div></div></div>
+
+      {/* ── SECCIÓN PEDIDOS DISPONIBLES (broadcast) ── */}
+      {disponibles.length > 0 && (
+        <div style={{ padding: "0 20px 4px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, marginTop: 4 }}>
+            <span style={{ fontSize: 18, animation: "pulse 1s infinite" }}>📡</span>
+            <span style={{ fontWeight: 700, fontSize: 14, color: "var(--accent)" }}>Pedidos Disponibles</span>
+            <span style={{ marginLeft: "auto", background: "var(--accent)", color: "var(--bg-primary)", fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 10, fontFamily: "var(--font-mono)" }}>{disponibles.length}</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {disponibles.map(p => (
+              <DisponibleCard key={p.pedido_id} pedido={p} user={user} onAceptado={() => cargarPedidos(false)} toast={toast} />
+            ))}
+          </div>
+          <div style={{ height: 1, background: "var(--border)", margin: "16px 0 4px" }} />
+        </div>
+      )}
+
       <div className="tabs">
         <button className={`tab ${tab === "activos" ? "active" : ""}`} onClick={() => setTab("activos")}>{I.pkg} Activos {pedidosActivos.length > 0 && <span className="tab-badge">{pedidosActivos.length}</span>}</button>
         <button className={`tab ${tab === "historial" ? "active" : ""}`} onClick={() => setTab("historial")}>{I.history} Historial {pedidosHistorial.length > 0 && <span className="tab-badge" style={{ background: "var(--text-muted)", color: "var(--bg-primary)" }}>{pedidosHistorial.length}</span>}</button>
