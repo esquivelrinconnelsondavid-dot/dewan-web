@@ -1,4 +1,3 @@
-
 // DEWAN - Service Worker v5 - ALARMA EN PUSH
 const SW_VERSION = 'v5';
 
