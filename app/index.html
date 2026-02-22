@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -580,6 +579,18 @@ function Dashboard({ user, onLogout, toast }) {
   const wakeLockRef = useRef(null);
   const keepaliveRef = useRef(null);
 
+  // Escuchar push notifications del SW cuando la app está abierta
+  useEffect(() => {
+    const handler = (event) => {
+      const pedido = event.detail;
+      NotificationManager.startAlarm();
+      setAlarmPedidos([pedido]);
+      toast('🔔 ¡Nuevo pedido via push!', 'new');
+    };
+    window.addEventListener('dewan-push-pedido', handler);
+    return () => window.removeEventListener('dewan-push-pedido', handler);
+  }, [toast]);
+
   // Desbloquear audio al primer toque
   useEffect(() => {
     const unlockAudio = () => { NotificationManager.init(); NotificationManager.unlock(); document.removeEventListener('touchstart', unlockAudio); document.removeEventListener('click', unlockAudio); };
@@ -726,6 +737,32 @@ function App() {
   const [toasts, setToasts] = useState([]);
   const addToast = useCallback((message, type = "info") => { const id = Date.now(); setToasts((prev) => [...prev, { id, message, type }]); setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000); }, []);
   useEffect(() => { if (user?.motorizado_id) { registerPushNotifications(user.motorizado_id); } }, [user]);
+
+  // Escuchar mensajes del Service Worker (push notifications cuando app está abierta)
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+    const handler = (event) => {
+      const msg = event.data;
+      if (!msg) return;
+      if (msg.type === 'NUEVO_PEDIDO_PUSH') {
+        // Push llegó mientras la app está abierta — activar alarma visual + sonido
+        NotificationManager.init();
+        NotificationManager.startAlarm();
+        const pedidoPush = {
+          cliente: msg.cliente || 'Cliente',
+          detalle: msg.detalle || '',
+          direccion: msg.direccion || '',
+          direccion_retiro: msg.direccion_retiro || '',
+          pedido_id: msg.pedido_id
+        };
+        // Disparar el overlay de alarma en el Dashboard si está montado
+        window.__dewanPushPedido = pedidoPush;
+        window.dispatchEvent(new CustomEvent('dewan-push-pedido', { detail: pedidoPush }));
+      }
+    };
+    navigator.serviceWorker.addEventListener('message', handler);
+    return () => navigator.serviceWorker.removeEventListener('message', handler);
+  }, []);
   return (
     <>
       <style>{globalStyles}</style>
