@@ -308,35 +308,62 @@ function LoginScreen({ onLogin, toast }) {
   );
 }
 
-function MapModal({ direccion, lat, lng, direccionRetiro, onClose }) {
-  const hasCoords = lat && lng && lat !== "" && lng !== "" && lat !== "undefined" && lng !== "undefined";
-  const coordStr = hasCoords ? `${lat},${lng}` : null;
-  const encoded = hasCoords ? coordStr : encodeURIComponent(direccion + ", Riobamba, Ecuador");
-  const mapUrl = hasCoords
-    ? `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${lat},${lng}&zoom=17`
-    : `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&zoom=16`;
-  const navUrl = hasCoords
-    ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
-    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&travelmode=driving`;
-  const wazeUrl = hasCoords
-    ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`
-    : `https://waze.com/ul?q=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&navigate=yes`;
+function MapModal({ direccion, lat, lng, direccionRetiro, retiroLat, retiroLng, onClose }) {
+  const hasEntregaCoords = lat && lng && lat !== "" && lng !== "" && lat !== "undefined";
+  const hasRetiroCoords = retiroLat && retiroLng && retiroLat !== "" && retiroLng !== "" && retiroLat !== "undefined";
+  const hasBoth = hasRetiroCoords && (hasEntregaCoords || (direccion && direccion !== "Sin dirección"));
+  const [mapTab, setMapTab] = useState(hasBoth ? "retiro" : "entrega");
+
+  const getMapData = (tab) => {
+    if (tab === "retiro" && hasRetiroCoords) {
+      return {
+        label: "Retiro", icon: "🏪", color: "#3b82f6",
+        mapUrl: `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${retiroLat},${retiroLng}&zoom=17`,
+        navUrl: `https://www.google.com/maps/dir/?api=1&destination=${retiroLat},${retiroLng}&travelmode=driving`,
+        wazeUrl: `https://waze.com/ul?ll=${retiroLat},${retiroLng}&navigate=yes`,
+        dir: direccionRetiro || "Punto de retiro", coordStr: `${Number(retiroLat).toFixed(6)}, ${Number(retiroLng).toFixed(6)}`, hasGPS: true
+      };
+    }
+    const hc = hasEntregaCoords;
+    return {
+      label: "Entrega", icon: "📍", color: "#22d3a7",
+      mapUrl: hc ? `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${lat},${lng}&zoom=17`
+        : `https://www.google.com/maps/embed/v1/place?key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs&q=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&zoom=16`,
+      navUrl: hc ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
+        : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&travelmode=driving`,
+      wazeUrl: hc ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`
+        : `https://waze.com/ul?q=${encodeURIComponent(direccion + ", Riobamba, Ecuador")}&navigate=yes`,
+      dir: direccion || "Punto de entrega", coordStr: hc ? `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}` : null, hasGPS: hc
+    };
+  };
+  const d = getMapData(mapTab);
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal map-modal" onClick={(e) => e.stopPropagation()}>
         <div className="map-modal-header">
-          <div>
-            <h3 style={{ fontSize: 15 }}>📍 Entrega: {direccion}</h3>
-            {direccionRetiro && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>📦 Retiro: {direccionRetiro}</div>}
-            {hasCoords && <div style={{ fontSize: 10, color: "var(--accent)", marginTop: 2, fontFamily: "var(--font-mono)" }}>GPS: {Number(lat).toFixed(6)}, {Number(lng).toFixed(6)}</div>}
-            {!hasCoords && <div style={{ fontSize: 10, color: "var(--warning)", marginTop: 2 }}>⚠️ Sin GPS, ubicación aproximada por texto</div>}
+          <div style={{ flex: 1 }}>
+            {hasBoth ? (
+              <div>
+                <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+                  <button onClick={() => setMapTab("retiro")} style={{ flex: 1, padding: "9px 8px", border: mapTab === "retiro" ? "1.5px solid #3b82f6" : "1.5px solid var(--border-light)", borderRadius: 10, background: mapTab === "retiro" ? "rgba(59,130,246,0.15)" : "transparent", color: mapTab === "retiro" ? "#60a5fa" : "var(--text-muted)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>🏪 Retiro</button>
+                  <button onClick={() => setMapTab("entrega")} style={{ flex: 1, padding: "9px 8px", border: mapTab === "entrega" ? "1.5px solid #22d3a7" : "1.5px solid var(--border-light)", borderRadius: 10, background: mapTab === "entrega" ? "rgba(34,211,167,0.12)" : "transparent", color: mapTab === "entrega" ? "#22d3a7" : "var(--text-muted)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>📍 Entrega</button>
+                  {hasEntregaCoords && <button onClick={() => setMapTab("ruta")} style={{ flex: 1, padding: "9px 8px", border: mapTab === "ruta" ? "1.5px solid #c6e23a" : "1.5px solid var(--border-light)", borderRadius: 10, background: mapTab === "ruta" ? "rgba(198,226,58,0.12)" : "transparent", color: mapTab === "ruta" ? "#c6e23a" : "var(--text-muted)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font)", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>🗺️ Ruta</button>}
+                </div>
+                <h3 style={{ fontSize: 14 }}>{d.icon} {d.label}: {d.dir}</h3>
+              </div>
+            ) : (
+              <h3 style={{ fontSize: 15 }}>{d.icon} {d.label}: {d.dir}</h3>
+            )}
+            {d.hasGPS && <div style={{ fontSize: 10, color: d.color, marginTop: 3, fontFamily: "var(--font-mono)" }}>GPS: {d.coordStr}</div>}
+            {!d.hasGPS && <div style={{ fontSize: 10, color: "var(--warning)", marginTop: 3 }}>⚠️ Sin GPS, ubicación aproximada</div>}
           </div>
           <button className="btn btn-ghost btn-icon" onClick={onClose} style={{ width: 32, height: 32, flexShrink: 0 }}>{I.x}</button>
         </div>
-        <iframe className="map-frame" src={mapUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+        <iframe className="map-frame" src={d.mapUrl} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" key={mapTab} />
         <div className="map-modal-actions" style={{ flexDirection: "column", gap: 8 }}>
-          <a href={navUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm btn-full" style={{ textDecoration: "none" }}>{I.nav} Navegar con Google Maps</a>
-          <a href={wazeUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm btn-full" style={{ textDecoration: "none", color: "var(--info)" }}>🗺️ Abrir en Waze</a>
+          <a href={d.navUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-sm btn-full" style={{ textDecoration: "none" }}>{I.nav} Navegar al {d.label.toLowerCase()}</a>
+          <a href={d.wazeUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm btn-full" style={{ textDecoration: "none", color: "var(--info)" }}>🗺️ Abrir en Waze</a>
         </div>
       </div>
     </div>
@@ -376,7 +403,31 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
         </div>
         <div className="pedido-card-body">
           <div className="pedido-row"><span className="pedido-row-icon">👤</span><span><strong>{pedido.cliente}</strong> {pedido.telefono && <span style={{ color: "var(--text-muted)", fontSize: 12 }}>{pedido.telefono}</span>}</span></div>
-          {pedido.direccion_retiro && <div className="pedido-row"><span className="pedido-row-icon" style={{ color: "var(--info)" }}>📍</span><span><strong>Retiro:</strong> {pedido.direccion_retiro}</span></div>}
+          {pedido.direccion_retiro && (
+            <div>
+              <div className="pedido-row"><span className="pedido-row-icon" style={{ color: "var(--info)" }}>🏪</span><span><strong>Retiro:</strong> {pedido.direccion_retiro}</span></div>
+              {pedido.retiro_lat && pedido.retiro_lng && pedido.retiro_lat !== "" && pedido.retiro_lng !== "" && (() => {
+                const retiroNavUrl = `https://www.google.com/maps/dir/?api=1&destination=${pedido.retiro_lat},${pedido.retiro_lng}&travelmode=driving`;
+                const retiroWazeUrl = `https://waze.com/ul?ll=${pedido.retiro_lat},${pedido.retiro_lng}&navigate=yes`;
+                const retiroMapImg = `https://maps.googleapis.com/maps/api/staticmap?center=${pedido.retiro_lat},${pedido.retiro_lng}&zoom=17&size=600x160&scale=2&maptype=roadmap&style=feature:all|element:geometry|color:0x111827&style=feature:all|element:labels.text.fill|color:0x8b9bb4&style=feature:water|color:0x0c1018&style=feature:road|element:geometry|color:0x1e293b&markers=color:0x3b82f6|${pedido.retiro_lat},${pedido.retiro_lng}&key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs`;
+                return (
+                  <div style={{ marginTop: 6, marginLeft: 30 }}>
+                    <div style={{ height: 100, borderRadius: 10, overflow: "hidden", border: "1.5px solid rgba(59,130,246,0.25)", position: "relative", cursor: "pointer" }} onClick={() => window.open(retiroNavUrl, '_blank')}>
+                      <img src={retiroMapImg} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => e.target.style.display="none"} alt="Mapa retiro" />
+                      <div style={{ position: "absolute", top: 6, left: 8, background: "rgba(59,130,246,0.9)", padding: "3px 8px", borderRadius: 6, fontSize: 10, color: "#fff", fontWeight: 700, letterSpacing: 0.5 }}>① RETIRO</div>
+                      <div style={{ position: "absolute", bottom: 6, right: 6, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)", padding: "4px 10px", borderRadius: 16, fontSize: 11, color: "#60a5fa", fontWeight: 600, border: "1px solid rgba(59,130,246,0.3)", display: "flex", gap: 4, alignItems: "center" }}>
+                        🗺️ Ir al retiro
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 5, marginTop: 5 }}>
+                      <a href={retiroNavUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "6px 8px", background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 8, fontSize: 11, color: "#60a5fa", fontWeight: 600, textDecoration: "none", textAlign: "center" }}>📍 Maps</a>
+                      <a href={retiroWazeUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "6px 8px", background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 8, fontSize: 11, color: "#60a5fa", fontWeight: 600, textDecoration: "none", textAlign: "center" }}>🗺️ Waze</a>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
           {hasDir && <div className="pedido-row"><span className="pedido-row-icon" style={{ color: "var(--accent)" }}>📍</span><span><strong>Entrega:</strong> {pedido.direccion}</span></div>}
           {pedido.detalle && <div className="pedido-detail">📝 {pedido.detalle}</div>}
           {precioInfo ? (
@@ -401,10 +452,22 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
             const mapCenter = hasCoords ? `${pedido.ubicacion_lat},${pedido.ubicacion_lng}` : encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador");
             const markerPos = hasCoords ? `${pedido.ubicacion_lat},${pedido.ubicacion_lng}` : encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador");
             const zoom = hasCoords ? 17 : 15;
+            const entregaNavUrl = hasCoords ? `https://www.google.com/maps/dir/?api=1&destination=${pedido.ubicacion_lat},${pedido.ubicacion_lng}&travelmode=driving` : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&travelmode=driving`;
+            const entregaWazeUrl = hasCoords ? `https://waze.com/ul?ll=${pedido.ubicacion_lat},${pedido.ubicacion_lng}&navigate=yes` : `https://waze.com/ul?q=${encodeURIComponent(pedido.direccion + ", Riobamba, Ecuador")}&navigate=yes`;
+            const hasRetiro = pedido.retiro_lat && pedido.retiro_lng && pedido.retiro_lat !== "";
             return (
-            <div className="pedido-map" onClick={() => setShowMap(true)}>
-              <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${mapCenter}&zoom=${zoom}&size=600x200&scale=2&maptype=roadmap&style=feature:all|element:geometry|color:0x1a1a2e&style=feature:all|element:labels.text.fill|color:0x8b9bb4&style=feature:water|color:0x0c1018&style=feature:road|element:geometry|color:0x2a2a4a&markers=color:0x22d3a7|${markerPos}&key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs`} alt="Mapa" onError={(e) => { e.target.style.display = "none"; }} />
-              <div className="pedido-map-overlay">{I.nav} Ver mapa {hasCoords && <span style={{ fontSize: 9, opacity: 0.7 }}>GPS</span>}</div>
+            <div>
+              <div className="pedido-map" onClick={() => setShowMap(true)} style={{ position: "relative" }}>
+                <img src={`https://maps.googleapis.com/maps/api/staticmap?center=${mapCenter}&zoom=${zoom}&size=600x200&scale=2&maptype=roadmap&style=feature:all|element:geometry|color:0x1a1a2e&style=feature:all|element:labels.text.fill|color:0x8b9bb4&style=feature:water|color:0x0c1018&style=feature:road|element:geometry|color:0x2a2a4a&markers=color:0x22d3a7|${markerPos}&key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs`} alt="Mapa" onError={(e) => { e.target.style.display = "none"; }} />
+                {hasRetiro && <div style={{ position: "absolute", top: 6, left: 8, background: "rgba(34,211,167,0.9)", padding: "3px 8px", borderRadius: 6, fontSize: 10, color: "#000", fontWeight: 700, letterSpacing: 0.5 }}>② ENTREGA</div>}
+                <div className="pedido-map-overlay">{I.nav} Ver mapa {hasCoords && <span style={{ fontSize: 9, opacity: 0.7 }}>GPS</span>}</div>
+              </div>
+              {hasRetiro && (
+                <div style={{ display: "flex", gap: 5, marginTop: 5 }}>
+                  <a href={entregaNavUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "6px 8px", background: "rgba(34,211,167,0.08)", border: "1px solid rgba(34,211,167,0.2)", borderRadius: 8, fontSize: 11, color: "#22d3a7", fontWeight: 600, textDecoration: "none", textAlign: "center" }}>📍 Maps entrega</a>
+                  <a href={entregaWazeUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "6px 8px", background: "rgba(34,211,167,0.08)", border: "1px solid rgba(34,211,167,0.2)", borderRadius: 8, fontSize: 11, color: "#22d3a7", fontWeight: 600, textDecoration: "none", textAlign: "center" }}>🗺️ Waze entrega</a>
+                </div>
+              )}
             </div>
             );
           })()}
@@ -417,7 +480,7 @@ function PedidoCard({ pedido, user, onAction, toast, isNew }) {
           </div>
         )}
       </div>
-      {showMap && hasDir && <MapModal direccion={pedido.direccion} lat={pedido.ubicacion_lat} lng={pedido.ubicacion_lng} direccionRetiro={pedido.direccion_retiro} onClose={() => setShowMap(false)} />}
+      {showMap && hasDir && <MapModal direccion={pedido.direccion} lat={pedido.ubicacion_lat} lng={pedido.ubicacion_lng} direccionRetiro={pedido.direccion_retiro} retiroLat={pedido.retiro_lat} retiroLng={pedido.retiro_lng} onClose={() => setShowMap(false)} />}
     </>
   );
 }
@@ -579,8 +642,39 @@ function DisponibleCard({ pedido, user, onAceptado, toast }) {
             <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{tc.label}</div>
           </div>
         </div>
-        {pedido.direccion_retiro && <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>🏪 <strong>Retiro:</strong> {pedido.direccion_retiro}</div>}
-        {pedido.direccion && pedido.direccion !== "Sin dirección" && <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>📍 <strong>Entrega:</strong> {pedido.direccion}</div>}
+        {pedido.direccion_retiro && (
+        <div>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>🏪 <strong>Retiro:</strong> {pedido.direccion_retiro}</div>
+          {pedido.retiro_lat && pedido.retiro_lng && pedido.retiro_lat !== "" && (() => {
+            const retiroNavUrl = `https://www.google.com/maps/dir/?api=1&destination=${pedido.retiro_lat},${pedido.retiro_lng}&travelmode=driving`;
+            const retiroMapImg = `https://maps.googleapis.com/maps/api/staticmap?center=${pedido.retiro_lat},${pedido.retiro_lng}&zoom=16&size=400x100&scale=2&maptype=roadmap&style=feature:all|element:geometry|color:0x111827&style=feature:road|element:geometry|color:0x1e293b&style=feature:all|element:labels.text.fill|color:0x8b9bb4&style=feature:water|color:0x0c1018&markers=color:0x3b82f6|${pedido.retiro_lat},${pedido.retiro_lng}&key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs`;
+            return (
+              <div style={{ marginTop: 5 }}>
+                <div style={{ height: 70, borderRadius: 8, overflow: "hidden", border: "1px solid rgba(59,130,246,0.2)", position: "relative", cursor: "pointer" }} onClick={() => window.open(retiroNavUrl, '_blank')}>
+                  <img src={retiroMapImg} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => e.target.style.display="none"} alt="Retiro" />
+                  <div style={{ position: "absolute", top: 4, left: 6, background: "rgba(59,130,246,0.9)", padding: "2px 7px", borderRadius: 5, fontSize: 9, color: "#fff", fontWeight: 700 }}>① RETIRO</div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+        {pedido.direccion && pedido.direccion !== "Sin dirección" && (
+          <div>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>📍 <strong>Entrega:</strong> {pedido.direccion}</div>
+            {pedido.ubicacion_lat && pedido.ubicacion_lng && pedido.ubicacion_lat !== "" && pedido.retiro_lat && pedido.retiro_lng && (() => {
+              const entregaMapImg = `https://maps.googleapis.com/maps/api/staticmap?center=${pedido.ubicacion_lat},${pedido.ubicacion_lng}&zoom=16&size=400x100&scale=2&maptype=roadmap&style=feature:all|element:geometry|color:0x111827&style=feature:road|element:geometry|color:0x1e293b&style=feature:all|element:labels.text.fill|color:0x8b9bb4&style=feature:water|color:0x0c1018&markers=color:0x22d3a7|${pedido.ubicacion_lat},${pedido.ubicacion_lng}&key=AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs`;
+              return (
+                <div style={{ marginTop: 5 }}>
+                  <div style={{ height: 70, borderRadius: 8, overflow: "hidden", border: "1px solid rgba(34,211,167,0.2)", position: "relative" }}>
+                    <img src={entregaMapImg} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => e.target.style.display="none"} alt="Entrega" />
+                    <div style={{ position: "absolute", top: 4, left: 6, background: "rgba(34,211,167,0.9)", padding: "2px 7px", borderRadius: 5, fontSize: 9, color: "#000", fontWeight: 700 }}>② ENTREGA</div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
         {pedido.detalle && <div style={{ fontSize: 13, color: "var(--text-muted)", background: "var(--bg-input)", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid var(--accent-dim)" }}>📝 {pedido.detalle}</div>}
       </div>
       <div style={{ padding: "0 16px 16px" }}>
