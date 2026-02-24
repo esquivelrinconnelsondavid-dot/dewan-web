@@ -1,5 +1,6 @@
+
 // DEWAN - Service Worker v5 - ALARMA EN PUSH
-const SW_VERSION = 'v5';
+const SW_VERSION = 'v6';
 
 // ─── Generar WAV de alarma (mismo que la app) ────────────────────────────────
 function makeAlarmWavBase64() {
@@ -86,6 +87,7 @@ self.addEventListener('push', function(event) {
     requireInteraction: true,
     renotify: true,
     silent: false,
+    urgency: 'high',
     tag: 'dewan-pedido-' + (data.pedido_id || Date.now()),
     data: { pedido_id: data.pedido_id, url: '/app' },
     actions: [
