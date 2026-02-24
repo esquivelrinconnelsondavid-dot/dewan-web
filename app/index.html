@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -857,6 +858,17 @@ function App() {
   const [toasts, setToasts] = useState([]);
   const addToast = useCallback((message, type = "info") => { const id = Date.now(); setToasts((prev) => [...prev, { id, message, type }]); setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000); }, []);
   useEffect(() => { if (user?.motorizado_id) { registerPushNotifications(user.motorizado_id); } }, [user]);
+
+  // Al abrir la app, verificar si hay pedido push pendiente (llegó mientras estaba cerrada)
+  useEffect(() => {
+    if (window.__dewanPushPedido) {
+      const pedidoPush = window.__dewanPushPedido;
+      window.__dewanPushPedido = null;
+      NotificationManager.init();
+      NotificationManager.startAlarm();
+      window.dispatchEvent(new CustomEvent('dewan-push-pedido', { detail: pedidoPush }));
+    }
+  }, []);
 
   // Escuchar mensajes del Service Worker (push notifications cuando app está abierta)
   useEffect(() => {
