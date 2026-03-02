@@ -1,0 +1,42 @@
+name: Deploy DEWAN Motorizado
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'src/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy al servidor via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASS }}
+          port: 22
+          script: |
+            set -e
+            mkdir -p /usr/share/nginx/html/app/assets
+
+            # Descargar archivos actualizados desde GitHub
+            wget -q -O /usr/share/nginx/html/app/index.html \
+              https://raw.githubusercontent.com/esquivelrinconnelsondavid-dot/dewan-web/main/app/index.html
+
+            wget -q -O /usr/share/nginx/html/app/sw.js \
+              https://raw.githubusercontent.com/esquivelrinconnelsondavid-dot/dewan-web/main/app/sw.js
+
+            # Descargar el JS compilado (busca el archivo en assets/)
+            JS_FILE=$(curl -s https://api.github.com/repos/esquivelrinconnelsondavid-dot/dewan-web/contents/app/assets \
+              | grep '"name"' | grep '\.js"' | head -1 | cut -d'"' -f4)
+
+            wget -q -O /usr/share/nginx/html/app/assets/${JS_FILE} \
+              https://raw.githubusercontent.com/esquivelrinconnelsondavid-dot/dewan-web/main/app/assets/${JS_FILE}
+
+            echo "✅ Deploy completado: ${JS_FILE}"
