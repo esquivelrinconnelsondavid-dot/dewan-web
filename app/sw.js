@@ -1,45 +1,53 @@
 
-// DEWAN - Service Worker v5 - ALARMA EN PUSH
-const SW_VERSION = 'v6';
+// DEWAN - Service Worker v7 - OPTIMIZADO
+const SW_VERSION = 'v7';
 
-// ─── Generar WAV de alarma (mismo que la app) ────────────────────────────────
-function makeAlarmWavBase64() {
+// ─── CACHE: WAV pregenerado (evita recalcular 220K muestras en cada push) ────
+let _cachedWavBuffer = null;
+
+function getAlarmWavBuffer() {
+  if (_cachedWavBuffer) return _cachedWavBuffer;
+
   const sr = 22050, dur = 5, n = sr * dur;
   const buf = new ArrayBuffer(44 + n * 2);
   const v = new DataView(buf);
-  const wr = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  const wr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+
   wr(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true);
   wr(8, 'WAVE'); wr(12, 'fmt ');
   v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
   v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true);
   v.setUint16(32, 2, true); v.setUint16(34, 16, true);
   wr(36, 'data'); v.setUint32(40, n * 2, true);
+
+  // Precalcular constantes fuera del loop
+  const TWO_PI = 2 * Math.PI;
+  const freqMod = TWO_PI * 3;
+  const beatMod = TWO_PI * 4;
+
   for (let i = 0; i < n; i++) {
     const t = i / sr;
-    const freq = 1050 + 350 * Math.sin(2 * Math.PI * 3 * t);
-    const wave = Math.sin(2 * Math.PI * freq * t);
-    const beat = Math.sin(2 * Math.PI * 4 * t) > 0 ? 1.0 : 0.15;
-    const harmonic = Math.sin(2 * Math.PI * freq * 2 * t) * 0.3;
+    const freq = 1050 + 350 * Math.sin(freqMod * t);
+    const wave = Math.sin(TWO_PI * freq * t);
+    const beat = Math.sin(beatMod * t) > 0 ? 1.0 : 0.15;
+    const harmonic = Math.sin(TWO_PI * freq * 2 * t) * 0.3;
     const sample = (wave + harmonic) * beat * 0.95;
     v.setInt16(44 + i * 2, Math.max(-32768, Math.min(32767, sample * 32767)), true);
   }
-  const bytes = new Uint8Array(buf);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return 'data:audio/wav;base64,' + btoa(bin);
+
+  // Cachear el ArrayBuffer directamente — sin conversion a base64
+  _cachedWavBuffer = buf;
+  return buf;
 }
 
-// ─── Reproducir alarma en el SW usando AudioContext ──────────────────────────
+// ─── Reproducir alarma directo desde ArrayBuffer (sin base64 intermedio) ─────
 async function playAlarmInSW() {
   try {
-    // Método 1: usar AudioContext en el SW (funciona en Chrome Android)
-    const wavBase64 = makeAlarmWavBase64();
-    const wavData = atob(wavBase64.split(',')[1]);
-    const bytes = new Uint8Array(wavData.length);
-    for (let i = 0; i < wavData.length; i++) bytes[i] = wavData.charCodeAt(i);
-
+    const wavBuffer = getAlarmWavBuffer();
+    // Clonar buffer porque decodeAudioData lo consume
+    const clone = wavBuffer.slice(0);
     const ctx = new AudioContext();
-    const decoded = await ctx.decodeAudioData(bytes.buffer);
+    const decoded = await ctx.decodeAudioData(clone);
     const source = ctx.createBufferSource();
     source.buffer = decoded;
     source.connect(ctx.destination);
@@ -52,7 +60,7 @@ async function playAlarmInSW() {
   }
 }
 
-// ─── PUSH: recibir notificación del servidor ─────────────────────────────────
+// ─── PUSH: notificacion + alarma en paralelo (sin bloqueo mutuo) ─────────────
 self.addEventListener('push', function(event) {
   let data = {
     title: '🔔 NUEVO PEDIDO DEWAN',
@@ -72,7 +80,6 @@ self.addEventListener('push', function(event) {
     try { data.body = event.data.text(); } catch(e2) {}
   }
 
-  // Construir cuerpo de notificación con detalles del pedido
   const bodyLines = [];
   if (data.cliente) bodyLines.push('👤 ' + data.cliente);
   if (data.detalle) bodyLines.push('📝 ' + data.detalle);
@@ -96,62 +103,105 @@ self.addEventListener('push', function(event) {
     ]
   };
 
+  // Notificacion visual PRIMERO (critica), alarma y mensaje en paralelo sin bloquear
+  const messagePayload = {
+    type: 'NUEVO_PEDIDO_PUSH',
+    pedido_id: data.pedido_id,
+    cliente: data.cliente,
+    detalle: data.detalle,
+    direccion: data.direccion,
+    direccion_retiro: data.direccion_retiro || ''
+  };
+
   event.waitUntil(
-    Promise.all([
-      // 1. Mostrar notificación visual
-      self.registration.showNotification(data.title, notifOptions),
-
-      // 2. Intentar reproducir alarma en el SW
-      playAlarmInSW(),
-
-      // 3. Enviar mensaje a la app si está abierta (para activar alarma visual)
-      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list) {
-        for (const client of list) {
-          client.postMessage({
-            type: 'NUEVO_PEDIDO_PUSH',
-            pedido_id: data.pedido_id,
-            cliente: data.cliente,
-            detalle: data.detalle,
-            direccion: data.direccion,
-            direccion_retiro: data.direccion_retiro || ''
-          });
-        }
-      })
-    ])
+    // La notificacion es lo mas importante — no debe fallar por la alarma
+    self.registration.showNotification(data.title, notifOptions).then(() =>
+      // Despues de mostrar notificacion, alarma y mensajes en paralelo
+      Promise.allSettled([
+        playAlarmInSW(),
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list) {
+          for (const client of list) {
+            client.postMessage(messagePayload);
+          }
+        })
+      ])
+    )
   );
 });
 
-// ─── CLICK en notificación ───────────────────────────────────────────────────
+// ─── CLICK en notificacion ───────────────────────────────────────────────────
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   if (event.action === 'cerrar') return;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list) {
-      // Si la app ya está abierta, enfocarla
       for (const c of list) {
         if (c.url.includes('/app') && 'focus' in c) {
           c.postMessage({ type: 'ABRIR_PEDIDO', pedido_id: event.notification.data?.pedido_id });
           return c.focus();
         }
       }
-      // Si no está abierta, abrirla
       return clients.openWindow('/app');
     })
   );
 });
 
-// ─── INSTALL / ACTIVATE ──────────────────────────────────────────────────────
+// ─── INSTALL / ACTIVATE con precache de recursos criticos ────────────────────
+const CACHE_NAME = 'dewan-v7';
+const PRECACHE_URLS = [
+  '/app/',
+  '/app/icon-192.png',
+  '/app/icon-72.png'
+];
+
 self.addEventListener('install', function(event) {
   console.log('[SW] ' + SW_VERSION + ' instalado');
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.addAll(PRECACHE_URLS).catch(function() {
+        console.log('[SW] Precache parcial - algunos recursos no disponibles offline');
+      });
+    }).then(function() {
+      return self.skipWaiting();
+    })
+  );
 });
 
 self.addEventListener('activate', function(event) {
   console.log('[SW] ' + SW_VERSION + ' activado');
   event.waitUntil(
     caches.keys().then(function(names) {
-      return Promise.all(names.map(function(n) { return caches.delete(n); }));
-    }).then(function() { return clients.claim(); })
+      return Promise.all(
+        names.filter(function(n) { return n !== CACHE_NAME; })
+             .map(function(n) { return caches.delete(n); })
+      );
+    }).then(function() {
+      // Pregenerar WAV en activate (cuando hay tiempo idle)
+      getAlarmWavBuffer();
+      return clients.claim();
+    })
+  );
+});
+
+// ─── FETCH: Network-first con fallback a cache (para PWA offline) ────────────
+self.addEventListener('fetch', function(event) {
+  // Solo cachear GET requests de recursos propios
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin !== location.origin) return;
+
+  event.respondWith(
+    fetch(event.request).then(function(response) {
+      if (response.ok) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(event.request, clone);
+        });
+      }
+      return response;
+    }).catch(function() {
+      return caches.match(event.request);
+    })
   );
 });
