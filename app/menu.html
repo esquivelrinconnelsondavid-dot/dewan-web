@@ -225,18 +225,62 @@
             }).catch(function(){showError('Error de conexion','No pudimos cargar los datos.')});
         }
 
-        // ── Filtrar productos por búsqueda ──
+        // ── Haversine para calcular distancias client-side ──
+        function haversine(lat1,lng1,lat2,lng2){
+            var R=6371;var dLat=(lat2-lat1)*Math.PI/180;var dLng=(lng2-lng1)*Math.PI/180;
+            var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+            return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        }
+
+        // ── Recalcular distancias con GPS del cliente ──
+        function recalcDistances(rests){
+            if(!window._clientGPS) return rests;
+            var TARIFA_BASE=1.50,PRECIO_KM=0.60;
+            return rests.map(function(r){
+                var copy={nombre:r.nombre,productos:r.productos,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng};
+                if(r.restaurante_lat&&r.restaurante_lng){
+                    var dist=haversine(window._clientGPS.lat,window._clientGPS.lng,parseFloat(r.restaurante_lat),parseFloat(r.restaurante_lng));
+                    copy.distancia_km=Math.round(dist*10)/10;
+                    copy.tiempo_estimado_min=Math.ceil(10+dist*3);
+                    copy.precio_delivery=Math.round((TARIFA_BASE+Math.max(0,dist-0.5)*PRECIO_KM)*100)/100;
+                }
+                return copy;
+            });
+        }
+
+        // ── Filtrar productos por búsqueda (inteligente) ──
         function getFilteredRestaurantes(){
             var rests=sessionData.resultados||[];
+            rests=recalcDistances(rests);
             var busq=(sessionData.busqueda_texto||'').toLowerCase().trim();
             if(!busq||busq==='comida'||busq==='menu'||busq==='todo') return rests;
+
+            // Verificar si la búsqueda es un nombre de restaurante
+            var esRestaurante=rests.some(function(r){
+                var rn=(r.nombre||'').toLowerCase();
+                return rn.indexOf(busq)!==-1||busq.indexOf(rn)!==-1||
+                    busq.split(' ').some(function(w){return w.length>3&&rn.indexOf(w)!==-1});
+            });
+
+            // Si busca un restaurante, mostrar TODO su menú sin filtrar productos
+            if(esRestaurante){
+                var matched=rests.filter(function(r){
+                    var rn=(r.nombre||'').toLowerCase();
+                    return rn.indexOf(busq)!==-1||busq.indexOf(rn)!==-1||
+                        busq.split(' ').some(function(w){return w.length>3&&rn.indexOf(w)!==-1});
+                });
+                return matched.length?matched:rests;
+            }
+
+            // Si busca un plato, filtrar productos
             var filtered=rests.map(function(r){
                 var prods=(r.productos||[]).filter(function(p){
                     var n=(p.nombre||'').toLowerCase();
-                    return n.indexOf(busq)!==-1||busq.indexOf(n)!==-1||busq.split(' ').some(function(w){return w.length>2&&n.indexOf(w)!==-1});
+                    return n.indexOf(busq)!==-1||busq.indexOf(n)!==-1||
+                        busq.split(' ').some(function(w){return w.length>2&&n.indexOf(w)!==-1});
                 });
                 if(prods.length===0) return null;
-                return {nombre:r.nombre,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,productos:prods};
+                return {nombre:r.nombre,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,productos:prods};
             }).filter(Boolean);
             return filtered.length?filtered:rests;
         }
