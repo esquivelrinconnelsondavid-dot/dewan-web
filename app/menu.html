@@ -176,6 +176,17 @@
         }
         .btn-add.added::after { content: none; }
 
+        /* Category sections */
+        .cat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 10px 0 2px;
+        }
+        .cat-label:first-child { padding-top: 4px; }
+
         /* Quantity controls */
         .qty-controls {
             display: flex;
@@ -608,28 +619,45 @@
                 var initial = (r.nombre || 'R')[0].toUpperCase();
                 var productos = r.productos || [];
 
-                var productRows = productos.map(function(p, idx) {
-                    var cartItem = findInCart(r.nombre, p.nombre);
-                    var qty = cartItem ? cartItem.qty : 0;
+                // Agrupar productos por categoría
+                var catMap = {};
+                productos.forEach(function(p) {
+                    var cat = p.categoria || 'General';
+                    if (!catMap[cat]) catMap[cat] = [];
+                    catMap[cat].push(p);
+                });
 
-                    if (qty > 0) {
-                        return '<div class="product-row">' +
-                            '<span class="product-name">' + escapeHtml(p.nombre) + '</span>' +
-                            '<span class="product-price">$' + Number(p.precio).toFixed(2) + '</span>' +
-                            '<div class="qty-controls">' +
-                                '<button class="btn-qty minus" onclick="removeFromCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ')">-</button>' +
-                                '<span class="qty-num">' + qty + '</span>' +
-                                '<button class="btn-qty" onclick="addToCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ',' + (r.precio_delivery||0) + ')">+</button>' +
-                            '</div>' +
-                        '</div>';
+                var productRows = '';
+                var cats = Object.keys(catMap);
+                var showCatLabels = cats.length > 1 || (cats.length === 1 && cats[0] !== 'General');
+
+                cats.forEach(function(cat) {
+                    if (showCatLabels) {
+                        productRows += '<div class="cat-label">' + escapeHtml(cat) + '</div>';
                     }
+                    catMap[cat].forEach(function(p) {
+                        var cartItem = findInCart(r.nombre, p.nombre);
+                        var qty = cartItem ? cartItem.qty : 0;
 
-                    return '<div class="product-row">' +
-                        '<span class="product-name">' + escapeHtml(p.nombre) + '</span>' +
-                        '<span class="product-price">$' + Number(p.precio).toFixed(2) + '</span>' +
-                        '<button class="btn-add" onclick="addToCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ',' + (r.precio_delivery||0) + ')">+</button>' +
-                    '</div>';
-                }).join('');
+                        if (qty > 0) {
+                            productRows += '<div class="product-row">' +
+                                '<span class="product-name">' + escapeHtml(p.nombre) + '</span>' +
+                                '<span class="product-price">$' + Number(p.precio).toFixed(2) + '</span>' +
+                                '<div class="qty-controls">' +
+                                    '<button class="btn-qty minus" onclick="removeFromCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ')">-</button>' +
+                                    '<span class="qty-num">' + qty + '</span>' +
+                                    '<button class="btn-qty" onclick="addToCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ',' + (r.precio_delivery||0) + ')">+</button>' +
+                                '</div>' +
+                            '</div>';
+                        } else {
+                            productRows += '<div class="product-row">' +
+                                '<span class="product-name">' + escapeHtml(p.nombre) + '</span>' +
+                                '<span class="product-price">$' + Number(p.precio).toFixed(2) + '</span>' +
+                                '<button class="btn-add" onclick="addToCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ',' + (r.precio_delivery||0) + ')">+</button>' +
+                            '</div>';
+                        }
+                    });
+                });
 
                 return '<div class="rest-card">' +
                     '<div class="rest-header">' +
