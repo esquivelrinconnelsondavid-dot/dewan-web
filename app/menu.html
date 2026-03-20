@@ -406,6 +406,7 @@
                                     (qty?'<span class="badge badge-cart">EN CARRITO x'+qty+'</span>':'')+
                                 '</div>'+
                                 '<div class="prod-name">'+esc(p.nombre)+'</div>'+
+                                (p.descripcion?'<div class="prod-desc">'+esc(p.descripcion)+'</div>':'')+
                                 '<div class="prod-bottom">'+
                                     '<span class="prod-price">$'+Number(p.precio).toFixed(2)+'</span>'+
                                     (qty>0?
