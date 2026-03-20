@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DEWAN Delivery — Tu pedido</title>
+    <meta name="description" content="Encuentra los mejores restaurantes cerca de ti con DEWAN Delivery">
+    <meta name="theme-color" content="#ff6b35">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff6b35'/><text x='50' y='70' font-family='Arial' font-size='55' font-weight='bold' fill='white' text-anchor='middle'>D</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --orange: #ff6b35;
+            --orange-light: #ff8a5c;
+            --green: #25D366;
+            --green-dark: #1a4731;
+            --bg: #fafafa;
+            --card: #ffffff;
+            --text: #1a1a1a;
+            --text-light: #666;
+            --text-muted: #999;
+            --border: #eee;
+            --radius: 16px;
+            --shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--orange), var(--orange-light));
+            padding: 20px 16px 24px;
+            color: white;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .header-logo {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        .header-badge {
+            font-size: 0.7rem;
+            background: rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-weight: 500;
+        }
+        .search-term {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .search-meta {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        /* Sort Bar */
+        .sort-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+        .sort-btn {
+            flex-shrink: 0;
+            padding: 7px 16px;
+            border-radius: 100px;
+            border: 1.5px solid var(--border);
+            background: white;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .sort-btn.active {
+            background: var(--orange);
+            color: white;
+            border-color: var(--orange);
+        }
+
+        /* Content */
+        .content {
+            padding: 16px;
+            padding-bottom: 40px;
+        }
+
+        /* Restaurant Card */
+        .rest-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            overflow: hidden;
+            animation: slideUp 0.4s ease-out both;
+        }
+        .rest-card:nth-child(2) { animation-delay: 0.05s; }
+        .rest-card:nth-child(3) { animation-delay: 0.1s; }
+        .rest-card:nth-child(4) { animation-delay: 0.15s; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .rest-header {
+            padding: 16px 16px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .rest-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+        }
+        .rest-info h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .rest-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .rest-meta span { display: flex; align-items: center; gap: 3px; }
+
+        /* Product rows */
+        .products-list {
+            padding: 0 16px;
+        }
+        .product-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-top: 1px solid var(--border);
+        }
+        .product-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            flex: 1;
+        }
+        .product-price {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--orange);
+            margin-left: 12px;
+        }
+
+        /* Delivery info + CTA */
+        .rest-footer {
+            padding: 12px 16px 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .delivery-info {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .delivery-info strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .btn-pedir {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border-radius: 100px;
+            background: var(--green);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-family: inherit;
+        }
+        .btn-pedir:active {
+            transform: scale(0.96);
+        }
+
+        /* Loading & Error states */
+        .state-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--orange);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .state-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .state-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        /* Footer */
+        .app-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="state-container" id="loading-state">
+            <div class="spinner"></div>
+            <div class="state-title">Buscando opciones...</div>
+            <div class="state-text">Encontrando los mejores restaurantes para ti</div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // Config
+        var SUPABASE_URL = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+        var WHATSAPP_CENTRAL = '593999999999'; // Número central de DEWAN
+
+        var app = document.getElementById('app');
+        var token = new URLSearchParams(window.location.search).get('t');
+        var currentSort = 'distancia';
+        var sessionData = null;
+
+        if (!token) {
+            showError('Link inválido', 'Este enlace no es válido. Solicita uno nuevo por WhatsApp.');
+            return;
+        }
+
+        loadSession();
+
+        function loadSession() {
+            fetch(SUPABASE_URL + '/rest/v1/links_sesion?token=eq.' + token + '&select=*', {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data || !data.length) {
+                    showError('Enlace no encontrado', 'Este enlace no existe o ha expirado.');
+                    return;
+                }
+                var session = data[0];
+                if (new Date(session.expira_at) < new Date()) {
+                    showError('Enlace expirado', 'Este enlace ha expirado. Solicita uno nuevo por WhatsApp.');
+                    return;
+                }
+                sessionData = session;
+                // Marcar como visto
+                fetch(SUPABASE_URL + '/rest/v1/links_sesion?token=eq.' + token, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ visto: true, visto_at: new Date().toISOString() })
+                });
+                render();
+            })
+            .catch(function() {
+                showError('Error de conexión', 'No pudimos cargar los datos. Intenta de nuevo.');
+            });
+        }
+
+        function render() {
+            var restaurantes = sessionData.resultados || [];
+            if (!restaurantes.length) {
+                showError('Sin resultados', 'No encontramos opciones para esta búsqueda.');
+                return;
+            }
+            var sorted = sortRestaurantes(restaurantes, currentSort);
+            var html = buildHeader() + buildSortBar() + buildContent(sorted) + buildFooter();
+            app.innerHTML = html;
+            bindEvents();
+        }
+
+        function buildHeader() {
+            var busqueda = sessionData.busqueda_texto || 'Comida';
+            var total = (sessionData.resultados || []).length;
+            return '<div class="header">' +
+                '<div class="header-top">' +
+                    '<span class="header-logo">DEWAN</span>' +
+                    '<span class="header-badge">Delivery</span>' +
+                '</div>' +
+                '<div class="search-term">' + escapeHtml(busqueda) + '</div>' +
+                '<div class="search-meta">' + total + ' restaurantes encontrados</div>' +
+            '</div>';
+        }
+
+        function buildSortBar() {
+            var sorts = [
+                { key: 'distancia', label: '📍 Más cerca' },
+                { key: 'precio', label: '💰 Menor precio' },
+                { key: 'delivery', label: '🚚 Menor delivery' }
+            ];
+            var btns = sorts.map(function(s) {
+                return '<button class="sort-btn' + (currentSort === s.key ? ' active' : '') + '" data-sort="' + s.key + '">' + s.label + '</button>';
+            }).join('');
+            return '<div class="sort-bar">' + btns + '</div>';
+        }
+
+        function buildContent(restaurantes) {
+            var cards = restaurantes.map(function(r) {
+                var initial = (r.nombre || 'R')[0].toUpperCase();
+                var productos = (r.productos || []).slice(0, 3);
+                var mejorPrecio = productos.length ? Math.min.apply(null, productos.map(function(p) { return p.precio || 99; })) : 0;
+                var total = (mejorPrecio + (r.precio_delivery || 0)).toFixed(2);
+
+                var productRows = productos.map(function(p) {
+                    return '<div class="product-row">' +
+                        '<span class="product-name">' + escapeHtml(p.nombre) + '</span>' +
+                        '<span class="product-price">$' + Number(p.precio).toFixed(2) + '</span>' +
+                    '</div>';
+                }).join('');
+
+                var pedirMsg = encodeURIComponent(
+                    'Hola! Quiero pedir de ' + r.nombre + ':\n' +
+                    productos.map(function(p) { return '- ' + p.nombre + ' ($' + Number(p.precio).toFixed(2) + ')'; }).join('\n') +
+                    '\n\nToken: ' + token
+                );
+
+                return '<div class="rest-card">' +
+                    '<div class="rest-header">' +
+                        '<div class="rest-avatar">' + initial + '</div>' +
+                        '<div class="rest-info">' +
+                            '<h3>' + escapeHtml(r.nombre) + '</h3>' +
+                            '<div class="rest-meta">' +
+                                (r.distancia_km ? '<span>📍 ' + r.distancia_km + ' km</span>' : '') +
+                                (r.tiempo_estimado_min ? '<span>⏱️ ~' + r.tiempo_estimado_min + ' min</span>' : '') +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="products-list">' + productRows + '</div>' +
+                    '<div class="rest-footer">' +
+                        '<div class="delivery-info">' +
+                            'Delivery: <strong>$' + Number(r.precio_delivery || 0).toFixed(2) + '</strong><br>' +
+                            'Total desde: <strong>$' + total + '</strong>' +
+                        '</div>' +
+                        '<a href="https://wa.me/' + WHATSAPP_CENTRAL + '?text=' + pedirMsg + '" class="btn-pedir" target="_blank" rel="noopener">' +
+                            'Pedir · $' + total +
+                        '</a>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            return '<div class="content">' + cards + '</div>';
+        }
+
+        function buildFooter() {
+            return '<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>Powered by dewansas.com</div>';
+        }
+
+        function sortRestaurantes(list, key) {
+            var sorted = list.slice();
+            if (key === 'distancia') {
+                sorted.sort(function(a, b) { return (a.distancia_km || 999) - (b.distancia_km || 999); });
+            } else if (key === 'precio') {
+                sorted.sort(function(a, b) {
+                    var pa = a.productos && a.productos[0] ? a.productos[0].precio : 999;
+                    var pb = b.productos && b.productos[0] ? b.productos[0].precio : 999;
+                    return pa - pb;
+                });
+            } else if (key === 'delivery') {
+                sorted.sort(function(a, b) { return (a.precio_delivery || 999) - (b.precio_delivery || 999); });
+            }
+            return sorted;
+        }
+
+        function bindEvents() {
+            document.querySelectorAll('.sort-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    currentSort = this.getAttribute('data-sort');
+                    render();
+                });
+            });
+        }
+
+        function showError(title, text) {
+            app.innerHTML = '<div class="state-container">' +
+                '<div class="empty-icon">😕</div>' +
+                '<div class="state-title">' + title + '</div>' +
+                '<div class="state-text">' + text + '</div>' +
+            '</div>';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    })();
+    </script>
+</body>
+</html>
