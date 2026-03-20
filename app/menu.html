@@ -346,6 +346,42 @@
         .gps-status.success { color: var(--green); font-weight: 600; }
         .gps-status.error { color: #e53e3e; }
 
+        /* GPS Welcome Overlay */
+        .gps-welcome {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .gps-welcome-icon {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--orange), var(--orange-light));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 30px rgba(255,107,53,0.3);
+        }
+        .gps-welcome h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .gps-welcome p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 28px;
+            max-width: 300px;
+        }
+        .gps-welcome .btn-gps { max-width: 320px; }
+
         /* Loading & Error states */
         .state-container {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -373,7 +409,16 @@
     </style>
 </head>
 <body>
-    <div id="app">
+    <div class="gps-welcome" id="gps-welcome">
+        <div class="gps-welcome-icon">📍</div>
+        <h2>Comparte tu ubicacion</h2>
+        <p>Necesitamos tu ubicacion para mostrarte los restaurantes mas cercanos y calcular el costo de delivery.</p>
+        <div class="gps-status" id="welcome-gps-status"></div>
+        <button class="btn-gps btn-gps-primary" id="btn-welcome-gps" onclick="welcomeGPS()">📍 Compartir ubicacion</button>
+        <button class="btn-gps btn-gps-secondary" onclick="skipGPS()" style="max-width:320px">Continuar sin ubicacion</button>
+    </div>
+
+    <div id="app" style="display:none">
         <div class="state-container" id="loading-state">
             <div class="spinner"></div>
             <div class="state-title">Buscando opciones...</div>
@@ -413,11 +458,55 @@
         window._clientGPS = null;
 
         if (!token) {
+            document.getElementById('gps-welcome').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
             showError('Link invalido', 'Este enlace no es valido. Solicita uno nuevo por WhatsApp.');
             return;
         }
 
-        loadSession();
+        // GPS Welcome functions (global)
+        window.welcomeGPS = function() {
+            var status = document.getElementById('welcome-gps-status');
+            var btn = document.getElementById('btn-welcome-gps');
+            status.className = 'gps-status';
+            status.textContent = 'Obteniendo ubicacion...';
+            btn.disabled = true;
+            btn.textContent = '📍 Obteniendo...';
+
+            if (!navigator.geolocation) {
+                status.className = 'gps-status error';
+                status.textContent = 'Tu navegador no soporta GPS.';
+                btn.disabled = false;
+                btn.textContent = '📍 Compartir ubicacion';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    window._clientGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    status.className = 'gps-status success';
+                    status.textContent = 'Ubicacion obtenida correctamente';
+                    setTimeout(function() {
+                        document.getElementById('gps-welcome').style.display = 'none';
+                        document.getElementById('app').style.display = 'block';
+                        loadSession();
+                    }, 600);
+                },
+                function(err) {
+                    status.className = 'gps-status error';
+                    status.textContent = err.code === 1 ? 'Permiso denegado. Puedes continuar sin GPS.' : 'No se pudo obtener GPS.';
+                    btn.disabled = false;
+                    btn.textContent = '📍 Intentar de nuevo';
+                },
+                { enableHighAccuracy: true, timeout: 15000 }
+            );
+        };
+
+        window.skipGPS = function() {
+            document.getElementById('gps-welcome').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            loadSession();
+        };
 
         function loadSession() {
             fetch(SUPABASE_URL + '/rest/v1/links_sesion?token=eq.' + token + '&select=*', {
@@ -460,7 +549,30 @@
                 showError('Sin resultados', 'No encontramos opciones para esta busqueda.');
                 return;
             }
-            var sorted = sortRestaurantes(restaurantes, currentSort);
+
+            // Filtrar productos que coincidan con la búsqueda
+            var busqueda = (sessionData.busqueda_texto || '').toLowerCase().trim();
+            var filtrados;
+            if (busqueda && busqueda !== 'comida' && busqueda !== 'menu') {
+                filtrados = restaurantes.map(function(r) {
+                    var prodsFiltrados = (r.productos || []).filter(function(p) {
+                        var nombre = (p.nombre || '').toLowerCase();
+                        return nombre.indexOf(busqueda) !== -1 || busqueda.indexOf(nombre) !== -1
+                            || busqueda.split(' ').some(function(w) { return w.length > 2 && nombre.indexOf(w) !== -1; });
+                    });
+                    if (prodsFiltrados.length === 0) return null;
+                    return { nombre: r.nombre, distancia_km: r.distancia_km, tiempo_estimado_min: r.tiempo_estimado_min, precio_delivery: r.precio_delivery, productos: prodsFiltrados };
+                }).filter(function(r) { return r !== null; });
+            } else {
+                filtrados = restaurantes;
+            }
+
+            if (!filtrados.length) {
+                // Si el filtro deja todo vacío, mostrar sin filtro
+                filtrados = restaurantes;
+            }
+
+            var sorted = sortRestaurantes(filtrados, currentSort);
             app.innerHTML = buildHeader() + buildSortBar() + buildContent(sorted) + buildFooter();
             bindEvents();
             updateCartBar();
