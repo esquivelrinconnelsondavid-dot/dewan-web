@@ -16,7 +16,7 @@
             --orange: #ff6b35;
             --orange-light: #ff8a5c;
             --green: #25D366;
-            --green-dark: #1a4731;
+            --green-dark: #1da851;
             --bg: #fafafa;
             --card: #ffffff;
             --text: #1a1a1a;
@@ -32,6 +32,7 @@
             color: var(--text);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            padding-bottom: 90px;
         }
 
         /* Header */
@@ -46,11 +47,7 @@
             gap: 10px;
             margin-bottom: 14px;
         }
-        .header-logo {
-            font-size: 1.1rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
+        .header-logo { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; }
         .header-badge {
             font-size: 0.7rem;
             background: rgba(255,255,255,0.2);
@@ -58,15 +55,8 @@
             border-radius: 100px;
             font-weight: 500;
         }
-        .search-term {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-        .search-meta {
-            font-size: 0.85rem;
-            opacity: 0.85;
-        }
+        .search-term { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .search-meta { font-size: 0.85rem; opacity: 0.85; }
 
         /* Sort Bar */
         .sort-bar {
@@ -98,10 +88,7 @@
         }
 
         /* Content */
-        .content {
-            padding: 16px;
-            padding-bottom: 40px;
-        }
+        .content { padding: 16px; }
 
         /* Restaurant Card */
         .rest-card {
@@ -115,12 +102,10 @@
         .rest-card:nth-child(2) { animation-delay: 0.05s; }
         .rest-card:nth-child(3) { animation-delay: 0.1s; }
         .rest-card:nth-child(4) { animation-delay: 0.15s; }
-
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .rest-header {
             padding: 16px 16px 12px;
             display: flex;
@@ -128,106 +113,246 @@
             gap: 12px;
         }
         .rest-avatar {
-            width: 44px;
-            height: 44px;
+            width: 44px; height: 44px;
             border-radius: 12px;
             background: linear-gradient(135deg, var(--orange), var(--orange-light));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: white;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: 800; color: white; flex-shrink: 0;
         }
-        .rest-info h3 {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
+        .rest-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
         .rest-meta {
-            display: flex;
-            gap: 12px;
-            font-size: 0.78rem;
-            color: var(--text-muted);
+            display: flex; gap: 12px;
+            font-size: 0.78rem; color: var(--text-muted);
         }
         .rest-meta span { display: flex; align-items: center; gap: 3px; }
-
-        /* Product rows */
-        .products-list {
-            padding: 0 16px;
+        .delivery-tag {
+            font-size: 0.75rem;
+            color: var(--orange);
+            font-weight: 600;
+            padding: 12px 16px 0;
         }
+
+        /* Product rows with add button */
+        .products-list { padding: 0 16px 12px; }
         .product-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
+            padding: 10px 0;
             border-top: 1px solid var(--border);
+            gap: 10px;
         }
         .product-name {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 500;
             flex: 1;
+            line-height: 1.3;
         }
         .product-price {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 700;
             color: var(--orange);
-            margin-left: 12px;
+            white-space: nowrap;
+        }
+        .btn-add {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            border: 2px solid var(--green);
+            background: white;
+            color: var(--green);
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            font-family: inherit;
+            line-height: 1;
+        }
+        .btn-add:active { transform: scale(0.9); }
+        .btn-add.added {
+            background: var(--green);
+            color: white;
+            border-color: var(--green);
+        }
+        .btn-add.added::after { content: none; }
+
+        /* Quantity controls */
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .btn-qty {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-family: inherit;
+            color: var(--text);
+            transition: all 0.15s;
+        }
+        .btn-qty:active { transform: scale(0.9); }
+        .btn-qty.minus { color: #e53e3e; border-color: #fed7d7; }
+        .qty-num {
+            font-size: 0.9rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
         }
 
-        /* Delivery info + CTA */
-        .rest-footer {
-            padding: 12px 16px 16px;
+        /* Floating Cart Bar */
+        .cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
             border-top: 1px solid var(--border);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
         }
-        .delivery-info {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            line-height: 1.5;
+        .cart-bar.visible { transform: translateY(0); }
+        .cart-summary {
+            font-size: 0.85rem;
+            line-height: 1.4;
         }
-        .delivery-info strong {
-            color: var(--text);
-            font-weight: 600;
-        }
-        .btn-pedir {
-            flex-shrink: 0;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 20px;
+        .cart-count { font-weight: 700; color: var(--text); }
+        .cart-total { font-weight: 800; color: var(--orange); font-size: 1rem; }
+        .btn-checkout {
+            padding: 12px 24px;
             border-radius: 100px;
             background: var(--green);
             color: white;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 700;
             border: none;
             cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
             font-family: inherit;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
         }
-        .btn-pedir:active {
-            transform: scale(0.96);
+        .btn-checkout:active { transform: scale(0.96); background: var(--green-dark); }
+
+        /* GPS Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
         }
+        .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+        .modal {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 20px 32px;
+            width: 100%;
+            max-width: 480px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal { transform: translateY(0); }
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .modal-text {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .modal-items {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .modal-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.85rem;
+        }
+        .modal-item + .modal-item { border-top: 1px solid var(--border); }
+        .modal-item-name { font-weight: 500; }
+        .modal-item-price { font-weight: 700; color: var(--orange); }
+        .modal-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0 0;
+            border-top: 2px solid var(--border);
+            font-weight: 800;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+        .btn-gps {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+        .btn-gps-primary {
+            background: var(--orange);
+            color: white;
+        }
+        .btn-gps-primary:active { transform: scale(0.98); }
+        .btn-gps-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-gps-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1.5px solid var(--border);
+        }
+        .btn-gps-whatsapp {
+            background: var(--green);
+            color: white;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .gps-status {
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            min-height: 20px;
+        }
+        .gps-status.success { color: var(--green); font-weight: 600; }
+        .gps-status.error { color: #e53e3e; }
 
         /* Loading & Error states */
         .state-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 60vh;
-            text-align: center;
-            padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 60vh; text-align: center; padding: 20px;
         }
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             border: 3px solid var(--border);
             border-top-color: var(--orange);
             border-radius: 50%;
@@ -235,21 +360,10 @@
             margin-bottom: 16px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .state-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .state-text {
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
-        .empty-icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-        }
+        .state-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+        .state-text { font-size: 0.9rem; color: var(--text-light); }
+        .empty-icon { font-size: 3rem; margin-bottom: 16px; }
 
-        /* Footer */
         .app-footer {
             text-align: center;
             padding: 20px;
@@ -267,22 +381,39 @@
         </div>
     </div>
 
+    <div class="cart-bar" id="cart-bar">
+        <div class="cart-summary">
+            <div class="cart-count" id="cart-count">0 items</div>
+            <div class="cart-total" id="cart-total">$0.00</div>
+        </div>
+        <button class="btn-checkout" id="btn-checkout" onclick="openCheckout()">
+            Enviar pedido
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal-content"></div>
+    </div>
+
     <script>
     (function() {
         'use strict';
 
-        // Config
         var SUPABASE_URL = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co';
         var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
-        var WHATSAPP_CENTRAL = '593999999999'; // Número central de DEWAN
+        var WHATSAPP_CENTRAL = '593986777146';
 
         var app = document.getElementById('app');
         var token = new URLSearchParams(window.location.search).get('t');
         var currentSort = 'distancia';
         var sessionData = null;
 
+        // Cart: array of { restaurante, nombre, precio, qty }
+        window._cart = [];
+        window._clientGPS = null;
+
         if (!token) {
-            showError('Link inválido', 'Este enlace no es válido. Solicita uno nuevo por WhatsApp.');
+            showError('Link invalido', 'Este enlace no es valido. Solicita uno nuevo por WhatsApp.');
             return;
         }
 
@@ -302,12 +433,11 @@
                     return;
                 }
                 var session = data[0];
-                if (new Date(session.expira_at) < new Date()) {
+                if (session.expira_at && new Date(session.expira_at) < new Date()) {
                     showError('Enlace expirado', 'Este enlace ha expirado. Solicita uno nuevo por WhatsApp.');
                     return;
                 }
                 sessionData = session;
-                // Marcar como visto
                 fetch(SUPABASE_URL + '/rest/v1/links_sesion?token=eq.' + token, {
                     method: 'PATCH',
                     headers: {
@@ -320,20 +450,20 @@
                 render();
             })
             .catch(function() {
-                showError('Error de conexión', 'No pudimos cargar los datos. Intenta de nuevo.');
+                showError('Error de conexion', 'No pudimos cargar los datos. Intenta de nuevo.');
             });
         }
 
         function render() {
             var restaurantes = sessionData.resultados || [];
             if (!restaurantes.length) {
-                showError('Sin resultados', 'No encontramos opciones para esta búsqueda.');
+                showError('Sin resultados', 'No encontramos opciones para esta busqueda.');
                 return;
             }
             var sorted = sortRestaurantes(restaurantes, currentSort);
-            var html = buildHeader() + buildSortBar() + buildContent(sorted) + buildFooter();
-            app.innerHTML = html;
+            app.innerHTML = buildHeader() + buildSortBar() + buildContent(sorted) + buildFooter();
             bindEvents();
+            updateCartBar();
         }
 
         function buildHeader() {
@@ -351,9 +481,9 @@
 
         function buildSortBar() {
             var sorts = [
-                { key: 'distancia', label: '📍 Más cerca' },
-                { key: 'precio', label: '💰 Menor precio' },
-                { key: 'delivery', label: '🚚 Menor delivery' }
+                { key: 'distancia', label: 'Mas cerca' },
+                { key: 'precio', label: 'Menor precio' },
+                { key: 'delivery', label: 'Menor delivery' }
             ];
             var btns = sorts.map(function(s) {
                 return '<button class="sort-btn' + (currentSort === s.key ? ' active' : '') + '" data-sort="' + s.key + '">' + s.label + '</button>';
@@ -364,22 +494,30 @@
         function buildContent(restaurantes) {
             var cards = restaurantes.map(function(r) {
                 var initial = (r.nombre || 'R')[0].toUpperCase();
-                var productos = (r.productos || []).slice(0, 3);
-                var mejorPrecio = productos.length ? Math.min.apply(null, productos.map(function(p) { return p.precio || 99; })) : 0;
-                var total = (mejorPrecio + (r.precio_delivery || 0)).toFixed(2);
+                var productos = r.productos || [];
 
-                var productRows = productos.map(function(p) {
+                var productRows = productos.map(function(p, idx) {
+                    var cartItem = findInCart(r.nombre, p.nombre);
+                    var qty = cartItem ? cartItem.qty : 0;
+
+                    if (qty > 0) {
+                        return '<div class="product-row">' +
+                            '<span class="product-name">' + escapeHtml(p.nombre) + '</span>' +
+                            '<span class="product-price">$' + Number(p.precio).toFixed(2) + '</span>' +
+                            '<div class="qty-controls">' +
+                                '<button class="btn-qty minus" onclick="removeFromCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ')">-</button>' +
+                                '<span class="qty-num">' + qty + '</span>' +
+                                '<button class="btn-qty" onclick="addToCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ',' + (r.precio_delivery||0) + ')">+</button>' +
+                            '</div>' +
+                        '</div>';
+                    }
+
                     return '<div class="product-row">' +
                         '<span class="product-name">' + escapeHtml(p.nombre) + '</span>' +
                         '<span class="product-price">$' + Number(p.precio).toFixed(2) + '</span>' +
+                        '<button class="btn-add" onclick="addToCart(\'' + esc(r.nombre) + '\',\'' + esc(p.nombre) + '\',' + p.precio + ',' + (r.precio_delivery||0) + ')">+</button>' +
                     '</div>';
                 }).join('');
-
-                var pedirMsg = encodeURIComponent(
-                    'Hola! Quiero pedir de ' + r.nombre + ':\n' +
-                    productos.map(function(p) { return '- ' + p.nombre + ' ($' + Number(p.precio).toFixed(2) + ')'; }).join('\n') +
-                    '\n\nToken: ' + token
-                );
 
                 return '<div class="rest-card">' +
                     '<div class="rest-header">' +
@@ -392,16 +530,8 @@
                             '</div>' +
                         '</div>' +
                     '</div>' +
+                    '<div class="delivery-tag">Delivery: $' + Number(r.precio_delivery || 0).toFixed(2) + '</div>' +
                     '<div class="products-list">' + productRows + '</div>' +
-                    '<div class="rest-footer">' +
-                        '<div class="delivery-info">' +
-                            'Delivery: <strong>$' + Number(r.precio_delivery || 0).toFixed(2) + '</strong><br>' +
-                            'Total desde: <strong>$' + total + '</strong>' +
-                        '</div>' +
-                        '<a href="https://wa.me/' + WHATSAPP_CENTRAL + '?text=' + pedirMsg + '" class="btn-pedir" target="_blank" rel="noopener">' +
-                            'Pedir · $' + total +
-                        '</a>' +
-                    '</div>' +
                 '</div>';
             }).join('');
 
@@ -409,8 +539,211 @@
         }
 
         function buildFooter() {
-            return '<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>Powered by dewansas.com</div>';
+            return '<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
         }
+
+        // === CART FUNCTIONS (global) ===
+
+        window.addToCart = function(restaurante, nombre, precio, delivery) {
+            var item = findInCart(restaurante, nombre);
+            if (item) {
+                item.qty++;
+            } else {
+                window._cart.push({
+                    restaurante: restaurante,
+                    nombre: nombre,
+                    precio: precio,
+                    delivery: delivery,
+                    qty: 1
+                });
+            }
+            render();
+        };
+
+        window.removeFromCart = function(restaurante, nombre, precio) {
+            var item = findInCart(restaurante, nombre);
+            if (item) {
+                item.qty--;
+                if (item.qty <= 0) {
+                    window._cart = window._cart.filter(function(c) {
+                        return !(c.restaurante === restaurante && c.nombre === nombre);
+                    });
+                }
+            }
+            render();
+        };
+
+        function findInCart(restaurante, nombre) {
+            for (var i = 0; i < window._cart.length; i++) {
+                if (window._cart[i].restaurante === restaurante && window._cart[i].nombre === nombre) {
+                    return window._cart[i];
+                }
+            }
+            return null;
+        }
+
+        function getCartTotals() {
+            var items = 0;
+            var subtotal = 0;
+            var deliveries = {};
+            window._cart.forEach(function(c) {
+                items += c.qty;
+                subtotal += c.precio * c.qty;
+                deliveries[c.restaurante] = c.delivery || 0;
+            });
+            var deliveryTotal = 0;
+            Object.keys(deliveries).forEach(function(k) { deliveryTotal += deliveries[k]; });
+            return { items: items, subtotal: subtotal, delivery: deliveryTotal, total: subtotal + deliveryTotal };
+        }
+
+        function updateCartBar() {
+            var totals = getCartTotals();
+            var bar = document.getElementById('cart-bar');
+            document.getElementById('cart-count').textContent = totals.items + (totals.items === 1 ? ' item' : ' items');
+            document.getElementById('cart-total').textContent = '$' + totals.total.toFixed(2);
+            if (totals.items > 0) {
+                bar.classList.add('visible');
+            } else {
+                bar.classList.remove('visible');
+            }
+        }
+
+        // === CHECKOUT (global) ===
+
+        window.openCheckout = function() {
+            var totals = getCartTotals();
+            if (totals.items === 0) return;
+
+            // Group cart by restaurant
+            var byRest = {};
+            window._cart.forEach(function(c) {
+                if (!byRest[c.restaurante]) byRest[c.restaurante] = [];
+                byRest[c.restaurante].push(c);
+            });
+
+            var itemsHtml = '';
+            Object.keys(byRest).forEach(function(rest) {
+                itemsHtml += '<div style="font-weight:700;font-size:0.82rem;color:var(--orange);padding:6px 0 2px;">' + escapeHtml(rest) + '</div>';
+                byRest[rest].forEach(function(c) {
+                    itemsHtml += '<div class="modal-item">' +
+                        '<span class="modal-item-name">' + c.qty + 'x ' + escapeHtml(c.nombre) + '</span>' +
+                        '<span class="modal-item-price">$' + (c.precio * c.qty).toFixed(2) + '</span>' +
+                    '</div>';
+                });
+            });
+
+            itemsHtml += '<div class="modal-total">' +
+                '<span>Delivery</span><span>$' + totals.delivery.toFixed(2) + '</span>' +
+            '</div>' +
+            '<div class="modal-total">' +
+                '<span>Total</span><span style="color:var(--orange)">$' + totals.total.toFixed(2) + '</span>' +
+            '</div>';
+
+            var modal = document.getElementById('modal-content');
+            modal.innerHTML =
+                '<div class="modal-title">Tu pedido</div>' +
+                '<div class="modal-text">Confirma tu pedido y comparte tu ubicacion para calcular el delivery exacto.</div>' +
+                '<div class="modal-items">' + itemsHtml + '</div>' +
+                '<div class="gps-status" id="gps-status"></div>' +
+                '<button class="btn-gps btn-gps-primary" id="btn-get-gps" onclick="requestGPS()">📍 Compartir mi ubicacion</button>' +
+                '<button class="btn-gps btn-gps-whatsapp" id="btn-send-wa" style="display:none" onclick="sendWhatsApp()">Enviar por WhatsApp</button>' +
+                '<button class="btn-gps btn-gps-secondary" onclick="closeModal()">Cancelar</button>';
+
+            document.getElementById('modal-overlay').classList.add('visible');
+
+            if (window._clientGPS) {
+                showGPSSuccess();
+            }
+        };
+
+        window.requestGPS = function() {
+            var status = document.getElementById('gps-status');
+            var btn = document.getElementById('btn-get-gps');
+            status.className = 'gps-status';
+            status.textContent = 'Obteniendo ubicacion...';
+            btn.disabled = true;
+            btn.textContent = '📍 Obteniendo...';
+
+            if (!navigator.geolocation) {
+                status.className = 'gps-status error';
+                status.textContent = 'Tu navegador no soporta GPS. Envia tu ubicacion por WhatsApp.';
+                btn.disabled = false;
+                btn.textContent = '📍 Compartir mi ubicacion';
+                document.getElementById('btn-send-wa').style.display = 'flex';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    window._clientGPS = {
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    };
+                    showGPSSuccess();
+                },
+                function(err) {
+                    status.className = 'gps-status error';
+                    if (err.code === 1) {
+                        status.textContent = 'Permiso denegado. Puedes enviar tu ubicacion por WhatsApp.';
+                    } else {
+                        status.textContent = 'No se pudo obtener GPS. Envia tu ubicacion por WhatsApp.';
+                    }
+                    btn.disabled = false;
+                    btn.textContent = '📍 Intentar de nuevo';
+                    document.getElementById('btn-send-wa').style.display = 'flex';
+                },
+                { enableHighAccuracy: true, timeout: 15000 }
+            );
+        };
+
+        function showGPSSuccess() {
+            var status = document.getElementById('gps-status');
+            status.className = 'gps-status success';
+            status.textContent = 'Ubicacion obtenida correctamente';
+            document.getElementById('btn-get-gps').style.display = 'none';
+            document.getElementById('btn-send-wa').style.display = 'flex';
+        }
+
+        window.sendWhatsApp = function() {
+            var byRest = {};
+            window._cart.forEach(function(c) {
+                if (!byRest[c.restaurante]) byRest[c.restaurante] = [];
+                byRest[c.restaurante].push(c);
+            });
+
+            var totals = getCartTotals();
+            var msg = 'Hola! Quiero pedir:\n\n';
+            Object.keys(byRest).forEach(function(rest) {
+                msg += '🏪 *' + rest + '*\n';
+                byRest[rest].forEach(function(c) {
+                    msg += '  - ' + c.qty + 'x ' + c.nombre + ' ($' + (c.precio * c.qty).toFixed(2) + ')\n';
+                });
+                msg += '\n';
+            });
+            msg += '💰 *Total: $' + totals.total.toFixed(2) + '* (incluye delivery)\n\n';
+
+            if (window._clientGPS) {
+                msg += '📍 Mi ubicacion:\nhttps://maps.google.com/?q=' + window._clientGPS.lat + ',' + window._clientGPS.lng + '\n\n';
+            } else {
+                msg += '📍 _Enviar ubicacion por este chat_\n\n';
+            }
+            msg += 'Token: ' + token;
+
+            var url = 'https://wa.me/' + WHATSAPP_CENTRAL + '?text=' + encodeURIComponent(msg);
+            window.open(url, '_blank');
+            closeModal();
+        };
+
+        window.closeModal = function() {
+            document.getElementById('modal-overlay').classList.remove('visible');
+        };
+
+        // Close modal on overlay click
+        document.getElementById('modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // === SORTING ===
 
         function sortRestaurantes(list, key) {
             var sorted = list.slice();
@@ -437,6 +770,8 @@
             });
         }
 
+        // === HELPERS ===
+
         function showError(title, text) {
             app.innerHTML = '<div class="state-container">' +
                 '<div class="empty-icon">😕</div>' +
@@ -451,6 +786,13 @@
             div.textContent = str;
             return div.innerHTML;
         }
+
+        // Escape strings for inline onclick attributes
+        function esc(str) {
+            return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+        window.esc = esc;
+
     })();
     </script>
 </body>
