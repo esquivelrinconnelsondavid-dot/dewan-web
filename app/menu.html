@@ -252,27 +252,25 @@
         function getFilteredRestaurantes(){
             var rests=sessionData.resultados||[];
             rests=recalcDistances(rests);
-            var busq=(sessionData.busqueda_texto||'').toLowerCase().trim();
-            if(!busq||busq==='comida'||busq==='menu'||busq==='todo') return rests;
+            var busqRaw=(sessionData.busqueda_texto||'').toLowerCase().trim();
+            if(!busqRaw||busqRaw==='comida'||busqRaw==='menu'||busqRaw==='todo') return rests;
 
-            // Verificar si la búsqueda es un nombre de restaurante
-            var esRestaurante=rests.some(function(r){
+            // Limpiar prefijos como "menu del", "que tiene"
+            var busq=busqRaw;
+            var prefijos=['menu de ','menu del ','menú de ','menú del ','que tiene ','que tiene el ','platos de ','platos del ','carta de ','carta del '];
+            prefijos.forEach(function(p){if(busq.startsWith(p))busq=busq.substring(p.length).trim()});
+
+            // Verificar si la búsqueda coincide con un restaurante
+            var restMatch=rests.filter(function(r){
                 var rn=(r.nombre||'').toLowerCase();
                 return rn.indexOf(busq)!==-1||busq.indexOf(rn)!==-1||
                     busq.split(' ').some(function(w){return w.length>3&&rn.indexOf(w)!==-1});
             });
 
-            // Si busca un restaurante, mostrar TODO su menú sin filtrar productos
-            if(esRestaurante){
-                var matched=rests.filter(function(r){
-                    var rn=(r.nombre||'').toLowerCase();
-                    return rn.indexOf(busq)!==-1||busq.indexOf(rn)!==-1||
-                        busq.split(' ').some(function(w){return w.length>3&&rn.indexOf(w)!==-1});
-                });
-                return matched.length?matched:rests;
-            }
+            // Si coincide con restaurante → mostrar SOLO ese(s) restaurante(s) con TODOS sus platos
+            if(restMatch.length>0) return restMatch;
 
-            // Si busca un plato, filtrar productos
+            // Si busca un plato → filtrar productos que coincidan
             var filtered=rests.map(function(r){
                 var prods=(r.productos||[]).filter(function(p){
                     var n=(p.nombre||'').toLowerCase();
@@ -294,7 +292,7 @@
         }
 
         // ── HOME VIEW ──
-        function renderHome(){
+        window.renderHome=function(){
             currentView='home';
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
             var busq=sessionData.busqueda_texto||'Comida';
