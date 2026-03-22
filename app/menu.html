@@ -248,6 +248,26 @@
             });
         }
 
+        // ── Helpers para matching singular/plural ──
+        function normWord(w){
+            w=w.toLowerCase().trim();
+            if(w.endsWith('es')&&w.length>4) return w.slice(0,-2);
+            if(w.endsWith('s')&&w.length>3) return w.slice(0,-1);
+            return w;
+        }
+        function fuzzyMatch(text,query){
+            var t=text.toLowerCase();
+            var q=query.toLowerCase();
+            if(t.indexOf(q)!==-1||q.indexOf(t)!==-1) return true;
+            var tn=normWord(t), qn=normWord(q);
+            if(tn.indexOf(qn)!==-1||qn.indexOf(tn)!==-1) return true;
+            var words=q.split(' ').filter(function(w){return w.length>2});
+            return words.some(function(w){
+                var wn=normWord(w);
+                return t.indexOf(w)!==-1||t.indexOf(wn)!==-1||tn.indexOf(wn)!==-1;
+            });
+        }
+
         // ── Filtrar productos por búsqueda (inteligente) ──
         function getFilteredRestaurantes(){
             var rests=sessionData.resultados||[];
@@ -255,27 +275,36 @@
             var busqRaw=(sessionData.busqueda_texto||'').toLowerCase().trim();
             if(!busqRaw||busqRaw==='comida'||busqRaw==='menu'||busqRaw==='todo') return rests;
 
-            // Limpiar prefijos como "menu del", "que tiene"
+            // Limpiar prefijos como "menu del", "que tiene", "recomiendame"
             var busq=busqRaw;
-            var prefijos=['menu de ','menu del ','menú de ','menú del ','que tiene ','que tiene el ','platos de ','platos del ','carta de ','carta del '];
+            var prefijos=['menu de ','menu del ','menú de ','menú del ','que tiene ','que tiene el ','platos de ','platos del ','carta de ','carta del ','recomiendame ','recomiéndame '];
             prefijos.forEach(function(p){if(busq.startsWith(p))busq=busq.substring(p.length).trim()});
+
+            // Quitar "normal/normales" suelto para evitar ruido
+            busq=busq.replace(/\s+normales?\b/g,'').replace(/\bnormales?\s+/g,'').trim();
 
             // Verificar si la búsqueda coincide con un restaurante
             var restMatch=rests.filter(function(r){
-                var rn=(r.nombre||'').toLowerCase();
-                return rn.indexOf(busq)!==-1||busq.indexOf(rn)!==-1||
-                    busq.split(' ').some(function(w){return w.length>3&&rn.indexOf(w)!==-1});
+                return fuzzyMatch(r.nombre||'',busq);
             });
 
             // Si coincide con restaurante → mostrar SOLO ese(s) restaurante(s) con TODOS sus platos
             if(restMatch.length>0) return restMatch;
 
-            // Si busca un plato → filtrar productos que coincidan
+            // Filtrar por CATEGORÍA del producto (ej: "encebollados" matchea categoría "Encebollados")
+            var catFiltered=rests.map(function(r){
+                var prods=(r.productos||[]).filter(function(p){
+                    return fuzzyMatch(p.categoria||'',busq);
+                });
+                if(prods.length===0) return null;
+                return {nombre:r.nombre,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,productos:prods};
+            }).filter(Boolean);
+            if(catFiltered.length>0) return catFiltered;
+
+            // Si busca un plato → filtrar productos que coincidan por nombre o descripcion
             var filtered=rests.map(function(r){
                 var prods=(r.productos||[]).filter(function(p){
-                    var n=(p.nombre||'').toLowerCase();
-                    return n.indexOf(busq)!==-1||busq.indexOf(n)!==-1||
-                        busq.split(' ').some(function(w){return w.length>2&&n.indexOf(w)!==-1});
+                    return fuzzyMatch(p.nombre||'',busq)||fuzzyMatch(p.descripcion||'',busq);
                 });
                 if(prods.length===0) return null;
                 return {nombre:r.nombre,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,productos:prods};
