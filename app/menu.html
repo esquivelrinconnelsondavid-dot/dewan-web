@@ -255,17 +255,57 @@
             if(w.endsWith('s')&&w.length>3) return w.slice(0,-1);
             return w;
         }
-        function fuzzyMatch(text,query){
-            var t=text.toLowerCase();
-            var q=query.toLowerCase();
-            if(t.indexOf(q)!==-1||q.indexOf(t)!==-1) return true;
-            var tn=normWord(t), qn=normWord(q);
+        function removeAccents(s){
+            return s.replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ñ/g,'n').replace(/ü/g,'u');
+        }
+        function simplify(s){
+            s=s.toLowerCase().replace(/[^a-záéíóúñü]/g,'');
+            var r='';for(var i=0;i<s.length;i++){if(i===0||s[i]!==s[i-1])r+=s[i]}return r;
+        }
+        // Match para categoría/producto: substring exacto o normalizado
+        function fuzzyMatchStrict(text,query){
+            var t=text.toLowerCase(),q=query.toLowerCase();
+            if(t.indexOf(q)!==-1) return true;
+            var ta=removeAccents(t),qa=removeAccents(q);
+            if(ta.indexOf(qa)!==-1) return true;
+            var tn=normWord(ta),qn=normWord(qa);
             if(tn.indexOf(qn)!==-1||qn.indexOf(tn)!==-1) return true;
+            // Single word: also check normalized
             var words=q.split(' ').filter(function(w){return w.length>2});
-            return words.some(function(w){
-                var wn=normWord(w);
-                return t.indexOf(w)!==-1||t.indexOf(wn)!==-1||tn.indexOf(wn)!==-1;
-            });
+            if(words.length===1){
+                var wn=removeAccents(normWord(words[0]));
+                return ta.indexOf(wn)!==-1||tn.indexOf(wn)!==-1;
+            }
+            // Multi-word: ALL words must match
+            if(words.length>1){
+                return words.every(function(w){
+                    var wn=removeAccents(normWord(w)),wa=removeAccents(w);
+                    return ta.indexOf(wa)!==-1||ta.indexOf(wn)!==-1;
+                });
+            }
+            return false;
+        }
+        // Match para restaurante: más flexible, maneja typos y acentos
+        function fuzzyMatchRest(nombre,query){
+            var rn=nombre.toLowerCase(),q=query.toLowerCase();
+            if(rn.indexOf(q)!==-1||q.indexOf(rn)!==-1) return true;
+            var rna=removeAccents(rn),qa=removeAccents(q);
+            if(rna.indexOf(qa)!==-1||qa.indexOf(rna)!==-1) return true;
+            var sr=simplify(nombre),sb=simplify(query);
+            if(sr.indexOf(sb)!==-1||sb.indexOf(sr)!==-1) return true;
+            var limpia=q.replace(/\b(pizzeria|pizzería|restaurante|el|la|los|las|de|del|menu|menú)\b/g,'').replace(/\s+/g,' ').trim();
+            if(limpia.length>2&&limpia!==q){
+                var la=removeAccents(limpia);
+                if(rna.indexOf(la)!==-1||la.indexOf(rna)!==-1) return true;
+            }
+            var words=q.split(' ').filter(function(w){return w.length>2&&!(/^(el|la|los|las|de|del|menu|menú)$/.test(w))});
+            if(words.length>=2){
+                return words.every(function(w){
+                    var wa=removeAccents(w),wn=removeAccents(normWord(w));
+                    return rna.indexOf(wa)!==-1||rna.indexOf(wn)!==-1||sr.indexOf(simplify(w))!==-1;
+                });
+            }
+            return false;
         }
 
         // ── Filtrar productos por búsqueda (inteligente) ──
@@ -277,7 +317,7 @@
 
             // Limpiar prefijos como "menu del", "que tiene", "recomiendame"
             var busq=busqRaw;
-            var prefijos=['menu de ','menu del ','menú de ','menú del ','que tiene ','que tiene el ','platos de ','platos del ','carta de ','carta del ','recomiendame ','recomiéndame '];
+            var prefijos=['menu de la ','menu de el ','menu de ','menu del ','menú de la ','menú de el ','menú de ','menú del ','que tiene ','que tiene el ','platos de ','platos del ','carta de ','carta del ','recomiendame ','recomiéndame '];
             prefijos.forEach(function(p){if(busq.startsWith(p))busq=busq.substring(p.length).trim()});
 
             // Quitar "normal/normales" suelto para evitar ruido
@@ -289,35 +329,52 @@
                 return {nombre:r.nombre,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,direccion:r.direccion,horario:r.horario,telefono:r.telefono,productos:prods};
             }
 
-            // ═══ PASO 1: CATEGORÍA del producto (prioridad máxima) ═══
-            // "bolones" matchea categoria "Bolones" → muestra los 11 restaurantes con bolones
-            var catFiltered=rests.map(function(r){
-                var prods=(r.productos||[]).filter(function(p){
-                    return fuzzyMatch(p.categoria||'',busq);
-                });
-                if(prods.length===0) return null;
-                return copyRest(r,prods);
-            }).filter(Boolean);
-            if(catFiltered.length>0) return catFiltered;
+            // Contar palabras significativas
+            var sigWords=busq.split(' ').filter(function(w){return w.length>2&&!(/^(el|la|los|las|de|del|con|sin|para|por)$/.test(w))});
+            var isMultiWord=sigWords.length>=2;
 
-            // ═══ PASO 2: NOMBRE del producto o DESCRIPCIÓN ═══
-            var prodFiltered=rests.map(function(r){
-                var prods=(r.productos||[]).filter(function(p){
-                    return fuzzyMatch(p.nombre||'',busq)||fuzzyMatch(p.descripcion||'',busq);
-                });
-                if(prods.length===0) return null;
-                return copyRest(r,prods);
-            }).filter(Boolean);
-            if(prodFiltered.length>0) return prodFiltered;
+            if(isMultiWord){
+                // ═══ MULTI-WORD: probablemente restaurante (Verde Bolón, Café Paris) ═══
+                var restMatch=rests.filter(function(r){return fuzzyMatchRest(r.nombre||'',busq)});
+                if(restMatch.length>0) return restMatch; // Todo su menú
 
-            // ═══ PASO 3: NOMBRE del restaurante (última prioridad) ═══
-            // "riobambeñito", "mamma mia" → mostrar todo su menú
-            var restMatch=rests.filter(function(r){
-                return fuzzyMatch(r.nombre||'',busq);
-            });
-            if(restMatch.length>0) return restMatch;
+                // No matchea restaurante → buscar por plato/categoría
+                var prodMatch=rests.map(function(r){
+                    var prods=(r.productos||[]).filter(function(p){
+                        return fuzzyMatchStrict(p.nombre||'',busq)||fuzzyMatchStrict(p.categoria||'',busq);
+                    });
+                    if(prods.length===0) return null;
+                    return copyRest(r,prods);
+                }).filter(Boolean);
+                if(prodMatch.length>0) return prodMatch;
+            } else {
+                // ═══ SINGLE WORD: probablemente tipo comida (bolones, empanadas) ═══
+                // Paso 1: Categoría
+                var catFiltered=rests.map(function(r){
+                    var prods=(r.productos||[]).filter(function(p){
+                        return fuzzyMatchStrict(p.categoria||'',busq);
+                    });
+                    if(prods.length===0) return null;
+                    return copyRest(r,prods);
+                }).filter(Boolean);
+                if(catFiltered.length>0) return catFiltered;
 
-            // ═══ PASO 4: Sin match → mostrar todo del backend ═══
+                // Paso 2: Nombre del producto
+                var prodFiltered=rests.map(function(r){
+                    var prods=(r.productos||[]).filter(function(p){
+                        return fuzzyMatchStrict(p.nombre||'',busq)||fuzzyMatchStrict(p.descripcion||'',busq);
+                    });
+                    if(prods.length===0) return null;
+                    return copyRest(r,prods);
+                }).filter(Boolean);
+                if(prodFiltered.length>0) return prodFiltered;
+
+                // Paso 3: Nombre restaurante (mostrar todo su menú)
+                var restMatch2=rests.filter(function(r){return fuzzyMatchRest(r.nombre||'',busq)});
+                if(restMatch2.length>0) return restMatch2;
+            }
+
+            // ═══ FALLBACK: mostrar todo del backend ═══
             return rests;
         }
 
