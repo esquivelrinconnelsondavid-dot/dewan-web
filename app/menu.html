@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DEWAN Delivery</title>
     <meta name="theme-color" content="#0E0E10">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23FFDD57'/><text x='50' y='70' font-family='Arial' font-size='55' font-weight='bold' fill='%23111' text-anchor='middle'>D</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23B8FF00'/><text x='50' y='70' font-family='Arial' font-size='55' font-weight='bold' fill='%23111' text-anchor='middle'>D</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{
             --bg:#0E0E10;--card:#1A1A1E;--card2:#222226;--border:#2A2A30;
-            --acc:#FFDD57;--texto:#F0EFE9;--gris:#6B6B75;--green:#25D366;
+            --acc:#B8FF00;--texto:#F0EFE9;--gris:#6B6B75;--green:#25D366;
             --radius:16px;
         }
         body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;max-width:430px;margin:0 auto}
 
         /* GPS Welcome */
         .gps-welcome{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;overflow:hidden}
-        .gps-welcome::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:80%;background:radial-gradient(ellipse at center,rgba(255,221,87,0.06) 0%,transparent 70%);pointer-events:none}
-        .gps-welcome::after{content:'';position:absolute;bottom:-10%;right:-10%;width:50%;height:50%;background:radial-gradient(circle,rgba(255,221,87,0.04) 0%,transparent 70%);pointer-events:none}
+        .gps-welcome::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:80%;background:radial-gradient(ellipse at center,rgba(184,255,0,0.06) 0%,transparent 70%);pointer-events:none}
+        .gps-welcome::after{content:'';position:absolute;bottom:-10%;right:-10%;width:50%;height:50%;background:radial-gradient(circle,rgba(184,255,0,0.04) 0%,transparent 70%);pointer-events:none}
 
         /* Brand */
         .welcome-brand{margin-bottom:6px;position:relative;z-index:1}
@@ -29,9 +29,9 @@
 
         /* Floating food orbit */
         .welcome-orbit{position:relative;width:160px;height:160px;margin:28px auto 24px;z-index:1}
-        .welcome-orbit-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#FFB800);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 40px rgba(255,221,87,0.3),0 0 80px rgba(255,221,87,0.1)}
-        .welcome-orbit-ring{position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(255,221,87,0.15);animation:welcome-spin 20s linear infinite}
-        .welcome-orbit-ring2{position:absolute;inset:-18px;border-radius:50%;border:1px dashed rgba(255,221,87,0.08);animation:welcome-spin 30s linear infinite reverse}
+        .welcome-orbit-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#7ACC00);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 40px rgba(184,255,0,0.3),0 0 80px rgba(184,255,0,0.1)}
+        .welcome-orbit-ring{position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(184,255,0,0.15);animation:welcome-spin 20s linear infinite}
+        .welcome-orbit-ring2{position:absolute;inset:-18px;border-radius:50%;border:1px dashed rgba(184,255,0,0.08);animation:welcome-spin 30s linear infinite reverse}
         .welcome-food{position:absolute;font-size:1.6rem;animation:welcome-float 3s ease-in-out infinite;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4))}
         .welcome-food:nth-child(1){top:-8px;left:50%;transform:translateX(-50%);animation-delay:0s}
         .welcome-food:nth-child(2){top:22%;right:-12px;animation-delay:0.5s}
@@ -59,8 +59,8 @@
 
         /* CTA button with glow */
         .welcome-cta{position:relative;z-index:1;width:100%;max-width:320px;margin-bottom:10px}
-        .welcome-cta .btn-accent{animation:welcome-glow 2.5s ease-in-out infinite;box-shadow:0 4px 20px rgba(255,221,87,0.25);font-size:1rem;padding:16px 24px;border-radius:16px}
-        @keyframes welcome-glow{0%,100%{box-shadow:0 4px 20px rgba(255,221,87,0.25)}50%{box-shadow:0 4px 36px rgba(255,221,87,0.45)}}
+        .welcome-cta .btn-accent{animation:welcome-glow 2.5s ease-in-out infinite;box-shadow:0 4px 20px rgba(184,255,0,0.25);font-size:1rem;padding:16px 24px;border-radius:16px}
+        @keyframes welcome-glow{0%,100%{box-shadow:0 4px 20px rgba(184,255,0,0.25)}50%{box-shadow:0 4px 36px rgba(184,255,0,0.45)}}
         .welcome-skip{background:none;border:none;color:var(--gris);font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;padding:8px 16px;opacity:0.7;transition:opacity 0.2s;position:relative;z-index:1}
         .welcome-skip:hover{opacity:1}
 
@@ -86,43 +86,46 @@
         .pill.active{background:var(--acc);color:#111;border-color:var(--acc)}
 
         /* Restaurant Card */
-        .rest-card{background:var(--card);border:1px solid var(--border);border-radius:20px;margin:0 14px 12px;overflow:hidden}
-        .rest-color-bar{height:5px}
-        .rest-body{padding:14px}
-        .rest-top{display:flex;gap:12px;align-items:flex-start}
-        .rest-avatar{width:56px;height:56px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
+        .rest-card{background:var(--card);border:1px solid var(--border);border-radius:20px;margin:0 14px 12px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}
+        .rest-card:active{transform:scale(0.985)}
+        .rest-color-bar{height:4px}
+        .rest-body{padding:14px 14px 12px}
+        .rest-top{display:flex;gap:12px;align-items:center}
+        .rest-avatar{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
         .rest-info{flex:1;min-width:0}
-        .rest-name{font-weight:900;font-size:1rem}
-        .rest-desc{color:var(--gris);font-size:0.75rem;margin-top:2px}
-        .rest-meta{display:flex;gap:12px;margin-top:6px;font-size:0.75rem;flex-wrap:wrap}
-        .rest-meta span{color:var(--gris)}
+        .rest-name{font-weight:900;font-size:1.02rem;line-height:1.2}
+        .rest-platos-count{font-size:0.68rem;color:var(--gris);font-weight:700;margin-top:2px}
+        .rest-meta{display:flex;gap:10px;margin-top:5px;font-size:0.73rem;flex-wrap:wrap}
+        .rest-meta span{color:var(--gris);display:flex;align-items:center;gap:2px}
 
         /* Info strip */
-        .info-strip{display:flex;gap:6px;margin-top:12px}
-        .info-box{flex:1;background:var(--card2);border-radius:12px;padding:8px 4px;text-align:center;border:1px solid var(--border)}
-        .info-box-icon{font-size:0.85rem}
-        .info-box-val{font-weight:900;font-size:0.72rem;color:var(--acc);margin-top:2px}
-        .info-box-label{font-size:0.55rem;color:var(--gris);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-top:1px}
+        .info-strip{display:flex;gap:5px;margin-top:10px}
+        .info-box{flex:1;background:var(--card2);border-radius:10px;padding:6px 3px;text-align:center;border:1px solid var(--border)}
+        .info-box-icon{font-size:0.78rem}
+        .info-box-val{font-weight:900;font-size:0.7rem;color:var(--acc);margin-top:1px}
+        .info-box-label{font-size:0.52rem;color:var(--gris);font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-top:1px}
 
         /* Category label */
-        .cat-label{font-size:0.7rem;font-weight:800;color:var(--acc);text-transform:uppercase;letter-spacing:0.1em;padding:12px 0 6px}
+        .cat-label{font-size:0.72rem;font-weight:800;color:var(--acc);text-transform:uppercase;letter-spacing:0.1em;padding:16px 0 8px;display:flex;align-items:center;gap:8px}
+        .cat-label::after{content:'';flex:1;height:1px;background:var(--border);opacity:0.5}
 
         /* Product card */
-        .prod-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:8px;transition:border-color 0.2s}
-        .prod-card.in-cart{border-color:rgba(255,221,87,0.4)}
-        .prod-top{display:flex;gap:12px;align-items:flex-start}
-        .prod-emoji{width:52px;height:52px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;border:1px solid var(--border)}
+        .prod-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px;margin-bottom:8px;transition:border-color 0.2s,background 0.2s}
+        .prod-card.in-cart{border-color:rgba(184,255,0,0.35);background:rgba(184,255,0,0.03)}
+        .prod-top{display:flex;gap:10px;align-items:flex-start}
+        .prod-emoji{width:44px;height:44px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;border:1px solid var(--border)}
         .prod-info{flex:1;min-width:0}
-        .prod-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
-        .badge{font-size:0.6rem;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:0.04em}
+        .prod-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px}
+        .badge{font-size:0.58rem;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:0.04em}
         .badge-popular{background:rgba(255,107,53,0.2);color:#FF6B35}
-        .badge-cart{background:rgba(255,221,87,0.15);color:var(--acc)}
-        .prod-name{font-weight:800;font-size:0.92rem}
-        .prod-desc{color:var(--gris);font-size:0.75rem;margin-top:3px;line-height:1.4}
-        .prod-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
-        .prod-price{font-weight:900;font-size:1.15rem;color:var(--acc)}
-        .btn-agregar{background:#FF6B35;color:white;border:none;border-radius:12px;padding:9px 18px;font-weight:800;font-size:0.8rem;cursor:pointer;font-family:inherit}
-        .btn-agregar:active{transform:scale(0.95)}
+        .badge-cart{background:rgba(184,255,0,0.12);color:var(--acc)}
+        .badge-cat{background:var(--card2);color:var(--gris);border:1px solid var(--border)}
+        .prod-name{font-weight:800;font-size:0.9rem;line-height:1.2}
+        .prod-desc{color:var(--gris);font-size:0.73rem;margin-top:3px;line-height:1.45}
+        .prod-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+        .prod-price{font-weight:900;font-size:1.1rem;color:var(--acc)}
+        .btn-agregar{background:#FF6B35;color:white;border:none;border-radius:12px;padding:8px 16px;font-weight:800;font-size:0.78rem;cursor:pointer;font-family:inherit;transition:transform 0.15s}
+        .btn-agregar:active{transform:scale(0.93)}
 
         /* Qty controls */
         .qty-ctrl{display:flex;align-items:center;gap:10px}
@@ -138,7 +141,7 @@
 
         /* Cart floating */
         .cart-float{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:92%;max-width:398px;z-index:60}
-        .cart-float-btn{width:100%;background:var(--acc);color:#111;border:none;border-radius:14px;padding:14px 20px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 32px rgba(255,221,87,0.3)}
+        .cart-float-btn{width:100%;background:var(--acc);color:#111;border:none;border-radius:14px;padding:14px 20px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 32px rgba(184,255,0,0.3)}
         .cart-float-badge{background:rgba(0,0,0,0.18);border-radius:8px;padding:3px 10px;font-weight:900}
 
         /* Cart page */
@@ -176,6 +179,20 @@
         .state-title{font-size:1.1rem;font-weight:800;margin-bottom:8px}
         .state-text{font-size:0.88rem;color:var(--gris)}
         .empty-icon{font-size:3rem;margin-bottom:16px}
+
+        /* Preview chips */
+        .preview-chips{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+        .preview-chips::-webkit-scrollbar{display:none}
+        .preview-chip{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:5px 12px;font-size:0.7rem;font-weight:700;color:var(--gris);white-space:nowrap;flex-shrink:0}
+        .preview-chip-price{color:var(--acc);margin-left:4px}
+        .preview-chip-more{font-weight:800;color:var(--acc)}
+
+        /* Rest detail header */
+        .rest-detail-header{padding:20px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+        .rest-detail-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        .rest-detail-info{display:flex;gap:14px;align-items:center}
+        .rest-detail-avatar{width:62px;height:62px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.2)}
+        .rest-detail-name{font-weight:900;font-size:1.2rem;line-height:1.2}
 
         .app-footer{text-align:center;padding:20px 20px 80px;font-size:0.7rem;color:var(--gris)}
         body.has-cart{padding-bottom:80px}
@@ -476,23 +493,24 @@
                 '</div>'+
             '</div>';
 
-            h+='<div style="padding:14px 0">';
+            h+='<div style="padding:10px 0">';
             rests.forEach(function(r,idx){
-                var init=(r.nombre||'R')[0].toUpperCase();
                 var color=getColor(idx);
-                var previewProds=(r.productos||[]).slice(0,3);
+                var previewProds=(r.productos||[]).slice(0,4);
+                var totalProds=(r.productos||[]).length;
 
                 h+='<div class="rest-card" onclick="openRest('+idx+')">'+
-                    '<div class="rest-color-bar" style="background:linear-gradient(90deg,'+color+','+color+'66)"></div>'+
+                    '<div class="rest-color-bar" style="background:linear-gradient(90deg,'+color+','+color+'44)"></div>'+
                     '<div class="rest-body">'+
                         '<div class="rest-top">'+
-                            '<div class="rest-avatar" style="background:'+color+'20;border:2px solid '+color+'40">'+getEmoji(r.nombre)+'</div>'+
+                            '<div class="rest-avatar" style="background:'+color+'18;border:2px solid '+color+'35">'+getEmoji(r.nombre)+'</div>'+
                             '<div class="rest-info">'+
                                 '<div class="rest-name">'+esc(r.nombre)+'</div>'+
+                                '<div class="rest-platos-count">'+( (r.productos||[]).length)+' platos disponibles</div>'+
                                 '<div class="rest-meta">'+
                                     (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
                                     (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                                    '<span>🚗 $'+(r.precio_delivery||0).toFixed(2)+'</span>'+
+                                    '<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>'+
                                 '</div>'+
                             '</div>'+
                         '</div>'+
@@ -500,16 +518,15 @@
                         '<div class="info-strip">'+
                             infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
                             infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
-                            infoBox('🚗','$'+(r.precio_delivery||0).toFixed(2),'Delivery')+
+                            infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery')+
                             infoBox('🍽',r.productos?r.productos.length:0,'Platos')+
                         '</div>'+
                         // Preview platos
-                        '<div style="display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none">'+
+                        '<div class="preview-chips">'+
                             previewProds.map(function(p){
-                                return '<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:5px 10px;font-size:0.7rem;font-weight:700;color:var(--gris);white-space:nowrap;flex-shrink:0">'+
-                                    esc(p.nombre)+' <span style="color:var(--acc)">$'+Number(p.precio).toFixed(2)+'</span></div>';
+                                return '<div class="preview-chip">'+esc(p.nombre)+' <span class="preview-chip-price">$'+Number(p.precio).toFixed(2)+'</span></div>';
                             }).join('')+
-                            ((r.productos||[]).length>3?'<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:5px 10px;font-size:0.7rem;font-weight:800;color:var(--acc);white-space:nowrap;flex-shrink:0">+'+(r.productos.length-3)+' mas →</div>':'')+
+                            ((r.productos||[]).length>4?'<div class="preview-chip preview-chip-more">+'+(r.productos.length-4)+' más →</div>':'')+
                         '</div>'+
                     '</div>'+
                 '</div>';
@@ -530,25 +547,25 @@
             var color=getColor(idx);
             var prods=r.productos||[];
 
-            var h='<div style="background:linear-gradient(180deg,'+color+'25 0%,var(--bg) 100%);padding:20px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50">'+
-                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
+            var h='<div class="rest-detail-header" style="background:linear-gradient(180deg,'+color+'20 0%,var(--bg) 100%)">'+
+                '<div class="rest-detail-nav">'+
                     '<button class="btn-back" onclick="renderHome()">←</button>'+
                     '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒 '+(window._cart.length?cartTotals().items+' · $'+cartTotals().subtotal.toFixed(2):'Vacio')+'</button>'+
                 '</div>'+
-                '<div style="display:flex;gap:14px;align-items:flex-start">'+
-                    '<div style="width:68px;height:68px;border-radius:18px;background:'+color+'25;border:2px solid '+color+'50;display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0">'+getEmoji(r.nombre)+'</div>'+
-                    '<div style="flex:1"><div style="font-weight:900;font-size:1.25rem">'+esc(r.nombre)+'</div>'+
+                '<div class="rest-detail-info">'+
+                    '<div class="rest-detail-avatar" style="background:'+color+'20;border:2px solid '+color+'40">'+getEmoji(r.nombre)+'</div>'+
+                    '<div style="flex:1"><div class="rest-detail-name">'+esc(r.nombre)+'</div>'+
                         '<div class="rest-meta" style="margin-top:6px">'+
                             (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
                             (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                            '<span>🚗 $'+(r.precio_delivery||0).toFixed(2)+'</span>'+
+                            '<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>'+
                         '</div>'+
                     '</div>'+
                 '</div>'+
                 '<div class="info-strip">'+
                     infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
                     infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
-                    infoBox('🚗','$'+(r.precio_delivery||0).toFixed(2),'Delivery')+
+                    infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery')+
                     infoBox('🍽',prods.length,'Platos')+
                 '</div>'+
             '</div>';
@@ -573,6 +590,7 @@
                             '<div class="prod-info">'+
                                 '<div class="prod-badges">'+
                                     (qty?'<span class="badge badge-cart">EN CARRITO x'+qty+'</span>':'')+
+                                    (showCat?'<span class="badge badge-cat">'+esc(p.categoria||'General')+'</span>':'')+
                                 '</div>'+
                                 '<div class="prod-name">'+esc(p.nombre)+'</div>'+
                                 (p.descripcion?'<div class="prod-desc">'+esc(p.descripcion)+'</div>':'')+
@@ -640,7 +658,7 @@
                 '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">$'+t.total.toFixed(2)+'</span></div>'+
             '</div>';
 
-            h+='<button class="btn btn-accent" style="max-width:100%;box-shadow:0 8px 28px rgba(255,221,87,0.25);display:flex;justify-content:space-between" onclick="openCheckout()">'+
+            h+='<button class="btn btn-accent" style="max-width:100%;box-shadow:0 8px 28px rgba(184,255,0,0.25);display:flex;justify-content:space-between" onclick="openCheckout()">'+
                 '<span>Enviar pedido</span><span>$'+t.total.toFixed(2)+'</span></button>';
             h+='<div style="text-align:center;margin-top:10px;font-size:0.7rem;color:var(--gris)">📲 Se enviara por WhatsApp</div>';
             h+='</div>';
