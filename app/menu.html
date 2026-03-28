@@ -17,13 +17,52 @@
         body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;max-width:430px;margin:0 auto}
 
         /* GPS Welcome */
-        .gps-welcome{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
-        .gps-welcome-icon{width:80px;height:80px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin-bottom:24px;box-shadow:0 8px 30px rgba(255,221,87,0.25)}
-        .gps-welcome h2{font-size:1.4rem;font-weight:900;margin-bottom:8px;color:var(--texto)}
-        .gps-welcome p{font-size:0.9rem;color:var(--gris);line-height:1.6;margin-bottom:28px;max-width:300px}
-        .gps-status{text-align:center;font-size:0.82rem;color:var(--gris);margin-bottom:10px;min-height:20px}
+        .gps-welcome{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;overflow:hidden}
+        .gps-welcome::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:80%;background:radial-gradient(ellipse at center,rgba(255,221,87,0.06) 0%,transparent 70%);pointer-events:none}
+        .gps-welcome::after{content:'';position:absolute;bottom:-10%;right:-10%;width:50%;height:50%;background:radial-gradient(circle,rgba(255,221,87,0.04) 0%,transparent 70%);pointer-events:none}
+
+        /* Brand */
+        .welcome-brand{margin-bottom:6px;position:relative;z-index:1}
+        .welcome-brand-name{font-size:2.2rem;font-weight:900;color:var(--acc);letter-spacing:0.04em;line-height:1}
+        .welcome-brand-sub{font-size:0.85rem;font-weight:700;color:var(--texto);letter-spacing:0.25em;text-transform:uppercase;opacity:0.7;margin-top:2px}
+        .welcome-brand-tag{font-size:0.7rem;color:var(--gris);margin-top:6px;font-weight:600}
+
+        /* Floating food orbit */
+        .welcome-orbit{position:relative;width:160px;height:160px;margin:28px auto 24px;z-index:1}
+        .welcome-orbit-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#FFB800);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 40px rgba(255,221,87,0.3),0 0 80px rgba(255,221,87,0.1)}
+        .welcome-orbit-ring{position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(255,221,87,0.15);animation:welcome-spin 20s linear infinite}
+        .welcome-orbit-ring2{position:absolute;inset:-18px;border-radius:50%;border:1px dashed rgba(255,221,87,0.08);animation:welcome-spin 30s linear infinite reverse}
+        .welcome-food{position:absolute;font-size:1.6rem;animation:welcome-float 3s ease-in-out infinite;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4))}
+        .welcome-food:nth-child(1){top:-8px;left:50%;transform:translateX(-50%);animation-delay:0s}
+        .welcome-food:nth-child(2){top:22%;right:-12px;animation-delay:0.5s}
+        .welcome-food:nth-child(3){bottom:22%;right:-8px;animation-delay:1s}
+        .welcome-food:nth-child(4){bottom:-8px;left:50%;transform:translateX(-50%);animation-delay:1.5s}
+        .welcome-food:nth-child(5){bottom:22%;left:-12px;animation-delay:2s}
+        .welcome-food:nth-child(6){top:22%;left:-8px;animation-delay:2.5s}
+        @keyframes welcome-spin{to{transform:rotate(360deg)}}
+        @keyframes welcome-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+        /* Pulse rings behind center */
+        .welcome-pulse{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%}
+        .welcome-pulse::before,.welcome-pulse::after{content:'';position:absolute;inset:-12px;border-radius:50%;border:2px solid var(--acc);opacity:0;animation:welcome-ping 2.5s ease-out infinite}
+        .welcome-pulse::after{animation-delay:1.25s}
+        @keyframes welcome-ping{0%{transform:scale(1);opacity:0.4}100%{transform:scale(2.2);opacity:0}}
+
+        /* Text */
+        .welcome-title{font-size:1.35rem;font-weight:900;color:var(--texto);margin-bottom:6px;position:relative;z-index:1}
+        .welcome-text{font-size:0.85rem;color:var(--gris);line-height:1.6;margin-bottom:28px;max-width:300px;position:relative;z-index:1}
+
+        /* GPS status */
+        .gps-status{text-align:center;font-size:0.82rem;color:var(--gris);margin-bottom:10px;min-height:20px;transition:all 0.3s}
         .gps-status.success{color:var(--green);font-weight:700}
-        .gps-status.error{color:#e53e3e}
+        .gps-status.error{color:var(--gris);font-weight:600}
+
+        /* CTA button with glow */
+        .welcome-cta{position:relative;z-index:1;width:100%;max-width:320px;margin-bottom:10px}
+        .welcome-cta .btn-accent{animation:welcome-glow 2.5s ease-in-out infinite;box-shadow:0 4px 20px rgba(255,221,87,0.25);font-size:1rem;padding:16px 24px;border-radius:16px}
+        @keyframes welcome-glow{0%,100%{box-shadow:0 4px 20px rgba(255,221,87,0.25)}50%{box-shadow:0 4px 36px rgba(255,221,87,0.45)}}
+        .welcome-skip{background:none;border:none;color:var(--gris);font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;padding:8px 16px;opacity:0.7;transition:opacity 0.2s;position:relative;z-index:1}
+        .welcome-skip:hover{opacity:1}
 
         .btn{border:none;border-radius:14px;padding:14px 20px;font-weight:800;font-size:0.95rem;cursor:pointer;font-family:inherit;width:100%;max-width:320px;transition:all 0.2s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
         .btn:active{transform:scale(0.97)}
@@ -167,12 +206,34 @@
 </head>
 <body>
     <div class="gps-welcome" id="gps-welcome">
-        <div class="gps-welcome-icon">📍</div>
-        <h2>Comparte tu ubicacion</h2>
-        <p>Para mostrarte los restaurantes mas cercanos y calcular el delivery.</p>
+        <div class="welcome-brand">
+            <div class="welcome-brand-name">DEWAN</div>
+            <div class="welcome-brand-sub">Delivery</div>
+            <div class="welcome-brand-tag">Encomiendas al instante</div>
+        </div>
+
+        <div class="welcome-orbit">
+            <div class="welcome-pulse"></div>
+            <div class="welcome-orbit-ring"></div>
+            <div class="welcome-orbit-ring2"></div>
+            <div class="welcome-orbit-center">🛵</div>
+            <span class="welcome-food">🍔</span>
+            <span class="welcome-food">🍕</span>
+            <span class="welcome-food">🌮</span>
+            <span class="welcome-food">🍗</span>
+            <span class="welcome-food">🍱</span>
+            <span class="welcome-food">🥪</span>
+        </div>
+
+        <div class="welcome-title">¡Tu comida favorita está aquí!</div>
+        <div class="welcome-text">Comparte tu ubicación para ver restaurantes cerca de ti y calcular el costo del delivery</div>
+
         <div class="gps-status" id="welcome-gps-status"></div>
-        <button class="btn btn-accent" id="btn-welcome-gps" onclick="welcomeGPS()">📍 Compartir ubicacion</button>
-        <button class="btn btn-outline" onclick="skipGPS()">Continuar sin ubicacion</button>
+
+        <div class="welcome-cta">
+            <button class="btn btn-accent" id="btn-welcome-gps" onclick="welcomeGPS()">📍 ¿Dónde estás?</button>
+        </div>
+        <button class="welcome-skip" onclick="skipGPS()">Continuar sin ubicación</button>
     </div>
 
     <div id="app" style="display:none">
@@ -221,15 +282,15 @@
         window.welcomeGPS=function(){
             var st=document.getElementById('welcome-gps-status');
             var btn=document.getElementById('btn-welcome-gps');
-            st.className='gps-status';st.textContent='Obteniendo ubicacion...';
-            btn.disabled=true;btn.textContent='📍 Obteniendo...';
-            if(!navigator.geolocation){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS.';btn.disabled=false;btn.textContent='📍 Compartir ubicacion';return}
+            st.className='gps-status';st.textContent='🔎 Buscando tu ubicación...';
+            btn.disabled=true;btn.textContent='🔎 Buscando...';
+            if(!navigator.geolocation){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';btn.disabled=false;btn.textContent='📍 ¿Dónde estás?';return}
             navigator.geolocation.getCurrentPosition(function(pos){
                 window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
-                st.className='gps-status success';st.textContent='Ubicacion obtenida';
+                st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';
                 setTimeout(function(){document.getElementById('gps-welcome').style.display='none';app.style.display='block';loadSession()},500);
             },function(err){
-                st.className='gps-status error';st.textContent=err.code===1?'Permiso denegado.':'No se pudo obtener GPS.';
+                st.className='gps-status error';st.textContent=err.code===1?'No hay problema, puedes continuar sin ubicación 😊':'No se pudo obtener GPS, pero puedes continuar 😊';
                 btn.disabled=false;btn.textContent='📍 Intentar de nuevo';
             },{enableHighAccuracy:true,timeout:15000});
         };
