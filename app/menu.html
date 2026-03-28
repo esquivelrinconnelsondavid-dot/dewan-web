@@ -336,14 +336,18 @@
         // ── Recalcular distancias con GPS del cliente ──
         function recalcDistances(rests){
             if(!window._clientGPS) return rests;
-            var TARIFA_BASE=1.50,PRECIO_KM=0.60;
+            // Tarifas DEWAN (mismas que motorizado-en-camino-mejorado)
+            var TARIFA_BASE=1.50,KM_INCLUIDOS=3,PRECIO_POR_KM=0.50,FACTOR_RUTA=1.3;
             return rests.map(function(r){
                 var copy={nombre:r.nombre,productos:r.productos,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng};
                 if(r.restaurante_lat&&r.restaurante_lng){
-                    var dist=haversine(window._clientGPS.lat,window._clientGPS.lng,parseFloat(r.restaurante_lat),parseFloat(r.restaurante_lng));
-                    copy.distancia_km=Math.round(dist*10)/10;
-                    copy.tiempo_estimado_min=Math.ceil(10+dist*3);
-                    copy.precio_delivery=Math.round((TARIFA_BASE+Math.max(0,dist-0.5)*PRECIO_KM)*100)/100;
+                    var distLineal=haversine(window._clientGPS.lat,window._clientGPS.lng,parseFloat(r.restaurante_lat),parseFloat(r.restaurante_lng));
+                    var distRuta=distLineal*FACTOR_RUTA;
+                    copy.distancia_km=Math.round(distRuta*10)/10;
+                    copy.tiempo_estimado_min=Math.round(15+distRuta*3);
+                    var precio=TARIFA_BASE;
+                    if(distRuta>KM_INCLUIDOS) precio=TARIFA_BASE+((distRuta-KM_INCLUIDOS)*PRECIO_POR_KM);
+                    copy.precio_delivery=Math.round(precio*100)/100;
                 }
                 return copy;
             });
