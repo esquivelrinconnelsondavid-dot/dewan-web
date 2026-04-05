@@ -444,60 +444,10 @@
             return false;
         }
 
-        // ── Filtrar productos por búsqueda (inteligente) ──
+        // ── Devolver restaurantes del backend tal cual (el backend ya filtra) ──
         function getFilteredRestaurantes(){
             var rests=sessionData.resultados||[];
-            rests=recalcDistances(rests);
-            var busqRaw=(sessionData.busqueda_texto||'').toLowerCase().trim();
-            if(!busqRaw||busqRaw==='comida'||busqRaw==='menu'||busqRaw==='todo') return rests;
-
-            // Limpiar prefijos como "menu del", "que tiene", "recomiendame"
-            var busq=busqRaw;
-            var prefijos=['menu de la ','menu de el ','menu de ','menu del ','menú de la ','menú de el ','menú de ','menú del ','que tiene ','que tiene el ','platos de ','platos del ','carta de ','carta del ','recomiendame ','recomiéndame '];
-            prefijos.forEach(function(p){if(busq.startsWith(p))busq=busq.substring(p.length).trim()});
-
-            // Quitar "normal/normales" suelto para evitar ruido
-            busq=busq.replace(/\s+normales?\b/g,'').replace(/\bnormales?\s+/g,'').trim();
-            if(!busq) return rests;
-
-            // Helper para copiar restaurante con productos filtrados
-            function copyRest(r,prods){
-                return {nombre:r.nombre,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,direccion:r.direccion,horario:r.horario,telefono:r.telefono,productos:prods};
-            }
-
-            // Contar palabras significativas
-            var sigWords=busq.split(' ').filter(function(w){return w.length>2&&!(/^(el|la|los|las|de|del|con|sin|para|por)$/.test(w))});
-            var isMultiWord=sigWords.length>=2;
-
-            if(isMultiWord){
-                // ═══ MULTI-WORD: probablemente restaurante (Verde Bolón, Café Paris) ═══
-                var restMatch=rests.filter(function(r){return fuzzyMatchRest(r.nombre||'',busq)});
-                if(restMatch.length>0) return restMatch; // Todo su menú
-
-                // No matchea restaurante → buscar por plato/categoría (mostrar menú completo del restaurante)
-                var prodMatch=rests.filter(function(r){
-                    return (r.productos||[]).some(function(p){
-                        return fuzzyMatchStrict(p.nombre||'',busq)||fuzzyMatchStrict(p.categoria||'',busq);
-                    });
-                });
-                if(prodMatch.length>0) return prodMatch;
-            } else {
-                // ═══ SINGLE WORD: probablemente tipo comida (bolones, empanadas) ═══
-                // Categoría OR Nombre (mostrar menú completo del restaurante que tenga match)
-                var filtCombi=rests.filter(function(r){
-                    return (r.productos||[]).some(function(p){
-                        return fuzzyMatchStrict(p.categoria||'',busq)||fuzzyMatchStrict(p.nombre||'',busq)||fuzzyMatchStrict(p.descripcion||'',busq);
-                    });
-                });
-                if(filtCombi.length>0) return filtCombi;
-
-                // Nombre restaurante (mostrar todo su menú)
-                var restMatch2=rests.filter(function(r){return fuzzyMatchRest(r.nombre||'',busq)});
-                if(restMatch2.length>0) return restMatch2;
-            }
-
-            // ═══ FALLBACK: mostrar todo del backend ═══
-            return rests;
+            return recalcDistances(rests);
         }
 
         function sortRests(list,key){
