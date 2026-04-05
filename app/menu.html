@@ -197,6 +197,10 @@
         .app-footer{text-align:center;padding:20px 20px 80px;font-size:0.7rem;color:var(--gris)}
         body.has-cart{padding-bottom:80px}
 
+        /* Badge abierto/cerrado */
+        .badge-open{font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px;background:rgba(37,211,102,0.18);color:#25D366;margin-left:6px;vertical-align:middle}
+        .badge-closed{font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px;background:rgba(255,59,48,0.18);color:#FF3B30;margin-left:6px;vertical-align:middle}
+
         /* Cart nota input */
         .cart-nota-wrap{width:100%;display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
         .cart-nota-icon{font-size:0.75rem;flex-shrink:0}
@@ -366,7 +370,7 @@
             // Tarifas DEWAN (mismas que motorizado-en-camino-mejorado)
             var TARIFA_BASE=1.50,KM_INCLUIDOS=3,PRECIO_POR_KM=0.50,FACTOR_RUTA=1.3;
             return rests.map(function(r){
-                var copy={nombre:r.nombre,productos:r.productos,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng};
+                var copy={nombre:r.nombre,productos:r.productos,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,horario:r.horario};
                 if(r.restaurante_lat&&r.restaurante_lng){
                     var distLineal=haversine(window._clientGPS.lat,window._clientGPS.lng,parseFloat(r.restaurante_lat),parseFloat(r.restaurante_lng));
                     var distRuta=distLineal*FACTOR_RUTA;
@@ -470,25 +474,21 @@
                 var restMatch=rests.filter(function(r){return fuzzyMatchRest(r.nombre||'',busq)});
                 if(restMatch.length>0) return restMatch; // Todo su menú
 
-                // No matchea restaurante → buscar por plato/categoría
-                var prodMatch=rests.map(function(r){
-                    var prods=(r.productos||[]).filter(function(p){
+                // No matchea restaurante → buscar por plato/categoría (mostrar menú completo del restaurante)
+                var prodMatch=rests.filter(function(r){
+                    return (r.productos||[]).some(function(p){
                         return fuzzyMatchStrict(p.nombre||'',busq)||fuzzyMatchStrict(p.categoria||'',busq);
                     });
-                    if(prods.length===0) return null;
-                    return copyRest(r,prods);
-                }).filter(Boolean);
+                });
                 if(prodMatch.length>0) return prodMatch;
             } else {
                 // ═══ SINGLE WORD: probablemente tipo comida (bolones, empanadas) ═══
-                // Categoría OR Nombre (combinado para no perder resultados)
-                var filtCombi=rests.map(function(r){
-                    var prods=(r.productos||[]).filter(function(p){
+                // Categoría OR Nombre (mostrar menú completo del restaurante que tenga match)
+                var filtCombi=rests.filter(function(r){
+                    return (r.productos||[]).some(function(p){
                         return fuzzyMatchStrict(p.categoria||'',busq)||fuzzyMatchStrict(p.nombre||'',busq)||fuzzyMatchStrict(p.descripcion||'',busq);
                     });
-                    if(prods.length===0) return null;
-                    return copyRest(r,prods);
-                }).filter(Boolean);
+                });
                 if(filtCombi.length>0) return filtCombi;
 
                 // Nombre restaurante (mostrar todo su menú)
@@ -512,6 +512,14 @@
         window.renderHome=function(){
             currentView='home';
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
+            // Abiertos primero (cerrados al final, sin horario en medio)
+            rests.sort(function(a,b){
+                var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                // true(abierto)=0, null(sin horario)=1, false(cerrado)=2
+                var va=sa===true?0:sa===null?1:2;
+                var vb=sb===true?0:sb===null?1:2;
+                return va-vb;
+            });
             var busq=sessionData.busqueda_texto||'Comida';
             var h='<div class="header-sticky">'+
                 '<div class="header-top">'+
@@ -536,7 +544,7 @@
                         '<div class="rest-top">'+
                             '<div class="rest-avatar" style="background:'+color+'18;border:2px solid '+color+'35">'+getEmoji(r.nombre)+'</div>'+
                             '<div class="rest-info">'+
-                                '<div class="rest-name">'+esc(r.nombre)+'</div>'+
+                                '<div class="rest-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
                                 '<div class="rest-platos-count">'+( (r.productos||[]).length)+' platos disponibles</div>'+
                                 '<div class="rest-meta">'+
                                     (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
@@ -588,7 +596,7 @@
                 '</div>'+
                 '<div class="rest-detail-info">'+
                     '<div class="rest-detail-avatar" style="background:'+color+'20;border:2px solid '+color+'40">'+getEmoji(r.nombre)+'</div>'+
-                    '<div style="flex:1"><div class="rest-detail-name">'+esc(r.nombre)+'</div>'+
+                    '<div style="flex:1"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
                         '<div class="rest-meta" style="margin-top:6px">'+
                             (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
                             (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
@@ -883,6 +891,34 @@
         function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
         function jsEsc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
         function infoBox(icon,val,label){return '<div class="info-box"><div class="info-box-icon">'+icon+'</div><div class="info-box-val">'+val+'</div><div class="info-box-label">'+label+'</div></div>'}
+        // Verificar si restaurante está abierto (Ecuador UTC-5)
+        function isRestOpen(horario){
+            if(!horario||!horario.trim()) return null; // sin horario → no mostrar badge
+            var now=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'}));
+            var nowMin=now.getHours()*60+now.getMinutes();
+            // Parsear formatos: "11:00 - 22:30", "11:00 am - 21:00 pm", "16:00 pm - 22:00 pm"
+            var clean=horario.replace(/\s*(am|pm)\s*/gi,function(m,p){return ' '+p.toLowerCase()+' '}).trim();
+            var parts=clean.split(/\s*[-–]\s*/);
+            if(parts.length<2) return null;
+            function parseTime(s){
+                s=s.trim();
+                var m=s.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+                if(!m) return null;
+                var h=parseInt(m[1],10),min=parseInt(m[2],10),ampm=m[3]?m[3].toLowerCase():null;
+                if(ampm==='pm'&&h<12) h+=12;
+                if(ampm==='am'&&h===12) h=0;
+                return h*60+min;
+            }
+            var open=parseTime(parts[0]),close=parseTime(parts[1]);
+            if(open===null||close===null) return null;
+            if(close<=open) return nowMin>=open||nowMin<close; // cruza medianoche
+            return nowMin>=open&&nowMin<close;
+        }
+        function openBadge(horario){
+            var st=isRestOpen(horario);
+            if(st===null) return '';
+            return st?'<span class="badge-open">🟢 Abierto</span>':'<span class="badge-closed">🔴 Cerrado</span>';
+        }
         function getColor(i){var c=['#FF6B35','#C0392B','#2C3E50','#E67E22','#27AE60','#8E44AD','#2980B9','#D35400','#16A085','#F39C12'];return c[i%c.length]}
         function getEmoji(name){
             var n=(name||'').toLowerCase();
