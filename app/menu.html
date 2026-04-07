@@ -488,7 +488,7 @@
                 var previewProds=(r.productos||[]).slice(0,4);
                 var totalProds=(r.productos||[]).length;
 
-                h+='<div class="rest-card" onclick="openRest('+idx+')">'+
+                h+='<div class="rest-card" onclick="openRest(\''+ jsEsc(r.nombre) +'\')">'+
                     '<div class="rest-color-bar" style="background:linear-gradient(90deg,'+color+','+color+'44)"></div>'+
                     '<div class="rest-body">'+
                         '<div class="rest-top">'+
@@ -531,12 +531,14 @@
         }
 
         // ── RESTAURANT VIEW ──
-        window.openRest=function(idx){
+        window.openRest=function(nombre){
             currentView='rest';
-            currentRestIdx=idx;
+            currentRestIdx=nombre;
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
-            var r=rests[idx];if(!r)return;
-            var color=getColor(idx);
+            var r=null;var ridx=0;
+            for(var i=0;i<rests.length;i++){if(rests[i].nombre===nombre){r=rests[i];ridx=i;break;}}
+            if(!r)return;
+            var color=getColor(ridx);
             var prods=r.productos||[];
 
             var h='<div class="rest-detail-header" style="background:linear-gradient(180deg,'+color+'20 0%,var(--bg) 100%)">'+
@@ -651,7 +653,7 @@
             var byRest={};
             window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
 
-            var h='<div class="cart-header"><button class="btn-back" onclick="'+(currentRestIdx!==null?'openRest('+currentRestIdx+')':'renderHome()')+'">←</button><span style="font-weight:900;font-size:1.2rem">Mi pedido</span><span style="margin-left:auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--gris);font-weight:700">'+t.items+' items</span></div>';
+            var h='<div class="cart-header"><button class="btn-back" onclick="'+(currentRestIdx!==null?"openRest('"+currentRestIdx+"')":'renderHome()')+'">←</button><span style="font-weight:900;font-size:1.2rem">Mi pedido</span><span style="margin-left:auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--gris);font-weight:700">'+t.items+' items</span></div>';
             h+='<div style="padding:16px;padding-bottom:100px">';
 
             Object.keys(byRest).forEach(function(rest){
