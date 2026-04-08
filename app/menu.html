@@ -462,13 +462,34 @@
         window.renderHome=function(){
             currentView='home';
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
-            // Abiertos primero (cerrados al final, sin horario en medio)
+            // Relevancia: restaurantes especializados primero
+            var busqTexto=(sessionData.busqueda_texto||'').toLowerCase();
+            if(busqTexto&&busqTexto!=='comida'){
+                var busqNorm=removeAccents(normWord(busqTexto));
+                var busqWords=busqTexto.split(/\s+/).map(function(w){return removeAccents(normWord(w))});
+                rests.forEach(function(r){
+                    var nameNorm=removeAccents(r.nombre.toLowerCase());
+                    var nameMatch=busqWords.some(function(w){return w.length>2&&nameNorm.indexOf(w)!==-1});
+                    var prods=r.productos||[];
+                    var matchCount=0;
+                    prods.forEach(function(p){
+                        var pn=removeAccents((p.nombre||'').toLowerCase());
+                        if(busqWords.some(function(w){return w.length>2&&pn.indexOf(w)!==-1}))matchCount++;
+                    });
+                    var pct=prods.length?matchCount/prods.length:0;
+                    // Score: nombre match=0 (top), >40% platos=1, algo=2, nada=3
+                    r._relev=nameMatch?0:(pct>0.4?1:(matchCount>0?2:3));
+                });
+            }
+            // Abiertos primero, luego por relevancia dentro de cada grupo
             rests.sort(function(a,b){
                 var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
-                // true(abierto)=0, null(sin horario)=1, false(cerrado)=2
                 var va=sa===true?0:sa===null?1:2;
                 var vb=sb===true?0:sb===null?1:2;
-                return va-vb;
+                if(va!==vb) return va-vb;
+                var ra=a._relev!=null?a._relev:3;
+                var rb=b._relev!=null?b._relev:3;
+                return ra-rb;
             });
             var busq=sessionData.busqueda_texto||'Comida';
             var h='<div class="header-sticky">'+
