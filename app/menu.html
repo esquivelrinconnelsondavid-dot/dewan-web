@@ -123,7 +123,7 @@
         .prod-name{font-weight:800;font-size:0.9rem;line-height:1.2}
         .prod-desc{color:var(--gris);font-size:0.73rem;margin-top:3px;line-height:1.45}
         .prod-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
-        .prod-price{font-weight:900;font-size:1.1rem;color:var(--acc)}
+        .prod-price{font-weight:700;font-size:1.1rem;color:#FF7A00}
         .btn-agregar{background:#FF6B35;color:white;border:none;border-radius:12px;padding:8px 16px;font-weight:800;font-size:0.78rem;cursor:pointer;font-family:inherit;transition:transform 0.15s}
         .btn-agregar:active{transform:scale(0.93)}
 
@@ -184,7 +184,7 @@
         .preview-chips{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
         .preview-chips::-webkit-scrollbar{display:none}
         .preview-chip{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:5px 12px;font-size:0.7rem;font-weight:700;color:var(--gris);white-space:nowrap;flex-shrink:0}
-        .preview-chip-price{color:var(--acc);margin-left:4px}
+        .preview-chip-price{color:#FF7A00;font-weight:700;margin-left:4px}
         .preview-chip-more{font-weight:800;color:var(--acc)}
 
         /* Rest detail header */
@@ -198,8 +198,8 @@
         body.has-cart{padding-bottom:80px}
 
         /* Badge abierto/cerrado */
-        .badge-open{font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px;background:rgba(37,211,102,0.18);color:#25D366;margin-left:6px;vertical-align:middle}
-        .badge-closed{font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px;background:rgba(255,59,48,0.18);color:#FF3B30;margin-left:6px;vertical-align:middle}
+        .badge-open{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(0,210,106,0.18);color:#00D26A;margin-left:6px;vertical-align:middle}
+        .badge-closed{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(255,59,48,0.18);color:#FF3B30;margin-left:6px;vertical-align:middle}
 
         /* Cart nota input */
         .cart-nota-wrap{width:100%;display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
@@ -257,7 +257,7 @@
         <div class="welcome-brand">
             <div class="welcome-brand-name">DEWAN</div>
             <div class="welcome-brand-sub">Delivery</div>
-            <div class="welcome-brand-tag">Encomiendas al instante</div>
+            <div class="welcome-brand-tag">150+ restaurantes en Riobamba</div>
         </div>
 
         <div class="welcome-orbit">
@@ -279,7 +279,7 @@
         <div class="gps-status" id="welcome-gps-status"></div>
 
         <div class="welcome-cta">
-            <button class="btn btn-accent" id="btn-welcome-gps" onclick="welcomeGPS()">📍 ¿Dónde estás?</button>
+            <button class="btn btn-accent" id="btn-welcome-gps" onclick="welcomeGPS()">📍 Ver restaurantes cerca de ti</button>
         </div>
         <button class="welcome-skip" onclick="skipGPS()">Continuar sin ubicación</button>
     </div>
@@ -332,7 +332,7 @@
             var btn=document.getElementById('btn-welcome-gps');
             st.className='gps-status';st.textContent='🔎 Buscando tu ubicación...';
             btn.disabled=true;btn.textContent='🔎 Buscando...';
-            if(!navigator.geolocation){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';btn.disabled=false;btn.textContent='📍 ¿Dónde estás?';return}
+            if(!navigator.geolocation){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';btn.disabled=false;btn.textContent='📍 Ver restaurantes cerca de ti';return}
             navigator.geolocation.getCurrentPosition(function(pos){
                 window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
                 st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';
