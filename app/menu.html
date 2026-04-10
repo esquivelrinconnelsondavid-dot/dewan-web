@@ -216,31 +216,32 @@
         .cart-nota-input::placeholder{color:var(--gris);font-size:0.72rem}
         .cart-nota-input:focus{border-color:var(--acc)}
 
-        /* Checkout improved — CAMBIO 3 */
-        .checkout-header{text-align:center;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:16px}
-        .checkout-icon{font-size:2.8rem;margin-bottom:8px;display:block}
-        .checkout-title{font-size:1.2rem;font-weight:900;color:var(--acc)}
-        .checkout-subtitle{font-size:0.82rem;color:var(--gris);margin-top:4px}
+        /* Checkout inline (dentro del carrito) */
         .checkout-gps-box{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}
-        .checkout-gps-title{font-weight:800;font-size:0.9rem;margin-bottom:4px}
-        .checkout-gps-sub{font-size:0.75rem;color:var(--gris)}
         .checkout-gps-ok{color:var(--green);font-weight:800;font-size:0.88rem}
         .checkout-gps-searching{color:var(--acc);font-size:0.82rem}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
         .checkout-gps-searching{animation:pulse 1.5s ease-in-out infinite}
-        .btn-wa{background:var(--green);color:white;font-size:1.05rem;padding:16px 20px;border-radius:16px;box-shadow:0 6px 24px rgba(37,211,102,0.3)}
+        .btn-wa{background:var(--green);color:white;font-size:1.05rem;padding:16px 20px;border-radius:16px;box-shadow:0 6px 24px rgba(37,211,102,0.3);max-width:100%}
         .btn-wa:hover{opacity:0.95}
         .checkout-nota{font-size:0.72rem;color:var(--gris);padding:2px 0 0 16px}
 
-        /* Checkout address input — CAMBIO 3 */
-        .checkout-addr-wrap{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:16px}
-        .checkout-addr-label{font-weight:800;font-size:0.85rem;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-        .checkout-addr-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.88rem;color:var(--texto);font-family:inherit;outline:none;transition:border-color 0.2s}
-        .checkout-addr-input::placeholder{color:var(--gris);font-size:0.82rem}
-        .checkout-addr-input:focus{border-color:var(--acc)}
-        .checkout-addr-or{text-align:center;font-size:0.72rem;color:var(--gris);margin:8px 0}
-        .checkout-gps-mini{background:none;border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:0.78rem;color:var(--gris);font-weight:700;cursor:pointer;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s}
-        .checkout-gps-mini:hover{border-color:var(--acc);color:var(--acc)}
+        /* Location section in cart */
+        .loc-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:12px 0 16px}
+        .loc-title{font-weight:900;font-size:0.85rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+        .btn-gps-main{background:var(--acc);color:#111;border:none;border-radius:14px;padding:14px 20px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 16px rgba(184,255,0,0.2)}
+        .btn-gps-main:active{transform:scale(0.97)}
+        .btn-gps-main:disabled{opacity:0.5;cursor:not-allowed}
+        .loc-toggle{background:none;border:none;color:var(--acc);font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;padding:10px 0 0;display:block;text-align:center;width:100%;opacity:0.8;transition:opacity 0.2s}
+        .loc-toggle:hover{opacity:1}
+        .loc-addr-wrap{margin-top:10px;display:none}
+        .loc-addr-wrap.visible{display:block}
+        .loc-addr-input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.85rem;color:var(--texto);font-family:inherit;outline:none;transition:border-color 0.2s}
+        .loc-addr-input::placeholder{color:var(--gris);font-size:0.8rem}
+        .loc-addr-input:focus{border-color:var(--acc)}
+        .loc-gps-ok{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);border-radius:12px;margin-bottom:10px}
+        .loc-gps-ok span{color:var(--green);font-weight:800;font-size:0.85rem}
+        .loc-ref-label{font-size:0.75rem;color:var(--gris);font-weight:700;margin-bottom:6px}
 
         /* Almuerzo selector modal */
         .almuerzo-modal{max-height:85vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,20px)}
@@ -732,7 +733,7 @@
             updateCartFloat();
         };
 
-        // ── CART VIEW ──
+        // ── CART + CHECKOUT UNIFICADO ──
         window.showCart=function(){
             currentView='cart';
             var t=cartTotals();
@@ -746,7 +747,7 @@
             window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
 
             var h='<div class="cart-header"><button class="btn-back" onclick="'+(currentRestIdx!==null?"openRest('"+currentRestIdx+"')":'renderHome()')+'">←</button><span style="font-weight:900;font-size:1.2rem">Mi pedido</span><span style="margin-left:auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--gris);font-weight:700">'+t.items+' items</span></div>';
-            h+='<div style="padding:16px;padding-bottom:100px">';
+            h+='<div style="padding:16px;padding-bottom:40px">';
 
             Object.keys(byRest).forEach(function(rest){
                 h+='<div style="font-weight:800;font-size:0.8rem;color:var(--acc);padding:8px 0 4px">'+esc(rest)+'</div>';
@@ -786,6 +787,7 @@
                 });
             });
 
+            // Resumen
             h+='<div class="cart-summary-box">'+
                 '<div style="font-weight:800;font-size:0.78rem;color:var(--gris);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Resumen</div>'+
                 '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">$'+t.subtotal.toFixed(2)+'</span></div>'+
@@ -793,9 +795,26 @@
                 '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">$'+t.total.toFixed(2)+'</span></div>'+
             '</div>';
 
-            h+='<button class="btn btn-accent" style="max-width:100%;box-shadow:0 8px 28px rgba(184,255,0,0.25);display:flex;justify-content:space-between" onclick="openCheckout()">'+
-                '<span>Enviar pedido</span><span>$'+t.total.toFixed(2)+'</span></button>';
-            h+='<div style="text-align:center;margin-top:10px;font-size:0.7rem;color:var(--gris)">📲 Se enviara por WhatsApp</div>';
+            // Ubicación inline
+            h+='<div class="loc-section" id="loc-section">';
+            h+='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>';
+            if(window._clientGPS){
+                h+='<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>';
+                h+='<div class="loc-ref-label">Agregar referencia (opcional)</div>';
+                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
+            } else {
+                h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
+                h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
+                h+='<button class="loc-toggle" onclick="toggleAddrField()">¿Prefieres escribir tu dirección?</button>';
+                h+='<div class="loc-addr-wrap" id="loc-addr-wrap">';
+                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. Daniel León Borja y Carabobo" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
+                h+='</div>';
+            }
+            h+='</div>';
+
+            // Botón WhatsApp siempre visible
+            h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
+                '<span>📲 Pedir por WhatsApp</span><span>$'+t.total.toFixed(2)+'</span></button>';
             h+='</div>';
             app.innerHTML=h;
             document.getElementById('cart-float').style.display='none';
@@ -842,87 +861,34 @@
             else if(currentView==='cart')showCart();
         }
 
-        // ── CHECKOUT — CAMBIO 3: Simplificado ──
-        window.openCheckout=function(){
-            var t=cartTotals();if(!t.items)return;
-            var byRest={};window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
-            var itemsH='';
-            Object.keys(byRest).forEach(function(rest){
-                itemsH+='<div class="modal-rest-label">'+esc(rest)+'</div>';
-                byRest[rest].forEach(function(c){
-                    itemsH+='<div class="modal-item"><span class="modal-item-name">'+c.qty+'x '+esc(c.nombre)+'</span><span class="modal-item-price">$'+(c.precio*c.qty).toFixed(2)+'</span></div>';
-                    if(c.almuerzoChoices){
-                        var catOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
-                        catOrder.forEach(function(cat){
-                            if(c.almuerzoChoices[cat]) itemsH+='<div style="font-size:0.72rem;color:var(--gris);padding:1px 0 1px 12px">▸ '+esc(c.almuerzoChoices[cat])+'</div>';
-                        });
-                    }
-                    if(c.nota)itemsH+='<div class="checkout-nota">📝 '+esc(c.nota)+'</div>';
-                });
-            });
-            itemsH+='<div class="modal-total"><span>Delivery</span><span>$'+t.delivery.toFixed(2)+'</span></div>';
-            itemsH+='<div class="modal-total"><span>Total</span><span style="color:var(--acc)">$'+t.total.toFixed(2)+'</span></div>';
-
-            // CAMBIO 3: Checkout simplificado — boton WhatsApp siempre visible
-            var addrSection='';
-            if(window._clientGPS){
-                addrSection='<div class="checkout-gps-box">'+
-                    '<div class="checkout-gps-ok">✅ Ubicación GPS compartida</div>'+
-                '</div>';
-            } else {
-                addrSection='<div class="checkout-addr-wrap">'+
-                    '<div class="checkout-addr-label">📍 ¿Dónde te lo llevamos?</div>'+
-                    '<input type="text" class="checkout-addr-input" id="checkout-addr" placeholder="Ej: Av. Daniel León Borja y Vargas Torres" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">'+
-                    '<div class="checkout-addr-or">o si prefieres</div>'+
-                    '<button class="checkout-gps-mini" id="btn-checkout-gps" onclick="requestGPSCheckout()">📍 Usar mi GPS automático</button>'+
-                    '<div class="gps-status" id="gps-status" style="margin-top:6px"></div>'+
-                '</div>';
-            }
-
-            document.getElementById('modal-content').innerHTML=
-                '<div class="checkout-header">'+
-                    '<span class="checkout-icon">🚴</span>'+
-                    '<div class="checkout-title">¡Tu pedido está listo!</div>'+
-                    '<div class="checkout-subtitle">Confirma y te lo llevamos</div>'+
-                '</div>'+
-                '<div class="modal-items">'+itemsH+'</div>'+
-                addrSection+
-                '<button class="btn btn-wa" onclick="sendWA()">📲 Pedir por WhatsApp</button>'+
-                '<button class="btn btn-outline" onclick="closeModal()" style="margin-top:4px">Cancelar</button>';
-            document.getElementById('modal-overlay').classList.add('visible');
-        };
-
-        // CAMBIO 3: GPS desde checkout simplificado
-        window.requestGPSCheckout=function(){
-            var st=document.getElementById('gps-status'),btn=document.getElementById('btn-checkout-gps');
+        // ── GPS desde carrito inline ──
+        window.requestGPSCart=function(){
+            var st=document.getElementById('gps-status-cart'),btn=document.getElementById('btn-gps-cart');
             if(st){st.className='gps-status checkout-gps-searching';st.textContent='🔍 Buscando tu ubicación...';}
-            if(btn){btn.disabled=true;}
+            if(btn){btn.disabled=true;btn.textContent='🔍 Buscando...';}
             navigator.geolocation.getCurrentPosition(function(pos){
                 window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
-                // Reemplazar sección de dirección por confirmación GPS
-                var wrap=document.querySelector('.checkout-addr-wrap');
-                if(wrap){
-                    wrap.outerHTML='<div class="checkout-gps-box"><div class="checkout-gps-ok">✅ Ubicación GPS compartida</div></div>';
+                // Reemplazar sección de ubicación con confirmación + campo referencia
+                var sec=document.getElementById('loc-section');
+                if(sec){
+                    sec.innerHTML='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>'+
+                        '<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>'+
+                        '<div class="loc-ref-label">Agregar referencia (opcional)</div>'+
+                        '<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
                 }
             },function(){
-                if(st){st.className='gps-status';st.textContent='No se pudo obtener GPS. Escribe tu dirección arriba.';}
-                if(btn){btn.disabled=false;}
+                if(st){st.className='gps-status';st.textContent='No se pudo obtener GPS';}
+                if(btn){btn.disabled=false;btn.textContent='📍 Usar mi ubicación GPS';}
+                // Mostrar campo de texto automáticamente si falla GPS
+                var wrap=document.getElementById('loc-addr-wrap');
+                if(wrap) wrap.classList.add('visible');
             },{enableHighAccuracy:true,timeout:15000});
         };
-
-        // requestGPS original se mantiene
-        window.requestGPS=function(){
-            var st=document.getElementById('gps-status'),btn=document.getElementById('btn-get-gps');
-            if(!st||!btn) return;
-            st.className='gps-status checkout-gps-searching';st.textContent='🔍 Buscando tu ubicación...';btn.disabled=true;
-            navigator.geolocation.getCurrentPosition(function(pos){
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
-                st.className='gps-status success';st.textContent='✅ ¡Ubicación lista! Te encontramos';
-                btn.style.display='none';var waBtn=document.getElementById('btn-send-wa');if(waBtn)waBtn.style.display='flex';
-            },function(){
-                st.className='gps-status';st.textContent='Puedes enviarnos tu ubicación por WhatsApp 😉';btn.disabled=false;btn.textContent='📍 Intentar de nuevo';
-                var waBtn=document.getElementById('btn-send-wa');if(waBtn)waBtn.style.display='flex';
-            },{enableHighAccuracy:true,timeout:15000});
+        window.toggleAddrField=function(){
+            var wrap=document.getElementById('loc-addr-wrap');
+            if(wrap) wrap.classList.toggle('visible');
+            var input=document.getElementById('loc-addr');
+            if(input&&wrap.classList.contains('visible')) input.focus();
         };
 
         // sendWA — CAMBIO 3: incluir dirección de texto si no hay GPS
@@ -946,8 +912,13 @@
                 msg+='\n';
             });
             msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye delivery)\n\n';
+            // Capturar valor actual del campo de dirección/referencia
+            var addrInput=document.getElementById('loc-addr');
+            if(addrInput) window._clientAddr=addrInput.value;
             if(window._clientGPS){
-                msg+='📍 Mi ubicacion:\nhttps://maps.google.com/?q='+window._clientGPS.lat+','+window._clientGPS.lng+'\n\n';
+                msg+='📍 Mi ubicacion:\nhttps://maps.google.com/?q='+window._clientGPS.lat+','+window._clientGPS.lng+'\n';
+                if(window._clientAddr&&window._clientAddr.trim()) msg+='📝 Ref: '+window._clientAddr.trim()+'\n';
+                msg+='\n';
             } else if(window._clientAddr&&window._clientAddr.trim()){
                 msg+='📍 Dirección: '+window._clientAddr.trim()+'\n\n';
             } else {
