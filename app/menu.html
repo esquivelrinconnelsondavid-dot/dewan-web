@@ -872,14 +872,19 @@
             if(btn){btn.disabled=true;btn.textContent='🔍 Buscando...';}
             navigator.geolocation.getCurrentPosition(function(pos){
                 window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
-                // Reemplazar sección de ubicación con confirmación + campo referencia
-                var sec=document.getElementById('loc-section');
-                if(sec){
-                    sec.innerHTML='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>'+
-                        '<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>'+
-                        '<div class="loc-ref-label">Agregar referencia (opcional)</div>'+
-                        '<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
-                }
+                // Recalcular delivery en el carrito con nueva ubicación
+                var rests=getFilteredRestaurantes();
+                var deliveryByRest={};
+                rests.forEach(function(r){deliveryByRest[r.nombre]=r.precio_delivery||0});
+                window._cart.forEach(function(c){
+                    if(deliveryByRest[c.restaurante]!=null) c.delivery=deliveryByRest[c.restaurante];
+                });
+                saveCart();
+                // Capturar referencia antes de re-renderizar
+                var addrInput=document.getElementById('loc-addr');
+                if(addrInput) window._clientAddr=addrInput.value;
+                // Re-render completo para actualizar totales + sección ubicación
+                showCart();
             },function(){
                 if(st){st.className='gps-status';st.textContent='No se pudo obtener GPS';}
                 if(btn){btn.disabled=false;btn.textContent='📍 Usar mi ubicación GPS';}
