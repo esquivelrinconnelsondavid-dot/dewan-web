@@ -598,14 +598,14 @@
                                 '<div class="rest-meta">'+
                                     (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
                                     (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                                    '<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>'+
+                                    (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'<span>🛵 Comparte ubicación</span>')+
                                 '</div>'+
                             '</div>'+
                         '</div>'+
                         '<div class="info-strip">'+
                             infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
                             infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
-                            infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery')+
+                            infoBox('🛵',window._clientGPS?'$'+(r.precio_delivery||0).toFixed(2):'📍 ?','Delivery')+
                             infoBox('🍽',r.productos?r.productos.length:0,'Platos')+
                         '</div>'+
                         '<div class="preview-chips">'+
@@ -649,14 +649,14 @@
                         '<div class="rest-meta" style="margin-top:6px">'+
                             (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
                             (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                            '<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>'+
+                            (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'<span>🛵 Comparte ubicación</span>')+
                         '</div>'+
                     '</div>'+
                 '</div>'+
                 '<div class="info-strip">'+
                     infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
                     infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
-                    infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery')+
+                    infoBox('🛵',window._clientGPS?'$'+(r.precio_delivery||0).toFixed(2):'📍 ?','Delivery')+
                     infoBox('🍽',prods.length,'Platos')+
                 '</div>'+
             '</div>';
@@ -791,8 +791,8 @@
             h+='<div class="cart-summary-box">'+
                 '<div style="font-weight:800;font-size:0.78rem;color:var(--gris);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Resumen</div>'+
                 '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">$'+t.subtotal.toFixed(2)+'</span></div>'+
-                '<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">$'+t.delivery.toFixed(2)+'</span></div>'+
-                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">$'+t.total.toFixed(2)+'</span></div>'+
+                '<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">'+(window._clientGPS?'$'+t.delivery.toFixed(2):'📍 Comparte ubicación')+'</span></div>'+
+                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></div>'+
             '</div>';
 
             // Ubicación inline
@@ -814,7 +814,7 @@
 
             // Botón WhatsApp siempre visible
             h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
-                '<span>📲 Pedir por WhatsApp</span><span>$'+t.total.toFixed(2)+'</span></button>';
+                '<span>📲 Pedir por WhatsApp</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
             h+='</div>';
             app.innerHTML=h;
             document.getElementById('cart-float').style.display='none';
@@ -851,7 +851,7 @@
             if(t.items>0&&currentView!=='cart'){
                 f.style.display='block';
                 document.getElementById('cart-float-count').textContent=t.items;
-                document.getElementById('cart-float-total').textContent='$'+t.total.toFixed(2);
+                document.getElementById('cart-float-total').textContent=window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío';
                 document.body.classList.add('has-cart');
             }else{f.style.display='none';document.body.classList.remove('has-cart')}
         }
@@ -911,7 +911,11 @@
                 });
                 msg+='\n';
             });
-            msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye delivery)\n\n';
+            if(window._clientGPS){
+                msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye delivery)\n\n';
+            } else {
+                msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
+            }
             // Capturar valor actual del campo de dirección/referencia
             var addrInput=document.getElementById('loc-addr');
             if(addrInput) window._clientAddr=addrInput.value;
