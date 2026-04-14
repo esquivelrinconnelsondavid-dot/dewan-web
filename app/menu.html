@@ -598,14 +598,14 @@
                                 '<div class="rest-meta">'+
                                     (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
                                     (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                                    (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'<span>🛵 Comparte ubicación</span>')+
+                                    (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'')+
                                 '</div>'+
                             '</div>'+
                         '</div>'+
                         '<div class="info-strip">'+
                             infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
                             infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
-                            infoBox('🛵',window._clientGPS?'$'+(r.precio_delivery||0).toFixed(2):'📍 ?','Delivery')+
+                            (window._clientGPS?infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery'):'')+
                             infoBox('🍽',r.productos?r.productos.length:0,'Platos')+
                         '</div>'+
                         '<div class="preview-chips">'+
@@ -649,14 +649,14 @@
                         '<div class="rest-meta" style="margin-top:6px">'+
                             (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
                             (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                            (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'<span>🛵 Comparte ubicación</span>')+
+                            (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'')+
                         '</div>'+
                     '</div>'+
                 '</div>'+
                 '<div class="info-strip">'+
                     infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
                     infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
-                    infoBox('🛵',window._clientGPS?'$'+(r.precio_delivery||0).toFixed(2):'📍 ?','Delivery')+
+                    (window._clientGPS?infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery'):'')+
                     infoBox('🍽',prods.length,'Platos')+
                 '</div>'+
             '</div>';
@@ -791,7 +791,7 @@
             h+='<div class="cart-summary-box">'+
                 '<div style="font-weight:800;font-size:0.78rem;color:var(--gris);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Resumen</div>'+
                 '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">$'+t.subtotal.toFixed(2)+'</span></div>'+
-                '<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">'+(window._clientGPS?'$'+t.delivery.toFixed(2):'📍 Comparte ubicación')+'</span></div>'+
+                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">$'+t.delivery.toFixed(2)+'</span></div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></div>'+
             '</div>';
 
