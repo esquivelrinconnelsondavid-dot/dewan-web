@@ -553,7 +553,11 @@
                 if(va!==vb) return va-vb;
                 var ra=a._relev!=null?a._relev:3;
                 var rb=b._relev!=null?b._relev:3;
-                return ra-rb;
+                if(ra!==rb) return ra-rb;
+                // Tier por catálogo: restaurantes con más de 3 platos primero
+                var pa=(a.productos||[]).length>3?0:1;
+                var pb=(b.productos||[]).length>3?0:1;
+                return pa-pb;
             });
             var busq=sessionData.busqueda_texto||'Comida';
             var hasGPS=!!window._clientGPS;
