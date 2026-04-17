@@ -300,7 +300,7 @@
     </style>
 </head>
 <body>
-    <div class="gps-welcome" id="gps-welcome">
+    <div class="gps-welcome" id="gps-welcome" style="display:none">
         <div class="welcome-brand">
             <div class="welcome-brand-name">DEWAN</div>
             <div class="welcome-brand-sub">Delivery</div>
@@ -337,7 +337,7 @@
         <button class="welcome-skip" id="btn-welcome-gps" onclick="welcomeGPS()">📍 Ordenar por cercanía a mí</button>
     </div>
 
-    <div id="app" style="display:none">
+    <div id="app">
         <div class="state-container">
             <div class="spinner"></div>
             <div class="state-title">Buscando opciones...</div>
@@ -384,9 +384,10 @@
             return;
         }
 
-        // FIX #1: Marcar visita inmediatamente y mostrar pantalla de bienvenida.
-        // El cliente avanza con "Ver restaurantes cerca" o "Continuar sin ubicación".
+        // Marcar visita y cargar el menú directamente (sin pantalla de bienvenida).
+        // GPS opcional vía banner discreto en la home.
         markEtapa('abrio');
+        loadSession();
 
         // GPS Welcome — se mantienen las funciones pero ya no se llaman al inicio
         window.welcomeGPS=function(){
