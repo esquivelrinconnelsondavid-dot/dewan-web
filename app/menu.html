@@ -438,6 +438,7 @@
         // BONUS: tracking por etapa del cliente (abrio, eligio_gps, agrego_carrito, abrio_carrito, confirmo)
         var _etapaEnviada={};
         function markEtapa(etapa){
+            _etapaEnviada=_etapaEnviada||{};
             if(_etapaEnviada[etapa]) return;
             _etapaEnviada[etapa]=true;
             try{
