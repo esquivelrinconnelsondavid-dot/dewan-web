@@ -168,7 +168,10 @@
         /* Modal */
         .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
         .modal-overlay.visible{opacity:1;pointer-events:auto}
-        .modal{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:430px;transform:translateY(100%);transition:transform 0.3s ease}
+        .modal{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:430px;transform:translateY(100%);transition:transform 0.3s ease;position:relative}
+        /* FIX #5: Botón X visible en todos los modales */
+        .modal-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--texto);font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;z-index:2;transition:all 0.15s}
+        .modal-close:active{transform:scale(0.9);background:var(--border)}
         .modal-overlay.visible .modal{transform:translateY(0)}
         .modal-title{font-size:1.15rem;font-weight:900;margin-bottom:6px}
         .modal-text{font-size:0.85rem;color:var(--gris);margin-bottom:20px;line-height:1.5}
@@ -224,6 +227,22 @@
         .checkout-gps-searching{animation:pulse 1.5s ease-in-out infinite}
         .btn-wa{background:var(--green);color:white;font-size:1.05rem;padding:16px 20px;border-radius:16px;box-shadow:0 6px 24px rgba(37,211,102,0.3);max-width:100%}
         .btn-wa:hover{opacity:0.95}
+        .cta-helper{text-align:center;font-size:0.78rem;color:var(--gris);margin:4px 0 10px;line-height:1.4;padding:0 8px}
+
+        /* FIX #4: Pantalla de éxito */
+        .success-screen{padding:40px 20px 32px;text-align:center;max-width:420px;margin:0 auto}
+        .success-icon-wrap{position:relative;width:120px;height:120px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center}
+        .success-icon-wrap::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(37,211,102,0.25) 0%,transparent 70%);animation:succ-pulse 2s ease-out infinite}
+        @keyframes succ-pulse{0%{transform:scale(0.9);opacity:0.8}100%{transform:scale(1.4);opacity:0}}
+        .success-icon{width:90px;height:90px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:2.6rem;box-shadow:0 10px 40px rgba(37,211,102,0.4);position:relative;z-index:1}
+        .success-title{font-size:1.6rem;font-weight:900;margin-bottom:10px;color:var(--texto)}
+        .success-text{font-size:0.9rem;color:var(--gris);line-height:1.5;margin-bottom:22px}
+        .success-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:24px;text-align:left}
+        .success-row{display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;padding:6px 0;color:var(--texto);font-weight:700}
+        .success-row span:first-child{color:var(--gris);font-weight:600}
+        .success-hint{font-size:0.78rem;color:var(--gris);margin-bottom:8px}
+        .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--texto);border-radius:14px;padding:13px 20px;font-weight:800;font-size:0.9rem;cursor:pointer;font-family:inherit;width:100%;margin-top:12px;transition:all 0.2s}
+        .btn-ghost:active{transform:scale(0.97);background:var(--card2)}
         .checkout-nota{font-size:0.72rem;color:var(--gris);padding:2px 0 0 16px}
 
         /* Location section in cart */
@@ -234,8 +253,12 @@
         .btn-gps-main:disabled{opacity:0.5;cursor:not-allowed}
         .loc-toggle{background:none;border:none;color:var(--acc);font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;padding:10px 0 0;display:block;text-align:center;width:100%;opacity:0.8;transition:opacity 0.2s}
         .loc-toggle:hover{opacity:1}
-        .loc-addr-wrap{margin-top:10px;display:none}
-        .loc-addr-wrap.visible{display:block}
+        .loc-addr-wrap{margin-top:10px;display:block}
+        .loc-or{text-align:center;font-size:0.72rem;color:var(--gris);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:12px 0 8px;position:relative}
+        .loc-or::before,.loc-or::after{content:'';position:absolute;top:50%;width:30%;height:1px;background:var(--border)}
+        .loc-or::before{left:0}
+        .loc-or::after{right:0}
+        .loc-addr-label{font-size:0.78rem;color:var(--texto);font-weight:800;margin-bottom:6px;opacity:0.9}
         .loc-addr-input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.85rem;color:var(--texto);font-family:inherit;outline:none;transition:border-color 0.2s}
         .loc-addr-input::placeholder{color:var(--gris);font-size:0.8rem}
         .loc-addr-input:focus{border-color:var(--acc)}
@@ -272,7 +295,7 @@
     </style>
 </head>
 <body>
-    <div class="gps-welcome" id="gps-welcome" style="display:none">
+    <div class="gps-welcome" id="gps-welcome">
         <div class="welcome-brand">
             <div class="welcome-brand-name">DEWAN</div>
             <div class="welcome-brand-sub">Delivery</div>
@@ -303,7 +326,7 @@
         <button class="welcome-skip" onclick="skipGPS()">Continuar sin ubicación</button>
     </div>
 
-    <div id="app">
+    <div id="app" style="display:none">
         <div class="state-container">
             <div class="spinner"></div>
             <div class="state-title">Buscando opciones...</div>
@@ -320,7 +343,10 @@
     </div>
 
     <div class="modal-overlay" id="modal-overlay">
-        <div class="modal" id="modal-content"></div>
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#10005;</button>
+            <div id="modal-content"></div>
+        </div>
     </div>
 
     <script>
@@ -340,13 +366,16 @@
         window._clientAddr=''; // CAMBIO 3: dirección de texto
 
         if(!token){
+            document.getElementById('gps-welcome').style.display='none';
+            app.style.display='block';
             app.innerHTML='';
             showError('Link invalido','Este enlace no es valido. Solicita uno nuevo por WhatsApp.');
             return;
         }
 
-        // CAMBIO 1: Cargar directo sin pantalla GPS
-        loadSession();
+        // FIX #1: Marcar visita inmediatamente y mostrar pantalla de bienvenida.
+        // El cliente avanza con "Ver restaurantes cerca" o "Continuar sin ubicación".
+        markEtapa('abrio');
 
         // GPS Welcome — se mantienen las funciones pero ya no se llaman al inicio
         window.welcomeGPS=function(){
@@ -357,6 +386,7 @@
             if(!navigator.geolocation){if(st){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Ver restaurantes cerca de ti';}return}
             navigator.geolocation.getCurrentPosition(function(pos){
                 window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
+                markEtapa('eligio_gps');
                 if(st){st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';}
                 // Si viene del banner, actualizar la vista
                 if(sessionData){
@@ -370,7 +400,7 @@
                 if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}
             },{enableHighAccuracy:true,timeout:15000});
         };
-        window.skipGPS=function(){document.getElementById('gps-welcome').style.display='none';app.style.display='block';loadSession()};
+        window.skipGPS=function(){markEtapa('eligio_sin_gps');document.getElementById('gps-welcome').style.display='none';app.style.display='block';loadSession()};
 
         // CAMBIO 1: Pedir GPS desde el banner inline
         window.requestGPSFromBanner=function(e){
@@ -393,6 +423,22 @@
             try{sessionStorage.setItem('dewan_gps_dismissed','1')}catch(e){}
         };
 
+        // BONUS: tracking por etapa del cliente (abrio, eligio_gps, agrego_carrito, abrio_carrito, confirmo)
+        var _etapaEnviada={};
+        function markEtapa(etapa){
+            if(_etapaEnviada[etapa]) return;
+            _etapaEnviada[etapa]=true;
+            try{
+                var body={etapa_actual:etapa,etapa_at:new Date().toISOString()};
+                if(etapa==='abrio'){body.visto=true;body.visto_at=new Date().toISOString();}
+                fetch(SB_URL+'/rest/v1/links_sesion?token=eq.'+token,{
+                    method:'PATCH',
+                    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+                    body:JSON.stringify(body)
+                });
+            }catch(e){}
+        }
+
         function loadSession(){
             fetch(SB_URL+'/rest/v1/links_sesion?token=eq.'+token+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
             .then(function(r){return r.json()})
@@ -401,7 +447,6 @@
                 var s=data[0];
                 if(s.expira_at&&new Date(s.expira_at)<new Date()){showError('Enlace expirado','Este enlace ha expirado. Solicita uno nuevo.');return}
                 sessionData=s;
-                fetch(SB_URL+'/rest/v1/links_sesion?token=eq.'+token,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({visto:true,visto_at:new Date().toISOString()})});
                 // CAMBIO 2: Restaurar carrito de localStorage
                 restoreCart();
                 renderHome();
@@ -740,6 +785,7 @@
         // ── CART + CHECKOUT UNIFICADO ──
         window.showCart=function(){
             currentView='cart';
+            if(window._cart.length) markEtapa('abrio_carrito');
             var t=cartTotals();
             if(!window._cart.length){
                 app.innerHTML='<div class="cart-header"><button class="btn-back" onclick="renderHome()">←</button><span style="font-weight:900;font-size:1.2rem">Mi pedido</span></div>'+
@@ -799,7 +845,7 @@
                 '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></div>'+
             '</div>';
 
-            // Ubicación inline
+            // Ubicación inline — FIX #2: ambas opciones siempre visibles
             h+='<div class="loc-section" id="loc-section">';
             h+='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>';
             if(window._clientGPS){
@@ -809,16 +855,18 @@
             } else {
                 h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
                 h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
-                h+='<button class="loc-toggle" onclick="toggleAddrField()">¿Prefieres escribir tu dirección?</button>';
+                h+='<div class="loc-or">o escribe tu dirección</div>';
                 h+='<div class="loc-addr-wrap" id="loc-addr-wrap">';
+                h+='<div class="loc-addr-label">Dirección exacta</div>';
                 h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. Daniel León Borja y Carabobo" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
                 h+='</div>';
             }
             h+='</div>';
 
-            // Botón WhatsApp siempre visible
+            // FIX #3: CTA claro + microcopy que explica qué va a pasar
+            h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
             h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
-                '<span>📲 Pedir por WhatsApp</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
+                '<span>✅ Confirmar pedido</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
             h+='</div>';
             app.innerHTML=h;
             document.getElementById('cart-float').style.display='none';
@@ -829,6 +877,7 @@
             var c=findCart(rest,nombre);
             if(c){c.qty++}else{window._cart.push({restaurante:rest,nombre:nombre,precio:precio,delivery:delivery,qty:1})}
             saveCart(); // CAMBIO 2
+            markEtapa('agrego_carrito');
             refreshView();
         };
         window.removeCart=function(rest,nombre){
@@ -939,12 +988,35 @@
             }
             msg+='Token: '+token;
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
-            // CAMBIO 2: Limpiar carrito de localStorage al completar pedido
+            // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
+            var resumen={items:t.items,total:window._clientGPS?t.total:t.subtotal,conGPS:!!window._clientGPS};
+            markEtapa('confirmo');
+            closeModal();
+            showSuccessScreen(resumen);
+        };
+
+        // FIX #4: pantalla de éxito con resumen + CTA para nuevo pedido
+        function showSuccessScreen(resumen){
+            var h='<div class="success-screen">'+
+                '<div class="success-icon-wrap"><div class="success-icon">✅</div></div>'+
+                '<div class="success-title">¡Pedido enviado!</div>'+
+                '<div class="success-text">Abrimos WhatsApp con tu pedido listo. Revisa que se haya enviado el mensaje y espera la confirmación de nuestro operador.</div>'+
+                '<div class="success-box">'+
+                    '<div class="success-row"><span>Productos</span><span>'+resumen.items+'</span></div>'+
+                    '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío')+'</span></div>'+
+                '</div>'+
+                '<div class="success-hint">¿No se abrió WhatsApp?</div>'+
+                '<button class="btn btn-wa" onclick="sendWA()">📲 Reintentar envío</button>'+
+                '<button class="btn-ghost" onclick="resetAfterOrder()">Hacer otro pedido</button>'+
+            '</div>';
+            app.innerHTML=h;
+            document.getElementById('cart-float').style.display='none';
+        }
+        window.resetAfterOrder=function(){
             window._cart=[];
             window._clientAddr='';
             clearCartStorage();
-            closeModal();
-            refreshView();
+            renderHome();
         };
         window.closeModal=function(){document.getElementById('modal-overlay').classList.remove('visible')};
         document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
