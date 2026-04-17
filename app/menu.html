@@ -57,12 +57,17 @@
         .gps-status.success{color:var(--green);font-weight:700}
         .gps-status.error{color:var(--gris);font-weight:600}
 
+        /* Welcome features row */
+        .welcome-features{display:flex;flex-direction:column;gap:8px;margin:8px 0 20px;position:relative;z-index:1;width:100%;max-width:320px}
+        .welcome-feat{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:0.82rem;font-weight:700;color:var(--texto)}
+        .welcome-feat span{font-size:1.2rem}
+
         /* CTA button with glow */
         .welcome-cta{position:relative;z-index:1;width:100%;max-width:320px;margin-bottom:10px}
-        .welcome-cta .btn-accent{animation:welcome-glow 2.5s ease-in-out infinite;box-shadow:0 4px 20px rgba(184,255,0,0.25);font-size:1rem;padding:16px 24px;border-radius:16px}
+        .welcome-cta .btn-accent{animation:welcome-glow 2.5s ease-in-out infinite;box-shadow:0 4px 20px rgba(184,255,0,0.25);font-size:1.05rem;padding:18px 24px;border-radius:16px;font-weight:900}
         @keyframes welcome-glow{0%,100%{box-shadow:0 4px 20px rgba(184,255,0,0.25)}50%{box-shadow:0 4px 36px rgba(184,255,0,0.45)}}
-        .welcome-skip{background:none;border:none;color:var(--gris);font-size:0.78rem;font-weight:600;cursor:pointer;font-family:inherit;padding:8px 16px;opacity:0.7;transition:opacity 0.2s;position:relative;z-index:1}
-        .welcome-skip:hover{opacity:1}
+        .welcome-skip{background:transparent;border:1.5px solid var(--border);color:var(--texto);font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;padding:12px 20px;border-radius:14px;transition:all 0.2s;position:relative;z-index:1;width:100%;max-width:320px;display:flex;align-items:center;justify-content:center;gap:6px}
+        .welcome-skip:hover,.welcome-skip:active{background:var(--card);border-color:var(--acc);color:var(--acc)}
 
         .btn{border:none;border-radius:14px;padding:14px 20px;font-weight:800;font-size:0.95rem;cursor:pointer;font-family:inherit;width:100%;max-width:320px;transition:all 0.2s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
         .btn:active{transform:scale(0.97)}
@@ -316,14 +321,20 @@
         </div>
 
         <div class="welcome-title">¡Tu comida favorita está aquí!</div>
-        <div class="welcome-text">Comparte tu ubicación para ver restaurantes cerca de ti y calcular el costo del delivery</div>
+        <div class="welcome-text">Sin descargas. Sin cuentas. Pide en 30 segundos directo por WhatsApp.</div>
+
+        <div class="welcome-features">
+            <div class="welcome-feat"><span>🍔</span> 150+ restaurantes</div>
+            <div class="welcome-feat"><span>🛵</span> Delivery a domicilio</div>
+            <div class="welcome-feat"><span>⚡</span> Pedido en 30 seg</div>
+        </div>
 
         <div class="gps-status" id="welcome-gps-status"></div>
 
         <div class="welcome-cta">
-            <button class="btn btn-accent" id="btn-welcome-gps" onclick="welcomeGPS()">📍 Ver restaurantes cerca de ti</button>
+            <button class="btn btn-accent" onclick="skipGPS()">🍔 Ver menú de restaurantes →</button>
         </div>
-        <button class="welcome-skip" onclick="skipGPS()">Continuar sin ubicación</button>
+        <button class="welcome-skip" id="btn-welcome-gps" onclick="welcomeGPS()">📍 Ordenar por cercanía a mí</button>
     </div>
 
     <div id="app" style="display:none">
