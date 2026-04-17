@@ -19,3 +19,15 @@ ALTER TABLE links_sesion
 -- Índice para consultar por etapa (útil para dashboard operadora)
 CREATE INDEX IF NOT EXISTS idx_links_etapa
   ON links_sesion (etapa_actual, etapa_at DESC);
+
+-- Habilitar Realtime para que el embudo del panel operadora se
+-- actualice en vivo a medida que los clientes avanzan.
+-- Si ya está añadida, este comando falla: es seguro ignorar el error.
+DO $$
+BEGIN
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE links_sesion;
+  EXCEPTION WHEN duplicate_object THEN
+    NULL;
+  END;
+END $$;

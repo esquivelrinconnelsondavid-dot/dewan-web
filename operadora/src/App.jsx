@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import StatsBar from './components/StatsBar';
+import EmbudoClientes from './components/EmbudoClientes';
 import SeccionPedidos from './components/SeccionPedidos';
 import PedidoNuevo from './components/PedidoNuevo';
 import PedidoPreparando from './components/PedidoPreparando';
@@ -104,6 +105,7 @@ function Panel() {
         enCamino={enCamino.length}
         entregados={entregados.length}
       />
+      <EmbudoClientes />
 
       <div className="flex-1 overflow-y-auto pb-8">
         {/* Nuevos pedidos */}
