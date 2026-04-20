@@ -799,14 +799,16 @@
 
         // ── HOME VIEW ──
         // V2: Categorías del catálogo (mapeo keyword-based)
+        // IMPORTANTE: PostgreSQL ILIKE no hace accent-folding, por eso incluimos
+        // las variantes con tilde y sin tilde para que la query server las matchee.
         var CAT_MAP_V2={
-            pollo:{icon:'🍗',label:'Pollo',kw:['pollo','broster','alita','presa','chicken']},
-            pizza:{icon:'🍕',label:'Pizza',kw:['pizza','pizzer']},
-            almuerzo:{icon:'🍱',label:'Almuerzo',kw:['almuerzo','menu del dia','menudo','menú del día','menudia']},
-            mariscos:{icon:'🐟',label:'Mariscos',kw:['marisco','ceviche','encebollado','pescado','camaron','camarón','concha','langosta','cangrejo','atun']},
+            pollo:{icon:'🍗',label:'Pollo',kw:['pollo','pollos','broster','alita','alitas','presa','presas','chicken','polleria','pollería']},
+            pizza:{icon:'🍕',label:'Pizza',kw:['pizza','pizzas','pizzer']},
+            almuerzo:{icon:'🍱',label:'Almuerzo',kw:['almuerzo','almuerzos','menú','menu','menús','menus','ejecutivo','ejecutivos']},
+            mariscos:{icon:'🐟',label:'Mariscos',kw:['marisco','mariscos','ceviche','ceviches','encebollado','pescado','camaron','camarón','camarones','camarónes','concha','langosta','cangrejo','atun','atún']},
             hamburguesa:{icon:'🍔',label:'Hamburguesas',kw:['hambur','burger']},
-            postres:{icon:'🧁',label:'Postres',kw:['postre','helado','torta','pastel','pasteleria','bizcocho','dulce','pastry','cupcake','cheesecake']},
-            bebidas:{icon:'🥤',label:'Bebidas',kw:['bebida','jugo','refresco','gaseosa','cafe','cafeteria','café','batido','smoothie']}
+            postres:{icon:'🧁',label:'Postres',kw:['postre','postres','helado','helados','torta','tortas','pastel','pasteles','pasteleria','pastelería','bizcocho','bizcochos','dulce','dulces','pastry','cupcake','cheesecake','bolleria','bollería']},
+            bebidas:{icon:'🥤',label:'Bebidas',kw:['bebida','bebidas','jugo','jugos','refresco','refrescos','gaseosa','gaseosas','cafe','café','cafeteria','cafetería','batido','batidos','smoothie','agua']}
         };
         var CAT_KEYS_V2=['pollo','pizza','almuerzo','mariscos','hamburguesa','postres','bebidas'];
 
