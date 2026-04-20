@@ -448,6 +448,19 @@
         /* V2.1: Badge cuenta de platos por restaurante en búsqueda/categoría */
         .rest-compact-meta .badge-count{background:var(--acc-soft);color:var(--acc);font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:0.02em}
 
+        /* V2.3: Banner de advertencia "falta ubicación" en checkout */
+        .loc-missing-banner{margin:10px 0 14px;padding:14px 16px;background:rgba(255,179,0,0.08);border:1.5px solid rgba(255,179,0,0.4);border-radius:14px;display:flex;align-items:flex-start;gap:12px}
+        .loc-missing-icon{font-size:1.35rem;flex-shrink:0;margin-top:-1px}
+        .loc-missing-content{flex:1;min-width:0}
+        .loc-missing-title{font-weight:900;font-size:0.9rem;color:#FFB800;margin-bottom:2px;letter-spacing:-0.01em}
+        .loc-missing-text{font-size:0.78rem;color:var(--gris-2);line-height:1.4;font-weight:600}
+        @keyframes loc-hint-pulse{0%{box-shadow:0 0 0 0 rgba(184,255,0,0.7),0 0 0 0 rgba(184,255,0,0)}70%{box-shadow:0 0 0 10px rgba(184,255,0,0),0 0 30px rgba(184,255,0,0.2)}100%{box-shadow:0 0 0 0 rgba(184,255,0,0)}}
+        .loc-addr-input.pulse-hint,.btn-gps-main.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
+        .loc-section.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
+
+        .btn-wa-need-loc{background:var(--card);color:var(--acc);border:1.5px dashed var(--acc);box-shadow:none}
+        .btn-wa-need-loc:active{background:var(--acc-soft)}
+
         /* V2.1: Banner de filtro activo dentro del menú del restaurante */
         .rest-filter-banner{margin:10px 14px 4px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(184,255,0,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.78rem;font-weight:700;color:var(--acc);letter-spacing:-0.01em}
         .rest-filter-banner-text{flex:1;line-height:1.35}
@@ -816,6 +829,22 @@
             return {g:'Buenas noches',s:'¿Qué cenamos?'};
         }
 
+        // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
+        function fetchAllMatchingPlates(orsParam,selectCols){
+            var sel=selectCols||'restaurante_id,restaurante_nombre,nombre_item,categoria_menu,descripcion,precio';
+            var acc=[];
+            function page(offset){
+                var url=SB_URL+'/rest/v1/menu_items?select='+sel+'&disponible=eq.true&or=('+orsParam+')&order=restaurante_id&limit=1000&offset='+offset;
+                return fetch(url,{headers:supaHeaders()}).then(function(r){return r.json()}).then(function(items){
+                    items=Array.isArray(items)?items:[];
+                    acc=acc.concat(items);
+                    if(items.length===1000&&offset<4000) return page(offset+1000);
+                    return acc;
+                });
+            }
+            return page(0);
+        }
+
         // V2.1: cache de resultados por categoría
         window._catRestsCache=window._catRestsCache||{};
         window._catLoading=false;
@@ -833,7 +862,7 @@
                 renderHome();
                 return;
             }
-            // Query a menu_items con todas las keywords de la categoría
+            // Query a menu_items con todas las keywords de la categoría (paginada)
             window._catLoading=true;
             renderHome();
             var cm=CAT_MAP_V2[key];
@@ -841,10 +870,8 @@
                 var kEnc=encodeURIComponent('%'+k+'%');
                 return 'nombre_item.ilike.'+kEnc+',descripcion.ilike.'+kEnc+',categoria_menu.ilike.'+kEnc;
             }).join(',');
-            fetch(SB_URL+'/rest/v1/menu_items?select=restaurante_id,restaurante_nombre,nombre_item,categoria_menu,descripcion,precio&disponible=eq.true&or=('+ors+')&limit=1000',{headers:supaHeaders()})
-                .then(function(r){return r.json()})
+            fetchAllMatchingPlates(ors)
                 .then(function(plates){
-                    plates=Array.isArray(plates)?plates:[];
                     var rests=aggregatePlatesByRest(plates);
                     rankRestsByKeywords(rests,cm.kw);
                     window._catRestsCache[key]=rests;
@@ -1533,12 +1560,11 @@
                 return n.indexOf(qNorm)!==-1||c.indexOf(qNorm)!==-1||t.indexOf(qNorm)!==-1;
             });
 
-            // 2) Query server-side a menu_items (con ilike), agrupar por restaurante
+            // 2) Query server-side a menu_items (con ilike), agrupar por restaurante — paginado
             var enc=encodeURIComponent('%'+q+'%');
-            fetch(SB_URL+'/rest/v1/menu_items?select=restaurante_id,restaurante_nombre,categoria_menu,nombre_item,descripcion,precio&disponible=eq.true&or=(nombre_item.ilike.'+enc+',descripcion.ilike.'+enc+',categoria_menu.ilike.'+enc+')&limit=500',{headers:supaHeaders()})
-                .then(function(r){return r.json()})
+            var ors='nombre_item.ilike.'+enc+',descripcion.ilike.'+enc+',categoria_menu.ilike.'+enc;
+            fetchAllMatchingPlates(ors)
                 .then(function(plates){
-                    plates=Array.isArray(plates)?plates:[];
                     var restsByPlates=aggregatePlatesByRest(plates);
 
                     // 3) Combinar: dedup y rankear por score de relevancia
@@ -1727,10 +1753,25 @@
             }
             h+='</div>';
 
-            // FIX #3: CTA claro + microcopy que explica qué va a pasar
-            h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
-            h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
-                '<span>✅ Confirmar pedido</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
+            // V2.3: Detectar si falta ubicación (sin GPS y sin dirección escrita)
+            var hasAddr=window._clientAddr&&window._clientAddr.trim().length>=6;
+            var needsLoc=!window._clientGPS&&!hasAddr;
+
+            if(needsLoc){
+                h+='<div class="loc-missing-banner">'+
+                    '<div class="loc-missing-icon">⚠️</div>'+
+                    '<div class="loc-missing-content">'+
+                        '<div class="loc-missing-title">Falta tu ubicación</div>'+
+                        '<div class="loc-missing-text">Toca arriba 📍 <strong>Usar mi ubicación GPS</strong> o escribe tu dirección en el campo para poder enviar tu pedido.</div>'+
+                    '</div>'+
+                '</div>';
+                h+='<button class="btn btn-wa btn-wa-need-loc" style="display:flex;justify-content:center" onclick="sendWA()">'+
+                    '<span>📍 Agrega tu ubicación para continuar</span></button>';
+            } else {
+                h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
+                h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
+                    '<span>✅ Confirmar pedido</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
+            }
             h+='</div>';
             app.innerHTML=h;
             document.getElementById('cart-float').style.display='none';
@@ -1815,12 +1856,24 @@
 
         // sendWA — CAMBIO 3: incluir dirección de texto si no hay GPS
         window.sendWA=function(){
-            // V2: Enforce GPS o dirección manual antes de enviar
+            // V2.3: Enforce GPS o dirección manual antes de enviar
             var addrInputCheck=document.getElementById('loc-addr');
             var addrVal=addrInputCheck?addrInputCheck.value.trim():(window._clientAddr||'').trim();
             if(!window._clientGPS&&(!addrVal||addrVal.length<6)){
-                // Abrir modal estricto pidiendo ubicación
-                openGPSStrict();
+                // Scroll + pulso visual hacia la sección de ubicación
+                var locSection=document.getElementById('loc-section');
+                if(locSection){
+                    locSection.scrollIntoView({behavior:'smooth',block:'start'});
+                    setTimeout(function(){
+                        pulseHint(locSection);
+                        var gpsBtn=document.getElementById('btn-gps-cart');
+                        var addrInput=document.getElementById('loc-addr');
+                        if(gpsBtn) pulseHint(gpsBtn);
+                        if(addrInput) pulseHint(addrInput);
+                    },220);
+                } else {
+                    openGPSStrict();
+                }
                 return;
             }
             var byRest={};window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
@@ -2110,23 +2163,28 @@
             '</div>';
             modalRoot.classList.add('visible');
         };
+        function pulseHint(el){
+            if(!el) return;
+            el.classList.add('pulse-hint');
+            setTimeout(function(){try{el.classList.remove('pulse-hint')}catch(e){}},6000);
+        }
         window.gpsStrictUseLocation=function(){
             closeModal();
-            if(typeof requestGPSFromBanner==='function'){
-                requestGPSFromBanner({stopPropagation:function(){}});
-            } else if(navigator.geolocation){
-                navigator.geolocation.getCurrentPosition(function(pos){
-                    window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
-                    try{sessionData.resultados=recalcDistances(sessionData.resultados||[])}catch(e){}
-                    if(currentView==='cart') showCart();
-                });
-            }
+            setTimeout(function(){
+                var gpsBtn=document.getElementById('btn-gps-cart');
+                if(gpsBtn){pulseHint(gpsBtn);gpsBtn.scrollIntoView({behavior:'smooth',block:'center'})}
+                // Dispara la solicitud de GPS directamente
+                if(typeof requestGPSCart==='function'){setTimeout(function(){if(gpsBtn) gpsBtn.click()},300);}
+            },150);
         };
         window.gpsStrictUseAddress=function(){
             closeModal();
             setTimeout(function(){
                 var addrInput=document.getElementById('loc-addr');
-                if(addrInput){addrInput.focus();addrInput.scrollIntoView({behavior:'smooth',block:'center'})}
+                if(addrInput){
+                    addrInput.scrollIntoView({behavior:'smooth',block:'center'});
+                    setTimeout(function(){addrInput.focus();pulseHint(addrInput)},320);
+                }
             },150);
         };
     })();
