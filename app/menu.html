@@ -112,6 +112,37 @@
         .rest-meta{display:flex;gap:10px;margin-top:5px;font-size:0.73rem;flex-wrap:wrap}
         .rest-meta span{color:var(--gris);display:flex;align-items:center;gap:2px}
 
+        /* Compact restaurant card (slim, ~86px tall, 4-5 per screen) */
+        .rest-compact{display:flex;align-items:stretch;background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 14px 9px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s}
+        .rest-compact:active{transform:scale(0.985)}
+        .rest-compact-stripe{width:4px;flex-shrink:0}
+        .rest-compact-body{flex:1;padding:12px 12px 12px 14px;display:flex;gap:12px;align-items:center;min-width:0}
+        .rest-compact-avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+        .rest-compact-info{flex:1;min-width:0}
+        .rest-compact-name{font-weight:800;font-size:0.95rem;line-height:1.2;letter-spacing:-0.01em;display:flex;align-items:center;gap:6px;color:var(--texto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .rest-compact-meta{display:flex;gap:10px;margin-top:4px;font-size:0.74rem;color:var(--gris-2);font-weight:700;flex-wrap:wrap}
+        .rest-compact-meta span{display:flex;align-items:center;gap:3px;white-space:nowrap}
+        .rest-compact-meta .dot{color:var(--border);font-weight:900}
+        .rest-compact-chevron{color:var(--gris);font-size:1.1rem;flex-shrink:0;opacity:0.45}
+
+        /* Home horizontal carrusel (Apple-style) */
+        .home-carrusel{padding:4px 0 8px}
+        .home-carrusel-head{display:flex;align-items:baseline;justify-content:space-between;padding:16px 14px 12px}
+        .home-carrusel-title{font-size:1.05rem;font-weight:900;letter-spacing:-0.02em;display:flex;align-items:center;gap:6px}
+        .home-carrusel-sub{font-size:0.7rem;color:var(--gris);font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
+        .home-carrusel-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 14px 6px;scroll-snap-type:x mandatory}
+        .home-carrusel-scroll::-webkit-scrollbar{display:none}
+        .carrusel-card{flex-shrink:0;width:146px;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;scroll-snap-align:start;transition:transform 0.15s,border-color 0.2s;display:flex;flex-direction:column;position:relative}
+        .carrusel-card:active{transform:scale(0.97)}
+        .carrusel-top{height:88px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;position:relative}
+        .carrusel-body{padding:10px 12px 12px}
+        .carrusel-name{font-weight:800;font-size:0.85rem;line-height:1.22;letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.15em;color:var(--texto)}
+        .carrusel-meta{display:flex;gap:6px;margin-top:6px;font-size:0.7rem;color:var(--gris-2);font-weight:700;flex-wrap:wrap}
+        .carrusel-meta span{display:flex;align-items:center;gap:2px}
+        .carrusel-closed{position:absolute;top:8px;right:8px;background:rgba(255,59,48,0.22);color:#FF3B30;font-size:0.55rem;font-weight:800;padding:3px 7px;border-radius:20px;letter-spacing:0.04em;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+        .list-section-title{font-size:0.72rem;font-weight:900;color:var(--gris);text-transform:uppercase;letter-spacing:0.14em;padding:14px 14px 10px;display:flex;align-items:center;gap:8px}
+        .list-section-title::after{content:'';flex:1;height:1px;background:var(--border);opacity:0.4}
+
         /* Info strip */
         .info-strip{display:flex;gap:5px;margin-top:10px}
         .info-box{flex:1;background:var(--card2);border-radius:10px;padding:6px 3px;text-align:center;border:1px solid var(--border)}
@@ -674,42 +705,56 @@
                 }
             }
 
-            h+='<div style="padding:10px 0">';
-            rests.forEach(function(r,idx){
-                var color=getColor(idx);
-                var previewProds=(r.productos||[]).slice(0,4);
-                var totalProds=(r.productos||[]).length;
-
-                h+='<div class="rest-card" onclick="openRest(\''+ jsEsc(r.nombre) +'\')">'+
-                    '<div class="rest-color-bar" style="background:linear-gradient(90deg,'+color+','+color+'44)"></div>'+
-                    '<div class="rest-body">'+
-                        '<div class="rest-top">'+
-                            '<div class="rest-avatar" style="background:'+color+'18;border:2px solid '+color+'35">'+getEmoji(r.nombre)+'</div>'+
-                            '<div class="rest-info">'+
-                                '<div class="rest-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
-                                '<div class="rest-platos-count">'+( (r.productos||[]).length)+' platos disponibles</div>'+
-                                '<div class="rest-meta">'+
-                                    (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
-                                    (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                                    (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'')+
-                                '</div>'+
+            // ── Carrusel horizontal (solo si hay ≥ 6 restaurantes) ──
+            if(rests.length>=6){
+                var topRests=rests.slice(0,6);
+                var carruselTitle=hasGPS?'📍 Cerca de ti':'✨ Descubre';
+                var carruselSub=hasGPS?'6 más próximos':'Selección';
+                h+='<section class="home-carrusel">'+
+                    '<div class="home-carrusel-head">'+
+                        '<span class="home-carrusel-title">'+carruselTitle+'</span>'+
+                        '<span class="home-carrusel-sub">'+carruselSub+'</span>'+
+                    '</div>'+
+                    '<div class="home-carrusel-scroll">';
+                topRests.forEach(function(r,idx){
+                    var color=getColor(idx);
+                    var isOpen=isRestOpen(r.horario);
+                    h+='<div class="carrusel-card" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'25">'+
+                        '<div class="carrusel-top" style="background:linear-gradient(135deg,'+color+'2E 0%,'+color+'10 100%)">'+
+                            getEmoji(r.nombre)+
+                            (isOpen===false?'<span class="carrusel-closed">CERRADO</span>':'')+
+                        '</div>'+
+                        '<div class="carrusel-body">'+
+                            '<div class="carrusel-name">'+esc(r.nombre)+'</div>'+
+                            '<div class="carrusel-meta">'+
+                                (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
+                                (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
                             '</div>'+
                         '</div>'+
-                        '<div class="info-strip">'+
-                            infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
-                            infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
-                            (window._clientGPS?infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery'):'')+
-                            infoBox('🍽',r.productos?r.productos.length:0,'Platos')+
+                    '</div>';
+                });
+                h+='</div></section>';
+                h+='<div class="list-section-title">Todos los restaurantes · '+rests.length+'</div>';
+            }
+
+            // ── Lista compacta (todos) ──
+            h+='<div style="padding:4px 0 10px">';
+            rests.forEach(function(r,idx){
+                var color=getColor(idx);
+                var metaParts=[];
+                if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
+                if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
+                if(window._clientGPS) metaParts.push('<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>');
+                metaParts.push('<span>🍽 '+((r.productos||[]).length)+'</span>');
+                h+='<div class="rest-compact" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'22">'+
+                    '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
+                    '<div class="rest-compact-body">'+
+                        '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
+                        '<div class="rest-compact-info">'+
+                            '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
+                            '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
                         '</div>'+
-                        '<div class="preview-chips">'+
-                            previewProds.map(function(p){
-                                var isAlm=p.descripcion&&p.descripcion.indexOf('ALMUERZO_OPTS:')===0;
-                                var pData=isAlm?parseAlmuerzo(p.descripcion):null;
-                                var priceChip=isAlm?(pData&&pData.precio?'$'+Number(pData.precio).toFixed(2):'Consultar'):'$'+Number(p.precio).toFixed(2);
-                                return '<div class="preview-chip">'+(isAlm?'🍱 ':'')+esc(p.nombre)+' <span class="preview-chip-price">'+priceChip+'</span></div>';
-                            }).join('')+
-                            ((r.productos||[]).length>4?'<div class="preview-chip preview-chip-more">+'+(r.productos.length-4)+' más →</div>':'')+
-                        '</div>'+
+                        '<span class="rest-compact-chevron">›</span>'+
                     '</div>'+
                 '</div>';
             });
@@ -1214,7 +1259,7 @@
             if(st===null) return '';
             return st?'<span class="badge-open">🟢 Abierto</span>':'<span class="badge-closed">🔴 Cerrado</span>';
         }
-        function getColor(i){var c=['#FF6B35','#C0392B','#2C3E50','#E67E22','#27AE60','#8E44AD','#2980B9','#D35400','#16A085','#F39C12'];return c[i%c.length]}
+        function getColor(i){var c=['#FF6B35','#FF3B5C','#8B5CF6','#00C2D1','#00D26A','#FFB800'];return c[i%c.length]}
         function getEmoji(name){
             var n=(name||'').toLowerCase();
             if(n.indexOf('pollo')!==-1||n.indexOf('broster')!==-1)return'🍗';
