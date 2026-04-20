@@ -1671,18 +1671,23 @@
                 var hasSpecs=parts.specs.length>0;
                 var hasBoth=hasSpecs&&parts.others.length>0;
                 var globalIdx=0;
-                function clickCmd(name){return 'openRestFiltered(\''+jsEsc(name)+'\',\''+jsEsc(query)+'\')'}
+                // V2.6: si matchea por nombre del restaurante → menú completo;
+                //       si es match por plato/categoría → menú filtrado por la query
+                function clickCmd(r){
+                    if(r._nameMatch) return 'openRest(\''+jsEsc(r.nombre)+'\')';
+                    return 'openRestFiltered(\''+jsEsc(r.nombre)+'\',\''+jsEsc(query)+'\')';
+                }
 
                 if(hasSpecs){
                     html+='<div class="search-section-title-v2">'+(hasBoth?'✨ Especialistas en "':'🏪 Restaurantes que venden "')+esc(query)+'"<span class="search-section-count">'+parts.specs.length+'</span></div>';
                     html+='<div style="padding:4px 0 0">';
-                    parts.specs.forEach(function(r){html+=renderRestCardRowV2(r,globalIdx++,clickCmd(r.nombre))});
+                    parts.specs.forEach(function(r){html+=renderRestCardRowV2(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
                 }
                 if(parts.others.length){
                     html+='<div class="search-section-title-v2">'+(hasSpecs?'🏪 También ofrecen "'+esc(query)+'"':'🏪 Restaurantes que venden "'+esc(query)+'"')+'<span class="search-section-count">'+parts.others.length+'</span></div>';
                     html+='<div style="padding:4px 0 0">';
-                    parts.others.forEach(function(r){html+=renderRestCardRowV2(r,globalIdx++,clickCmd(r.nombre))});
+                    parts.others.forEach(function(r){html+=renderRestCardRowV2(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
                 }
             }
