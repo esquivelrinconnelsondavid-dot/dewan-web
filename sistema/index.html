@@ -323,6 +323,34 @@
     color:var(--mint);font-size:12px;font-weight:600;margin-bottom:20px;
     font-family:"JetBrains Mono",monospace;letter-spacing:0.06em;
   }
+  .ba-grid{
+    display:grid;grid-template-columns:1fr;gap:12px;margin-top:34px;
+  }
+  @media (min-width:560px){
+    .ba-grid{grid-template-columns:1fr 1fr;gap:14px}
+  }
+  .ba-col{
+    background:#0A0A0A;border:1px solid var(--line-2);border-radius:18px;padding:20px 18px;
+  }
+  .ba-col .ba-tag{
+    display:inline-block;font-family:"JetBrains Mono",monospace;font-size:11px;
+    letter-spacing:0.12em;padding:4px 10px;border-radius:999px;margin-bottom:14px;
+  }
+  .ba-before{border-color:#2a1616}
+  .ba-before .ba-tag{background:rgba(226,75,28,0.12);color:#E24B1C;border:1px solid rgba(226,75,28,0.25)}
+  .ba-after{border-color:rgba(207,248,185,0.25);background:linear-gradient(180deg,rgba(207,248,185,0.05),#0A0A0A 70%)}
+  .ba-after .ba-tag{background:rgba(207,248,185,0.12);color:var(--mint);border:1px solid rgba(207,248,185,0.28)}
+  .ba-col ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px}
+  .ba-col li{
+    font-size:14px;line-height:1.4;color:#D7D7D7;
+    padding-left:22px;position:relative;
+  }
+  .ba-before li::before{
+    content:"✕";position:absolute;left:0;top:0;color:#E24B1C;font-weight:800;
+  }
+  .ba-after li::before{
+    content:"✓";position:absolute;left:0;top:0;color:var(--mint);font-weight:800;
+  }
 
   /* STEPS */
   .steps-list{display:flex;flex-direction:column;gap:10px;margin-top:28px}
@@ -884,8 +912,8 @@
   <section class="hero" data-screen-label="01 Hero">
     <div class="reveal">
       <div class="eyebrow"><span class="dot"></span>SISTEMA DEWAN · WHATSAPP OS</div>
-      <h1 class="h-mega mint">Su WhatsApp<br/>ya no necesita<br/>meseros.</h1>
-      <p class="sub subtitle">Toma pedidos, calcula envíos, cobra comprobantes e imprime en cocina. Usted solo prepara y despacha. 24/7.</p>
+      <h1 class="h-mega mint">Deje de perder<br/>pedidos mientras<br/>atiende mesas.</h1>
+      <p class="sub subtitle">Su WhatsApp toma el pedido, cobra, valida la transferencia e imprime en cocina — <b>solo</b>. Usted solo prepara y despacha. 24/7, sin meseros al teléfono.</p>
       <div class="cta-wrap">
         <a href="#final" class="btn">QUIERO VERLO EN ACCIÓN <span class="arrow">→</span></a>
       </div>
@@ -902,8 +930,9 @@
         <div class="chat-body">
           <div class="bubble b-in">Hola, buenas! Me da un combo #2 con papas y coca?<span class="t">7:42 PM</span></div>
           <div class="bubble b-out">¡Hola! Combo #2 (1/4 pollo + papas + gaseosa 500ml) — $6.50<br/>¿Confirma para enviar a cocina? 🐔<span class="t">7:42 PM ✓✓</span></div>
-          <div class="bubble b-in">Sí, va. Adjunto comprobante<span class="t">7:43 PM</span></div>
-          <div class="bubble b-out">Comprobante verificado · Banco Pichincha · $6.50<br/>Ticket #A-0428 enviado a cocina 🖨️<span class="t">7:43 PM ✓✓</span></div>
+          <div class="bubble b-in">Sí, va. Pago por transferencia 📎<span class="t">7:43 PM</span></div>
+          <div class="bubble b-out">Transferencia detectada · Pichincha · $6.50<br/>Enviada al administrador para verificación ✓<span class="t">7:43 PM ✓✓</span></div>
+          <div class="bubble b-out">Pago aprobado por admin · Ticket #A-0428 a cocina 🖨️<span class="t">7:43 PM ✓✓</span></div>
           <div class="typing"><span></span><span></span><span></span></div>
         </div>
         <div class="chat-input">
@@ -988,27 +1017,34 @@
   <!-- 2. PROBLEMA -->
   <section class="problem" data-screen-label="02 Problema">
     <div class="reveal">
-      <div class="eyebrow"><span class="dot"></span>EL PROBLEMA</div>
-      <h2 class="h-big mint">Esto le está<br/>pasando HOY:</h2>
+      <div class="eyebrow"><span class="dot"></span>EL PROBLEMA REAL</div>
+      <h2 class="h-big mint">Hora pico.<br/>Y su WhatsApp<br/>está <span style="color:#fff">en llamas</span>.</h2>
+      <p class="subtitle" style="margin-top:18px;max-width:94%">Mientras usted lee esto, su restaurante está perdiendo dinero que no va a recuperar. Sepa dónde:</p>
     </div>
     <div class="cards">
       <div class="p-card reveal">
-        <div class="idx">01 / OPERACIÓN</div>
-        <div class="num">1</div>
-        <div class="unit">mesero completo</div>
-        <div class="desc">Atendiendo WhatsApp en vez de mesas. Teléfono en una mano, mandil en la otra.</div>
+        <div class="idx">01 / SU TIEMPO</div>
+        <div class="num">4<span style="color:#fff;font-size:40px">h</span></div>
+        <div class="unit">al día pegado al celular</div>
+        <div class="desc">En vez de supervisar cocina, cuidar la caja o estar con su familia. Usted compró un negocio, no un segundo trabajo de mesero.</div>
       </div>
       <div class="p-card reveal">
         <div class="idx">02 / ERRORES</div>
         <div class="num">3<span style="color:#fff;font-size:40px">/10</span></div>
         <div class="unit">pedidos con errores</div>
-        <div class="desc">Platos mal armados, precios viejos, adicionales olvidados. El cliente reclama, usted pierde.</div>
+        <div class="desc">Combo mal armado, precio viejo, adicional olvidado. El cliente reclama, usted regala el plato, come la pérdida — y pierde al cliente.</div>
       </div>
       <div class="p-card reveal">
         <div class="idx">03 / VENTAS</div>
         <div class="num">40<span style="color:#fff;font-size:40px">%</span></div>
-        <div class="unit">de ventas perdidas</div>
-        <div class="desc">Después de las 10pm nadie contesta. El cliente pide en otro lado. Adiós margen.</div>
+        <div class="unit">de ventas que nunca entraron</div>
+        <div class="desc">Mensajes a las 10:47 pm sin responder. Clientes que pidieron a la competencia porque usted tardó 12 minutos. Dinero que nunca vio.</div>
+      </div>
+      <div class="p-card reveal">
+        <div class="idx">04 / ESTRÉS</div>
+        <div class="num">0</div>
+        <div class="unit">noches tranquilas</div>
+        <div class="desc">Domingo en familia con el celular vibrando. Pagar turno extra los fines de semana. Despertar pensando cuántos pedidos se perdieron ayer. Esto no es sostenible.</div>
       </div>
     </div>
   </section>
@@ -1086,9 +1122,33 @@
   <section class="solution" data-screen-label="03 Solucion">
     <div class="reveal">
       <span class="badge">◆ LA SOLUCIÓN</span>
-      <h2 class="h-mega">Sistema DEWAN<br/>toma pedidos<br/><span class="mint">como su mejor<br/>mesero.</span></h2>
-      <p class="subtitle" style="margin-top:22px;max-width:92%">Pero nunca duerme, nunca se equivoca, y nunca pide aumento.</p>
-      <p class="subtitle mint" style="margin-top:18px;max-width:92%;font-weight:700">Usted solo prepara y cobra. El sistema hace el resto.</p>
+      <h2 class="h-mega">Imagine su<br/>restaurante<br/><span class="mint">funcionando<br/>sin usted.</span></h2>
+      <p class="subtitle" style="margin-top:22px;max-width:92%">Sistema DEWAN toma pedidos como su mejor mesero — pero <b>nunca duerme</b>, <b>nunca se equivoca</b>, y <b>nunca pide aumento</b>.</p>
+      <p class="subtitle mint" style="margin-top:18px;max-width:92%;font-weight:700">Usted recupera su tiempo. Su equipo respira. Ni un solo pedido se pierde.</p>
+
+      <div class="ba-grid">
+        <div class="ba-col ba-before">
+          <div class="ba-tag">ANTES</div>
+          <ul>
+            <li>Celular en la mano 4 horas al día</li>
+            <li>3 de cada 10 pedidos con error</li>
+            <li>40% de ventas perdidas tras las 10pm</li>
+            <li>Domingo con el teléfono vibrando</li>
+            <li>Turnos extra solo para atender WhatsApp</li>
+          </ul>
+        </div>
+        <div class="ba-col ba-after">
+          <div class="ba-tag">CON DEWAN</div>
+          <ul>
+            <li>Cero tiempo al teléfono — usted cocina o descansa</li>
+            <li>Cero errores: el sistema valida cada combo</li>
+            <li>Cero pedidos perdidos, 24/7, aún dormido</li>
+            <li>Familia en paz, ventas entrando solas</li>
+            <li>Cero meseros dedicados a WhatsApp</li>
+          </ul>
+        </div>
+      </div>
+
       <div class="fine">// No es un chatbot común. Es un sistema operativo para su WhatsApp.</div>
     </div>
   </section>
@@ -1111,16 +1171,16 @@
       <div class="step reveal">
         <div class="n">02</div>
         <div>
-          <h3>Sistema atiende</h3>
-          <p>Toma el pedido, valida el menú, calcula el envío por GPS, cobra el comprobante.</p>
+          <h3>Sistema atiende y cobra</h3>
+          <p>Toma el pedido, valida el menú, calcula el envío por GPS y cobra — efectivo contra entrega o transferencia. Si es transferencia, detecta el comprobante y lo reenvía al administrador para verificación.</p>
         </div>
       </div>
       <div class="step-connector"></div>
       <div class="step reveal">
         <div class="n">03</div>
         <div>
-          <h3>Ticket imprime</h3>
-          <p>En cocina, térmico, automático. Su equipo ve el pedido sin tocar un teléfono.</p>
+          <h3>Ticket imprime en cocina</h3>
+          <p>Al confirmar el pago, el ticket térmico sale solo en cocina. Su equipo ve el pedido sin tocar un teléfono.</p>
         </div>
       </div>
     </div>
@@ -1132,7 +1192,7 @@
       <div class="eyebrow"><span class="dot"></span>DIRECTO A COCINA</div>
       <h2 class="mint" style="font-size:clamp(32px,9vw,44px);font-weight:900;letter-spacing:-0.04em;line-height:0.95">El pedido llega<br/>directo a cocina.</h2>
       <p class="subtitle" style="margin-top:14px">Sin que nadie toque un teléfono.</p>
-      <p class="tiny-note">El ticket térmico sale impreso apenas el cliente confirma el pago. Su equipo de cocina solo ve el pedido y lo prepara.</p>
+      <p class="tiny-note">Apenas se confirma el pago (efectivo al entregar o transferencia aprobada por el admin), el ticket térmico sale solo. Su equipo de cocina solo ve el pedido y lo prepara — cero celulares, cero errores de transcripción.</p>
     </div>
     <div class="printer-stage reveal" aria-hidden="true">
       <div class="paper">
@@ -1204,7 +1264,7 @@
         </div>
         <div>
           <h3>IA + Reglas</h3>
-          <p>Nunca confunde un comprobante con un pedido. Su cocina recibe órdenes limpias.</p>
+          <p>Distingue pedidos, preguntas y comprobantes. Su cocina solo recibe órdenes limpias, nunca ruido del chat.</p>
         </div>
       </div>
       <div class="f-card reveal">
@@ -1221,8 +1281,8 @@
           <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5l2-2h4l2 2"/></svg>
         </div>
         <div>
-          <h3>Lee comprobantes</h3>
-          <p>Confirma transferencias al instante. Olvídese de revisar fotos manualmente.</p>
+          <h3>Valida transferencias</h3>
+          <p>Detecta la foto de la transferencia, lee banco y monto, y la reenvía al administrador para aprobación. Usted no revisa fotos — solo aprueba con un toque.</p>
         </div>
       </div>
       <div class="f-card reveal">
@@ -1324,8 +1384,8 @@
       </div>
 
       <div class="compare-row">
-        <div class="c feat">Lee comprobantes por foto</div>
-        <div class="c us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Instantáneo</div>
+        <div class="c feat">Valida transferencias por foto</div>
+        <div class="c us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Admin aprueba</div>
         <div class="c them"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>No</div>
       </div>
 
@@ -1383,11 +1443,12 @@
   <section class="final" id="final" data-screen-label="08 CTA final">
     <div class="reveal">
       <div class="eyebrow"><span class="dot"></span>ÚLTIMA LLAMADA</div>
-      <h2 class="h-mega mint">¿Listo para<br/>que su WhatsApp<br/>trabaje solo?</h2>
+      <h2 class="h-mega mint">Cada noche que<br/>pasa sin DEWAN,<br/>su caja pierde.</h2>
+      <p class="subtitle" style="margin-top:18px;max-width:94%">15 minutos de demo. Sin costo. Sin compromiso. Le mostramos el sistema funcionando con <b>su menú</b> y usted decide. Punto.</p>
       <div style="margin-top:30px">
-        <a href="https://wa.me/593939647069" target="_blank" rel="noopener" class="btn mega">AGENDE DEMO GRATIS · 15 MIN <span class="arrow">→</span></a>
+        <a href="https://wa.me/593939647069?text=Hola%2C%20quiero%20agendar%20la%20demo%20gratis%20del%20Sistema%20DEWAN" target="_blank" rel="noopener" class="btn mega">AGENDAR DEMO GRATIS · 15 MIN <span class="arrow">→</span></a>
       </div>
-      <div class="scarcity"><span class="clock">⏱</span><span><b>Quedan 3 cupos</b> este trimestre — onboarding personalizado de 5 días</span></div>
+      <div class="scarcity"><span class="clock">⏱</span><span><b>Solo 3 cupos este trimestre</b> — onboarding personalizado de 5 días. Luego, lista de espera.</span></div>
       <div class="contact">
         <a href="https://wa.me/593939647069" target="_blank" rel="noopener">
           <span class="k">WA</span>
