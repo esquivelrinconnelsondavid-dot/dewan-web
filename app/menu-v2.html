@@ -444,6 +444,16 @@
         .gps-strict-title{font-size:1.25rem;font-weight:900;letter-spacing:-0.02em;margin-bottom:8px}
         .gps-strict-text{font-size:0.9rem;color:var(--gris-2);line-height:1.5;margin-bottom:22px;max-width:320px;margin-left:auto;margin-right:auto}
         .gps-strict-actions{display:flex;flex-direction:column;gap:10px}
+
+        /* V2.1: Badge cuenta de platos por restaurante en búsqueda/categoría */
+        .rest-compact-meta .badge-count{background:var(--acc-soft);color:var(--acc);font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:0.02em}
+
+        /* V2.1: Banner de filtro activo dentro del menú del restaurante */
+        .rest-filter-banner{margin:10px 14px 4px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(184,255,0,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.78rem;font-weight:700;color:var(--acc);letter-spacing:-0.01em}
+        .rest-filter-banner-text{flex:1;line-height:1.35}
+        .rest-filter-banner-text strong{color:var(--acc);font-weight:900}
+        .rest-filter-banner button{background:rgba(184,255,0,0.15);border:1px solid rgba(184,255,0,0.3);color:var(--acc);font-size:0.7rem;font-weight:800;padding:6px 11px;border-radius:100px;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all 0.15s;letter-spacing:-0.01em}
+        .rest-filter-banner button:active{transform:scale(0.96);background:rgba(184,255,0,0.25)}
     </style>
 </head>
 <body>
@@ -806,15 +816,50 @@
             return {g:'Buenas noches',s:'¿Qué cenamos?'};
         }
 
+        // V2.1: cache de resultados por categoría
+        window._catRestsCache=window._catRestsCache||{};
+        window._catLoading=false;
+
         window.toggleCategoryV2=function(key){
-            if(window._activeCat===key) window._activeCat=null;
-            else window._activeCat=key;
-            renderHome();
+            if(window._activeCat===key){
+                window._activeCat=null;
+                renderHome();
+                try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}
+                return;
+            }
+            window._activeCat=key;
             try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}
+            if(window._catRestsCache[key]){
+                renderHome();
+                return;
+            }
+            // Query a menu_items con todas las keywords de la categoría
+            window._catLoading=true;
+            renderHome();
+            var cm=CAT_MAP_V2[key];
+            var ors=cm.kw.map(function(k){
+                var kEnc=encodeURIComponent('%'+k+'%');
+                return 'nombre_item.ilike.'+kEnc+',descripcion.ilike.'+kEnc+',categoria_menu.ilike.'+kEnc;
+            }).join(',');
+            fetch(SB_URL+'/rest/v1/menu_items?select=restaurante_id,restaurante_nombre,nombre_item,categoria_menu,descripcion,precio&disponible=eq.true&or=('+ors+')&limit=1000',{headers:supaHeaders()})
+                .then(function(r){return r.json()})
+                .then(function(plates){
+                    plates=Array.isArray(plates)?plates:[];
+                    var rests=aggregatePlatesByRest(plates);
+                    sortRestsByMatch(rests);
+                    window._catRestsCache[key]=rests;
+                    window._catLoading=false;
+                    if(window._activeCat===key) renderHome();
+                }).catch(function(){
+                    window._catRestsCache[key]=[];
+                    window._catLoading=false;
+                    if(window._activeCat===key) renderHome();
+                });
         };
 
         window.renderHome=function(){
             currentView='home';
+            window._restFilter=null; // V2.1: limpiar filtro de menú al volver al home
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
             var busqTexto=(sessionData.busqueda_texto||'').toLowerCase();
             if(busqTexto&&busqTexto!=='comida'){
@@ -828,9 +873,17 @@
                 });
             }
 
-            // Filtro de categoría activo
+            // Filtro de categoría activo: usar resultado async de menu_items (más completo)
             if(window._activeCat){
-                rests=rests.filter(function(r){return matchCategoryV2(r,window._activeCat)});
+                if(window._catRestsCache[window._activeCat]){
+                    rests=window._catRestsCache[window._activeCat].slice();
+                } else if(window._catLoading){
+                    // Mantener rests vacío para mostrar skeletons
+                    rests=[];
+                } else {
+                    // Fallback: filtro client-side por keywords si la query falló
+                    rests=rests.filter(function(r){return matchCategoryV2(r,window._activeCat)});
+                }
             }
 
             rests.sort(function(a,b){
@@ -879,8 +932,9 @@
             // Banner filtro activo
             if(window._activeCat){
                 var cm=CAT_MAP_V2[window._activeCat];
+                var bannerCount=window._catLoading?'…buscando':rests.length+' restaurante'+(rests.length===1?'':'s');
                 h+='<div class="filter-banner-v2">'+
-                    '<span>'+cm.icon+' '+cm.label+' · '+rests.length+' resultado'+(rests.length===1?'':'s')+'</span>'+
+                    '<span>'+cm.icon+' '+cm.label+' · '+bannerCount+'</span>'+
                     '<button onclick="toggleCategoryV2(\''+window._activeCat+'\')" aria-label="Quitar filtro">✕</button>'+
                 '</div>';
             }
@@ -937,8 +991,13 @@
                 h+='<div class="list-section-title">Todos los restaurantes · '+rests.length+'</div>';
             }
 
-            // Empty state cuando filtro vacío
-            if(rests.length===0){
+            // Skeleton mientras carga categoría
+            if(window._activeCat&&window._catLoading){
+                h+='<div style="padding:8px 0">';
+                for(var sk=0;sk<5;sk++) h+='<div class="skel-row"></div>';
+                h+='</div>';
+            } else if(rests.length===0){
+                // Empty state cuando filtro vacío
                 h+='<div class="search-empty-state-v2">'+
                     '<div class="search-empty-icon">🔎</div>'+
                     '<div class="search-empty-title">Sin resultados</div>'+
@@ -947,27 +1006,33 @@
             }
 
             // Lista compacta
-            h+='<div style="padding:4px 0 10px">';
-            rests.forEach(function(r,idx){
-                var color=getColor(idx);
-                var metaParts=[];
-                if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
-                if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
-                if(window._clientGPS) metaParts.push('<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>');
-                if(r.categoria) metaParts.push('<span>'+esc(r.categoria)+'</span>');
-                h+='<div class="rest-compact" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'22">'+
-                    '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
-                    '<div class="rest-compact-body">'+
-                        '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
-                        '<div class="rest-compact-info">'+
-                            '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
-                            '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
+            if(!(window._activeCat&&window._catLoading)){
+                h+='<div style="padding:4px 0 10px">';
+                rests.forEach(function(r,idx){
+                    var color=getColor(idx);
+                    var metaParts=[];
+                    if(window._activeCat&&r._matchCount) metaParts.push('<span class="badge-count">'+r._matchCount+' plato'+(r._matchCount===1?'':'s')+'</span>');
+                    if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
+                    if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
+                    if(window._clientGPS) metaParts.push('<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>');
+                    if(r.categoria&&!window._activeCat) metaParts.push('<span>'+esc(r.categoria)+'</span>');
+                    var openCmd=window._activeCat
+                        ? 'openRestCatFiltered(\''+jsEsc(r.nombre)+'\',\''+window._activeCat+'\')'
+                        : 'openRest(\''+jsEsc(r.nombre)+'\')';
+                    h+='<div class="rest-compact" onclick="'+openCmd+'" style="border-color:'+color+'22">'+
+                        '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
+                        '<div class="rest-compact-body">'+
+                            '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
+                            '<div class="rest-compact-info">'+
+                                '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
+                                '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
+                            '</div>'+
+                            '<span class="rest-compact-chevron">›</span>'+
                         '</div>'+
-                        '<span class="rest-compact-chevron">›</span>'+
-                    '</div>'+
-                '</div>';
-            });
-            h+='</div>';
+                    '</div>';
+                });
+                h+='</div>';
+            }
             h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
             app.innerHTML=h;
             bindSortEvents();
@@ -1063,7 +1128,40 @@
             }
 
             var color=getColor(ridx);
-            var prods=r.productos||[];
+            var allProds=r.productos||[];
+            var prods=allProds;
+            var filterLabel='';
+            // V2.1: aplicar filtro si existe (de búsqueda o categoría)
+            if(window._restFilter&&allProds.length){
+                if(window._restFilter.type==='q'){
+                    var qf=removeAccents((window._restFilter.value||'').toLowerCase());
+                    if(qf){
+                        prods=allProds.filter(function(p){
+                            var n=removeAccents((p.nombre||'').toLowerCase());
+                            var d=removeAccents((p.descripcion||'').toLowerCase());
+                            var c=removeAccents((p.categoria||'').toLowerCase());
+                            return n.indexOf(qf)!==-1||d.indexOf(qf)!==-1||c.indexOf(qf)!==-1;
+                        });
+                        filterLabel='"'+window._restFilter.value+'"';
+                    }
+                } else if(window._restFilter.type==='cat'){
+                    var cmf=CAT_MAP_V2[window._restFilter.value];
+                    if(cmf){
+                        prods=allProds.filter(function(p){
+                            var n=removeAccents((p.nombre||'').toLowerCase());
+                            var d=removeAccents((p.descripcion||'').toLowerCase());
+                            var c=removeAccents((p.categoria||'').toLowerCase());
+                            return cmf.kw.some(function(k){
+                                var kw=removeAccents(k);
+                                return n.indexOf(kw)!==-1||d.indexOf(kw)!==-1||c.indexOf(kw)!==-1;
+                            });
+                        });
+                        filterLabel=cmf.icon+' '+cmf.label;
+                    }
+                }
+                // Si el filtro no devolvió nada, mostrar el menú completo
+                if(!prods.length) prods=allProds;
+            }
 
             var h='<div class="rest-detail-header" style="background:linear-gradient(180deg,'+color+'20 0%,var(--bg) 100%)">'+
                 '<div class="rest-detail-nav">'+
@@ -1150,7 +1248,14 @@
             }
             h+='</div>';
 
-            h+='<div class="menu-count">MENU · '+prods.length+' PLATOS</div>';
+            // V2.1: Banner del filtro activo (si lo hay)
+            if(filterLabel&&prods.length<allProds.length){
+                h+='<div class="rest-filter-banner">'+
+                    '<div class="rest-filter-banner-text">🔎 Mostrando <strong>'+prods.length+'</strong> plato'+(prods.length===1?'':'s')+' con '+filterLabel+'</div>'+
+                    '<button onclick="clearRestFilter()">Ver todo el menú</button>'+
+                '</div>';
+            }
+            h+='<div class="menu-count">MENU · '+prods.length+' PLATOS'+(filterLabel&&prods.length<allProds.length?' (de '+allProds.length+')':'')+'</div>';
             h+='<div class="menu-section">';
 
             cats.forEach(function(cat){
@@ -1316,37 +1421,75 @@
             area.innerHTML='<div style="padding:16px 0 0"><div class="skel-row"></div><div class="skel-row"></div><div class="skel-row"></div></div>';
         }
 
-        function doSearch(query){
-            var q=(query||'').trim();
-            if(!q){renderSearchIdle();return}
-            renderSearchSkeletons();
-            // Restaurantes: filtrado client-side sobre lo ya cargado (rápido)
-            var qNorm=removeAccents(q.toLowerCase());
-            var rests=(sessionData.resultados||[]).filter(function(r){
-                var n=removeAccents((r.nombre||'').toLowerCase());
-                var c=removeAccents((r.categoria||'').toLowerCase());
-                var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
-                return n.indexOf(qNorm)!==-1||c.indexOf(qNorm)!==-1||t.indexOf(qNorm)!==-1;
+        // V2.1: Agrupa platos por restaurante_id, devuelve array {rest, count, items}
+        function aggregatePlatesByRest(plates){
+            var byRest={};
+            plates.forEach(function(p){
+                var key=p.restaurante_id||p.restaurante_nombre;
+                if(!key) return;
+                if(!byRest[key]) byRest[key]={id:p.restaurante_id,nombre:p.restaurante_nombre,count:0,items:[]};
+                byRest[key].count++;
+                byRest[key].items.push(p);
             });
+            // Mapear a objetos restaurante reales (con horario, distancia, etc.)
+            var arr=[];
+            Object.keys(byRest).forEach(function(k){
+                var rb=byRest[k];
+                var r=(sessionData.resultados||[]).find(function(x){return x.id===rb.id||x.nombre===rb.nombre});
+                if(r){
+                    var enriched=Object.assign({},r,{_matchCount:rb.count,_matchItems:rb.items});
+                    arr.push(enriched);
+                }
+            });
+            return arr;
+        }
+
+        function sortRestsByMatch(rests){
             rests.sort(function(a,b){
                 var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
                 var va=sa===true?0:sa===null?1:2;
                 var vb=sb===true?0:sb===null?1:2;
                 if(va!==vb) return va-vb;
+                if((a._matchCount||0)!==(b._matchCount||0)) return (b._matchCount||0)-(a._matchCount||0);
                 return (a.distancia_km||999)-(b.distancia_km||999);
             });
-            rests=rests.slice(0,15);
+            return rests;
+        }
 
-            // Platos: query server-side con ilike
+        function doSearch(query){
+            var q=(query||'').trim();
+            if(!q){renderSearchIdle();return}
+            renderSearchSkeletons();
+
+            // 1) Match directo por nombre/categoría del restaurante (client-side)
+            var qNorm=removeAccents(q.toLowerCase());
+            var directRests=(sessionData.resultados||[]).filter(function(r){
+                var n=removeAccents((r.nombre||'').toLowerCase());
+                var c=removeAccents((r.categoria||'').toLowerCase());
+                var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
+                return n.indexOf(qNorm)!==-1||c.indexOf(qNorm)!==-1||t.indexOf(qNorm)!==-1;
+            });
+
+            // 2) Query server-side a menu_items (con ilike), agrupar por restaurante
             var enc=encodeURIComponent('%'+q+'%');
-            fetch(SB_URL+'/rest/v1/menu_items?select=id,restaurante_id,restaurante_nombre,categoria_menu,nombre_item,descripcion,precio&disponible=eq.true&or=(nombre_item.ilike.'+enc+',descripcion.ilike.'+enc+')&limit=40',{headers:supaHeaders()})
+            fetch(SB_URL+'/rest/v1/menu_items?select=restaurante_id,restaurante_nombre,categoria_menu,nombre_item,descripcion,precio&disponible=eq.true&or=(nombre_item.ilike.'+enc+',descripcion.ilike.'+enc+',categoria_menu.ilike.'+enc+')&limit=500',{headers:supaHeaders()})
                 .then(function(r){return r.json()})
                 .then(function(plates){
+                    plates=Array.isArray(plates)?plates:[];
+                    var restsByPlates=aggregatePlatesByRest(plates);
+
+                    // 3) Combinar: matches directos primero (sin _matchCount), luego matches por platos
+                    var seen={};
+                    var combined=[];
+                    directRests.forEach(function(r){if(!seen[r.id||r.nombre]){seen[r.id||r.nombre]=true;combined.push(r)}});
+                    restsByPlates.forEach(function(r){if(!seen[r.id||r.nombre]){seen[r.id||r.nombre]=true;combined.push(r)}});
+                    sortRestsByMatch(combined);
+
                     saveRecentSearch(q);
-                    renderSearchResults(q,rests,Array.isArray(plates)?plates:[]);
+                    renderSearchResults(q,combined,plates);
                 }).catch(function(){
                     saveRecentSearch(q);
-                    renderSearchResults(q,rests,[]);
+                    renderSearchResults(q,directRests,[]);
                 });
         }
 
@@ -1362,16 +1505,18 @@
                 return;
             }
             var html='';
+            // SECCIÓN PRINCIPAL: restaurantes que venden esto
             if(rests.length){
-                html+='<div class="search-section-title-v2">🏪 Restaurantes<span class="search-section-count">'+rests.length+'</span></div>';
+                html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+rests.length+'</span></div>';
                 html+='<div style="padding:4px 0 0">';
                 rests.forEach(function(r,idx){
                     var color=getColor(idx);
                     var metaParts=[];
+                    if(r._matchCount) metaParts.push('<span class="badge-count">'+r._matchCount+' plato'+(r._matchCount===1?'':'s')+'</span>');
                     if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
                     if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
-                    if(r.categoria) metaParts.push('<span>'+esc(r.categoria)+'</span>');
-                    html+='<div class="rest-compact" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'22">'+
+                    if(r.categoria&&!r._matchCount) metaParts.push('<span>'+esc(r.categoria)+'</span>');
+                    html+='<div class="rest-compact" onclick="openRestFiltered(\''+jsEsc(r.nombre)+'\',\''+jsEsc(query)+'\')" style="border-color:'+color+'22">'+
                         '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
                         '<div class="rest-compact-body">'+
                             '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
@@ -1385,10 +1530,12 @@
                 });
                 html+='</div>';
             }
+            // SECCIÓN SECUNDARIA: platos individuales (los más relevantes)
             if(plates.length){
-                html+='<div class="search-section-title-v2">🍽 Platos<span class="search-section-count">'+plates.length+'</span></div>';
-                plates.forEach(function(p){
-                    html+='<div class="plate-card" onclick="openRestByName(\''+jsEsc(p.restaurante_nombre||'')+'\')">'+
+                var topPlates=plates.slice(0,8);
+                html+='<div class="search-section-title-v2">🍽 Platos populares<span class="search-section-count">'+topPlates.length+(plates.length>8?'+':'')+'</span></div>';
+                topPlates.forEach(function(p){
+                    html+='<div class="plate-card" onclick="openRestFiltered(\''+jsEsc(p.restaurante_nombre||'')+'\',\''+jsEsc(query)+'\')">'+
                         '<div class="plate-emoji">'+getEmojiPlato(p.nombre_item)+'</div>'+
                         '<div class="plate-info">'+
                             '<div class="plate-name">'+esc(p.nombre_item)+'</div>'+
@@ -1404,6 +1551,20 @@
         window.openRestByName=function(name){
             var r=(sessionData.resultados||[]).find(function(x){return x.nombre===name});
             if(r) openRest(r.nombre);
+        };
+
+        // V2.1: abrir restaurante con filtro de búsqueda (solo muestra platos que matchean)
+        window.openRestFiltered=function(name,query){
+            window._restFilter={type:'q',value:query};
+            openRest(name);
+        };
+        window.openRestCatFiltered=function(name,catKey){
+            window._restFilter={type:'cat',value:catKey};
+            openRest(name);
+        };
+        window.clearRestFilter=function(){
+            window._restFilter=null;
+            openRest(currentRestIdx);
         };
 
         // ── CART + CHECKOUT UNIFICADO ──
