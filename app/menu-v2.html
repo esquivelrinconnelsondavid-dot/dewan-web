@@ -718,19 +718,20 @@
         function recalcDistances(rests){
             if(!window._clientGPS) return rests;
             var TARIFA_BASE=1.50,KM_INCLUIDOS=3,PRECIO_POR_KM=0.50,FACTOR_RUTA=1.3;
-            return rests.map(function(r){
-                var copy={nombre:r.nombre,productos:r.productos,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,horario:r.horario};
+            // V2.7 FIX: mutar el objeto original en vez de copiar a mano
+            // (antes se perdía r.id y otros campos, rompiendo la carga de menu_items)
+            rests.forEach(function(r){
                 if(r.restaurante_lat&&r.restaurante_lng){
                     var distLineal=haversine(window._clientGPS.lat,window._clientGPS.lng,parseFloat(r.restaurante_lat),parseFloat(r.restaurante_lng));
                     var distRuta=distLineal*FACTOR_RUTA;
-                    copy.distancia_km=Math.round(distRuta*10)/10;
-                    copy.tiempo_estimado_min=Math.round(15+distRuta*3);
+                    r.distancia_km=Math.round(distRuta*10)/10;
+                    r.tiempo_estimado_min=Math.round(15+distRuta*3);
                     var precio=TARIFA_BASE;
                     if(distRuta>KM_INCLUIDOS) precio=TARIFA_BASE+((distRuta-KM_INCLUIDOS)*PRECIO_POR_KM);
-                    copy.precio_delivery=Math.round(precio*100)/100;
+                    r.precio_delivery=Math.round(precio*100)/100;
                 }
-                return copy;
             });
+            return rests;
         }
 
         // ── Helpers para matching singular/plural ──
