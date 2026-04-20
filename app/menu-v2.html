@@ -635,17 +635,22 @@
         function loadSession(){
             var restsReq=fetch(SB_URL+'/rest/v1/restaurantes?select=*&activo=eq.true&order=nombre.asc',{headers:supaHeaders()})
                 .then(function(r){return r.json()});
+            var almReq=fetch(SB_URL+'/rest/v1/almuerzos_hoy?select=*',{headers:supaHeaders()})
+                .then(function(r){return r.json()}).catch(function(){return[]});
             var sessReq=token
                 ? fetch(SB_URL+'/rest/v1/links_sesion?token=eq.'+token+'&select=*',{headers:supaHeaders()}).then(function(r){return r.json()}).catch(function(){return []})
                 : Promise.resolve([]);
-            Promise.all([restsReq,sessReq]).then(function(arr){
+            Promise.all([restsReq,almReq,sessReq]).then(function(arr){
                 var raw=arr[0]||[];
-                var sess=(arr[1]&&arr[1][0])||null;
+                var alm=Array.isArray(arr[1])?arr[1]:[];
+                var sess=(arr[2]&&arr[2][0])||null;
                 if(!raw.length){showError('Sin datos','No pudimos cargar los restaurantes.');return}
-                // Si hay session y está expirada, solo avisamos pero NO bloqueamos — v2 funciona sin token
-                if(sess&&sess.expira_at&&new Date(sess.expira_at)<new Date()){
-                    sess=null;
-                }
+                if(sess&&sess.expira_at&&new Date(sess.expira_at)<new Date()){sess=null}
+
+                // Indexar almuerzos_hoy por restaurante_id para lookup rápido
+                window._almuerzosHoy={};
+                alm.forEach(function(a){if(a.restaurante_id) window._almuerzosHoy[a.restaurante_id]=a});
+
                 sessionData={
                     resultados:raw.map(normalizeRest),
                     busqueda_texto:(sess&&sess.busqueda_texto)||'',
@@ -875,7 +880,38 @@
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
                     var rests=aggregatePlatesByRest(plates);
+                    // V2.5: Para 'almuerzo', también incluir restaurantes de almuerzos_hoy
+                    if(key==='almuerzo'&&window._almuerzosHoy){
+                        var already={};
+                        rests.forEach(function(r){if(r.id) already[r.id]=true});
+                        Object.keys(window._almuerzosHoy).forEach(function(rid){
+                            if(already[rid]) return;
+                            var rFull=(sessionData.resultados||[]).find(function(x){return x.id===rid});
+                            if(rFull){
+                                var enriched=Object.assign({},rFull,{_matchCount:1,_matchItems:[]});
+                                rests.push(enriched);
+                            }
+                        });
+                        // Los que SÍ tienen almuerzo_hoy ganan score extra (son especialistas reales)
+                        rests.forEach(function(r){
+                            if(window._almuerzosHoy[r.id]) r._hasAlmuerzoHoy=true;
+                        });
+                    }
                     rankRestsByKeywords(rests,cm.kw);
+                    // Boost: los que tienen almuerzo_hoy suben como especialistas reales
+                    if(key==='almuerzo'){
+                        rests.forEach(function(r){
+                            if(r._hasAlmuerzoHoy){r._score=(r._score||0)+15000;r._specialist=true}
+                        });
+                        rests.sort(function(a,b){
+                            var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                            var va=sa===true?0:sa===null?1:2;
+                            var vb=sb===true?0:sb===null?1:2;
+                            if(va!==vb) return va-vb;
+                            if(a._score!==b._score) return b._score-a._score;
+                            return (a.distancia_km||999)-(b.distancia_km||999);
+                        });
+                    }
                     window._catRestsCache[key]=rests;
                     window._catLoading=false;
                     if(window._activeCat===key) renderHome();
@@ -1172,6 +1208,19 @@
                     if(currentView==='rest'&&currentRestIdx===nombre) openRest(nombre);
                 });
                 return;
+            }
+
+            // V2.5: Si este restaurante tiene almuerzo configurable hoy, inyectarlo al inicio del menú
+            var almHoy=window._almuerzosHoy&&window._almuerzosHoy[r.id];
+            if(almHoy&&almHoy.opciones&&almHoy.opciones.length&&!r._almuerzoInjected){
+                var almProduct={
+                    nombre:'Almuerzo del día',
+                    precio:Number(almHoy.precio)||0,
+                    descripcion:'ALMUERZO_OPTS:'+JSON.stringify({precio:Number(almHoy.precio)||0,opciones:almHoy.opciones}),
+                    categoria:'🍱 Almuerzo del día'
+                };
+                r.productos=[almProduct].concat(r.productos||[]);
+                r._almuerzoInjected=true;
             }
 
             var color=getColor(ridx);
