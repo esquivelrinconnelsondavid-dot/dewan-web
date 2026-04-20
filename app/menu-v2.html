@@ -837,6 +837,12 @@
             return {g:'Buenas noches',s:'¿Qué cenamos?'};
         }
 
+        // V2.8: Ventana horaria para almuerzos del día (12:00 a 15:00)
+        function isAlmuerzoHour(){
+            var h=new Date().getHours();
+            return h>=12&&h<15;
+        }
+
         // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
         function fetchAllMatchingPlates(orsParam,selectCols){
             var sel=selectCols||'restaurante_id,restaurante_nombre,nombre_item,categoria_menu,descripcion,precio';
@@ -881,8 +887,9 @@
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
                     var rests=aggregatePlatesByRest(plates);
-                    // V2.5: Para 'almuerzo', también incluir restaurantes de almuerzos_hoy
-                    if(key==='almuerzo'&&window._almuerzosHoy){
+                    // V2.5 + V2.8: Para 'almuerzo', incluir restaurantes de almuerzos_hoy y boostearlos,
+                    // pero SOLO durante horario de almuerzo (12:00–15:00)
+                    if(key==='almuerzo'&&window._almuerzosHoy&&isAlmuerzoHour()){
                         var already={};
                         rests.forEach(function(r){if(r.id) already[r.id]=true});
                         Object.keys(window._almuerzosHoy).forEach(function(rid){
@@ -893,14 +900,13 @@
                                 rests.push(enriched);
                             }
                         });
-                        // Los que SÍ tienen almuerzo_hoy ganan score extra (son especialistas reales)
                         rests.forEach(function(r){
                             if(window._almuerzosHoy[r.id]) r._hasAlmuerzoHoy=true;
                         });
                     }
                     rankRestsByKeywords(rests,cm.kw);
-                    // Boost: los que tienen almuerzo_hoy suben como especialistas reales
-                    if(key==='almuerzo'){
+                    // Boost: los que tienen almuerzo_hoy suben como especialistas reales (solo en horario)
+                    if(key==='almuerzo'&&isAlmuerzoHour()){
                         rests.forEach(function(r){
                             if(r._hasAlmuerzoHoy){r._score=(r._score||0)+15000;r._specialist=true}
                         });
@@ -1003,6 +1009,16 @@
                     '<span>'+cm.icon+' '+cm.label+' · '+bannerCount+'</span>'+
                     '<button onclick="toggleCategoryV2(\''+window._activeCat+'\')" aria-label="Quitar filtro">✕</button>'+
                 '</div>';
+                // V2.8: Aviso fuera de horario de almuerzo
+                if(window._activeCat==='almuerzo'&&!isAlmuerzoHour()){
+                    h+='<div class="loc-missing-banner" style="margin:0 14px 10px">'+
+                        '<div class="loc-missing-icon">🕒</div>'+
+                        '<div class="loc-missing-content">'+
+                            '<div class="loc-missing-title">Almuerzos del día: 12:00 a 15:00</div>'+
+                            '<div class="loc-missing-text">Fuera de este horario no aparecen los combos configurables. Estos restaurantes venden menús y almuerzos regulares.</div>'+
+                        '</div>'+
+                    '</div>';
+                }
             }
 
             // Banner GPS (si no tiene, no está descartado)
@@ -1212,8 +1228,9 @@
             }
 
             // V2.5: Si este restaurante tiene almuerzo configurable hoy, inyectarlo al inicio del menú
+            // V2.8: solo durante horario de almuerzo (12:00–15:00)
             var almHoy=window._almuerzosHoy&&window._almuerzosHoy[r.id];
-            if(almHoy&&almHoy.opciones&&almHoy.opciones.length&&!r._almuerzoInjected){
+            if(almHoy&&almHoy.opciones&&almHoy.opciones.length&&!r._almuerzoInjected&&isAlmuerzoHour()){
                 var almProduct={
                     nombre:'Almuerzo del día',
                     precio:Number(almHoy.precio)||0,
