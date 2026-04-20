@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DEWAN Delivery</title>
+    <meta name="theme-color" content="#0E0E10">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23B8FF00'/><text x='50' y='70' font-family='Arial' font-size='55' font-weight='bold' fill='%23111' text-anchor='middle'>D</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#0E0E10;--card:#1A1A1E;--card2:#222226;--border:#2A2A30;
+            --acc:#B8FF00;--acc-soft:rgba(184,255,0,0.12);
+            --texto:#F0EFE9;--gris:#6B6B75;--gris-2:#9A9AA6;
+            --green:#25D366;--radius:16px;
+        }
+        body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;max-width:430px;margin:0 auto}
+
+        /* GPS Welcome */
+        .gps-welcome{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;overflow:hidden}
+        .gps-welcome::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:80%;background:radial-gradient(ellipse at center,rgba(184,255,0,0.06) 0%,transparent 70%);pointer-events:none}
+        .gps-welcome::after{content:'';position:absolute;bottom:-10%;right:-10%;width:50%;height:50%;background:radial-gradient(circle,rgba(184,255,0,0.04) 0%,transparent 70%);pointer-events:none}
+
+        /* Brand */
+        .welcome-brand{margin-bottom:6px;position:relative;z-index:1}
+        .welcome-brand-name{font-size:2.2rem;font-weight:900;color:var(--acc);letter-spacing:0.04em;line-height:1}
+        .welcome-brand-sub{font-size:0.85rem;font-weight:700;color:var(--texto);letter-spacing:0.25em;text-transform:uppercase;opacity:0.7;margin-top:2px}
+        .welcome-brand-tag{font-size:0.7rem;color:var(--gris);margin-top:6px;font-weight:600}
+
+        /* Floating food orbit */
+        .welcome-orbit{position:relative;width:160px;height:160px;margin:28px auto 24px;z-index:1}
+        .welcome-orbit-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#7ACC00);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 40px rgba(184,255,0,0.3),0 0 80px rgba(184,255,0,0.1)}
+        .welcome-orbit-ring{position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(184,255,0,0.15);animation:welcome-spin 20s linear infinite}
+        .welcome-orbit-ring2{position:absolute;inset:-18px;border-radius:50%;border:1px dashed rgba(184,255,0,0.08);animation:welcome-spin 30s linear infinite reverse}
+        .welcome-food{position:absolute;font-size:1.6rem;animation:welcome-float 3s ease-in-out infinite;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4))}
+        .welcome-food:nth-child(1){top:-8px;left:50%;transform:translateX(-50%);animation-delay:0s}
+        .welcome-food:nth-child(2){top:22%;right:-12px;animation-delay:0.5s}
+        .welcome-food:nth-child(3){bottom:22%;right:-8px;animation-delay:1s}
+        .welcome-food:nth-child(4){bottom:-8px;left:50%;transform:translateX(-50%);animation-delay:1.5s}
+        .welcome-food:nth-child(5){bottom:22%;left:-12px;animation-delay:2s}
+        .welcome-food:nth-child(6){top:22%;left:-8px;animation-delay:2.5s}
+        @keyframes welcome-spin{to{transform:rotate(360deg)}}
+        @keyframes welcome-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+        /* Pulse rings behind center */
+        .welcome-pulse{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72px;height:72px;border-radius:50%}
+        .welcome-pulse::before,.welcome-pulse::after{content:'';position:absolute;inset:-12px;border-radius:50%;border:2px solid var(--acc);opacity:0;animation:welcome-ping 2.5s ease-out infinite}
+        .welcome-pulse::after{animation-delay:1.25s}
+        @keyframes welcome-ping{0%{transform:scale(1);opacity:0.4}100%{transform:scale(2.2);opacity:0}}
+
+        /* Text */
+        .welcome-title{font-size:1.35rem;font-weight:900;color:var(--texto);margin-bottom:6px;position:relative;z-index:1}
+        .welcome-text{font-size:0.85rem;color:var(--gris);line-height:1.6;margin-bottom:28px;max-width:300px;position:relative;z-index:1}
+
+        /* GPS status */
+        .gps-status{text-align:center;font-size:0.82rem;color:var(--gris);margin-bottom:10px;min-height:20px;transition:all 0.3s}
+        .gps-status.success{color:var(--green);font-weight:700}
+        .gps-status.error{color:var(--gris);font-weight:600}
+
+        /* Welcome features row */
+        .welcome-features{display:flex;flex-direction:column;gap:8px;margin:8px 0 20px;position:relative;z-index:1;width:100%;max-width:320px}
+        .welcome-feat{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:0.82rem;font-weight:700;color:var(--texto)}
+        .welcome-feat span{font-size:1.2rem}
+
+        /* CTA button with glow */
+        .welcome-cta{position:relative;z-index:1;width:100%;max-width:320px;margin-bottom:10px}
+        .welcome-cta .btn-accent{animation:welcome-glow 2.5s ease-in-out infinite;box-shadow:0 4px 20px rgba(184,255,0,0.25);font-size:1.05rem;padding:18px 24px;border-radius:16px;font-weight:900}
+        @keyframes welcome-glow{0%,100%{box-shadow:0 4px 20px rgba(184,255,0,0.25)}50%{box-shadow:0 4px 36px rgba(184,255,0,0.45)}}
+        .welcome-skip{background:transparent;border:1.5px solid var(--border);color:var(--texto);font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;padding:12px 20px;border-radius:14px;transition:all 0.2s;position:relative;z-index:1;width:100%;max-width:320px;display:flex;align-items:center;justify-content:center;gap:6px}
+        .welcome-skip:hover,.welcome-skip:active{background:var(--card);border-color:var(--acc);color:var(--acc)}
+
+        .btn{border:none;border-radius:14px;padding:14px 20px;font-weight:800;font-size:0.95rem;cursor:pointer;font-family:inherit;width:100%;max-width:320px;transition:all 0.2s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .btn:active{transform:scale(0.97)}
+        .btn-accent{background:var(--acc);color:#111}
+        .btn-accent:disabled{opacity:0.5;cursor:not-allowed}
+        .btn-outline{background:transparent;color:var(--gris);border:1.5px solid var(--border)}
+        .btn-green{background:var(--green);color:white}
+
+        /* Header sticky */
+        .header-sticky{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);padding:20px 16px 16px}
+        .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+        .header-loc{display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--gris);font-weight:700}
+        .header-title{font-size:1.35rem;font-weight:900;letter-spacing:-0.03em;margin-top:4px}
+        .btn-cart{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:9px 16px;cursor:pointer;color:var(--gris);font-weight:800;font-size:0.82rem;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.2s}
+        .btn-cart.has-items{background:var(--acc);color:#111;border-color:var(--acc)}
+
+        /* Sort pills */
+        .sort-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px 16px}
+        .sort-bar::-webkit-scrollbar{display:none}
+        .pill{flex-shrink:0;padding:8px 16px;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--gris);font-weight:800;font-size:0.75rem;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.2s}
+        .pill.active{background:var(--acc);color:#111;border-color:var(--acc)}
+        .pill.disabled{opacity:0.4;cursor:not-allowed;pointer-events:none}
+
+        /* GPS Banner */
+        .gps-banner{background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.15);border-radius:12px;margin:0 14px 10px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--gris);cursor:pointer;transition:all 0.2s}
+        .gps-banner:hover{background:rgba(184,255,0,0.12)}
+        .gps-banner-text{flex:1;line-height:1.4}
+        .gps-banner-close{background:none;border:none;color:var(--gris);font-size:1rem;cursor:pointer;padding:4px;opacity:0.6;flex-shrink:0}
+        .gps-banner-close:hover{opacity:1}
+
+        /* Restaurant Card */
+        .rest-card{background:var(--card);border:1px solid var(--border);border-radius:20px;margin:0 14px 12px;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}
+        .rest-card:active{transform:scale(0.985)}
+        .rest-color-bar{height:4px}
+        .rest-body{padding:14px 14px 12px}
+        .rest-top{display:flex;gap:12px;align-items:center}
+        .rest-avatar{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+        .rest-info{flex:1;min-width:0}
+        .rest-name{font-weight:900;font-size:1.02rem;line-height:1.2}
+        .rest-platos-count{font-size:0.68rem;color:var(--gris);font-weight:700;margin-top:2px}
+        .rest-meta{display:flex;gap:10px;margin-top:5px;font-size:0.73rem;flex-wrap:wrap}
+        .rest-meta span{color:var(--gris);display:flex;align-items:center;gap:2px}
+
+        /* Compact restaurant card (slim, ~86px tall, 4-5 per screen) */
+        .rest-compact{display:flex;align-items:stretch;background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 14px 9px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s}
+        .rest-compact:active{transform:scale(0.985)}
+        .rest-compact-stripe{width:4px;flex-shrink:0}
+        .rest-compact-body{flex:1;padding:12px 12px 12px 14px;display:flex;gap:12px;align-items:center;min-width:0}
+        .rest-compact-avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+        .rest-compact-info{flex:1;min-width:0}
+        .rest-compact-name{font-weight:800;font-size:0.95rem;line-height:1.2;letter-spacing:-0.01em;display:flex;align-items:center;gap:6px;color:var(--texto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .rest-compact-meta{display:flex;gap:10px;margin-top:4px;font-size:0.74rem;color:var(--gris-2);font-weight:700;flex-wrap:wrap}
+        .rest-compact-meta span{display:flex;align-items:center;gap:3px;white-space:nowrap}
+        .rest-compact-meta .dot{color:var(--border);font-weight:900}
+        .rest-compact-chevron{color:var(--gris);font-size:1.1rem;flex-shrink:0;opacity:0.45}
+
+        /* Home horizontal carrusel (Apple-style) */
+        .home-carrusel{padding:4px 0 8px}
+        .home-carrusel-head{display:flex;align-items:baseline;justify-content:space-between;padding:16px 14px 12px}
+        .home-carrusel-title{font-size:1.05rem;font-weight:900;letter-spacing:-0.02em;display:flex;align-items:center;gap:6px}
+        .home-carrusel-sub{font-size:0.7rem;color:var(--gris);font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
+        .home-carrusel-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 14px 6px;scroll-snap-type:x mandatory}
+        .home-carrusel-scroll::-webkit-scrollbar{display:none}
+        .carrusel-card{flex-shrink:0;width:146px;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;cursor:pointer;scroll-snap-align:start;transition:transform 0.15s,border-color 0.2s;display:flex;flex-direction:column;position:relative}
+        .carrusel-card:active{transform:scale(0.97)}
+        .carrusel-top{height:88px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;position:relative}
+        .carrusel-body{padding:10px 12px 12px}
+        .carrusel-name{font-weight:800;font-size:0.85rem;line-height:1.22;letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.15em;color:var(--texto)}
+        .carrusel-meta{display:flex;gap:6px;margin-top:6px;font-size:0.7rem;color:var(--gris-2);font-weight:700;flex-wrap:wrap}
+        .carrusel-meta span{display:flex;align-items:center;gap:2px}
+        .carrusel-closed{position:absolute;top:8px;right:8px;background:rgba(255,59,48,0.22);color:#FF3B30;font-size:0.55rem;font-weight:800;padding:3px 7px;border-radius:20px;letter-spacing:0.04em;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+        .list-section-title{font-size:0.72rem;font-weight:900;color:var(--gris);text-transform:uppercase;letter-spacing:0.14em;padding:14px 14px 10px;display:flex;align-items:center;gap:8px}
+        .list-section-title::after{content:'';flex:1;height:1px;background:var(--border);opacity:0.4}
+
+        /* Info strip */
+        .info-strip{display:flex;gap:5px;margin-top:10px}
+        .info-box{flex:1;background:var(--card2);border-radius:10px;padding:6px 3px;text-align:center;border:1px solid var(--border)}
+        .info-box-icon{font-size:0.78rem}
+        .info-box-val{font-weight:900;font-size:0.7rem;color:var(--acc);margin-top:1px}
+        .info-box-label{font-size:0.52rem;color:var(--gris);font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-top:1px}
+
+        /* Category label */
+        .cat-label{font-size:0.72rem;font-weight:800;color:var(--acc);text-transform:uppercase;letter-spacing:0.1em;padding:16px 0 8px;display:flex;align-items:center;gap:8px}
+        .cat-label::after{content:'';flex:1;height:1px;background:var(--border);opacity:0.5}
+
+        /* Product card */
+        .prod-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:10px;transition:border-color 0.2s,background 0.2s,transform 0.15s}
+        .prod-card.in-cart{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.025)}
+        .prod-top{display:flex;gap:12px;align-items:flex-start}
+        .prod-emoji{width:48px;height:48px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.65rem;flex-shrink:0;border:1px solid var(--border)}
+        .prod-info{flex:1;min-width:0}
+        .prod-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+        .badge{font-size:0.6rem;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:0.04em;display:inline-flex;align-items:center;gap:3px}
+        .badge-recomendado{background:var(--acc-soft);color:var(--acc)}
+        .badge-popular{background:var(--acc-soft);color:var(--acc)}
+        .badge-cart{background:var(--acc);color:#111}
+        .badge-cat{background:var(--card2);color:var(--gris-2);border:1px solid var(--border)}
+        .prod-name{font-weight:800;font-size:0.96rem;line-height:1.25;letter-spacing:-0.01em}
+        .prod-desc{color:var(--gris-2);font-size:0.78rem;margin-top:4px;line-height:1.45}
+        .prod-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px}
+        .prod-price{font-weight:800;font-size:1.1rem;color:var(--texto);letter-spacing:-0.01em}
+        .btn-agregar{width:36px;height:36px;border-radius:50%;background:var(--acc);color:#111;border:none;font-weight:900;font-size:1.3rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s;box-shadow:0 2px 10px rgba(184,255,0,0.2);flex-shrink:0}
+        .btn-agregar:active{transform:scale(0.88)}
+        .btn-agregar.btn-agregar-wide{width:auto;height:auto;padding:10px 18px;border-radius:12px;font-size:0.82rem;gap:6px}
+
+        /* Qty controls */
+        .qty-ctrl{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:100px;padding:2px}
+        .btn-qty{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.05rem;cursor:pointer;font-family:inherit;transition:transform 0.15s;line-height:1;padding:0}
+        .btn-qty:active{transform:scale(0.88)}
+        .btn-qty-minus{border:none;background:transparent;color:var(--texto)}
+        .btn-qty-plus{border:none;background:var(--acc);color:#111;box-shadow:0 2px 8px rgba(184,255,0,0.25)}
+        .qty-num{font-weight:900;font-size:0.95rem;min-width:18px;text-align:center;color:var(--texto)}
+
+        /* Menu section inside restaurant */
+        .menu-section{padding:0 14px 14px}
+        .menu-count{color:var(--gris);font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;padding:0 14px}
+
+        /* Sticky category tabs (within restaurant view) */
+        .cat-tabs-wrap{position:sticky;top:0;z-index:45;background:rgba(14,14,16,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:10px 0;display:flex;align-items:center;gap:8px}
+        .cat-tabs-back{flex-shrink:0;margin-left:12px;width:36px;height:36px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--texto);display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;font-family:inherit;transition:transform 0.15s}
+        .cat-tabs-back:active{transform:scale(0.9)}
+        .cat-tabs{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 12px 0 4px;scroll-behavior:smooth}
+        .cat-tabs::-webkit-scrollbar{display:none}
+        .cat-tab{flex-shrink:0;padding:8px 14px;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--gris-2);font-weight:800;font-size:0.78rem;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.2s;letter-spacing:0.01em}
+        .cat-tab.active{background:var(--acc);color:#111;border-color:var(--acc)}
+        .cat-tabs-restname{flex:1;font-weight:800;font-size:0.9rem;color:var(--texto);padding:0 14px 0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.01em}
+
+        /* Destacados horizontal carousel */
+        .destacados{padding:18px 0 10px}
+        .destacados-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 14px 12px}
+        .destacados-title{font-size:0.98rem;font-weight:900;letter-spacing:-0.02em;display:flex;align-items:center;gap:6px}
+        .destacados-sub{font-size:0.7rem;color:var(--gris);font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
+        .destacados-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 14px 4px;scroll-snap-type:x mandatory}
+        .destacados-scroll::-webkit-scrollbar{display:none}
+        .dest-card{flex-shrink:0;width:160px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 12px 12px;scroll-snap-align:start;position:relative;transition:border-color 0.2s,transform 0.15s;cursor:pointer}
+        .dest-card:active{transform:scale(0.98)}
+        .dest-card.in-cart{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.025)}
+        .dest-emoji{width:56px;height:56px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin-bottom:12px;border:1px solid var(--border)}
+        .dest-name{font-weight:800;font-size:0.85rem;line-height:1.25;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.15em;letter-spacing:-0.01em}
+        .dest-footer{display:flex;align-items:center;justify-content:space-between;gap:6px}
+        .dest-price{font-weight:800;font-size:0.98rem;color:var(--texto);letter-spacing:-0.01em}
+        .dest-plus{width:30px;height:30px;border-radius:50%;background:var(--acc);color:#111;border:none;font-weight:900;font-size:1.15rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s;box-shadow:0 2px 8px rgba(184,255,0,0.2);flex-shrink:0}
+        .dest-plus:active{transform:scale(0.88)}
+        .dest-qty-mini{background:var(--acc);color:#111;border-radius:100px;padding:4px 10px;font-weight:900;font-size:0.74rem;display:inline-flex;align-items:center;gap:4px}
+
+        /* Cart floating */
+        .cart-float{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:92%;max-width:398px;z-index:60}
+        .cart-float-btn{width:100%;background:var(--acc);color:#111;border:none;border-radius:14px;padding:14px 20px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit;display:flex;justify-content:space-between;align-items:center;box-shadow:0 8px 32px rgba(184,255,0,0.3)}
+        .cart-float-badge{background:rgba(0,0,0,0.18);border-radius:8px;padding:3px 10px;font-weight:900}
+
+        /* Cart page */
+        .cart-header{padding:24px 16px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:50}
+        .btn-back{background:var(--card2);border:1px solid var(--border);border-radius:12px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:var(--texto)}
+        .cart-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
+        .cart-item-emoji{width:50px;height:50px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+        .cart-summary-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:8px 0 12px}
+        .cart-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:0.82rem}
+        .cart-row-label{color:var(--gris)}
+        .cart-row-val{font-weight:700}
+        .cart-total-row{display:flex;justify-content:space-between;padding-top:12px;margin-top:4px}
+        .cart-total-label{font-weight:900;font-size:1.05rem}
+        .cart-total-val{font-weight:900;font-size:1.3rem;color:var(--acc)}
+
+        /* Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
+        .modal-overlay.visible{opacity:1;pointer-events:auto}
+        .modal{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:430px;transform:translateY(100%);transition:transform 0.3s ease;position:relative}
+        /* FIX #5: Botón X visible en todos los modales */
+        .modal-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--texto);font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;z-index:2;transition:all 0.15s}
+        .modal-close:active{transform:scale(0.9);background:var(--border)}
+        .modal-overlay.visible .modal{transform:translateY(0)}
+        .modal-title{font-size:1.15rem;font-weight:900;margin-bottom:6px}
+        .modal-text{font-size:0.85rem;color:var(--gris);margin-bottom:20px;line-height:1.5}
+        .modal-items{background:var(--card2);border-radius:12px;padding:12px 14px;margin-bottom:20px;max-height:200px;overflow-y:auto}
+        .modal-rest-label{font-weight:800;font-size:0.78rem;color:var(--acc);padding:6px 0 2px}
+        .modal-item{display:flex;justify-content:space-between;padding:6px 0;font-size:0.82rem}
+        .modal-item+.modal-item{border-top:1px solid var(--border)}
+        .modal-item-name{font-weight:600}
+        .modal-item-price{font-weight:800;color:var(--acc)}
+        .modal-total{display:flex;justify-content:space-between;padding:10px 0 0;border-top:2px solid var(--border);font-weight:900;font-size:0.92rem;margin-top:4px}
+
+        /* States */
+        .state-container{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:20px}
+        .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--acc);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:16px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .state-title{font-size:1.1rem;font-weight:800;margin-bottom:8px}
+        .state-text{font-size:0.88rem;color:var(--gris)}
+        .empty-icon{font-size:3rem;margin-bottom:16px}
+
+        /* Preview chips */
+        .preview-chips{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+        .preview-chips::-webkit-scrollbar{display:none}
+        .preview-chip{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:5px 12px;font-size:0.7rem;font-weight:700;color:var(--gris);white-space:nowrap;flex-shrink:0}
+        .preview-chip-price{color:#FF7A00;font-weight:700;margin-left:4px}
+        .preview-chip-more{font-weight:800;color:var(--acc)}
+
+        /* Rest detail header */
+        .rest-detail-header{padding:20px 16px 18px;border-bottom:1px solid var(--border)}
+        .rest-detail-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        .rest-detail-info{display:flex;gap:14px;align-items:center}
+        .rest-detail-avatar{width:62px;height:62px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,0.2)}
+        .rest-detail-name{font-weight:900;font-size:1.2rem;line-height:1.2}
+
+        .app-footer{text-align:center;padding:20px 20px 80px;font-size:0.7rem;color:var(--gris)}
+        body.has-cart{padding-bottom:80px}
+
+        /* Badge abierto/cerrado — CAMBIO 4 */
+        .badge-open{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(0,210,106,0.18);color:#00D26A;margin-left:6px;vertical-align:middle}
+        .badge-closed{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(255,59,48,0.18);color:#FF3B30;margin-left:6px;vertical-align:middle}
+
+        /* Cart nota input */
+        .cart-nota-wrap{width:100%;display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+        .cart-nota-icon{font-size:0.75rem;flex-shrink:0}
+        .cart-nota-input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:6px 10px;font-size:0.75rem;color:var(--texto);font-family:inherit;outline:none}
+        .cart-nota-input::placeholder{color:var(--gris);font-size:0.72rem}
+        .cart-nota-input:focus{border-color:var(--acc)}
+
+        /* Checkout inline (dentro del carrito) */
+        .checkout-gps-box{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}
+        .checkout-gps-ok{color:var(--green);font-weight:800;font-size:0.88rem}
+        .checkout-gps-searching{color:var(--acc);font-size:0.82rem}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        .checkout-gps-searching{animation:pulse 1.5s ease-in-out infinite}
+        .btn-wa{background:var(--green);color:white;font-size:1.05rem;padding:16px 20px;border-radius:16px;box-shadow:0 6px 24px rgba(37,211,102,0.3);max-width:100%}
+        .btn-wa:hover{opacity:0.95}
+        .cta-helper{text-align:center;font-size:0.78rem;color:var(--gris);margin:4px 0 10px;line-height:1.4;padding:0 8px}
+
+        /* FIX #4: Pantalla de éxito */
+        .success-screen{padding:40px 20px 32px;text-align:center;max-width:420px;margin:0 auto}
+        .success-icon-wrap{position:relative;width:120px;height:120px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center}
+        .success-icon-wrap::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(37,211,102,0.25) 0%,transparent 70%);animation:succ-pulse 2s ease-out infinite}
+        @keyframes succ-pulse{0%{transform:scale(0.9);opacity:0.8}100%{transform:scale(1.4);opacity:0}}
+        .success-icon{width:90px;height:90px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:2.6rem;box-shadow:0 10px 40px rgba(37,211,102,0.4);position:relative;z-index:1}
+        .success-title{font-size:1.6rem;font-weight:900;margin-bottom:10px;color:var(--texto)}
+        .success-text{font-size:0.9rem;color:var(--gris);line-height:1.5;margin-bottom:22px}
+        .success-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:24px;text-align:left}
+        .success-row{display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;padding:6px 0;color:var(--texto);font-weight:700}
+        .success-row span:first-child{color:var(--gris);font-weight:600}
+        .success-hint{font-size:0.78rem;color:var(--gris);margin-bottom:8px}
+        .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--texto);border-radius:14px;padding:13px 20px;font-weight:800;font-size:0.9rem;cursor:pointer;font-family:inherit;width:100%;margin-top:12px;transition:all 0.2s}
+        .btn-ghost:active{transform:scale(0.97);background:var(--card2)}
+        .checkout-nota{font-size:0.72rem;color:var(--gris);padding:2px 0 0 16px}
+
+        /* Location section in cart */
+        .loc-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:12px 0 16px}
+        .loc-title{font-weight:900;font-size:0.85rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+        .btn-gps-main{background:var(--acc);color:#111;border:none;border-radius:14px;padding:14px 20px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 16px rgba(184,255,0,0.2)}
+        .btn-gps-main:active{transform:scale(0.97)}
+        .btn-gps-main:disabled{opacity:0.5;cursor:not-allowed}
+        .loc-toggle{background:none;border:none;color:var(--acc);font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;padding:10px 0 0;display:block;text-align:center;width:100%;opacity:0.8;transition:opacity 0.2s}
+        .loc-toggle:hover{opacity:1}
+        .loc-addr-wrap{margin-top:10px;display:block}
+        .loc-or{text-align:center;font-size:0.72rem;color:var(--gris);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:12px 0 8px;position:relative}
+        .loc-or::before,.loc-or::after{content:'';position:absolute;top:50%;width:30%;height:1px;background:var(--border)}
+        .loc-or::before{left:0}
+        .loc-or::after{right:0}
+        .loc-addr-label{font-size:0.78rem;color:var(--texto);font-weight:800;margin-bottom:6px;opacity:0.9}
+        .loc-addr-input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.85rem;color:var(--texto);font-family:inherit;outline:none;transition:border-color 0.2s}
+        .loc-addr-input::placeholder{color:var(--gris);font-size:0.8rem}
+        .loc-addr-input:focus{border-color:var(--acc)}
+        .loc-gps-ok{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.25);border-radius:12px;margin-bottom:10px}
+        .loc-gps-ok span{color:var(--green);font-weight:800;font-size:0.85rem}
+        .loc-ref-label{font-size:0.75rem;color:var(--gris);font-weight:700;margin-bottom:6px}
+
+        /* Almuerzo selector modal */
+        .almuerzo-modal{max-height:85vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,20px)}
+        .almuerzo-header{text-align:center;margin-bottom:18px}
+        .almuerzo-header-icon{font-size:2.2rem;margin-bottom:6px}
+        .almuerzo-header-title{font-size:1.15rem;font-weight:900}
+        .almuerzo-header-rest{font-size:0.8rem;color:var(--gris);margin-top:2px}
+        .almuerzo-header-price{font-size:1.3rem;font-weight:900;color:var(--acc);margin-top:6px}
+        .almuerzo-cat{margin-bottom:14px}
+        .almuerzo-cat-title{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--gris);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+        .almuerzo-cat-badge{font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px}
+        .almuerzo-cat-badge.elige{background:rgba(255,107,53,0.2);color:#FF6B35}
+        .almuerzo-cat-badge.incluido{background:rgba(37,211,102,0.15);color:var(--green)}
+        .almuerzo-opt{background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color 0.2s}
+        .almuerzo-opt.selected{border-color:var(--acc);background:rgba(184,255,0,0.06)}
+        .almuerzo-opt.single{cursor:default;border-color:var(--green);background:rgba(37,211,102,0.06)}
+        .almuerzo-radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
+        .almuerzo-opt.selected .almuerzo-radio{border-color:var(--acc);background:var(--acc)}
+        .almuerzo-opt.selected .almuerzo-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#111}
+        .almuerzo-opt.single .almuerzo-radio{border-color:var(--green);background:var(--green)}
+        .almuerzo-opt.single .almuerzo-radio::after{content:'✓';font-size:0.7rem;color:white;font-weight:900}
+        .almuerzo-opt-name{font-weight:700;font-size:0.88rem}
+        .btn-almuerzo-add{background:var(--acc);color:#111;border:none;border-radius:14px;padding:14px 20px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit;width:100%;margin-top:12px;transition:opacity 0.2s}
+        .btn-almuerzo-add:disabled{opacity:0.4;cursor:not-allowed}
+        .almuerzo-choices{font-size:0.72rem;color:var(--gris);line-height:1.6;margin-top:4px}
+        .almuerzo-remove{background:var(--card2);border:1px solid var(--border);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--texto);flex-shrink:0;transition:all 0.15s}
+        .almuerzo-remove:active{transform:scale(0.9);background:rgba(229,62,62,0.2);border-color:#e53e3e;color:#e53e3e}
+
+        /* ═══════════════════════════════════════════════
+           V2: HOME PREMIUM (saludo + search hero + chips)
+           ═══════════════════════════════════════════════ */
+        .home-v2-top{padding:18px 16px 12px;background:linear-gradient(180deg,rgba(184,255,0,0.05) 0%,transparent 90%)}
+        .home-v2-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+        .home-v2-loc{font-size:0.72rem;color:var(--gris);font-weight:700;display:flex;align-items:center;gap:4px;margin-bottom:3px;letter-spacing:0.01em}
+        .home-v2-greeting{font-size:1.35rem;font-weight:900;letter-spacing:-0.03em;line-height:1.2;color:var(--texto)}
+        .home-v2-greeting-sub{font-size:0.78rem;color:var(--gris-2);font-weight:600;margin-top:3px;letter-spacing:-0.01em}
+
+        /* Search hero (tap-through) */
+        .search-hero{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color 0.2s,transform 0.15s,box-shadow 0.2s;font-family:inherit;outline:none}
+        .search-hero:active{transform:scale(0.985);border-color:var(--acc);box-shadow:0 0 0 3px rgba(184,255,0,0.08)}
+        .search-hero-icon{font-size:1.1rem;color:var(--gris-2)}
+        .search-hero-text{color:var(--gris-2);font-size:0.95rem;font-weight:600;flex:1;text-align:left;letter-spacing:-0.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .search-hero-tag{background:var(--acc);color:#111;font-size:0.58rem;font-weight:900;padding:3px 7px;border-radius:20px;letter-spacing:0.05em;flex-shrink:0}
+
+        /* Category chips row */
+        .cat-chips-wrap{padding:14px 0 6px}
+        .cat-chips-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 14px 2px;-webkit-overflow-scrolling:touch}
+        .cat-chips-scroll::-webkit-scrollbar{display:none}
+        .cat-chip{flex-shrink:0;padding:10px 13px 10px 11px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--texto);font-size:0.82rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:-0.01em}
+        .cat-chip:active{transform:scale(0.96)}
+        .cat-chip.active{background:var(--acc);color:#111;border-color:var(--acc);box-shadow:0 2px 10px rgba(184,255,0,0.25)}
+        .cat-chip-icon{font-size:1.05rem}
+
+        /* Active filter banner */
+        .filter-banner-v2{margin:4px 14px 10px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(184,255,0,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.82rem;font-weight:800;color:var(--acc);letter-spacing:-0.01em}
+        .filter-banner-v2 button{background:none;border:none;color:var(--acc);font-size:1.15rem;font-weight:900;cursor:pointer;font-family:inherit;margin-left:auto;padding:0 4px;opacity:0.7;transition:opacity 0.15s}
+        .filter-banner-v2 button:hover{opacity:1}
+
+        /* ═══════════════════════════════════════════════
+           V2: SEARCH SCREEN
+           ═══════════════════════════════════════════════ */
+        .search-header-v2{position:sticky;top:0;z-index:50;background:var(--bg);padding:14px 12px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+        .search-header-v2 .btn-back{flex-shrink:0}
+        .search-input-wrap{flex:1;display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--acc);border-radius:14px;padding:10px 12px;transition:border-color 0.2s}
+        .search-input-wrap-icon{font-size:0.98rem;color:var(--gris-2);flex-shrink:0}
+        .search-input{flex:1;background:transparent;border:none;outline:none;color:var(--texto);font-size:0.95rem;font-weight:700;font-family:inherit;letter-spacing:-0.01em;min-width:0}
+        .search-input::placeholder{color:var(--gris);font-weight:600}
+        .search-clear{background:var(--card2);border:none;width:22px;height:22px;border-radius:50%;color:var(--texto);font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;align-items:center;justify-content:center;display:none;flex-shrink:0}
+        .search-clear.visible{display:flex}
+        .search-clear:active{background:var(--border)}
+
+        /* Search section titles */
+        .search-section-title-v2{font-size:0.72rem;font-weight:900;color:var(--gris);text-transform:uppercase;letter-spacing:0.14em;padding:18px 16px 10px;display:flex;align-items:center;gap:8px}
+        .search-section-title-v2::after{content:'';flex:1;height:1px;background:var(--border);opacity:0.4}
+        .search-section-count{background:var(--card2);color:var(--gris-2);padding:2px 7px;border-radius:20px;font-size:0.6rem;letter-spacing:0.04em;order:10}
+
+        /* Chips (recent, suggest) */
+        .chip-row{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 8px}
+        .chip-btn{background:var(--card);border:1px solid var(--border);border-radius:100px;padding:8px 13px;font-size:0.78rem;font-weight:700;color:var(--texto);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;letter-spacing:-0.01em}
+        .chip-btn:active{transform:scale(0.96)}
+        .chip-btn:hover{border-color:var(--acc);color:var(--acc)}
+        .chip-btn-icon{font-size:0.9rem;opacity:0.75}
+        .chip-btn-rm{background:none;border:none;color:var(--gris);font-size:0.85rem;opacity:0.55;margin:-2px -4px -2px 2px;padding:0 4px;cursor:pointer;font-family:inherit}
+        .chip-btn-rm:hover{opacity:1}
+
+        /* Plate search result card */
+        .plate-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin:0 14px 8px;padding:11px 14px 11px 12px;cursor:pointer;display:flex;gap:11px;align-items:center;transition:transform 0.15s,border-color 0.2s}
+        .plate-card:active{transform:scale(0.985)}
+        .plate-emoji{width:42px;height:42px;border-radius:12px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+        .plate-info{flex:1;min-width:0}
+        .plate-name{font-weight:800;font-size:0.9rem;line-height:1.2;letter-spacing:-0.01em;color:var(--texto);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .plate-rest{font-size:0.72rem;color:var(--gris-2);font-weight:600;margin-top:2px;display:flex;align-items:center;gap:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .plate-price{font-weight:800;font-size:0.98rem;color:var(--texto);letter-spacing:-0.01em;flex-shrink:0}
+
+        /* Empty state */
+        .search-empty-state-v2{text-align:center;padding:48px 20px 20px}
+        .search-empty-icon{font-size:2.8rem;margin-bottom:12px;opacity:0.55}
+        .search-empty-title{font-size:1rem;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em}
+        .search-empty-text{font-size:0.85rem;color:var(--gris);line-height:1.5;max-width:280px;margin:0 auto}
+
+        /* Skeleton loaders */
+        @keyframes skel-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+        .skel-row{background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;border:1px solid var(--border);border-radius:16px;height:84px;margin:0 14px 9px;animation:skel-shimmer 1.6s ease-in-out infinite}
+        .skel-carrusel-row{display:flex;gap:10px;overflow:hidden;padding:0 14px}
+        .skel-carrusel-card{flex-shrink:0;width:146px;height:180px;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;border:1px solid var(--border);border-radius:18px;animation:skel-shimmer 1.6s ease-in-out infinite}
+
+        /* GPS enforcement modal (strict) */
+        .gps-strict{padding:32px 24px 24px;text-align:center}
+        .gps-strict-icon{font-size:3.2rem;margin-bottom:14px;display:inline-block}
+        .gps-strict-title{font-size:1.25rem;font-weight:900;letter-spacing:-0.02em;margin-bottom:8px}
+        .gps-strict-text{font-size:0.9rem;color:var(--gris-2);line-height:1.5;margin-bottom:22px;max-width:320px;margin-left:auto;margin-right:auto}
+        .gps-strict-actions{display:flex;flex-direction:column;gap:10px}
+    </style>
+</head>
+<body>
+    <div class="gps-welcome" id="gps-welcome" style="display:none">
+        <div class="welcome-brand">
+            <div class="welcome-brand-name">DEWAN</div>
+            <div class="welcome-brand-sub">Delivery</div>
+            <div class="welcome-brand-tag">150+ restaurantes en Riobamba</div>
+        </div>
+
+        <div class="welcome-orbit">
+            <div class="welcome-pulse"></div>
+            <div class="welcome-orbit-ring"></div>
+            <div class="welcome-orbit-ring2"></div>
+            <div class="welcome-orbit-center">🛵</div>
+            <span class="welcome-food">🍔</span>
+            <span class="welcome-food">🍕</span>
+            <span class="welcome-food">🌮</span>
+            <span class="welcome-food">🍗</span>
+            <span class="welcome-food">🍱</span>
+            <span class="welcome-food">🥪</span>
+        </div>
+
+        <div class="welcome-title">¡Tu comida favorita está aquí!</div>
+        <div class="welcome-text">Sin descargas. Sin cuentas. Pide en 30 segundos directo por WhatsApp.</div>
+
+        <div class="welcome-features">
+            <div class="welcome-feat"><span>🍔</span> 150+ restaurantes</div>
+            <div class="welcome-feat"><span>🛵</span> Delivery a domicilio</div>
+            <div class="welcome-feat"><span>⚡</span> Pedido en 30 seg</div>
+        </div>
+
+        <div class="gps-status" id="welcome-gps-status"></div>
+
+        <div class="welcome-cta">
+            <button class="btn btn-accent" onclick="skipGPS()">🍔 Ver menú de restaurantes →</button>
+        </div>
+        <button class="welcome-skip" id="btn-welcome-gps" onclick="welcomeGPS()">📍 Ordenar por cercanía a mí</button>
+    </div>
+
+    <div id="app">
+        <div class="state-container">
+            <div class="spinner"></div>
+            <div class="state-title">Buscando opciones...</div>
+            <div class="state-text">Encontrando los mejores restaurantes para ti</div>
+        </div>
+    </div>
+
+    <div class="cart-float" id="cart-float" style="display:none">
+        <button class="cart-float-btn" onclick="showCart()">
+            <span class="cart-float-badge" id="cart-float-count">0</span>
+            <span>Ver mi pedido</span>
+            <span id="cart-float-total">$0.00</span>
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#10005;</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+    (function(){
+        'use strict';
+        var SB_URL='https://wfpdtjmmrhhfuxayvpzu.supabase.co';
+        var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+        var WA='593986777146';
+        var app=document.getElementById('app');
+        var token=new URLSearchParams(window.location.search).get('t');
+        var currentSort='precio'; // CAMBIO 1: default "precio" en vez de "distancia"
+        var sessionData=null;
+        var currentView='home'; // home | rest | cart
+        var currentRestIdx=null;
+        window._cart=[];
+        window._clientGPS=null;
+        window._clientAddr=''; // CAMBIO 3: dirección de texto
+
+        // V2: sin token también funciona — es el acceso "directo a la app"
+        // Marcar visita (si hay token) y cargar catálogo completo.
+        // GPS opcional vía banner discreto en la home.
+        markEtapa('abrio');
+        loadSession();
+
+        // GPS Welcome — se mantienen las funciones pero ya no se llaman al inicio
+        window.welcomeGPS=function(){
+            var st=document.getElementById('welcome-gps-status');
+            var btn=document.getElementById('btn-welcome-gps');
+            if(st){st.className='gps-status';st.textContent='🔎 Buscando tu ubicación...';}
+            if(btn){btn.disabled=true;btn.textContent='🔎 Buscando...';}
+            if(!navigator.geolocation){if(st){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Ver restaurantes cerca de ti';}return}
+            navigator.geolocation.getCurrentPosition(function(pos){
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
+                markEtapa('eligio_gps');
+                if(st){st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';}
+                // Si viene del banner, actualizar la vista
+                if(sessionData){
+                    currentSort='distancia';
+                    renderHome();
+                } else {
+                    setTimeout(function(){document.getElementById('gps-welcome').style.display='none';app.style.display='block';loadSession()},500);
+                }
+            },function(err){
+                if(st){st.className='gps-status error';st.textContent=err.code===1?'No hay problema, puedes continuar sin ubicación 😊':'No se pudo obtener GPS, pero puedes continuar 😊';}
+                if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}
+            },{enableHighAccuracy:true,timeout:15000});
+        };
+        window.skipGPS=function(){markEtapa('eligio_sin_gps');document.getElementById('gps-welcome').style.display='none';app.style.display='block';loadSession()};
+
+        // CAMBIO 1: Pedir GPS desde el banner inline
+        window.requestGPSFromBanner=function(e){
+            e.stopPropagation();
+            var banner=document.getElementById('gps-banner');
+            if(!banner) return;
+            if(!navigator.geolocation){banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">Tu navegador no soporta GPS</span>';return}
+            banner.innerHTML='<span style="font-size:0.78rem;color:var(--acc)">🔎 Buscando tu ubicación...</span>';
+            navigator.geolocation.getCurrentPosition(function(pos){
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
+                currentSort='distancia';
+                renderHome();
+            },function(){
+                banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">No se pudo obtener GPS. Puedes seguir sin ubicación.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';
+            },{enableHighAccuracy:true,timeout:15000});
+        };
+        window.dismissGPSBanner=function(){
+            var banner=document.getElementById('gps-banner');
+            if(banner) banner.style.display='none';
+            try{sessionStorage.setItem('dewan_gps_dismissed','1')}catch(e){}
+        };
+
+        // BONUS: tracking por etapa del cliente (abrio, eligio_gps, agrego_carrito, abrio_carrito, confirmo)
+        var _etapaEnviada={};
+        function markEtapa(etapa){
+            _etapaEnviada=_etapaEnviada||{};
+            if(_etapaEnviada[etapa]) return;
+            _etapaEnviada[etapa]=true;
+            if(!token) return; // V2: sin token (acceso directo) no trackeamos etapas
+            try{
+                var body={etapa_actual:etapa,etapa_at:new Date().toISOString()};
+                if(etapa==='abrio'){body.visto=true;body.visto_at=new Date().toISOString();}
+                fetch(SB_URL+'/rest/v1/links_sesion?token=eq.'+token,{
+                    method:'PATCH',
+                    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+                    body:JSON.stringify(body)
+                });
+            }catch(e){}
+        }
+
+        // V2: Helpers Supabase
+        function supaHeaders(){return {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}
+
+        // V2: Normaliza restaurante de la tabla "restaurantes" al shape que el render espera
+        function normalizeRest(r){
+            return {
+                id:r.id, nombre:r.nombre, direccion:r.direccion, telefono:r.telefono,
+                horario:r.horario, categoria:r.categoria, activo:r.activo,
+                tipo_restaurante:r.tipo_restaurante,
+                productos:[],
+                distancia_km:null, tiempo_estimado_min:null, precio_delivery:null,
+                restaurante_lat:r.latitud, restaurante_lng:r.longitud
+            };
+        }
+
+        // V2: Cargar TODOS los restaurantes activos + (si hay token) la session para tracking/prefill
+        function loadSession(){
+            var restsReq=fetch(SB_URL+'/rest/v1/restaurantes?select=*&activo=eq.true&order=nombre.asc',{headers:supaHeaders()})
+                .then(function(r){return r.json()});
+            var sessReq=token
+                ? fetch(SB_URL+'/rest/v1/links_sesion?token=eq.'+token+'&select=*',{headers:supaHeaders()}).then(function(r){return r.json()}).catch(function(){return []})
+                : Promise.resolve([]);
+            Promise.all([restsReq,sessReq]).then(function(arr){
+                var raw=arr[0]||[];
+                var sess=(arr[1]&&arr[1][0])||null;
+                if(!raw.length){showError('Sin datos','No pudimos cargar los restaurantes.');return}
+                // Si hay session y está expirada, solo avisamos pero NO bloqueamos — v2 funciona sin token
+                if(sess&&sess.expira_at&&new Date(sess.expira_at)<new Date()){
+                    sess=null;
+                }
+                sessionData={
+                    resultados:raw.map(normalizeRest),
+                    busqueda_texto:(sess&&sess.busqueda_texto)||'',
+                    _session:sess,
+                    expira_at:sess?sess.expira_at:null
+                };
+                restoreCart();
+                renderHome();
+            }).catch(function(err){
+                console.error(err);
+                showError('Error de conexion','No pudimos cargar los datos. Revisa tu internet.');
+            });
+        }
+
+        // V2: Cargar platos de un restaurante (on-demand, cacheado en memoria)
+        window._menuCache=window._menuCache||{};
+        function loadMenuItemsForRest(restId){
+            if(window._menuCache[restId]) return Promise.resolve(window._menuCache[restId]);
+            var url=SB_URL+'/rest/v1/menu_items?select=*&restaurante_id=eq.'+encodeURIComponent(restId)+'&disponible=eq.true&order=categoria_menu.asc,nombre_item.asc';
+            return fetch(url,{headers:supaHeaders()})
+                .then(function(r){return r.json()})
+                .then(function(items){
+                    var norm=(items||[]).map(function(it){return {
+                        id:it.id,
+                        nombre:it.nombre_item,
+                        precio:Number(it.precio)||0,
+                        categoria:it.categoria_menu||'General',
+                        descripcion:it.descripcion||''
+                    }});
+                    window._menuCache[restId]=norm;
+                    return norm;
+                });
+        }
+
+        // ── CAMBIO 2: localStorage para carrito ──
+        function getCartKey(){return 'dewan_cart_'+(token||'anon_v2')}
+        function saveCart(){
+            try{
+                var data={items:window._cart,ts:Date.now()};
+                localStorage.setItem(getCartKey(),JSON.stringify(data));
+            }catch(e){}
+        }
+        function restoreCart(){
+            try{
+                var raw=localStorage.getItem(getCartKey());
+                if(!raw) return;
+                var data=JSON.parse(raw);
+                // Descartar si tiene más de 2 horas
+                if(Date.now()-data.ts>2*60*60*1000){localStorage.removeItem(getCartKey());return}
+                if(data.items&&data.items.length) window._cart=data.items;
+            }catch(e){}
+        }
+        function clearCartStorage(){
+            try{localStorage.removeItem(getCartKey())}catch(e){}
+        }
+
+        // ── Haversine para calcular distancias client-side ──
+        function haversine(lat1,lng1,lat2,lng2){
+            var R=6371;var dLat=(lat2-lat1)*Math.PI/180;var dLng=(lng2-lng1)*Math.PI/180;
+            var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+            return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        }
+
+        // ── Recalcular distancias con GPS del cliente ──
+        function recalcDistances(rests){
+            if(!window._clientGPS) return rests;
+            var TARIFA_BASE=1.50,KM_INCLUIDOS=3,PRECIO_POR_KM=0.50,FACTOR_RUTA=1.3;
+            return rests.map(function(r){
+                var copy={nombre:r.nombre,productos:r.productos,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,horario:r.horario};
+                if(r.restaurante_lat&&r.restaurante_lng){
+                    var distLineal=haversine(window._clientGPS.lat,window._clientGPS.lng,parseFloat(r.restaurante_lat),parseFloat(r.restaurante_lng));
+                    var distRuta=distLineal*FACTOR_RUTA;
+                    copy.distancia_km=Math.round(distRuta*10)/10;
+                    copy.tiempo_estimado_min=Math.round(15+distRuta*3);
+                    var precio=TARIFA_BASE;
+                    if(distRuta>KM_INCLUIDOS) precio=TARIFA_BASE+((distRuta-KM_INCLUIDOS)*PRECIO_POR_KM);
+                    copy.precio_delivery=Math.round(precio*100)/100;
+                }
+                return copy;
+            });
+        }
+
+        // ── Helpers para matching singular/plural ──
+        function normWord(w){
+            w=w.toLowerCase().trim();
+            if(w.endsWith('es')&&w.length>4) return w.slice(0,-2);
+            if(w.endsWith('s')&&w.length>3) return w.slice(0,-1);
+            return w;
+        }
+        function removeAccents(s){
+            return s.replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ñ/g,'n').replace(/ü/g,'u');
+        }
+        function simplify(s){
+            s=s.toLowerCase().replace(/[^a-záéíóúñü]/g,'');
+            var r='';for(var i=0;i<s.length;i++){if(i===0||s[i]!==s[i-1])r+=s[i]}return r;
+        }
+        function fuzzyMatchStrict(text,query){
+            var t=text.toLowerCase(),q=query.toLowerCase();
+            if(t.indexOf(q)!==-1) return true;
+            var ta=removeAccents(t),qa=removeAccents(q);
+            if(ta.indexOf(qa)!==-1) return true;
+            var tn=normWord(ta),qn=normWord(qa);
+            if(tn.indexOf(qn)!==-1||qn.indexOf(tn)!==-1) return true;
+            var words=q.split(' ').filter(function(w){return w.length>2});
+            if(words.length===1){
+                var wn=removeAccents(normWord(words[0]));
+                return ta.indexOf(wn)!==-1||tn.indexOf(wn)!==-1;
+            }
+            if(words.length>1){
+                return words.every(function(w){
+                    var wn=removeAccents(normWord(w)),wa=removeAccents(w);
+                    return ta.indexOf(wa)!==-1||ta.indexOf(wn)!==-1;
+                });
+            }
+            return false;
+        }
+        function fuzzyMatchRest(nombre,query){
+            var rn=nombre.toLowerCase(),q=query.toLowerCase();
+            if(rn.indexOf(q)!==-1||q.indexOf(rn)!==-1) return true;
+            var rna=removeAccents(rn),qa=removeAccents(q);
+            if(rna.indexOf(qa)!==-1||qa.indexOf(rna)!==-1) return true;
+            var sr=simplify(nombre),sb=simplify(query);
+            if(sr.indexOf(sb)!==-1||sb.indexOf(sr)!==-1) return true;
+            var limpia=q.replace(/\b(pizzeria|pizzería|restaurante|el|la|los|las|de|del|menu|menú)\b/g,'').replace(/\s+/g,' ').trim();
+            if(limpia.length>2&&limpia!==q){
+                var la=removeAccents(limpia);
+                if(rna.indexOf(la)!==-1||la.indexOf(rna)!==-1) return true;
+            }
+            var words=q.split(' ').filter(function(w){return w.length>2&&!(/^(el|la|los|las|de|del|menu|menú)$/.test(w))});
+            if(words.length>=2){
+                return words.every(function(w){
+                    var wa=removeAccents(w),wn=removeAccents(normWord(w));
+                    return rna.indexOf(wa)!==-1||rna.indexOf(wn)!==-1||sr.indexOf(simplify(w))!==-1;
+                });
+            }
+            return false;
+        }
+
+        function getFilteredRestaurantes(){
+            var rests=sessionData.resultados||[];
+            return recalcDistances(rests);
+        }
+
+        function sortRests(list,key){
+            var s=list.slice();
+            if(key==='distancia') s.sort(function(a,b){return(a.distancia_km||999)-(b.distancia_km||999)});
+            else if(key==='precio') s.sort(function(a,b){var pa=a.productos&&a.productos[0]?a.productos[0].precio:999;var pb=b.productos&&b.productos[0]?b.productos[0].precio:999;return pa-pb});
+            else if(key==='delivery') s.sort(function(a,b){return(a.precio_delivery||999)-(b.precio_delivery||999)});
+            return s;
+        }
+
+        // ── HOME VIEW ──
+        // V2: Categorías del catálogo (mapeo keyword-based)
+        var CAT_MAP_V2={
+            pollo:{icon:'🍗',label:'Pollo',kw:['pollo','broster','alita','presa','chicken']},
+            pizza:{icon:'🍕',label:'Pizza',kw:['pizza','pizzer']},
+            almuerzo:{icon:'🍱',label:'Almuerzo',kw:['almuerzo','menu del dia','menudo','menú del día','menudia']},
+            mariscos:{icon:'🐟',label:'Mariscos',kw:['marisco','ceviche','encebollado','pescado','camaron','camarón','concha','langosta','cangrejo','atun']},
+            hamburguesa:{icon:'🍔',label:'Hamburguesas',kw:['hambur','burger']},
+            postres:{icon:'🧁',label:'Postres',kw:['postre','helado','torta','pastel','pasteleria','bizcocho','dulce','pastry','cupcake','cheesecake']},
+            bebidas:{icon:'🥤',label:'Bebidas',kw:['bebida','jugo','refresco','gaseosa','cafe','cafeteria','café','batido','smoothie']}
+        };
+        var CAT_KEYS_V2=['pollo','pizza','almuerzo','mariscos','hamburguesa','postres','bebidas'];
+
+        function matchCategoryV2(r,catKey){
+            var cm=CAT_MAP_V2[catKey];if(!cm)return false;
+            var n=removeAccents((r.nombre||'').toLowerCase());
+            var c=removeAccents((r.categoria||'').toLowerCase());
+            var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
+            return cm.kw.some(function(k){
+                var kw=removeAccents(k);
+                return n.indexOf(kw)!==-1||c.indexOf(kw)!==-1||t.indexOf(kw)!==-1;
+            });
+        }
+
+        function greetingV2(){
+            var h=new Date().getHours();
+            if(h<11) return {g:'Buenos días',s:'¿Qué desayunamos?'};
+            if(h<15) return {g:'Buenas tardes',s:'¿Qué almorzamos?'};
+            if(h<19) return {g:'Buenas tardes',s:'¿Te provoca un antojo?'};
+            return {g:'Buenas noches',s:'¿Qué cenamos?'};
+        }
+
+        window.toggleCategoryV2=function(key){
+            if(window._activeCat===key) window._activeCat=null;
+            else window._activeCat=key;
+            renderHome();
+            try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}
+        };
+
+        window.renderHome=function(){
+            currentView='home';
+            var rests=sortRests(getFilteredRestaurantes(),currentSort);
+            var busqTexto=(sessionData.busqueda_texto||'').toLowerCase();
+            if(busqTexto&&busqTexto!=='comida'){
+                var busqNorm=removeAccents(normWord(busqTexto));
+                var busqWords=busqTexto.split(/\s+/).map(function(w){return removeAccents(normWord(w))});
+                rests.forEach(function(r){
+                    var nameNorm=removeAccents(r.nombre.toLowerCase());
+                    var catNorm=removeAccents((r.categoria||'').toLowerCase());
+                    var nameMatch=busqWords.some(function(w){return w.length>2&&(nameNorm.indexOf(w)!==-1||catNorm.indexOf(w)!==-1)});
+                    r._relev=nameMatch?0:3;
+                });
+            }
+
+            // Filtro de categoría activo
+            if(window._activeCat){
+                rests=rests.filter(function(r){return matchCategoryV2(r,window._activeCat)});
+            }
+
+            rests.sort(function(a,b){
+                var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                var va=sa===true?0:sa===null?1:2;
+                var vb=sb===true?0:sb===null?1:2;
+                if(va!==vb) return va-vb;
+                var ra=a._relev!=null?a._relev:3;
+                var rb=b._relev!=null?b._relev:3;
+                if(ra!==rb) return ra-rb;
+                return 0;
+            });
+
+            var hasGPS=!!window._clientGPS;
+            var gr=greetingV2();
+            var searchPrefill=(sessionData.busqueda_texto||'').trim();
+
+            var h='<div class="home-v2-top">'+
+                '<div class="home-v2-row">'+
+                    '<div style="flex:1;min-width:0">'+
+                        '<div class="home-v2-loc">📍 Riobamba, Ecuador</div>'+
+                        '<div class="home-v2-greeting">'+gr.g+'</div>'+
+                        '<div class="home-v2-greeting-sub">'+gr.s+'</div>'+
+                    '</div>'+
+                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">🛒 '+(window._cart.length?cartTotals().items+' items':'Vacio')+'</button>'+
+                '</div>'+
+                '<button class="search-hero" onclick="showSearch()">'+
+                    '<span class="search-hero-icon">🔍</span>'+
+                    '<span class="search-hero-text">'+(searchPrefill?esc(searchPrefill):'¿Qué se te antoja?')+'</span>'+
+                    '<span class="search-hero-tag">BUSCAR</span>'+
+                '</button>'+
+            '</div>';
+
+            // Chips de categoría
+            h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
+            CAT_KEYS_V2.forEach(function(k){
+                var c=CAT_MAP_V2[k];
+                var active=window._activeCat===k;
+                h+='<button class="cat-chip'+(active?' active':'')+'" onclick="toggleCategoryV2(\''+k+'\')">'+
+                    '<span class="cat-chip-icon">'+c.icon+'</span>'+
+                    '<span>'+c.label+'</span>'+
+                '</button>';
+            });
+            h+='</div></div>';
+
+            // Banner filtro activo
+            if(window._activeCat){
+                var cm=CAT_MAP_V2[window._activeCat];
+                h+='<div class="filter-banner-v2">'+
+                    '<span>'+cm.icon+' '+cm.label+' · '+rests.length+' resultado'+(rests.length===1?'':'s')+'</span>'+
+                    '<button onclick="toggleCategoryV2(\''+window._activeCat+'\')" aria-label="Quitar filtro">✕</button>'+
+                '</div>';
+            }
+
+            // Banner GPS (si no tiene, no está descartado)
+            if(!hasGPS){
+                var dismissed=false;
+                try{dismissed=sessionStorage.getItem('dewan_gps_dismissed')==='1'}catch(e){}
+                if(!dismissed){
+                    h+='<div class="gps-banner" id="gps-banner" onclick="requestGPSFromBanner(event)">'+
+                        '<span style="font-size:1.1rem">📍</span>'+
+                        '<span class="gps-banner-text">Activa tu ubicación para ver distancias y delivery real</span>'+
+                        '<button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>'+
+                    '</div>';
+                }
+            }
+
+            // Sort pills (solo si no hay filtro de categoría activo, para no abarrotar)
+            if(!window._activeCat){
+                h+='<div class="sort-bar">'+
+                    pillBtn('distancia','📍 Mas cerca',!hasGPS)+pillBtn('precio','💰 Menor precio',false)+pillBtn('delivery','🚚 Menor delivery',false)+
+                '</div>';
+            }
+
+            // Carrusel (solo si ≥ 6 resultados y no hay filtro de categoría activo)
+            if(rests.length>=6&&!window._activeCat){
+                var topRests=rests.slice(0,6);
+                var carruselTitle=hasGPS?'📍 Cerca de ti':'✨ Populares';
+                var carruselSub=hasGPS?'6 más próximos':'Selección';
+                h+='<section class="home-carrusel">'+
+                    '<div class="home-carrusel-head">'+
+                        '<span class="home-carrusel-title">'+carruselTitle+'</span>'+
+                        '<span class="home-carrusel-sub">'+carruselSub+'</span>'+
+                    '</div>'+
+                    '<div class="home-carrusel-scroll">';
+                topRests.forEach(function(r,idx){
+                    var color=getColor(idx);
+                    var isOpen=isRestOpen(r.horario);
+                    h+='<div class="carrusel-card" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'25">'+
+                        '<div class="carrusel-top" style="background:linear-gradient(135deg,'+color+'2E 0%,'+color+'10 100%)">'+
+                            getEmoji(r.nombre)+
+                            (isOpen===false?'<span class="carrusel-closed">CERRADO</span>':'')+
+                        '</div>'+
+                        '<div class="carrusel-body">'+
+                            '<div class="carrusel-name">'+esc(r.nombre)+'</div>'+
+                            '<div class="carrusel-meta">'+
+                                (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
+                                (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
+                            '</div>'+
+                        '</div>'+
+                    '</div>';
+                });
+                h+='</div></section>';
+                h+='<div class="list-section-title">Todos los restaurantes · '+rests.length+'</div>';
+            }
+
+            // Empty state cuando filtro vacío
+            if(rests.length===0){
+                h+='<div class="search-empty-state-v2">'+
+                    '<div class="search-empty-icon">🔎</div>'+
+                    '<div class="search-empty-title">Sin resultados</div>'+
+                    '<div class="search-empty-text">No encontramos restaurantes con ese filtro. Prueba con otra categoría o búsqueda libre.</div>'+
+                '</div>';
+            }
+
+            // Lista compacta
+            h+='<div style="padding:4px 0 10px">';
+            rests.forEach(function(r,idx){
+                var color=getColor(idx);
+                var metaParts=[];
+                if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
+                if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
+                if(window._clientGPS) metaParts.push('<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>');
+                if(r.categoria) metaParts.push('<span>'+esc(r.categoria)+'</span>');
+                h+='<div class="rest-compact" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'22">'+
+                    '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
+                    '<div class="rest-compact-body">'+
+                        '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
+                        '<div class="rest-compact-info">'+
+                            '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
+                            '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
+                        '</div>'+
+                        '<span class="rest-compact-chevron">›</span>'+
+                    '</div>'+
+                '</div>';
+            });
+            h+='</div>';
+            h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
+            app.innerHTML=h;
+            bindSortEvents();
+            updateCartFloat();
+        }
+
+        // ── RESTAURANT VIEW ──
+        function catSlug(cat){return (cat||'').toString().toLowerCase().replace(/[^a-z0-9áéíóúñ]+/g,'-').replace(/^-+|-+$/g,'')||'general'}
+
+        window.scrollToCat=function(slug){
+            var el=document.getElementById('cat-'+slug);
+            if(!el)return;
+            var tabsWrap=document.querySelector('.cat-tabs-wrap');
+            var offset=tabsWrap?tabsWrap.offsetHeight:0;
+            var y=el.getBoundingClientRect().top+window.pageYOffset-offset-8;
+            window.scrollTo({top:y,behavior:'smooth'});
+        };
+
+        function setupCatScrollSpy(){
+            var labels=document.querySelectorAll('[data-cat-slug]');
+            var tabs=document.querySelectorAll('.cat-tab');
+            if(window._catSpyHandler){window.removeEventListener('scroll',window._catSpyHandler);window._catSpyHandler=null}
+            if(!labels.length||!tabs.length)return;
+            window._catSpyHandler=function(){
+                if(!labels[0]||!labels[0].isConnected){
+                    window.removeEventListener('scroll',window._catSpyHandler);
+                    window._catSpyHandler=null;
+                    return;
+                }
+                var tabsWrap=document.querySelector('.cat-tabs-wrap');
+                var offset=(tabsWrap?tabsWrap.offsetHeight:0)+20;
+                var activeSlug=labels[0].getAttribute('data-cat-slug');
+                for(var i=0;i<labels.length;i++){
+                    if(labels[i].getBoundingClientRect().top<=offset) activeSlug=labels[i].getAttribute('data-cat-slug');
+                }
+                tabs.forEach(function(t){
+                    var isActive=t.getAttribute('data-cat-target')===activeSlug;
+                    t.classList.toggle('active',isActive);
+                    if(isActive){
+                        var tabsBar=document.getElementById('cat-tabs');
+                        if(tabsBar){
+                            var tabLeft=t.offsetLeft;
+                            var tabRight=tabLeft+t.offsetWidth;
+                            var barScroll=tabsBar.scrollLeft;
+                            var barW=tabsBar.offsetWidth;
+                            if(tabLeft<barScroll+8||tabRight>barScroll+barW-8){
+                                tabsBar.scrollTo({left:Math.max(0,tabLeft-20),behavior:'smooth'});
+                            }
+                        }
+                    }
+                });
+            };
+            window.addEventListener('scroll',window._catSpyHandler,{passive:true});
+            window._catSpyHandler();
+        }
+
+        window.openRest=function(nombre){
+            currentView='rest';
+            currentRestIdx=nombre;
+            var rests=sortRests(getFilteredRestaurantes(),currentSort);
+            var r=null;var ridx=0;
+            for(var i=0;i<rests.length;i++){if(rests[i].nombre===nombre){r=rests[i];ridx=i;break;}}
+            if(!r)return;
+
+            // V2: Si no tenemos los platos cargados, mostrar loading y cargarlos
+            if((!r.productos||r.productos.length===0)&&r.id&&!r._loadAttempted){
+                r._loadAttempted=true;
+                var colorLoad=getColor(ridx);
+                app.innerHTML='<div class="rest-detail-header" style="background:linear-gradient(180deg,'+colorLoad+'20 0%,var(--bg) 100%)">'+
+                    '<div class="rest-detail-nav">'+
+                        '<button class="btn-back" onclick="renderHome()">←</button>'+
+                        '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒</button>'+
+                    '</div>'+
+                    '<div class="rest-detail-info">'+
+                        '<div class="rest-detail-avatar" style="background:'+colorLoad+'20;border:2px solid '+colorLoad+'40">'+getEmoji(r.nombre)+'</div>'+
+                        '<div style="flex:1"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div></div>'+
+                    '</div>'+
+                '</div>'+
+                '<div style="padding:10px 14px">'+
+                    '<div class="skel-row" style="margin:10px 0"></div>'+
+                    '<div class="skel-row" style="margin:10px 0"></div>'+
+                    '<div class="skel-row" style="margin:10px 0"></div>'+
+                    '<div class="skel-row" style="margin:10px 0"></div>'+
+                '</div>';
+                loadMenuItemsForRest(r.id).then(function(items){
+                    r.productos=items;
+                    if(currentView==='rest'&&currentRestIdx===nombre) openRest(nombre);
+                }).catch(function(){
+                    r.productos=[];
+                    if(currentView==='rest'&&currentRestIdx===nombre) openRest(nombre);
+                });
+                return;
+            }
+
+            var color=getColor(ridx);
+            var prods=r.productos||[];
+
+            var h='<div class="rest-detail-header" style="background:linear-gradient(180deg,'+color+'20 0%,var(--bg) 100%)">'+
+                '<div class="rest-detail-nav">'+
+                    '<button class="btn-back" onclick="renderHome()">←</button>'+
+                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒 '+(window._cart.length?cartTotals().items+' · $'+cartTotals().subtotal.toFixed(2):'Vacio')+'</button>'+
+                '</div>'+
+                '<div class="rest-detail-info">'+
+                    '<div class="rest-detail-avatar" style="background:'+color+'20;border:2px solid '+color+'40">'+getEmoji(r.nombre)+'</div>'+
+                    '<div style="flex:1"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
+                        '<div class="rest-meta" style="margin-top:6px">'+
+                            (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
+                            (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
+                            (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'')+
+                        '</div>'+
+                    '</div>'+
+                '</div>'+
+                '<div class="info-strip">'+
+                    infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
+                    infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
+                    (window._clientGPS?infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery'):'')+
+                    infoBox('🍽',prods.length,'Platos')+
+                '</div>'+
+            '</div>';
+
+            window._almMenuData=[];
+
+            var catMap={};
+            prods.forEach(function(p){var c=p.categoria||'General';if(!catMap[c])catMap[c]=[];catMap[c].push(p)});
+            var cats=Object.keys(catMap);
+            var showCat=cats.length>1||(cats.length===1&&cats[0]!=='General');
+
+            // ── Destacados carousel (curatorial: primeros platos del menú) ──
+            if(prods.length>=3){
+                var destacados=prods.slice(0,Math.min(6,prods.length));
+                h+='<section class="destacados">'+
+                    '<div class="destacados-head">'+
+                        '<span class="destacados-title">✨ Destacados</span>'+
+                        '<span class="destacados-sub">Del menú</span>'+
+                    '</div>'+
+                    '<div class="destacados-scroll">';
+                destacados.forEach(function(p){
+                    var almData=parseAlmuerzo(p.descripcion);
+                    if(almData){
+                        var almMenuIdx=window._almMenuData.length;
+                        window._almMenuData.push({desc:p.descripcion});
+                        var almQty=countAlmuerzoCart(r.nombre,p.nombre);
+                        var precioDisp=almData.precio?'$'+Number(almData.precio).toFixed(2):'—';
+                        h+='<div class="dest-card'+(almQty?' in-cart':'')+'" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">'+
+                            '<div class="dest-emoji">🍱</div>'+
+                            '<div class="dest-name">'+esc(p.nombre)+'</div>'+
+                            '<div class="dest-footer">'+
+                                '<span class="dest-price">'+precioDisp+'</span>'+
+                                (almQty?'<span class="dest-qty-mini">×'+almQty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
+                            '</div>'+
+                        '</div>';
+                    } else {
+                        var ci=findCart(r.nombre,p.nombre);
+                        var qty=ci?ci.qty:0;
+                        h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">'+
+                            '<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>'+
+                            '<div class="dest-name">'+esc(p.nombre)+'</div>'+
+                            '<div class="dest-footer">'+
+                                '<span class="dest-price">$'+Number(p.precio).toFixed(2)+'</span>'+
+                                (qty?'<span class="dest-qty-mini">×'+qty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
+                            '</div>'+
+                        '</div>';
+                    }
+                });
+                h+='</div></section>';
+            }
+
+            // ── Barra sticky: back + tabs de categoría (scroll-spy) ──
+            var hasMultipleCats=showCat&&cats.length>=2;
+            h+='<div class="cat-tabs-wrap">'+
+                '<button class="cat-tabs-back" onclick="renderHome()" aria-label="Volver">←</button>';
+            if(hasMultipleCats){
+                h+='<div class="cat-tabs" id="cat-tabs">';
+                cats.forEach(function(cat,i){
+                    h+='<button class="cat-tab'+(i===0?' active':'')+'" data-cat-target="'+catSlug(cat)+'" onclick="scrollToCat(\''+catSlug(cat)+'\')">'+esc(cat)+'</button>';
+                });
+                h+='</div>';
+            } else {
+                h+='<div class="cat-tabs-restname">'+esc(r.nombre)+'</div>';
+            }
+            h+='</div>';
+
+            h+='<div class="menu-count">MENU · '+prods.length+' PLATOS</div>';
+            h+='<div class="menu-section">';
+
+            cats.forEach(function(cat){
+                if(showCat) h+='<div class="cat-label" id="cat-'+catSlug(cat)+'" data-cat-slug="'+catSlug(cat)+'">'+esc(cat)+'</div>';
+                catMap[cat].forEach(function(p,idxInCat){
+                    var isFirstInCat=idxInCat===0&&showCat;
+                    var almData=parseAlmuerzo(p.descripcion);
+                    if(almData){
+                        var almMenuIdx=window._almMenuData.length;
+                        window._almMenuData.push({desc:p.descripcion});
+                        var almQty=countAlmuerzoCart(r.nombre,p.nombre);
+                        var descLegible=buildAlmuerzoDesc(almData);
+                        var precioDisplay=almData.precio?'$'+Number(almData.precio).toFixed(2):'Consultar';
+                        h+='<div class="prod-card'+(almQty?' in-cart':'')+'">'+
+                            '<div class="prod-top">'+
+                                '<div class="prod-emoji">🍱</div>'+
+                                '<div class="prod-info">'+
+                                    ((isFirstInCat||almQty)?'<div class="prod-badges">'+
+                                        (isFirstInCat?'<span class="badge badge-recomendado">⭐ Recomendado</span>':'')+
+                                        (almQty?'<span class="badge badge-cart">×'+almQty+' en carrito</span>':'')+
+                                    '</div>':'')+
+                                    '<div class="prod-name">'+esc(p.nombre)+'</div>'+
+                                    '<div class="prod-desc">'+descLegible+'</div>'+
+                                    '<div class="prod-bottom">'+
+                                        '<span class="prod-price">'+precioDisplay+'</span>'+
+                                        '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">+</button>'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'+
+                        '</div>';
+                    } else {
+                        var ci=findCart(r.nombre,p.nombre);
+                        var qty=ci?ci.qty:0;
+                        h+='<div class="prod-card'+(qty?' in-cart':'')+'">'+
+                            '<div class="prod-top">'+
+                                '<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>'+
+                                '<div class="prod-info">'+
+                                    ((isFirstInCat||qty)?'<div class="prod-badges">'+
+                                        (isFirstInCat?'<span class="badge badge-recomendado">⭐ Recomendado</span>':'')+
+                                        (qty?'<span class="badge badge-cart">×'+qty+' en carrito</span>':'')+
+                                    '</div>':'')+
+                                    '<div class="prod-name">'+esc(p.nombre)+'</div>'+
+                                    (p.descripcion?'<div class="prod-desc">'+esc(p.descripcion)+'</div>':'')+
+                                    '<div class="prod-bottom">'+
+                                        '<span class="prod-price">$'+Number(p.precio).toFixed(2)+'</span>'+
+                                        (qty>0?
+                                            '<div class="qty-ctrl">'+
+                                                '<button class="btn-qty btn-qty-minus" aria-label="Quitar" onclick="event.stopPropagation();removeCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\')">−</button>'+
+                                                '<span class="qty-num">'+qty+'</span>'+
+                                                '<button class="btn-qty btn-qty-plus" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">+</button>'+
+                                            '</div>'
+                                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">+</button>'
+                                        )+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'+
+                        '</div>';
+                    }
+                });
+            });
+            h+='</div>';
+            app.innerHTML=h;
+            setupCatScrollSpy();
+            updateCartFloat();
+        };
+
+        // ═══════════════════════════════════════════════════════════
+        // V2: SEARCH SCREEN — búsqueda dedicada con resultados en vivo
+        // ═══════════════════════════════════════════════════════════
+        var _searchTimer=null;
+        function getRecentSearches(){
+            try{var raw=localStorage.getItem('dewan_recent_searches');return raw?JSON.parse(raw).slice(0,6):[]}catch(e){return[]}
+        }
+        function saveRecentSearch(q){
+            q=(q||'').trim();
+            if(!q||q.length<2) return;
+            var recent=getRecentSearches().filter(function(r){return r.toLowerCase()!==q.toLowerCase()});
+            recent.unshift(q);
+            recent=recent.slice(0,6);
+            try{localStorage.setItem('dewan_recent_searches',JSON.stringify(recent))}catch(e){}
+        }
+        window.removeRecentSearch=function(q){
+            var recent=getRecentSearches().filter(function(r){return r!==q});
+            try{localStorage.setItem('dewan_recent_searches',JSON.stringify(recent))}catch(e){}
+            renderSearchIdle();
+        };
+
+        var SEARCH_SUGGESTIONS=['bolón','encebollado','almuerzo','pollo broster','pizza','hamburguesa','chaulafan','ceviche','desayuno','café','postres','alitas'];
+
+        window.showSearch=function(prefill){
+            currentView='search';
+            var q=(prefill!=null?prefill:(sessionData.busqueda_texto||'')).trim();
+            var h='<div class="search-header-v2">'+
+                '<button class="btn-back" onclick="renderHome()" aria-label="Volver">←</button>'+
+                '<div class="search-input-wrap">'+
+                    '<span class="search-input-wrap-icon">🔍</span>'+
+                    '<input class="search-input" id="search-input" type="search" placeholder="Platos o restaurantes…" autocomplete="off" />'+
+                    '<button class="search-clear" id="search-clear" onclick="clearSearchInput()" aria-label="Limpiar">✕</button>'+
+                '</div>'+
+            '</div>'+
+            '<div id="search-results-area"></div>';
+            app.innerHTML=h;
+            var input=document.getElementById('search-input');
+            input.value=q;
+            input.addEventListener('input',handleSearchInput);
+            input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();input.blur()}});
+            setTimeout(function(){input.focus()},80);
+            if(q){
+                document.getElementById('search-clear').classList.add('visible');
+                doSearch(q);
+            } else {
+                renderSearchIdle();
+            }
+        };
+
+        function handleSearchInput(e){
+            var q=e.target.value;
+            document.getElementById('search-clear').classList.toggle('visible',!!q);
+            clearTimeout(_searchTimer);
+            if(!q.trim()){renderSearchIdle();return}
+            _searchTimer=setTimeout(function(){doSearch(q)},250);
+        }
+
+        window.clearSearchInput=function(){
+            var input=document.getElementById('search-input');
+            input.value='';
+            document.getElementById('search-clear').classList.remove('visible');
+            renderSearchIdle();
+            input.focus();
+        };
+
+        window.runSearchFromChip=function(q){
+            var input=document.getElementById('search-input');
+            if(input){input.value=q;document.getElementById('search-clear').classList.add('visible')}
+            doSearch(q);
+        };
+
+        function renderSearchIdle(){
+            var area=document.getElementById('search-results-area');
+            if(!area) return;
+            var recent=getRecentSearches();
+            var html='';
+            if(recent.length){
+                html+='<div class="search-section-title-v2">🕒 Recientes</div>';
+                html+='<div class="chip-row">';
+                recent.forEach(function(r){
+                    html+='<button class="chip-btn" onclick="runSearchFromChip(\''+jsEsc(r)+'\')">'+esc(r)+'<span class="chip-btn-rm" onclick="event.stopPropagation();removeRecentSearch(\''+jsEsc(r)+'\')" aria-label="Quitar">✕</span></button>';
+                });
+                html+='</div>';
+            }
+            html+='<div class="search-section-title-v2">✨ Sugerencias</div>';
+            html+='<div class="chip-row">';
+            SEARCH_SUGGESTIONS.forEach(function(s){
+                html+='<button class="chip-btn" onclick="runSearchFromChip(\''+jsEsc(s)+'\')">'+esc(s)+'</button>';
+            });
+            html+='</div>';
+            area.innerHTML=html;
+        }
+
+        function renderSearchSkeletons(){
+            var area=document.getElementById('search-results-area');
+            if(!area) return;
+            area.innerHTML='<div style="padding:16px 0 0"><div class="skel-row"></div><div class="skel-row"></div><div class="skel-row"></div></div>';
+        }
+
+        function doSearch(query){
+            var q=(query||'').trim();
+            if(!q){renderSearchIdle();return}
+            renderSearchSkeletons();
+            // Restaurantes: filtrado client-side sobre lo ya cargado (rápido)
+            var qNorm=removeAccents(q.toLowerCase());
+            var rests=(sessionData.resultados||[]).filter(function(r){
+                var n=removeAccents((r.nombre||'').toLowerCase());
+                var c=removeAccents((r.categoria||'').toLowerCase());
+                var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
+                return n.indexOf(qNorm)!==-1||c.indexOf(qNorm)!==-1||t.indexOf(qNorm)!==-1;
+            });
+            rests.sort(function(a,b){
+                var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                var va=sa===true?0:sa===null?1:2;
+                var vb=sb===true?0:sb===null?1:2;
+                if(va!==vb) return va-vb;
+                return (a.distancia_km||999)-(b.distancia_km||999);
+            });
+            rests=rests.slice(0,15);
+
+            // Platos: query server-side con ilike
+            var enc=encodeURIComponent('%'+q+'%');
+            fetch(SB_URL+'/rest/v1/menu_items?select=id,restaurante_id,restaurante_nombre,categoria_menu,nombre_item,descripcion,precio&disponible=eq.true&or=(nombre_item.ilike.'+enc+',descripcion.ilike.'+enc+')&limit=40',{headers:supaHeaders()})
+                .then(function(r){return r.json()})
+                .then(function(plates){
+                    saveRecentSearch(q);
+                    renderSearchResults(q,rests,Array.isArray(plates)?plates:[]);
+                }).catch(function(){
+                    saveRecentSearch(q);
+                    renderSearchResults(q,rests,[]);
+                });
+        }
+
+        function renderSearchResults(query,rests,plates){
+            var area=document.getElementById('search-results-area');
+            if(!area) return;
+            if(!rests.length&&!plates.length){
+                area.innerHTML='<div class="search-empty-state-v2">'+
+                    '<div class="search-empty-icon">🔎</div>'+
+                    '<div class="search-empty-title">No encontramos "'+esc(query)+'"</div>'+
+                    '<div class="search-empty-text">Prueba con otro término o explora una categoría desde el home.</div>'+
+                '</div>';
+                return;
+            }
+            var html='';
+            if(rests.length){
+                html+='<div class="search-section-title-v2">🏪 Restaurantes<span class="search-section-count">'+rests.length+'</span></div>';
+                html+='<div style="padding:4px 0 0">';
+                rests.forEach(function(r,idx){
+                    var color=getColor(idx);
+                    var metaParts=[];
+                    if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
+                    if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
+                    if(r.categoria) metaParts.push('<span>'+esc(r.categoria)+'</span>');
+                    html+='<div class="rest-compact" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'22">'+
+                        '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
+                        '<div class="rest-compact-body">'+
+                            '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
+                            '<div class="rest-compact-info">'+
+                                '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
+                                '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
+                            '</div>'+
+                            '<span class="rest-compact-chevron">›</span>'+
+                        '</div>'+
+                    '</div>';
+                });
+                html+='</div>';
+            }
+            if(plates.length){
+                html+='<div class="search-section-title-v2">🍽 Platos<span class="search-section-count">'+plates.length+'</span></div>';
+                plates.forEach(function(p){
+                    html+='<div class="plate-card" onclick="openRestByName(\''+jsEsc(p.restaurante_nombre||'')+'\')">'+
+                        '<div class="plate-emoji">'+getEmojiPlato(p.nombre_item)+'</div>'+
+                        '<div class="plate-info">'+
+                            '<div class="plate-name">'+esc(p.nombre_item)+'</div>'+
+                            '<div class="plate-rest">🏪 '+esc(p.restaurante_nombre||'—')+'</div>'+
+                        '</div>'+
+                        '<div class="plate-price">$'+Number(p.precio||0).toFixed(2)+'</div>'+
+                    '</div>';
+                });
+            }
+            area.innerHTML=html;
+        }
+
+        window.openRestByName=function(name){
+            var r=(sessionData.resultados||[]).find(function(x){return x.nombre===name});
+            if(r) openRest(r.nombre);
+        };
+
+        // ── CART + CHECKOUT UNIFICADO ──
+        window.showCart=function(){
+            currentView='cart';
+            if(window._cart.length) markEtapa('abrio_carrito');
+            var t=cartTotals();
+            if(!window._cart.length){
+                app.innerHTML='<div class="cart-header"><button class="btn-back" onclick="renderHome()">←</button><span style="font-weight:900;font-size:1.2rem">Mi pedido</span></div>'+
+                    '<div class="state-container"><div class="empty-icon">🛒</div><div class="state-title">Tu carrito esta vacio</div><button class="btn btn-accent" style="margin-top:20px;width:auto;padding:12px 28px" onclick="renderHome()">Ver restaurantes</button></div>';
+                document.getElementById('cart-float').style.display='none';
+                return;
+            }
+            var byRest={};
+            window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
+
+            var h='<div class="cart-header"><button class="btn-back" onclick="'+(currentRestIdx!==null?"openRest('"+currentRestIdx+"')":'renderHome()')+'">←</button><span style="font-weight:900;font-size:1.2rem">Mi pedido</span><span style="margin-left:auto;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--gris);font-weight:700">'+t.items+' items</span></div>';
+            h+='<div style="padding:16px;padding-bottom:40px">';
+
+            Object.keys(byRest).forEach(function(rest){
+                h+='<div style="font-weight:800;font-size:0.8rem;color:var(--acc);padding:8px 0 4px">'+esc(rest)+'</div>';
+                byRest[rest].forEach(function(c,ci){
+                    var cartIdx=window._cart.indexOf(c);
+                    if(c.almuerzoChoices){
+                        var choicesH='';
+                        var catIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',postre:'🍰'};
+                        var catOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
+                        catOrder.forEach(function(cat){
+                            if(c.almuerzoChoices[cat]) choicesH+='<div>'+(catIcons[cat]||'▸')+' '+c.almuerzoChoices[cat]+'</div>';
+                        });
+                        h+='<div class="cart-item" style="flex-wrap:wrap">'+
+                            '<div class="cart-item-emoji">🍱</div>'+
+                            '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
+                                '<div class="almuerzo-choices">'+choicesH+'</div>'+
+                                '<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+c.precio.toFixed(2)+' c/u</div>'+
+                                '<div style="color:var(--acc);font-weight:900;font-size:1rem;margin-top:2px">$'+c.precio.toFixed(2)+'</div>'+
+                            '</div>'+
+                            '<button class="almuerzo-remove" onclick="removeAlmuerzoCart('+cartIdx+')">✕</button>'+
+                        '</div>';
+                    } else {
+                        h+='<div class="cart-item" style="flex-wrap:wrap">'+
+                            '<div class="cart-item-emoji">'+getEmojiPlato(c.nombre)+'</div>'+
+                            '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
+                                '<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+c.precio.toFixed(2)+' c/u</div>'+
+                                '<div style="color:var(--acc);font-weight:900;font-size:1rem;margin-top:2px">$'+(c.precio*c.qty).toFixed(2)+'</div>'+
+                            '</div>'+
+                            '<div class="qty-ctrl">'+
+                                '<button class="btn-qty btn-qty-minus" onclick="removeCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\')">-</button>'+
+                                '<span class="qty-num">'+c.qty+'</span>'+
+                                '<button class="btn-qty btn-qty-plus" onclick="addCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\','+c.precio+','+c.delivery+')">+</button>'+
+                            '</div>'+
+                            '<div class="cart-nota-wrap"><span class="cart-nota-icon">✏️</span><input type="text" class="cart-nota-input" placeholder="Notas: sin cebolla, extra salsa..." value="'+esc(c.nota||'')+'" onchange="updateNota('+cartIdx+',this.value)" oninput="updateNota('+cartIdx+',this.value)"></div>'+
+                        '</div>';
+                    }
+                });
+            });
+
+            // Resumen
+            h+='<div class="cart-summary-box">'+
+                '<div style="font-weight:800;font-size:0.78rem;color:var(--gris);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Resumen</div>'+
+                '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">$'+t.subtotal.toFixed(2)+'</span></div>'+
+                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">$'+t.delivery.toFixed(2)+'</span></div>':'')+
+                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></div>'+
+            '</div>';
+
+            // Ubicación inline — FIX #2: ambas opciones siempre visibles
+            h+='<div class="loc-section" id="loc-section">';
+            h+='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>';
+            if(window._clientGPS){
+                h+='<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>';
+                h+='<div class="loc-ref-label">Agregar referencia (opcional)</div>';
+                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
+            } else {
+                h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
+                h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
+                h+='<div class="loc-or">o escribe tu dirección</div>';
+                h+='<div class="loc-addr-wrap" id="loc-addr-wrap">';
+                h+='<div class="loc-addr-label">Dirección exacta</div>';
+                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. Daniel León Borja y Carabobo" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
+                h+='</div>';
+            }
+            h+='</div>';
+
+            // FIX #3: CTA claro + microcopy que explica qué va a pasar
+            h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
+            h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
+                '<span>✅ Confirmar pedido</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
+            h+='</div>';
+            app.innerHTML=h;
+            document.getElementById('cart-float').style.display='none';
+        };
+
+        // ── CART LOGIC ──
+        window.addCart=function(rest,nombre,precio,delivery){
+            var c=findCart(rest,nombre);
+            if(c){c.qty++}else{window._cart.push({restaurante:rest,nombre:nombre,precio:precio,delivery:delivery,qty:1})}
+            saveCart(); // CAMBIO 2
+            markEtapa('agrego_carrito');
+            refreshView();
+        };
+        window.removeCart=function(rest,nombre){
+            var c=findCart(rest,nombre);
+            if(c){c.qty--;if(c.qty<=0)window._cart=window._cart.filter(function(x){return!(x.restaurante===rest&&x.nombre===nombre)})}
+            saveCart(); // CAMBIO 2
+            refreshView();
+        };
+        window.updateNota=function(idx,val){
+            if(window._cart[idx]) window._cart[idx].nota=val;
+            saveCart(); // CAMBIO 2
+        };
+        function findCart(rest,nombre){
+            for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices)return window._cart[i]}return null;
+        }
+        function cartTotals(){
+            var items=0,sub=0,dels={};
+            window._cart.forEach(function(c){items+=c.qty;sub+=c.precio*c.qty;dels[c.restaurante]=c.delivery||0});
+            var del=0;Object.keys(dels).forEach(function(k){del+=dels[k]});
+            return{items:items,subtotal:sub,delivery:del,total:sub+del};
+        }
+        function updateCartFloat(){
+            var t=cartTotals();var f=document.getElementById('cart-float');
+            if(t.items>0&&currentView!=='cart'){
+                f.style.display='block';
+                document.getElementById('cart-float-count').textContent=t.items;
+                document.getElementById('cart-float-total').textContent=window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío';
+                document.body.classList.add('has-cart');
+            }else{f.style.display='none';document.body.classList.remove('has-cart')}
+        }
+        function refreshView(){
+            if(currentView==='home')renderHome();
+            else if(currentView==='rest'&&currentRestIdx!==null)openRest(currentRestIdx);
+            else if(currentView==='cart')showCart();
+        }
+
+        // ── GPS desde carrito inline ──
+        window.requestGPSCart=function(){
+            var st=document.getElementById('gps-status-cart'),btn=document.getElementById('btn-gps-cart');
+            if(st){st.className='gps-status checkout-gps-searching';st.textContent='🔍 Buscando tu ubicación...';}
+            if(btn){btn.disabled=true;btn.textContent='🔍 Buscando...';}
+            navigator.geolocation.getCurrentPosition(function(pos){
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
+                // Recalcular delivery en el carrito con nueva ubicación
+                var rests=getFilteredRestaurantes();
+                var deliveryByRest={};
+                rests.forEach(function(r){deliveryByRest[r.nombre]=r.precio_delivery||0});
+                window._cart.forEach(function(c){
+                    if(deliveryByRest[c.restaurante]!=null) c.delivery=deliveryByRest[c.restaurante];
+                });
+                saveCart();
+                // Capturar referencia antes de re-renderizar
+                var addrInput=document.getElementById('loc-addr');
+                if(addrInput) window._clientAddr=addrInput.value;
+                // Re-render completo para actualizar totales + sección ubicación
+                showCart();
+            },function(){
+                if(st){st.className='gps-status';st.textContent='No se pudo obtener GPS';}
+                if(btn){btn.disabled=false;btn.textContent='📍 Usar mi ubicación GPS';}
+                // Mostrar campo de texto automáticamente si falla GPS
+                var wrap=document.getElementById('loc-addr-wrap');
+                if(wrap) wrap.classList.add('visible');
+            },{enableHighAccuracy:true,timeout:15000});
+        };
+        window.toggleAddrField=function(){
+            var wrap=document.getElementById('loc-addr-wrap');
+            if(wrap) wrap.classList.toggle('visible');
+            var input=document.getElementById('loc-addr');
+            if(input&&wrap.classList.contains('visible')) input.focus();
+        };
+
+        // sendWA — CAMBIO 3: incluir dirección de texto si no hay GPS
+        window.sendWA=function(){
+            // V2: Enforce GPS o dirección manual antes de enviar
+            var addrInputCheck=document.getElementById('loc-addr');
+            var addrVal=addrInputCheck?addrInputCheck.value.trim():(window._clientAddr||'').trim();
+            if(!window._clientGPS&&(!addrVal||addrVal.length<6)){
+                // Abrir modal estricto pidiendo ubicación
+                openGPSStrict();
+                return;
+            }
+            var byRest={};window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
+            var t=cartTotals();
+            var msg='Hola! Quiero pedir:\n\n';
+            Object.keys(byRest).forEach(function(rest){
+                msg+='🏪 *'+rest+'*\n';
+                byRest[rest].forEach(function(c){
+                    msg+='  - '+c.qty+'x '+c.nombre+' ($'+(c.precio*c.qty).toFixed(2)+')\n';
+                    if(c.almuerzoChoices){
+                        var catOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
+                        var catLabels={entrada:'Entrada',sopa:'Sopa',segundo:'Segundo',guarnicion:'Guarnición',jugo:'Jugo',postre:'Postre'};
+                        catOrder.forEach(function(cat){
+                            if(c.almuerzoChoices[cat]) msg+='    ▸ '+(catLabels[cat]||cat)+': '+c.almuerzoChoices[cat]+'\n';
+                        });
+                    }
+                    if(c.nota)msg+='    📝 '+c.nota+'\n';
+                });
+                msg+='\n';
+            });
+            if(window._clientGPS){
+                msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye delivery)\n\n';
+            } else {
+                msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
+            }
+            // Capturar valor actual del campo de dirección/referencia
+            var addrInput=document.getElementById('loc-addr');
+            if(addrInput) window._clientAddr=addrInput.value;
+            if(window._clientGPS){
+                msg+='📍 Mi ubicacion:\nhttps://maps.google.com/?q='+window._clientGPS.lat+','+window._clientGPS.lng+'\n';
+                if(window._clientAddr&&window._clientAddr.trim()) msg+='📝 Ref: '+window._clientAddr.trim()+'\n';
+                msg+='\n';
+            } else if(window._clientAddr&&window._clientAddr.trim()){
+                msg+='📍 Dirección: '+window._clientAddr.trim()+'\n\n';
+            } else {
+                msg+='📍 _Enviar ubicacion por este chat_\n\n';
+            }
+            msg+='Token: '+token;
+            window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
+            // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
+            var resumen={items:t.items,total:window._clientGPS?t.total:t.subtotal,conGPS:!!window._clientGPS};
+            markEtapa('confirmo');
+            closeModal();
+            showSuccessScreen(resumen);
+        };
+
+        // FIX #4: pantalla de éxito con resumen + CTA para nuevo pedido
+        function showSuccessScreen(resumen){
+            var h='<div class="success-screen">'+
+                '<div class="success-icon-wrap"><div class="success-icon">✅</div></div>'+
+                '<div class="success-title">¡Pedido enviado!</div>'+
+                '<div class="success-text">Abrimos WhatsApp con tu pedido listo. Revisa que se haya enviado el mensaje y espera la confirmación de nuestro operador.</div>'+
+                '<div class="success-box">'+
+                    '<div class="success-row"><span>Productos</span><span>'+resumen.items+'</span></div>'+
+                    '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío')+'</span></div>'+
+                '</div>'+
+                '<div class="success-hint">¿No se abrió WhatsApp?</div>'+
+                '<button class="btn btn-wa" onclick="sendWA()">📲 Reintentar envío</button>'+
+                '<button class="btn-ghost" onclick="resetAfterOrder()">Hacer otro pedido</button>'+
+            '</div>';
+            app.innerHTML=h;
+            document.getElementById('cart-float').style.display='none';
+        }
+        window.resetAfterOrder=function(){
+            window._cart=[];
+            window._clientAddr='';
+            clearCartStorage();
+            renderHome();
+        };
+        window.closeModal=function(){document.getElementById('modal-overlay').classList.remove('visible')};
+        document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
+
+        // ── SORT ──
+        function bindSortEvents(){
+            document.querySelectorAll('.pill:not(.disabled)').forEach(function(b){
+                b.addEventListener('click',function(){currentSort=this.getAttribute('data-sort');renderHome()});
+            });
+        }
+        // CAMBIO 1: pillBtn con soporte para disabled
+        function pillBtn(key,label,isDisabled){
+            if(isDisabled) return '<button class="pill disabled" data-sort="'+key+'">🔒 '+label+'</button>';
+            return '<button class="pill'+(currentSort===key?' active':'')+'" data-sort="'+key+'">'+label+'</button>';
+        }
+
+        // ── HELPERS ──
+        function showError(t,txt){app.innerHTML='<div class="state-container"><div class="empty-icon">😕</div><div class="state-title">'+t+'</div><div class="state-text">'+txt+'</div></div>'}
+        function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+        function jsEsc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+        function infoBox(icon,val,label){return '<div class="info-box"><div class="info-box-icon">'+icon+'</div><div class="info-box-val">'+val+'</div><div class="info-box-label">'+label+'</div></div>'}
+        function isRestOpen(horario){
+            if(!horario||!horario.trim()) return null;
+            var now=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'}));
+            var nowMin=now.getHours()*60+now.getMinutes();
+            var clean=horario.replace(/\s*(am|pm)\s*/gi,function(m,p){return ' '+p.toLowerCase()+' '}).trim();
+            var parts=clean.split(/\s*[-–]\s*/);
+            if(parts.length<2) return null;
+            function parseTime(s){
+                s=s.trim();
+                var m=s.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+                if(!m) return null;
+                var h=parseInt(m[1],10),min=parseInt(m[2],10),ampm=m[3]?m[3].toLowerCase():null;
+                if(ampm==='pm'&&h<12) h+=12;
+                if(ampm==='am'&&h===12) h=0;
+                return h*60+min;
+            }
+            var open=parseTime(parts[0]),close=parseTime(parts[1]);
+            if(open===null||close===null) return null;
+            if(close<=open) return nowMin>=open||nowMin<close;
+            return nowMin>=open&&nowMin<close;
+        }
+        function openBadge(horario){
+            var st=isRestOpen(horario);
+            if(st===null) return '';
+            return st?'<span class="badge-open">🟢 Abierto</span>':'<span class="badge-closed">🔴 Cerrado</span>';
+        }
+        function getColor(i){var c=['#FF6B35','#FF3B5C','#8B5CF6','#00C2D1','#00D26A','#FFB800'];return c[i%c.length]}
+        function getEmoji(name){
+            var n=(name||'').toLowerCase();
+            if(n.indexOf('pollo')!==-1||n.indexOf('broster')!==-1)return'🍗';
+            if(n.indexOf('pizza')!==-1)return'🍕';if(n.indexOf('burger')!==-1||n.indexOf('hambur')!==-1)return'🍔';
+            if(n.indexOf('sushi')!==-1)return'🍱';if(n.indexOf('taco')!==-1||n.indexOf('mexic')!==-1)return'🌮';
+            if(n.indexOf('encebollado')!==-1||n.indexOf('mar')!==-1||n.indexOf('pesc')!==-1)return'🐟';
+            if(n.indexOf('cafe')!==-1||n.indexOf('café')!==-1)return'☕';if(n.indexOf('helad')!==-1)return'🍦';
+            if(n.indexOf('panaderi')!==-1||n.indexOf('pan ')!==-1)return'🥖';
+            return'🍽';
+        }
+        function getEmojiPlato(name){
+            var n=(name||'').toLowerCase();
+            if(n.indexOf('pollo')!==-1||n.indexOf('broster')!==-1||n.indexOf('ala')!==-1)return'🍗';
+            if(n.indexOf('encebollado')!==-1||n.indexOf('ceviche')!==-1||n.indexOf('pescado')!==-1||n.indexOf('camaron')!==-1)return'🐟';
+            if(n.indexOf('pizza')!==-1)return'🍕';if(n.indexOf('burger')!==-1||n.indexOf('hambur')!==-1)return'🍔';
+            if(n.indexOf('sushi')!==-1||n.indexOf('roll')!==-1)return'🍱';if(n.indexOf('taco')!==-1)return'🌮';
+            if(n.indexOf('arroz')!==-1)return'🍚';if(n.indexOf('sopa')!==-1||n.indexOf('caldo')!==-1)return'🍲';
+            if(n.indexOf('jugo')!==-1||n.indexOf('batido')!==-1||n.indexOf('refresco')!==-1)return'🥤';
+            if(n.indexOf('cafe')!==-1||n.indexOf('café')!==-1)return'☕';
+            if(n.indexOf('ensalad')!==-1)return'🥗';if(n.indexOf('papa')!==-1||n.indexOf('salchipapa')!==-1)return'🍟';
+            if(n.indexOf('postre')!==-1||n.indexOf('torta')!==-1||n.indexOf('pastel')!==-1)return'🍰';
+            if(n.indexOf('helad')!==-1)return'🍦';if(n.indexOf('agua')!==-1)return'💧';
+            return'🍽';
+        }
+
+        // ── ALMUERZO HELPERS ──
+        function parseAlmuerzo(desc){
+            if(!desc||typeof desc!=='string') return null;
+            if(desc.indexOf('ALMUERZO_OPTS:')!==0) return null;
+            try{return JSON.parse(desc.substring(14))}catch(e){return null}
+        }
+        var almCatIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',postre:'🍰'};
+        var almCatOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
+        function buildAlmuerzoDesc(data){
+            var grouped={};
+            (data.opciones||[]).forEach(function(o){
+                var c=o.categoria||'otro';
+                if(!grouped[c])grouped[c]=[];
+                grouped[c].push(o.nombre);
+            });
+            var parts=[];
+            almCatOrder.forEach(function(cat){
+                if(grouped[cat]){
+                    parts.push((almCatIcons[cat]||'')+' '+cat.charAt(0).toUpperCase()+cat.slice(1)+': '+grouped[cat].join(' / '));
+                }
+            });
+            return parts.join(' | ');
+        }
+        function countAlmuerzoCart(rest,nombre){
+            var count=0;
+            window._cart.forEach(function(c){if(c.restaurante===rest&&c.nombre===nombre&&c.almuerzoChoices)count++});
+            return count;
+        }
+        window.removeAlmuerzoCart=function(idx){
+            if(idx>=0&&idx<window._cart.length) window._cart.splice(idx,1);
+            saveCart(); // CAMBIO 2
+            refreshView();
+        };
+        window.openAlmuerzoModal=function(rest,nombre,almIdx,delivery){
+            var descRaw=window._almMenuData[almIdx].desc;
+            var data=parseAlmuerzo(descRaw);
+            if(!data)return;
+            var precio=data.precio||0;
+            var grouped={};
+            (data.opciones||[]).forEach(function(o){
+                var c=o.categoria||'otro';
+                if(!grouped[c])grouped[c]=[];
+                grouped[c].push(o);
+            });
+
+            var h='<div class="almuerzo-modal">'+
+                '<div class="almuerzo-header">'+
+                    '<div class="almuerzo-header-icon">🍱</div>'+
+                    '<div class="almuerzo-header-title">'+esc(nombre)+'</div>'+
+                    '<div class="almuerzo-header-rest">'+esc(rest)+'</div>'+
+                    (precio?'<div class="almuerzo-header-price">$'+Number(precio).toFixed(2)+'</div>':'<div class="almuerzo-header-price" style="color:var(--gris)">Consultar</div>')+
+                '</div>';
+
+            var needsSelection=[];
+            almCatOrder.forEach(function(cat){
+                if(!grouped[cat])return;
+                var opts=grouped[cat];
+                var isSingle=opts.length===1;
+                h+='<div class="almuerzo-cat">'+
+                    '<div class="almuerzo-cat-title">'+(almCatIcons[cat]||'')+' '+cat.charAt(0).toUpperCase()+cat.slice(1)+
+                    (isSingle?' <span class="almuerzo-cat-badge incluido">Incluido</span>':' <span class="almuerzo-cat-badge elige">ELIGE UNA</span>')+
+                    '</div>';
+                opts.forEach(function(o){
+                    if(isSingle){
+                        h+='<div class="almuerzo-opt single" data-cat="'+cat+'" data-val="'+esc(o.nombre)+'">'+
+                            '<div class="almuerzo-radio"></div>'+
+                            '<div class="almuerzo-opt-name">'+esc(o.nombre)+'</div>'+
+                        '</div>';
+                    }else{
+                        h+='<div class="almuerzo-opt" data-cat="'+cat+'" data-val="'+esc(o.nombre)+'" onclick="selectAlmOpt(this)">'+
+                            '<div class="almuerzo-radio"></div>'+
+                            '<div class="almuerzo-opt-name">'+esc(o.nombre)+'</div>'+
+                        '</div>';
+                    }
+                });
+                if(!isSingle) needsSelection.push(cat);
+                h+='</div>';
+            });
+
+            h+='<button class="btn-almuerzo-add" id="btn-alm-add" onclick="confirmAlmuerzo()" '+(needsSelection.length?'disabled':'')+'>🍱 Agregar al pedido</button>'+
+                '<button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancelar</button>'+
+            '</div>';
+
+            window._almPending={rest:rest,nombre:nombre,precio:precio,delivery:delivery,needsSelection:needsSelection};
+
+            document.getElementById('modal-content').innerHTML=h;
+
+            var singles=document.querySelectorAll('.almuerzo-opt.single');
+            singles.forEach(function(el){el.classList.add('selected')});
+
+            document.getElementById('modal-overlay').classList.add('visible');
+        };
+        window.selectAlmOpt=function(el){
+            var cat=el.getAttribute('data-cat');
+            var siblings=document.querySelectorAll('.almuerzo-opt[data-cat="'+cat+'"]');
+            siblings.forEach(function(s){s.classList.remove('selected')});
+            el.classList.add('selected');
+            checkAlmReady();
+        };
+        function checkAlmReady(){
+            if(!window._almPending)return;
+            var ready=true;
+            window._almPending.needsSelection.forEach(function(cat){
+                var sel=document.querySelector('.almuerzo-opt.selected[data-cat="'+cat+'"]');
+                if(!sel) ready=false;
+            });
+            var btn=document.getElementById('btn-alm-add');
+            if(btn) btn.disabled=!ready;
+        }
+        window.confirmAlmuerzo=function(){
+            if(!window._almPending)return;
+            var p=window._almPending;
+            var choices={};
+            var selected=document.querySelectorAll('.almuerzo-opt.selected');
+            selected.forEach(function(el){
+                choices[el.getAttribute('data-cat')]=el.getAttribute('data-val');
+            });
+            window._cart.push({
+                restaurante:p.rest,
+                nombre:p.nombre,
+                precio:p.precio,
+                delivery:p.delivery,
+                qty:1,
+                almuerzoChoices:choices
+            });
+            saveCart(); // CAMBIO 2
+            window._almPending=null;
+            closeModal();
+            refreshView();
+        };
+
+        // V2: Modal estricto para forzar GPS o dirección antes de pedir
+        window.openGPSStrict=function(){
+            var modalRoot=document.getElementById('modal-root');
+            var content=document.getElementById('modal-content');
+            if(!modalRoot||!content) return;
+            content.innerHTML='<div class="gps-strict">'+
+                '<button class="modal-close" onclick="closeModal()" aria-label="Cerrar">✕</button>'+
+                '<div class="gps-strict-icon">📍</div>'+
+                '<div class="gps-strict-title">¿Dónde llevamos tu pedido?</div>'+
+                '<div class="gps-strict-text">Para que tu rider te encuentre al toque necesitamos tu ubicación o una dirección.</div>'+
+                '<div class="gps-strict-actions">'+
+                    '<button class="btn btn-accent" style="margin:0" onclick="gpsStrictUseLocation()">📍 Usar mi ubicación GPS</button>'+
+                    '<button class="btn btn-outline" style="margin:0" onclick="gpsStrictUseAddress()">📝 Escribir mi dirección</button>'+
+                '</div>'+
+            '</div>';
+            modalRoot.classList.add('visible');
+        };
+        window.gpsStrictUseLocation=function(){
+            closeModal();
+            if(typeof requestGPSFromBanner==='function'){
+                requestGPSFromBanner({stopPropagation:function(){}});
+            } else if(navigator.geolocation){
+                navigator.geolocation.getCurrentPosition(function(pos){
+                    window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
+                    try{sessionData.resultados=recalcDistances(sessionData.resultados||[])}catch(e){}
+                    if(currentView==='cart') showCart();
+                });
+            }
+        };
+        window.gpsStrictUseAddress=function(){
+            closeModal();
+            setTimeout(function(){
+                var addrInput=document.getElementById('loc-addr');
+                if(addrInput){addrInput.focus();addrInput.scrollIntoView({behavior:'smooth',block:'center'})}
+            },150);
+        };
+    })();
+    </script>
+</body>
+</html>
