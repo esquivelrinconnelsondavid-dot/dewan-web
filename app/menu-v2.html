@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>DEWAN Delivery</title>
     <meta name="theme-color" content="#0E0E10">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23B8FF00'/><text x='50' y='70' font-family='Arial' font-size='55' font-weight='bold' fill='%23111' text-anchor='middle'>D</text></svg>">
@@ -549,6 +552,7 @@
         // V2: sin token también funciona — es el acceso "directo a la app"
         // Marcar visita (si hay token) y cargar catálogo completo.
         // GPS opcional vía banner discreto en la home.
+        try{console.log('%cDEWAN menu-v2.html · build 2.9 · '+new Date().toISOString(),'color:#B8FF00;font-weight:bold')}catch(e){}
         markEtapa('abrio');
         loadSession();
 
@@ -1218,9 +1222,11 @@
                     '<div class="skel-row" style="margin:10px 0"></div>'+
                 '</div>';
                 loadMenuItemsForRest(r.id).then(function(items){
-                    r.productos=items;
+                    r.productos=items||[];
                     if(currentView==='rest'&&currentRestIdx===nombre) openRest(nombre);
                 }).catch(function(){
+                    // V2.9: reset del flag para permitir reintento (el usuario puede tocar atrás y entrar de nuevo)
+                    r._loadAttempted=false;
                     r.productos=[];
                     if(currentView==='rest'&&currentRestIdx===nombre) openRest(nombre);
                 });
