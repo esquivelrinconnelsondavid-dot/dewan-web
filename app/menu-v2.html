@@ -466,6 +466,19 @@
 
         /* V2.1: Banner de filtro activo dentro del menú del restaurante */
         .rest-filter-banner{margin:10px 14px 4px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(184,255,0,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.78rem;font-weight:700;color:var(--acc);letter-spacing:-0.01em}
+
+        /* V3.0: Grilla 3 columnas (home default) — con soporte de imagen/logo */
+        .grid3-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 12px 10px}
+        .grid3-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s;display:flex;flex-direction:column;position:relative}
+        .grid3-card:active{transform:scale(0.95)}
+        .grid3-top{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden}
+        .grid3-emoji{position:relative;z-index:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
+        .grid3-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;background:var(--card2)}
+        .grid3-body{padding:7px 9px 9px;min-height:48px}
+        .grid3-name{font-weight:800;font-size:0.75rem;line-height:1.15;color:var(--texto);letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.72em}
+        .grid3-meta{font-size:0.6rem;color:var(--gris-2);font-weight:700;margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;line-height:1.2}
+        .grid3-badge-count{background:var(--acc-soft);color:var(--acc);font-size:0.56rem;font-weight:900;padding:1px 6px;border-radius:20px;letter-spacing:0.02em}
+        .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
         .rest-filter-banner-text{flex:1;line-height:1.35}
         .rest-filter-banner-text strong{color:var(--acc);font-weight:900}
         .rest-filter-banner button{background:rgba(184,255,0,0.15);border:1px solid rgba(184,255,0,0.3);color:var(--acc);font-size:0.7rem;font-weight:800;padding:6px 11px;border-radius:100px;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all 0.15s;letter-spacing:-0.01em}
@@ -1045,42 +1058,10 @@
                 '</div>';
             }
 
-            // Carrusel (solo si ≥ 6 resultados y no hay filtro de categoría activo)
-            if(rests.length>=6&&!window._activeCat){
-                var topRests=rests.slice(0,6);
-                var carruselTitle=hasGPS?'📍 Cerca de ti':'✨ Populares';
-                var carruselSub=hasGPS?'6 más próximos':'Selección';
-                h+='<section class="home-carrusel">'+
-                    '<div class="home-carrusel-head">'+
-                        '<span class="home-carrusel-title">'+carruselTitle+'</span>'+
-                        '<span class="home-carrusel-sub">'+carruselSub+'</span>'+
-                    '</div>'+
-                    '<div class="home-carrusel-scroll">';
-                topRests.forEach(function(r,idx){
-                    var color=getColor(idx);
-                    var isOpen=isRestOpen(r.horario);
-                    h+='<div class="carrusel-card" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'25">'+
-                        '<div class="carrusel-top" style="background:linear-gradient(135deg,'+color+'2E 0%,'+color+'10 100%)">'+
-                            getEmoji(r.nombre)+
-                            (isOpen===false?'<span class="carrusel-closed">CERRADO</span>':'')+
-                        '</div>'+
-                        '<div class="carrusel-body">'+
-                            '<div class="carrusel-name">'+esc(r.nombre)+'</div>'+
-                            '<div class="carrusel-meta">'+
-                                (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                                (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
-                            '</div>'+
-                        '</div>'+
-                    '</div>';
-                });
-                h+='</div></section>';
-                h+='<div class="list-section-title">Todos los restaurantes · '+rests.length+'</div>';
-            }
-
-            // Skeleton mientras carga categoría
+            // V3.0: Skeleton mientras carga categoría (skeletons en grilla 3 para consistencia)
             if(window._activeCat&&window._catLoading){
-                h+='<div style="padding:8px 0">';
-                for(var sk=0;sk<5;sk++) h+='<div class="skel-row"></div>';
+                h+='<div class="grid3-wrap">';
+                for(var sk=0;sk<9;sk++) h+='<div class="grid3-card" style="aspect-ratio:1/1.28;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:skel-shimmer 1.6s ease-in-out infinite"></div>';
                 h+='</div>';
             } else if(rests.length===0){
                 // Empty state cuando filtro vacío
@@ -1091,7 +1072,7 @@
                 '</div>';
             }
 
-            // Lista compacta (con split especialistas/también ofrecen cuando hay categoría)
+            // V3.0: Grilla 3 columnas (con split especialistas/también ofrecen cuando hay categoría)
             if(!(window._activeCat&&window._catLoading)){
                 if(window._activeCat){
                     var cmActive=CAT_MAP_V2[window._activeCat];
@@ -1103,36 +1084,22 @@
 
                     if(hasSpecs){
                         h+='<div class="list-section-title">'+(hasBoth?'✨ Especialistas en '+cmActive.label:'🏪 Resultados')+'</div>';
-                        h+='<div style="padding:2px 0 4px">';
-                        parts.specs.forEach(function(r){h+=renderRestCardRowV2(r,gIdx++,catCmd(r.nombre))});
+                        h+='<div class="grid3-wrap">';
+                        parts.specs.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
                     }
                     if(parts.others.length){
                         h+='<div class="list-section-title">'+(hasSpecs?'🏪 También ofrecen '+cmActive.label:'🏪 Resultados')+'</div>';
-                        h+='<div style="padding:2px 0 10px">';
-                        parts.others.forEach(function(r){h+=renderRestCardRowV2(r,gIdx++,catCmd(r.nombre))});
+                        h+='<div class="grid3-wrap">';
+                        parts.others.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
                     }
                 } else {
-                    h+='<div style="padding:4px 0 10px">';
+                    // Home sin filtro: título + grilla de todos
+                    h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+rests.length+'</div>';
+                    h+='<div class="grid3-wrap">';
                     rests.forEach(function(r,idx){
-                        var color=getColor(idx);
-                        var metaParts=[];
-                        if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
-                        if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
-                        if(window._clientGPS) metaParts.push('<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>');
-                        if(r.categoria) metaParts.push('<span>'+esc(r.categoria)+'</span>');
-                        h+='<div class="rest-compact" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'22">'+
-                            '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
-                            '<div class="rest-compact-body">'+
-                                '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
-                                '<div class="rest-compact-info">'+
-                                    '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
-                                    '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
-                                '</div>'+
-                                '<span class="rest-compact-chevron">›</span>'+
-                            '</div>'+
-                        '</div>';
+                        h+=renderRestCardGrid(r,idx,'openRest(\''+jsEsc(r.nombre)+'\')');
                     });
                     h+='</div>';
                 }
@@ -1674,6 +1641,29 @@
                         '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
                     '</div>'+
                     '<span class="rest-compact-chevron">›</span>'+
+                '</div>'+
+            '</div>';
+        }
+
+        // V3.0: Tarjeta tipo grilla 3 columnas (home default). Muestra foto si existe, sino emoji.
+        function renderRestCardGrid(r,idx,openCmd){
+            var color=getColor(idx);
+            var isOpen=isRestOpen(r.horario);
+            var hasImg=r.imagen_url||r.logo_url||r.foto_url;
+            var metaBits=[];
+            if(r._matchCount) metaBits.push('<span class="grid3-badge-count">'+r._matchCount+'</span>');
+            if(r.tiempo_estimado_min) metaBits.push('⏱ '+r.tiempo_estimado_min+'m');
+            if(r.distancia_km) metaBits.push('📍 '+r.distancia_km+'km');
+            else if(window._clientGPS&&r.precio_delivery) metaBits.push('🛵 $'+Number(r.precio_delivery).toFixed(2));
+            return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+color+'25">'+
+                '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
+                    '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
+                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                    (isOpen===false?'<span class="grid3-closed">CERRADO</span>':'')+
+                '</div>'+
+                '<div class="grid3-body">'+
+                    '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
+                    (metaBits.length?'<div class="grid3-meta">'+metaBits.join(' · ')+'</div>':'')+
                 '</div>'+
             '</div>';
         }
