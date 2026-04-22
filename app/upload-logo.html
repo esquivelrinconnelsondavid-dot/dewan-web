@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEWAN · Subir logo de restaurante</title>
+<style>
+  :root {
+    --bg:#0b1120; --bg2:#111827; --bg3:#1e293b;
+    --accent:#10b981; --accent2:#059669;
+    --text:#f1f5f9; --text2:#94a3b8; --text3:#64748b;
+    --danger:#ef4444; --warn:#f59e0b;
+    --radius:14px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:24px 16px; }
+  .wrap { max-width:960px; margin:0 auto; }
+  h1 { font-size:22px; margin-bottom:4px; }
+  .sub { color:var(--text3); font-size:13px; margin-bottom:24px; }
+  .panel { background:var(--bg2); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); padding:20px; margin-bottom:16px; }
+  .drop { border:2px dashed rgba(255,255,255,.15); border-radius:var(--radius); padding:40px 20px; text-align:center; cursor:pointer; transition:all .2s; background:rgba(255,255,255,.02); }
+  .drop:hover, .drop.drag { border-color:var(--accent); background:rgba(16,185,129,.05); }
+  .drop-icon { font-size:38px; margin-bottom:8px; }
+  .drop-title { font-weight:600; margin-bottom:4px; }
+  .drop-hint { color:var(--text3); font-size:12px; }
+  input[type=file] { display:none; }
+
+  .queue { display:grid; gap:12px; margin-top:16px; }
+  .item { background:var(--bg3); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); padding:14px; display:grid; grid-template-columns:72px 1fr auto; gap:14px; align-items:center; }
+  .thumb { width:72px; height:72px; border-radius:10px; object-fit:cover; background:var(--bg); border:1px solid rgba(255,255,255,.08); }
+  .item-body { min-width:0; }
+  .item-name { font-size:13px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:6px; }
+  select { width:100%; padding:10px 12px; background:var(--bg); border:1px solid rgba(255,255,255,.1); border-radius:10px; color:var(--text); font-size:14px; outline:none; }
+  select:focus { border-color:var(--accent); }
+  .status { font-size:11px; color:var(--text3); margin-top:6px; min-height:14px; }
+  .status.ok { color:var(--accent); }
+  .status.err { color:var(--danger); }
+  .status.busy { color:var(--warn); }
+  .btn-remove { background:transparent; border:1px solid rgba(239,68,68,.3); color:var(--danger); padding:6px 10px; border-radius:8px; font-size:12px; cursor:pointer; }
+  .btn-remove:hover { background:rgba(239,68,68,.1); }
+
+  .actions { display:flex; gap:10px; margin-top:16px; justify-content:flex-end; }
+  .btn { padding:12px 22px; border-radius:10px; font-size:14px; font-weight:600; border:none; cursor:pointer; font-family:inherit; transition:all .15s; }
+  .btn-primary { background:var(--accent); color:#000; }
+  .btn-primary:hover:not(:disabled) { background:var(--accent2); }
+  .btn-primary:disabled { opacity:.4; cursor:not-allowed; }
+  .btn-ghost { background:transparent; color:var(--text2); border:1px solid rgba(255,255,255,.1); }
+  .btn-ghost:hover { color:var(--text); }
+
+  .loading { text-align:center; color:var(--text3); padding:16px; font-size:13px; }
+  .empty { text-align:center; color:var(--text3); padding:20px; font-size:13px; }
+  .alert { padding:12px 14px; border-radius:10px; font-size:13px; margin-bottom:14px; }
+  .alert-err { background:rgba(239,68,68,.1); color:#fca5a5; border:1px solid rgba(239,68,68,.25); }
+  .alert-ok { background:rgba(16,185,129,.1); color:#6ee7b7; border:1px solid rgba(16,185,129,.25); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Subir logo de restaurante</h1>
+  <p class="sub">Arrastra una o varias imágenes, elige a qué restaurante corresponde cada una y presiona <b>Subir todo</b>. Se guarda en <code>restaurantes/logos/</code> y se actualiza <code>logo_url</code>.</p>
+
+  <div id="alert"></div>
+
+  <div class="panel">
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept="image/*" multiple>
+      <div class="drop-icon">📸</div>
+      <div class="drop-title">Arrastra imágenes aquí o haz click</div>
+      <div class="drop-hint">PNG, JPG, WEBP · hasta 5 MB c/u</div>
+    </label>
+
+    <div class="queue" id="queue"></div>
+
+    <div class="actions" id="actions" style="display:none">
+      <button class="btn btn-ghost" id="btn-clear">Limpiar</button>
+      <button class="btn btn-primary" id="btn-upload">Subir todo</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div style="font-size:13px;color:var(--text2);line-height:1.6">
+      <b>Nota:</b> esta herramienta usa la anon key de Supabase. Antes de la primera subida, ejecuta una sola vez
+      <code>operadora/sql/bucket-logos-restaurantes.sql</code> en el SQL Editor para crear el bucket y las policies.
+    </div>
+  </div>
+</div>
+
+<script>
+  const SB_URL = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+  const BUCKET = 'restaurantes';
+  const MAX_BYTES = 5 * 1024 * 1024;
+
+  const headers = () => ({ apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY });
+
+  const $ = (id) => document.getElementById(id);
+  const drop = $('drop');
+  const fileInput = $('file');
+  const queue = $('queue');
+  const actions = $('actions');
+  const alertBox = $('alert');
+
+  let restaurantes = [];
+  let items = []; // {id, file, restauranteId, status, message, thumbUrl}
+
+  function showAlert(msg, type='err') {
+    alertBox.innerHTML = '<div class="alert alert-' + type + '">' + msg + '</div>';
+    if (type === 'ok') setTimeout(() => { alertBox.innerHTML = ''; }, 5000);
+  }
+
+  async function loadRestaurantes() {
+    queue.innerHTML = '<div class="loading">Cargando restaurantes…</div>';
+    try {
+      const r = await fetch(SB_URL + '/rest/v1/restaurantes?select=id,nombre,logo_url&order=nombre.asc', { headers: headers() });
+      restaurantes = await r.json();
+      if (!Array.isArray(restaurantes)) throw new Error('Respuesta inválida');
+    } catch (e) {
+      showAlert('No pude cargar los restaurantes: ' + e.message);
+      restaurantes = [];
+    }
+    queue.innerHTML = '';
+    render();
+  }
+
+  function slug(s) {
+    return (s || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'restaurante';
+  }
+
+  function extOf(file) {
+    const m = /\.([a-z0-9]+)$/i.exec(file.name);
+    if (m) return m[1].toLowerCase();
+    const t = (file.type || '').split('/')[1];
+    return (t || 'png').toLowerCase();
+  }
+
+  function addFiles(fileList) {
+    for (const f of fileList) {
+      if (!f.type.startsWith('image/')) continue;
+      if (f.size > MAX_BYTES) { showAlert(f.name + ' excede 5 MB'); continue; }
+      const reader = new FileReader();
+      const id = Math.random().toString(36).slice(2);
+      items.push({ id, file: f, restauranteId: '', status: 'pending', message: '', thumbUrl: '' });
+      reader.onload = (e) => {
+        const it = items.find(x => x.id === id);
+        if (it) { it.thumbUrl = e.target.result; render(); }
+      };
+      reader.readAsDataURL(f);
+    }
+    render();
+  }
+
+  function render() {
+    if (items.length === 0) {
+      queue.innerHTML = '';
+      actions.style.display = 'none';
+      return;
+    }
+    actions.style.display = 'flex';
+    queue.innerHTML = '';
+    items.forEach(it => {
+      const row = document.createElement('div');
+      row.className = 'item';
+      const options = ['<option value="">— elegir restaurante —</option>']
+        .concat(restaurantes.map(r => {
+          const sel = r.id === it.restauranteId ? ' selected' : '';
+          const dot = r.logo_url ? ' · ya tiene logo' : '';
+          return '<option value="' + r.id + '"' + sel + '>' + escapeHtml(r.nombre) + dot + '</option>';
+        })).join('');
+      const statusCls = it.status === 'ok' ? 'ok' : it.status === 'err' ? 'err' : it.status === 'busy' ? 'busy' : '';
+      row.innerHTML =
+        '<img class="thumb" src="' + (it.thumbUrl || '') + '" alt="">' +
+        '<div class="item-body">' +
+          '<div class="item-name">' + escapeHtml(it.file.name) + ' · ' + fmtSize(it.file.size) + '</div>' +
+          '<select data-id="' + it.id + '" ' + (it.status === 'ok' || it.status === 'busy' ? 'disabled' : '') + '>' + options + '</select>' +
+          '<div class="status ' + statusCls + '">' + (it.message || '') + '</div>' +
+        '</div>' +
+        '<button class="btn-remove" data-remove="' + it.id + '">Quitar</button>';
+      queue.appendChild(row);
+    });
+
+    queue.querySelectorAll('select').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const id = e.target.getAttribute('data-id');
+        const it = items.find(x => x.id === id);
+        if (it) it.restauranteId = e.target.value;
+      });
+    });
+    queue.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-remove');
+        items = items.filter(x => x.id !== id);
+        render();
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function fmtSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+    return (b/1024/1024).toFixed(2) + ' MB';
+  }
+
+  async function uploadOne(it) {
+    it.status = 'busy'; it.message = 'Subiendo…'; render();
+    const rest = restaurantes.find(r => r.id === it.restauranteId);
+    if (!rest) { it.status = 'err'; it.message = 'Elige un restaurante'; render(); return false; }
+
+    const path = 'logos/' + slug(rest.nombre) + '-' + Date.now() + '.' + extOf(it.file);
+    try {
+      // 1. Upload al bucket
+      const up = await fetch(SB_URL + '/storage/v1/object/' + BUCKET + '/' + path, {
+        method: 'POST',
+        headers: { ...headers(), 'Content-Type': it.file.type || 'application/octet-stream', 'x-upsert': 'true' },
+        body: it.file
+      });
+      if (!up.ok) {
+        const txt = await up.text();
+        throw new Error('storage: ' + up.status + ' ' + txt);
+      }
+
+      // 2. URL pública
+      const publicUrl = SB_URL + '/storage/v1/object/public/' + BUCKET + '/' + path;
+
+      // 3. UPDATE restaurantes.logo_url
+      const patch = await fetch(SB_URL + '/rest/v1/restaurantes?id=eq.' + encodeURIComponent(rest.id), {
+        method: 'PATCH',
+        headers: { ...headers(), 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ logo_url: publicUrl })
+      });
+      if (!patch.ok) {
+        const txt = await patch.text();
+        throw new Error('db: ' + patch.status + ' ' + txt);
+      }
+
+      rest.logo_url = publicUrl;
+      it.status = 'ok';
+      it.message = '✓ Subido · ' + rest.nombre;
+      render();
+      return true;
+    } catch (e) {
+      it.status = 'err';
+      it.message = 'Error: ' + e.message;
+      render();
+      return false;
+    }
+  }
+
+  async function uploadAll() {
+    const pending = items.filter(it => it.status !== 'ok');
+    if (pending.length === 0) return;
+    const withoutRest = pending.filter(it => !it.restauranteId);
+    if (withoutRest.length) { showAlert('Elige restaurante para las ' + withoutRest.length + ' foto(s) pendiente(s)'); return; }
+
+    alertBox.innerHTML = '';
+    let ok = 0, err = 0;
+    for (const it of pending) {
+      const r = await uploadOne(it);
+      if (r) ok++; else err++;
+    }
+    if (err === 0) showAlert('¡Listo! ' + ok + ' logo(s) subido(s) correctamente.', 'ok');
+    else showAlert(ok + ' OK · ' + err + ' con error. Revisa los mensajes arriba.');
+  }
+
+  // Eventos drag&drop + click
+  drop.addEventListener('click', () => fileInput.click());
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault(); drop.classList.remove('drag');
+    addFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', (e) => addFiles(e.target.files));
+
+  $('btn-clear').addEventListener('click', () => {
+    items = items.filter(it => it.status === 'busy');
+    alertBox.innerHTML = '';
+    render();
+  });
+  $('btn-upload').addEventListener('click', uploadAll);
+
+  loadRestaurantes();
+</script>
+</body>
+</html>
