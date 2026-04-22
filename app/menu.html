@@ -567,7 +567,7 @@
         // V2: sin token también funciona — es el acceso "directo a la app"
         // Marcar visita (si hay token) y cargar catálogo completo.
         // GPS opcional vía banner discreto en la home.
-        try{console.log('%cDEWAN menu-v2.html · build 3.2 · logos en grid + compacta + header · '+new Date().toISOString(),'color:#B8FF00;font-weight:bold')}catch(e){}
+        try{console.log('%cDEWAN menu-v2.html · build 3.3 · fix normalizeRest drop logo_url · '+new Date().toISOString(),'color:#B8FF00;font-weight:bold')}catch(e){}
         markEtapa('abrio');
         loadSession();
 
@@ -644,6 +644,7 @@
                 id:r.id, nombre:r.nombre, direccion:r.direccion, telefono:r.telefono,
                 horario:r.horario, categoria:r.categoria, activo:r.activo,
                 tipo_restaurante:r.tipo_restaurante,
+                logo_url:r.logo_url, imagen_url:r.imagen_url, foto_url:r.foto_url,
                 productos:[],
                 distancia_km:null, tiempo_estimado_min:null, precio_delivery:null,
                 restaurante_lat:r.latitud, restaurante_lng:r.longitud
