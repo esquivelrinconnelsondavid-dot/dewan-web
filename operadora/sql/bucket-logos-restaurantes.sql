@@ -45,8 +45,12 @@ CREATE POLICY "restaurantes_logos_delete_anon"
     AND (storage.foldername(name))[1] = 'logos'
   );
 
--- 4. Permitir UPDATE de logo_url en la tabla restaurantes con anon
---    (si tu RLS ya permite UPDATE con anon, esto es redundante — omitir)
+-- 4. Permitir UPDATE SOLO de la columna logo_url con anon.
+--    GRANT a nivel de columna: aunque la policy diga "true",
+--    Postgres rechaza UPDATE a otras columnas (nombre, activo,
+--    horario, etc.) hechos con la anon key.
+GRANT UPDATE (logo_url) ON restaurantes TO anon;
+
 DROP POLICY IF EXISTS "restaurantes_update_logo_url_anon" ON restaurantes;
 CREATE POLICY "restaurantes_update_logo_url_anon"
   ON restaurantes FOR UPDATE
