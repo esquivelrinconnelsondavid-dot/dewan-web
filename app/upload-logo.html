@@ -205,18 +205,62 @@
     return (b/1024/1024).toFixed(2) + ' MB';
   }
 
+  // Redimensiona a max 800px de lado y re-codifica como JPEG 85% o PNG (conservar transparencia).
+  // Transparencia se detecta por tipo MIME: los PNG se mantienen PNG para no ennegrecerse.
+  async function compressImage(file) {
+    const keepAsPng = file.type === 'image/png';
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = URL.createObjectURL(file);
+    });
+    const MAX = 800;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w <= MAX && h <= MAX && file.size < 200 * 1024) {
+      URL.revokeObjectURL(img.src);
+      return { blob: file, type: file.type, ext: extOf(file) };
+    }
+    if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+    else if (h > w) { w = Math.round(w * MAX / h); h = MAX; }
+    else { w = h = Math.min(w, MAX); }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(img.src);
+
+    const outType = keepAsPng ? 'image/png' : 'image/jpeg';
+    const quality = keepAsPng ? undefined : 0.85;
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outType, quality));
+    const ext = keepAsPng ? 'png' : 'jpg';
+    return { blob, type: outType, ext };
+  }
+
   async function uploadOne(it) {
-    it.status = 'busy'; it.message = 'Subiendo…'; render();
+    it.status = 'busy'; it.message = 'Optimizando…'; render();
     const rest = restaurantes.find(r => r.id === it.restauranteId);
     if (!rest) { it.status = 'err'; it.message = 'Elige un restaurante'; render(); return false; }
 
-    const path = 'logos/' + slug(rest.nombre) + '-' + Date.now() + '.' + extOf(it.file);
+    let upload;
+    try {
+      upload = await compressImage(it.file);
+    } catch {
+      upload = { blob: it.file, type: it.file.type || 'application/octet-stream', ext: extOf(it.file) };
+    }
+    const origKB = (it.file.size / 1024).toFixed(0);
+    const newKB = (upload.blob.size / 1024).toFixed(0);
+    it.message = 'Subiendo… ' + origKB + ' KB → ' + newKB + ' KB';
+    render();
+
+    const path = 'logos/' + slug(rest.nombre) + '-' + Date.now() + '.' + upload.ext;
     try {
       // 1. Upload al bucket
       const up = await fetch(SB_URL + '/storage/v1/object/' + BUCKET + '/' + path, {
         method: 'POST',
-        headers: { ...headers(), 'Content-Type': it.file.type || 'application/octet-stream', 'x-upsert': 'true' },
-        body: it.file
+        headers: { ...headers(), 'Content-Type': upload.type, 'x-upsert': 'true' },
+        body: upload.blob
       });
       if (!up.ok) {
         const txt = await up.text();
