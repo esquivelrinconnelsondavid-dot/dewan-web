@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>DEWAN Delivery</title>
     <meta name="theme-color" content="#0E0E10">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23B8FF00'/><text x='50' y='70' font-family='Arial' font-size='55' font-weight='bold' fill='%23111' text-anchor='middle'>D</text></svg>">
@@ -359,6 +362,127 @@
         .almuerzo-choices{font-size:0.72rem;color:var(--gris);line-height:1.6;margin-top:4px}
         .almuerzo-remove{background:var(--card2);border:1px solid var(--border);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--texto);flex-shrink:0;transition:all 0.15s}
         .almuerzo-remove:active{transform:scale(0.9);background:rgba(229,62,62,0.2);border-color:#e53e3e;color:#e53e3e}
+
+        /* ═══════════════════════════════════════════════
+           V2: HOME PREMIUM (saludo + search hero + chips)
+           ═══════════════════════════════════════════════ */
+        .home-v2-top{padding:18px 16px 12px;background:linear-gradient(180deg,rgba(184,255,0,0.05) 0%,transparent 90%)}
+        .home-v2-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+        .home-v2-loc{font-size:0.72rem;color:var(--gris);font-weight:700;display:flex;align-items:center;gap:4px;margin-bottom:3px;letter-spacing:0.01em}
+        .home-v2-greeting{font-size:1.35rem;font-weight:900;letter-spacing:-0.03em;line-height:1.2;color:var(--texto)}
+        .home-v2-greeting-sub{font-size:0.78rem;color:var(--gris-2);font-weight:600;margin-top:3px;letter-spacing:-0.01em}
+
+        /* Search hero (tap-through) */
+        .search-hero{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color 0.2s,transform 0.15s,box-shadow 0.2s;font-family:inherit;outline:none}
+        .search-hero:active{transform:scale(0.985);border-color:var(--acc);box-shadow:0 0 0 3px rgba(184,255,0,0.08)}
+        .search-hero-icon{font-size:1.1rem;color:var(--gris-2)}
+        .search-hero-text{color:var(--gris-2);font-size:0.95rem;font-weight:600;flex:1;text-align:left;letter-spacing:-0.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .search-hero-tag{background:var(--acc);color:#111;font-size:0.58rem;font-weight:900;padding:3px 7px;border-radius:20px;letter-spacing:0.05em;flex-shrink:0}
+
+        /* Category chips row */
+        .cat-chips-wrap{padding:14px 0 6px}
+        .cat-chips-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 14px 2px;-webkit-overflow-scrolling:touch}
+        .cat-chips-scroll::-webkit-scrollbar{display:none}
+        .cat-chip{flex-shrink:0;padding:10px 13px 10px 11px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--texto);font-size:0.82rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:-0.01em}
+        .cat-chip:active{transform:scale(0.96)}
+        .cat-chip.active{background:var(--acc);color:#111;border-color:var(--acc);box-shadow:0 2px 10px rgba(184,255,0,0.25)}
+        .cat-chip-icon{font-size:1.05rem}
+
+        /* Active filter banner */
+        .filter-banner-v2{margin:4px 14px 10px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(184,255,0,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.82rem;font-weight:800;color:var(--acc);letter-spacing:-0.01em}
+        .filter-banner-v2 button{background:none;border:none;color:var(--acc);font-size:1.15rem;font-weight:900;cursor:pointer;font-family:inherit;margin-left:auto;padding:0 4px;opacity:0.7;transition:opacity 0.15s}
+        .filter-banner-v2 button:hover{opacity:1}
+
+        /* ═══════════════════════════════════════════════
+           V2: SEARCH SCREEN
+           ═══════════════════════════════════════════════ */
+        .search-header-v2{position:sticky;top:0;z-index:50;background:var(--bg);padding:14px 12px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+        .search-header-v2 .btn-back{flex-shrink:0}
+        .search-input-wrap{flex:1;display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--acc);border-radius:14px;padding:10px 12px;transition:border-color 0.2s}
+        .search-input-wrap-icon{font-size:0.98rem;color:var(--gris-2);flex-shrink:0}
+        .search-input{flex:1;background:transparent;border:none;outline:none;color:var(--texto);font-size:0.95rem;font-weight:700;font-family:inherit;letter-spacing:-0.01em;min-width:0}
+        .search-input::placeholder{color:var(--gris);font-weight:600}
+        .search-clear{background:var(--card2);border:none;width:22px;height:22px;border-radius:50%;color:var(--texto);font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;align-items:center;justify-content:center;display:none;flex-shrink:0}
+        .search-clear.visible{display:flex}
+        .search-clear:active{background:var(--border)}
+
+        /* Search section titles */
+        .search-section-title-v2{font-size:0.72rem;font-weight:900;color:var(--gris);text-transform:uppercase;letter-spacing:0.14em;padding:18px 16px 10px;display:flex;align-items:center;gap:8px}
+        .search-section-title-v2::after{content:'';flex:1;height:1px;background:var(--border);opacity:0.4}
+        .search-section-count{background:var(--card2);color:var(--gris-2);padding:2px 7px;border-radius:20px;font-size:0.6rem;letter-spacing:0.04em;order:10}
+
+        /* Chips (recent, suggest) */
+        .chip-row{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 8px}
+        .chip-btn{background:var(--card);border:1px solid var(--border);border-radius:100px;padding:8px 13px;font-size:0.78rem;font-weight:700;color:var(--texto);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;letter-spacing:-0.01em}
+        .chip-btn:active{transform:scale(0.96)}
+        .chip-btn:hover{border-color:var(--acc);color:var(--acc)}
+        .chip-btn-icon{font-size:0.9rem;opacity:0.75}
+        .chip-btn-rm{background:none;border:none;color:var(--gris);font-size:0.85rem;opacity:0.55;margin:-2px -4px -2px 2px;padding:0 4px;cursor:pointer;font-family:inherit}
+        .chip-btn-rm:hover{opacity:1}
+
+        /* Plate search result card */
+        .plate-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin:0 14px 8px;padding:11px 14px 11px 12px;cursor:pointer;display:flex;gap:11px;align-items:center;transition:transform 0.15s,border-color 0.2s}
+        .plate-card:active{transform:scale(0.985)}
+        .plate-emoji{width:42px;height:42px;border-radius:12px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+        .plate-info{flex:1;min-width:0}
+        .plate-name{font-weight:800;font-size:0.9rem;line-height:1.2;letter-spacing:-0.01em;color:var(--texto);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .plate-rest{font-size:0.72rem;color:var(--gris-2);font-weight:600;margin-top:2px;display:flex;align-items:center;gap:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .plate-price{font-weight:800;font-size:0.98rem;color:var(--texto);letter-spacing:-0.01em;flex-shrink:0}
+
+        /* Empty state */
+        .search-empty-state-v2{text-align:center;padding:48px 20px 20px}
+        .search-empty-icon{font-size:2.8rem;margin-bottom:12px;opacity:0.55}
+        .search-empty-title{font-size:1rem;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em}
+        .search-empty-text{font-size:0.85rem;color:var(--gris);line-height:1.5;max-width:280px;margin:0 auto}
+
+        /* Skeleton loaders */
+        @keyframes skel-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+        .skel-row{background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;border:1px solid var(--border);border-radius:16px;height:84px;margin:0 14px 9px;animation:skel-shimmer 1.6s ease-in-out infinite}
+        .skel-carrusel-row{display:flex;gap:10px;overflow:hidden;padding:0 14px}
+        .skel-carrusel-card{flex-shrink:0;width:146px;height:180px;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;border:1px solid var(--border);border-radius:18px;animation:skel-shimmer 1.6s ease-in-out infinite}
+
+        /* GPS enforcement modal (strict) */
+        .gps-strict{padding:32px 24px 24px;text-align:center}
+        .gps-strict-icon{font-size:3.2rem;margin-bottom:14px;display:inline-block}
+        .gps-strict-title{font-size:1.25rem;font-weight:900;letter-spacing:-0.02em;margin-bottom:8px}
+        .gps-strict-text{font-size:0.9rem;color:var(--gris-2);line-height:1.5;margin-bottom:22px;max-width:320px;margin-left:auto;margin-right:auto}
+        .gps-strict-actions{display:flex;flex-direction:column;gap:10px}
+
+        /* V2.1: Badge cuenta de platos por restaurante en búsqueda/categoría */
+        .rest-compact-meta .badge-count{background:var(--acc-soft);color:var(--acc);font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:0.02em}
+
+        /* V2.3: Banner de advertencia "falta ubicación" en checkout */
+        .loc-missing-banner{margin:10px 0 14px;padding:14px 16px;background:rgba(255,179,0,0.08);border:1.5px solid rgba(255,179,0,0.4);border-radius:14px;display:flex;align-items:flex-start;gap:12px}
+        .loc-missing-icon{font-size:1.35rem;flex-shrink:0;margin-top:-1px}
+        .loc-missing-content{flex:1;min-width:0}
+        .loc-missing-title{font-weight:900;font-size:0.9rem;color:#FFB800;margin-bottom:2px;letter-spacing:-0.01em}
+        .loc-missing-text{font-size:0.78rem;color:var(--gris-2);line-height:1.4;font-weight:600}
+        @keyframes loc-hint-pulse{0%{box-shadow:0 0 0 0 rgba(184,255,0,0.7),0 0 0 0 rgba(184,255,0,0)}70%{box-shadow:0 0 0 10px rgba(184,255,0,0),0 0 30px rgba(184,255,0,0.2)}100%{box-shadow:0 0 0 0 rgba(184,255,0,0)}}
+        .loc-addr-input.pulse-hint,.btn-gps-main.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
+        .loc-section.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
+
+        .btn-wa-need-loc{background:var(--card);color:var(--acc);border:1.5px dashed var(--acc);box-shadow:none}
+        .btn-wa-need-loc:active{background:var(--acc-soft)}
+
+        /* V2.1: Banner de filtro activo dentro del menú del restaurante */
+        .rest-filter-banner{margin:10px 14px 4px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(184,255,0,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.78rem;font-weight:700;color:var(--acc);letter-spacing:-0.01em}
+
+        /* V3.0: Grilla 3 columnas (home default) — con soporte de imagen/logo */
+        .grid3-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 12px 10px}
+        .grid3-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s;display:flex;flex-direction:column;position:relative}
+        .grid3-card:active{transform:scale(0.95)}
+        .grid3-top{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden}
+        .grid3-emoji{position:relative;z-index:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
+        .grid3-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;background:var(--card2)}
+        .grid3-body{padding:7px 9px 9px;min-height:48px}
+        .grid3-name{font-weight:800;font-size:0.75rem;line-height:1.15;color:var(--texto);letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.72em}
+        .grid3-meta{font-size:0.6rem;color:var(--gris-2);font-weight:700;margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;line-height:1.2}
+        .grid3-badge-count{background:var(--acc-soft);color:var(--acc);font-size:0.56rem;font-weight:900;padding:1px 6px;border-radius:20px;letter-spacing:0.02em}
+        .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+        .rest-filter-banner-text{flex:1;line-height:1.35}
+        .rest-filter-banner-text strong{color:var(--acc);font-weight:900}
+        .rest-filter-banner button{background:rgba(184,255,0,0.15);border:1px solid rgba(184,255,0,0.3);color:var(--acc);font-size:0.7rem;font-weight:800;padding:6px 11px;border-radius:100px;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all 0.15s;letter-spacing:-0.01em}
+        .rest-filter-banner button:active{transform:scale(0.96);background:rgba(184,255,0,0.25)}
     </style>
 </head>
 <body>
@@ -438,16 +562,10 @@
         window._clientGPS=null;
         window._clientAddr=''; // CAMBIO 3: dirección de texto
 
-        if(!token){
-            document.getElementById('gps-welcome').style.display='none';
-            app.style.display='block';
-            app.innerHTML='';
-            showError('Link invalido','Este enlace no es valido. Solicita uno nuevo por WhatsApp.');
-            return;
-        }
-
-        // Marcar visita y cargar el menú directamente (sin pantalla de bienvenida).
+        // V2: sin token también funciona — es el acceso "directo a la app"
+        // Marcar visita (si hay token) y cargar catálogo completo.
         // GPS opcional vía banner discreto en la home.
+        try{console.log('%cDEWAN menu-v2.html · build 2.9 · '+new Date().toISOString(),'color:#B8FF00;font-weight:bold')}catch(e){}
         markEtapa('abrio');
         loadSession();
 
@@ -503,6 +621,7 @@
             _etapaEnviada=_etapaEnviada||{};
             if(_etapaEnviada[etapa]) return;
             _etapaEnviada[etapa]=true;
+            if(!token) return; // V2: sin token (acceso directo) no trackeamos etapas
             try{
                 var body={etapa_actual:etapa,etapa_at:new Date().toISOString()};
                 if(etapa==='abrio'){body.visto=true;body.visto_at=new Date().toISOString();}
@@ -514,22 +633,77 @@
             }catch(e){}
         }
 
+        // V2: Helpers Supabase
+        function supaHeaders(){return {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}
+
+        // V2: Normaliza restaurante de la tabla "restaurantes" al shape que el render espera
+        function normalizeRest(r){
+            return {
+                id:r.id, nombre:r.nombre, direccion:r.direccion, telefono:r.telefono,
+                horario:r.horario, categoria:r.categoria, activo:r.activo,
+                tipo_restaurante:r.tipo_restaurante,
+                productos:[],
+                distancia_km:null, tiempo_estimado_min:null, precio_delivery:null,
+                restaurante_lat:r.latitud, restaurante_lng:r.longitud
+            };
+        }
+
+        // V2: Cargar TODOS los restaurantes activos + (si hay token) la session para tracking/prefill
         function loadSession(){
-            fetch(SB_URL+'/rest/v1/links_sesion?token=eq.'+token+'&select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
-            .then(function(r){return r.json()})
-            .then(function(data){
-                if(!data||!data.length){showError('Enlace no encontrado','Este enlace no existe o ha expirado.');return}
-                var s=data[0];
-                if(s.expira_at&&new Date(s.expira_at)<new Date()){showError('Enlace expirado','Este enlace ha expirado. Solicita uno nuevo.');return}
-                sessionData=s;
-                // CAMBIO 2: Restaurar carrito de localStorage
+            var restsReq=fetch(SB_URL+'/rest/v1/restaurantes?select=*&activo=eq.true&order=nombre.asc',{headers:supaHeaders()})
+                .then(function(r){return r.json()});
+            var almReq=fetch(SB_URL+'/rest/v1/almuerzos_hoy?select=*',{headers:supaHeaders()})
+                .then(function(r){return r.json()}).catch(function(){return[]});
+            var sessReq=token
+                ? fetch(SB_URL+'/rest/v1/links_sesion?token=eq.'+token+'&select=*',{headers:supaHeaders()}).then(function(r){return r.json()}).catch(function(){return []})
+                : Promise.resolve([]);
+            Promise.all([restsReq,almReq,sessReq]).then(function(arr){
+                var raw=arr[0]||[];
+                var alm=Array.isArray(arr[1])?arr[1]:[];
+                var sess=(arr[2]&&arr[2][0])||null;
+                if(!raw.length){showError('Sin datos','No pudimos cargar los restaurantes.');return}
+                if(sess&&sess.expira_at&&new Date(sess.expira_at)<new Date()){sess=null}
+
+                // Indexar almuerzos_hoy por restaurante_id para lookup rápido
+                window._almuerzosHoy={};
+                alm.forEach(function(a){if(a.restaurante_id) window._almuerzosHoy[a.restaurante_id]=a});
+
+                sessionData={
+                    resultados:raw.map(normalizeRest),
+                    busqueda_texto:(sess&&sess.busqueda_texto)||'',
+                    _session:sess,
+                    expira_at:sess?sess.expira_at:null
+                };
                 restoreCart();
                 renderHome();
-            }).catch(function(){showError('Error de conexion','No pudimos cargar los datos.')});
+            }).catch(function(err){
+                console.error(err);
+                showError('Error de conexion','No pudimos cargar los datos. Revisa tu internet.');
+            });
+        }
+
+        // V2: Cargar platos de un restaurante (on-demand, cacheado en memoria)
+        window._menuCache=window._menuCache||{};
+        function loadMenuItemsForRest(restId){
+            if(window._menuCache[restId]) return Promise.resolve(window._menuCache[restId]);
+            var url=SB_URL+'/rest/v1/menu_items?select=*&restaurante_id=eq.'+encodeURIComponent(restId)+'&disponible=eq.true&order=categoria_menu.asc,nombre_item.asc';
+            return fetch(url,{headers:supaHeaders()})
+                .then(function(r){return r.json()})
+                .then(function(items){
+                    var norm=(items||[]).map(function(it){return {
+                        id:it.id,
+                        nombre:it.nombre_item,
+                        precio:Number(it.precio)||0,
+                        categoria:it.categoria_menu||'General',
+                        descripcion:it.descripcion||''
+                    }});
+                    window._menuCache[restId]=norm;
+                    return norm;
+                });
         }
 
         // ── CAMBIO 2: localStorage para carrito ──
-        function getCartKey(){return 'dewan_cart_'+token}
+        function getCartKey(){return 'dewan_cart_'+(token||'anon_v2')}
         function saveCart(){
             try{
                 var data={items:window._cart,ts:Date.now()};
@@ -561,19 +735,20 @@
         function recalcDistances(rests){
             if(!window._clientGPS) return rests;
             var TARIFA_BASE=1.50,KM_INCLUIDOS=3,PRECIO_POR_KM=0.50,FACTOR_RUTA=1.3;
-            return rests.map(function(r){
-                var copy={nombre:r.nombre,productos:r.productos,distancia_km:r.distancia_km,tiempo_estimado_min:r.tiempo_estimado_min,precio_delivery:r.precio_delivery,restaurante_lat:r.restaurante_lat,restaurante_lng:r.restaurante_lng,horario:r.horario};
+            // V2.7 FIX: mutar el objeto original en vez de copiar a mano
+            // (antes se perdía r.id y otros campos, rompiendo la carga de menu_items)
+            rests.forEach(function(r){
                 if(r.restaurante_lat&&r.restaurante_lng){
                     var distLineal=haversine(window._clientGPS.lat,window._clientGPS.lng,parseFloat(r.restaurante_lat),parseFloat(r.restaurante_lng));
                     var distRuta=distLineal*FACTOR_RUTA;
-                    copy.distancia_km=Math.round(distRuta*10)/10;
-                    copy.tiempo_estimado_min=Math.round(15+distRuta*3);
+                    r.distancia_km=Math.round(distRuta*10)/10;
+                    r.tiempo_estimado_min=Math.round(15+distRuta*3);
                     var precio=TARIFA_BASE;
                     if(distRuta>KM_INCLUIDOS) precio=TARIFA_BASE+((distRuta-KM_INCLUIDOS)*PRECIO_POR_KM);
-                    copy.precio_delivery=Math.round(precio*100)/100;
+                    r.precio_delivery=Math.round(precio*100)/100;
                 }
-                return copy;
             });
+            return rests;
         }
 
         // ── Helpers para matching singular/plural ──
@@ -646,8 +821,134 @@
         }
 
         // ── HOME VIEW ──
+        // V2: Categorías del catálogo (mapeo keyword-based)
+        // IMPORTANTE: PostgreSQL ILIKE no hace accent-folding, por eso incluimos
+        // las variantes con tilde y sin tilde para que la query server las matchee.
+        var CAT_MAP_V2={
+            pollo:{icon:'🍗',label:'Pollo',kw:['pollo','pollos','broster','alita','alitas','presa','presas','chicken','polleria','pollería']},
+            pizza:{icon:'🍕',label:'Pizza',kw:['pizza','pizzas','pizzer']},
+            almuerzo:{icon:'🍱',label:'Almuerzo',kw:['almuerzo','almuerzos','menú','menu','menús','menus','ejecutivo','ejecutivos']},
+            mariscos:{icon:'🐟',label:'Mariscos',kw:['marisco','mariscos','ceviche','ceviches','encebollado','pescado','camaron','camarón','camarones','camarónes','concha','langosta','cangrejo','atun','atún']},
+            hamburguesa:{icon:'🍔',label:'Hamburguesas',kw:['hambur','burger']},
+            postres:{icon:'🧁',label:'Postres',kw:['postre','postres','helado','helados','torta','tortas','pastel','pasteles','pasteleria','pastelería','bizcocho','bizcochos','dulce','dulces','pastry','cupcake','cheesecake','bolleria','bollería']},
+            bebidas:{icon:'🥤',label:'Bebidas',kw:['bebida','bebidas','jugo','jugos','refresco','refrescos','gaseosa','gaseosas','cafe','café','cafeteria','cafetería','batido','batidos','smoothie','agua']}
+        };
+        var CAT_KEYS_V2=['pollo','pizza','almuerzo','mariscos','hamburguesa','postres','bebidas'];
+
+        function matchCategoryV2(r,catKey){
+            var cm=CAT_MAP_V2[catKey];if(!cm)return false;
+            var n=removeAccents((r.nombre||'').toLowerCase());
+            var c=removeAccents((r.categoria||'').toLowerCase());
+            var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
+            return cm.kw.some(function(k){
+                var kw=removeAccents(k);
+                return n.indexOf(kw)!==-1||c.indexOf(kw)!==-1||t.indexOf(kw)!==-1;
+            });
+        }
+
+        function greetingV2(){
+            var h=new Date().getHours();
+            if(h<11) return {g:'Buenos días',s:'¿Qué desayunamos?'};
+            if(h<15) return {g:'Buenas tardes',s:'¿Qué almorzamos?'};
+            if(h<19) return {g:'Buenas tardes',s:'¿Te provoca un antojo?'};
+            return {g:'Buenas noches',s:'¿Qué cenamos?'};
+        }
+
+        // V2.8: Ventana horaria para almuerzos del día (12:00 a 15:00)
+        function isAlmuerzoHour(){
+            var h=new Date().getHours();
+            return h>=12&&h<15;
+        }
+
+        // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
+        function fetchAllMatchingPlates(orsParam,selectCols){
+            var sel=selectCols||'restaurante_id,restaurante_nombre,nombre_item,categoria_menu,descripcion,precio';
+            var acc=[];
+            function page(offset){
+                var url=SB_URL+'/rest/v1/menu_items?select='+sel+'&disponible=eq.true&or=('+orsParam+')&order=restaurante_id&limit=1000&offset='+offset;
+                return fetch(url,{headers:supaHeaders()}).then(function(r){return r.json()}).then(function(items){
+                    items=Array.isArray(items)?items:[];
+                    acc=acc.concat(items);
+                    if(items.length===1000&&offset<4000) return page(offset+1000);
+                    return acc;
+                });
+            }
+            return page(0);
+        }
+
+        // V2.1: cache de resultados por categoría
+        window._catRestsCache=window._catRestsCache||{};
+        window._catLoading=false;
+
+        window.toggleCategoryV2=function(key){
+            if(window._activeCat===key){
+                window._activeCat=null;
+                renderHome();
+                try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}
+                return;
+            }
+            window._activeCat=key;
+            try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}
+            if(window._catRestsCache[key]){
+                renderHome();
+                return;
+            }
+            // Query a menu_items con todas las keywords de la categoría (paginada)
+            window._catLoading=true;
+            renderHome();
+            var cm=CAT_MAP_V2[key];
+            var ors=cm.kw.map(function(k){
+                var kEnc=encodeURIComponent('%'+k+'%');
+                return 'nombre_item.ilike.'+kEnc+',descripcion.ilike.'+kEnc+',categoria_menu.ilike.'+kEnc;
+            }).join(',');
+            fetchAllMatchingPlates(ors)
+                .then(function(plates){
+                    var rests=aggregatePlatesByRest(plates);
+                    // V2.5 + V2.8: Para 'almuerzo', incluir restaurantes de almuerzos_hoy y boostearlos,
+                    // pero SOLO durante horario de almuerzo (12:00–15:00)
+                    if(key==='almuerzo'&&window._almuerzosHoy&&isAlmuerzoHour()){
+                        var already={};
+                        rests.forEach(function(r){if(r.id) already[r.id]=true});
+                        Object.keys(window._almuerzosHoy).forEach(function(rid){
+                            if(already[rid]) return;
+                            var rFull=(sessionData.resultados||[]).find(function(x){return x.id===rid});
+                            if(rFull){
+                                var enriched=Object.assign({},rFull,{_matchCount:1,_matchItems:[]});
+                                rests.push(enriched);
+                            }
+                        });
+                        rests.forEach(function(r){
+                            if(window._almuerzosHoy[r.id]) r._hasAlmuerzoHoy=true;
+                        });
+                    }
+                    rankRestsByKeywords(rests,cm.kw);
+                    // Boost: los que tienen almuerzo_hoy suben como especialistas reales (solo en horario)
+                    if(key==='almuerzo'&&isAlmuerzoHour()){
+                        rests.forEach(function(r){
+                            if(r._hasAlmuerzoHoy){r._score=(r._score||0)+15000;r._specialist=true}
+                        });
+                        rests.sort(function(a,b){
+                            var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                            var va=sa===true?0:sa===null?1:2;
+                            var vb=sb===true?0:sb===null?1:2;
+                            if(va!==vb) return va-vb;
+                            if(a._score!==b._score) return b._score-a._score;
+                            return (a.distancia_km||999)-(b.distancia_km||999);
+                        });
+                    }
+                    window._catRestsCache[key]=rests;
+                    window._catLoading=false;
+                    if(window._activeCat===key) renderHome();
+                }).catch(function(){
+                    window._catRestsCache[key]=[];
+                    window._catLoading=false;
+                    if(window._activeCat===key) renderHome();
+                });
+        };
+
         window.renderHome=function(){
             currentView='home';
+            window._restFilter=null; // V2.1: limpiar filtro de menú al volver al home
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
             var busqTexto=(sessionData.busqueda_texto||'').toLowerCase();
             if(busqTexto&&busqTexto!=='comida'){
@@ -655,17 +956,25 @@
                 var busqWords=busqTexto.split(/\s+/).map(function(w){return removeAccents(normWord(w))});
                 rests.forEach(function(r){
                     var nameNorm=removeAccents(r.nombre.toLowerCase());
-                    var nameMatch=busqWords.some(function(w){return w.length>2&&nameNorm.indexOf(w)!==-1});
-                    var prods=r.productos||[];
-                    var matchCount=0;
-                    prods.forEach(function(p){
-                        var pn=removeAccents((p.nombre||'').toLowerCase());
-                        if(busqWords.some(function(w){return w.length>2&&pn.indexOf(w)!==-1}))matchCount++;
-                    });
-                    var pct=prods.length?matchCount/prods.length:0;
-                    r._relev=nameMatch?0:(pct>0.4?1:(matchCount>0?2:3));
+                    var catNorm=removeAccents((r.categoria||'').toLowerCase());
+                    var nameMatch=busqWords.some(function(w){return w.length>2&&(nameNorm.indexOf(w)!==-1||catNorm.indexOf(w)!==-1)});
+                    r._relev=nameMatch?0:3;
                 });
             }
+
+            // Filtro de categoría activo: usar resultado async de menu_items (más completo)
+            if(window._activeCat){
+                if(window._catRestsCache[window._activeCat]){
+                    rests=window._catRestsCache[window._activeCat].slice();
+                } else if(window._catLoading){
+                    // Mantener rests vacío para mostrar skeletons
+                    rests=[];
+                } else {
+                    // Fallback: filtro client-side por keywords si la query falló
+                    rests=rests.filter(function(r){return matchCategoryV2(r,window._activeCat)});
+                }
+            }
+
             rests.sort(function(a,b){
                 var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
                 var va=sa===true?0:sa===null?1:2;
@@ -674,91 +983,127 @@
                 var ra=a._relev!=null?a._relev:3;
                 var rb=b._relev!=null?b._relev:3;
                 if(ra!==rb) return ra-rb;
-                // Tier por catálogo: restaurantes con más de 3 platos primero
-                var pa=(a.productos||[]).length>3?0:1;
-                var pb=(b.productos||[]).length>3?0:1;
-                return pa-pb;
+                return 0;
             });
-            var busq=sessionData.busqueda_texto||'Comida';
+
             var hasGPS=!!window._clientGPS;
-            var h='<div class="header-sticky">'+
-                '<div class="header-top">'+
-                    '<div><div class="header-loc">📍 Riobamba, Ecuador</div>'+
-                    '<div class="header-title">'+esc(busq)+' 🍽️</div></div>'+
-                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒 '+(window._cart.length?cartTotals().items+' items':'Vacio')+'</button>'+
+            var gr=greetingV2();
+            var searchPrefill=(sessionData.busqueda_texto||'').trim();
+
+            var h='<div class="home-v2-top">'+
+                '<div class="home-v2-row">'+
+                    '<div style="flex:1;min-width:0">'+
+                        '<div class="home-v2-loc">📍 Riobamba, Ecuador</div>'+
+                        '<div class="home-v2-greeting">'+gr.g+'</div>'+
+                        '<div class="home-v2-greeting-sub">'+gr.s+'</div>'+
+                    '</div>'+
+                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">🛒 '+(window._cart.length?cartTotals().items+' items':'Vacio')+'</button>'+
                 '</div>'+
-                '<div class="sort-bar">'+
-                    pillBtn('distancia','📍 Mas cerca',!hasGPS)+pillBtn('precio','💰 Menor precio',false)+pillBtn('delivery','🚚 Menor delivery',false)+
-                '</div>'+
+                '<button class="search-hero" onclick="showSearch()">'+
+                    '<span class="search-hero-icon">🔍</span>'+
+                    '<span class="search-hero-text">'+(searchPrefill?esc(searchPrefill):'¿Qué se te antoja?')+'</span>'+
+                    '<span class="search-hero-tag">BUSCAR</span>'+
+                '</button>'+
             '</div>';
 
-            // CAMBIO 1: Banner GPS si no tiene ubicación y no fue cerrado
+            // Chips de categoría
+            h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
+            CAT_KEYS_V2.forEach(function(k){
+                var c=CAT_MAP_V2[k];
+                var active=window._activeCat===k;
+                h+='<button class="cat-chip'+(active?' active':'')+'" onclick="toggleCategoryV2(\''+k+'\')">'+
+                    '<span class="cat-chip-icon">'+c.icon+'</span>'+
+                    '<span>'+c.label+'</span>'+
+                '</button>';
+            });
+            h+='</div></div>';
+
+            // Banner filtro activo
+            if(window._activeCat){
+                var cm=CAT_MAP_V2[window._activeCat];
+                var bannerCount=window._catLoading?'…buscando':rests.length+' restaurante'+(rests.length===1?'':'s');
+                h+='<div class="filter-banner-v2">'+
+                    '<span>'+cm.icon+' '+cm.label+' · '+bannerCount+'</span>'+
+                    '<button onclick="toggleCategoryV2(\''+window._activeCat+'\')" aria-label="Quitar filtro">✕</button>'+
+                '</div>';
+                // V2.8: Aviso fuera de horario de almuerzo
+                if(window._activeCat==='almuerzo'&&!isAlmuerzoHour()){
+                    h+='<div class="loc-missing-banner" style="margin:0 14px 10px">'+
+                        '<div class="loc-missing-icon">🕒</div>'+
+                        '<div class="loc-missing-content">'+
+                            '<div class="loc-missing-title">Almuerzos del día: 12:00 a 15:00</div>'+
+                            '<div class="loc-missing-text">Fuera de este horario no aparecen los combos configurables. Estos restaurantes venden menús y almuerzos regulares.</div>'+
+                        '</div>'+
+                    '</div>';
+                }
+            }
+
+            // Banner GPS (si no tiene, no está descartado)
             if(!hasGPS){
                 var dismissed=false;
                 try{dismissed=sessionStorage.getItem('dewan_gps_dismissed')==='1'}catch(e){}
                 if(!dismissed){
                     h+='<div class="gps-banner" id="gps-banner" onclick="requestGPSFromBanner(event)">'+
                         '<span style="font-size:1.1rem">📍</span>'+
-                        '<span class="gps-banner-text">Activa tu ubicación para ver distancias exactas y delivery real</span>'+
+                        '<span class="gps-banner-text">Activa tu ubicación para ver distancias y delivery real</span>'+
                         '<button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>'+
                     '</div>';
                 }
             }
 
-            // ── Carrusel horizontal (solo si hay ≥ 6 restaurantes) ──
-            if(rests.length>=6){
-                var topRests=rests.slice(0,6);
-                var carruselTitle=hasGPS?'📍 Cerca de ti':'✨ Descubre';
-                var carruselSub=hasGPS?'6 más próximos':'Selección';
-                h+='<section class="home-carrusel">'+
-                    '<div class="home-carrusel-head">'+
-                        '<span class="home-carrusel-title">'+carruselTitle+'</span>'+
-                        '<span class="home-carrusel-sub">'+carruselSub+'</span>'+
-                    '</div>'+
-                    '<div class="home-carrusel-scroll">';
-                topRests.forEach(function(r,idx){
-                    var color=getColor(idx);
-                    var isOpen=isRestOpen(r.horario);
-                    h+='<div class="carrusel-card" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'25">'+
-                        '<div class="carrusel-top" style="background:linear-gradient(135deg,'+color+'2E 0%,'+color+'10 100%)">'+
-                            getEmoji(r.nombre)+
-                            (isOpen===false?'<span class="carrusel-closed">CERRADO</span>':'')+
-                        '</div>'+
-                        '<div class="carrusel-body">'+
-                            '<div class="carrusel-name">'+esc(r.nombre)+'</div>'+
-                            '<div class="carrusel-meta">'+
-                                (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                                (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
-                            '</div>'+
-                        '</div>'+
-                    '</div>';
-                });
-                h+='</div></section>';
-                h+='<div class="list-section-title">Todos los restaurantes · '+rests.length+'</div>';
+            // Sort pills (solo si no hay filtro de categoría activo, para no abarrotar)
+            if(!window._activeCat){
+                h+='<div class="sort-bar">'+
+                    pillBtn('distancia','📍 Mas cerca',!hasGPS)+pillBtn('precio','💰 Menor precio',false)+pillBtn('delivery','🚚 Menor delivery',false)+
+                '</div>';
             }
 
-            // ── Lista compacta (todos) ──
-            h+='<div style="padding:4px 0 10px">';
-            rests.forEach(function(r,idx){
-                var color=getColor(idx);
-                var metaParts=[];
-                if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
-                if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
-                if(window._clientGPS) metaParts.push('<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>');
-                metaParts.push('<span>🍽 '+((r.productos||[]).length)+'</span>');
-                h+='<div class="rest-compact" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:'+color+'22">'+
-                    '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
-                    '<div class="rest-compact-body">'+
-                        '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
-                        '<div class="rest-compact-info">'+
-                            '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
-                            '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
-                        '</div>'+
-                        '<span class="rest-compact-chevron">›</span>'+
-                    '</div>'+
+            // V3.0: Skeleton mientras carga categoría (skeletons en grilla 3 para consistencia)
+            if(window._activeCat&&window._catLoading){
+                h+='<div class="grid3-wrap">';
+                for(var sk=0;sk<9;sk++) h+='<div class="grid3-card" style="aspect-ratio:1/1.28;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:skel-shimmer 1.6s ease-in-out infinite"></div>';
+                h+='</div>';
+            } else if(rests.length===0){
+                // Empty state cuando filtro vacío
+                h+='<div class="search-empty-state-v2">'+
+                    '<div class="search-empty-icon">🔎</div>'+
+                    '<div class="search-empty-title">Sin resultados</div>'+
+                    '<div class="search-empty-text">No encontramos restaurantes con ese filtro. Prueba con otra categoría o búsqueda libre.</div>'+
                 '</div>';
-            });
-            h+='</div>';
+            }
+
+            // V3.0: Grilla 3 columnas (con split especialistas/también ofrecen cuando hay categoría)
+            if(!(window._activeCat&&window._catLoading)){
+                if(window._activeCat){
+                    var cmActive=CAT_MAP_V2[window._activeCat];
+                    var parts=partitionRests(rests);
+                    var hasSpecs=parts.specs.length>0;
+                    var hasBoth=hasSpecs&&parts.others.length>0;
+                    var gIdx=0;
+                    function catCmd(name){return 'openRestCatFiltered(\''+jsEsc(name)+'\',\''+window._activeCat+'\')'}
+
+                    if(hasSpecs){
+                        h+='<div class="list-section-title">'+(hasBoth?'✨ Especialistas en '+cmActive.label:'🏪 Resultados')+'</div>';
+                        h+='<div class="grid3-wrap">';
+                        parts.specs.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        h+='</div>';
+                    }
+                    if(parts.others.length){
+                        h+='<div class="list-section-title">'+(hasSpecs?'🏪 También ofrecen '+cmActive.label:'🏪 Resultados')+'</div>';
+                        h+='<div class="grid3-wrap">';
+                        parts.others.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        h+='</div>';
+                    }
+                } else {
+                    // Home sin filtro: título + grilla de todos
+                    h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+rests.length+'</div>';
+                    h+='<div class="grid3-wrap">';
+                    rests.forEach(function(r,idx){
+                        h+=renderRestCardGrid(r,idx,'openRest(\''+jsEsc(r.nombre)+'\')');
+                    });
+                    h+='</div>';
+                }
+            }
             h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
             app.innerHTML=h;
             bindSortEvents();
@@ -822,8 +1167,88 @@
             var r=null;var ridx=0;
             for(var i=0;i<rests.length;i++){if(rests[i].nombre===nombre){r=rests[i];ridx=i;break;}}
             if(!r)return;
+
+            // V2: Si no tenemos los platos cargados, mostrar loading y cargarlos
+            if((!r.productos||r.productos.length===0)&&r.id&&!r._loadAttempted){
+                r._loadAttempted=true;
+                var colorLoad=getColor(ridx);
+                app.innerHTML='<div class="rest-detail-header" style="background:linear-gradient(180deg,'+colorLoad+'20 0%,var(--bg) 100%)">'+
+                    '<div class="rest-detail-nav">'+
+                        '<button class="btn-back" onclick="renderHome()">←</button>'+
+                        '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒</button>'+
+                    '</div>'+
+                    '<div class="rest-detail-info">'+
+                        '<div class="rest-detail-avatar" style="background:'+colorLoad+'20;border:2px solid '+colorLoad+'40">'+getEmoji(r.nombre)+'</div>'+
+                        '<div style="flex:1"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div></div>'+
+                    '</div>'+
+                '</div>'+
+                '<div style="padding:10px 14px">'+
+                    '<div class="skel-row" style="margin:10px 0"></div>'+
+                    '<div class="skel-row" style="margin:10px 0"></div>'+
+                    '<div class="skel-row" style="margin:10px 0"></div>'+
+                    '<div class="skel-row" style="margin:10px 0"></div>'+
+                '</div>';
+                loadMenuItemsForRest(r.id).then(function(items){
+                    r.productos=items||[];
+                    if(currentView==='rest'&&currentRestIdx===nombre) openRest(nombre);
+                }).catch(function(){
+                    // V2.9: reset del flag para permitir reintento (el usuario puede tocar atrás y entrar de nuevo)
+                    r._loadAttempted=false;
+                    r.productos=[];
+                    if(currentView==='rest'&&currentRestIdx===nombre) openRest(nombre);
+                });
+                return;
+            }
+
+            // V2.5: Si este restaurante tiene almuerzo configurable hoy, inyectarlo al inicio del menú
+            // V2.8: solo durante horario de almuerzo (12:00–15:00)
+            var almHoy=window._almuerzosHoy&&window._almuerzosHoy[r.id];
+            if(almHoy&&almHoy.opciones&&almHoy.opciones.length&&!r._almuerzoInjected&&isAlmuerzoHour()){
+                var almProduct={
+                    nombre:'Almuerzo del día',
+                    precio:Number(almHoy.precio)||0,
+                    descripcion:'ALMUERZO_OPTS:'+JSON.stringify({precio:Number(almHoy.precio)||0,opciones:almHoy.opciones}),
+                    categoria:'🍱 Almuerzo del día'
+                };
+                r.productos=[almProduct].concat(r.productos||[]);
+                r._almuerzoInjected=true;
+            }
+
             var color=getColor(ridx);
-            var prods=r.productos||[];
+            var allProds=r.productos||[];
+            var prods=allProds;
+            var filterLabel='';
+            // V2.1: aplicar filtro si existe (de búsqueda o categoría)
+            if(window._restFilter&&allProds.length){
+                if(window._restFilter.type==='q'){
+                    var qf=removeAccents((window._restFilter.value||'').toLowerCase());
+                    if(qf){
+                        prods=allProds.filter(function(p){
+                            var n=removeAccents((p.nombre||'').toLowerCase());
+                            var d=removeAccents((p.descripcion||'').toLowerCase());
+                            var c=removeAccents((p.categoria||'').toLowerCase());
+                            return n.indexOf(qf)!==-1||d.indexOf(qf)!==-1||c.indexOf(qf)!==-1;
+                        });
+                        filterLabel='"'+window._restFilter.value+'"';
+                    }
+                } else if(window._restFilter.type==='cat'){
+                    var cmf=CAT_MAP_V2[window._restFilter.value];
+                    if(cmf){
+                        prods=allProds.filter(function(p){
+                            var n=removeAccents((p.nombre||'').toLowerCase());
+                            var d=removeAccents((p.descripcion||'').toLowerCase());
+                            var c=removeAccents((p.categoria||'').toLowerCase());
+                            return cmf.kw.some(function(k){
+                                var kw=removeAccents(k);
+                                return n.indexOf(kw)!==-1||d.indexOf(kw)!==-1||c.indexOf(kw)!==-1;
+                            });
+                        });
+                        filterLabel=cmf.icon+' '+cmf.label;
+                    }
+                }
+                // Si el filtro no devolvió nada, mostrar el menú completo
+                if(!prods.length) prods=allProds;
+            }
 
             var h='<div class="rest-detail-header" style="background:linear-gradient(180deg,'+color+'20 0%,var(--bg) 100%)">'+
                 '<div class="rest-detail-nav">'+
@@ -910,7 +1335,14 @@
             }
             h+='</div>';
 
-            h+='<div class="menu-count">MENU · '+prods.length+' PLATOS</div>';
+            // V2.1: Banner del filtro activo (si lo hay)
+            if(filterLabel&&prods.length<allProds.length){
+                h+='<div class="rest-filter-banner">'+
+                    '<div class="rest-filter-banner-text">🔎 Mostrando <strong>'+prods.length+'</strong> plato'+(prods.length===1?'':'s')+' con '+filterLabel+'</div>'+
+                    '<button onclick="clearRestFilter()">Ver todo el menú</button>'+
+                '</div>';
+            }
+            h+='<div class="menu-count">MENU · '+prods.length+' PLATOS'+(filterLabel&&prods.length<allProds.length?' (de '+allProds.length+')':'')+'</div>';
             h+='<div class="menu-section">';
 
             cats.forEach(function(cat){
@@ -975,6 +1407,339 @@
             app.innerHTML=h;
             setupCatScrollSpy();
             updateCartFloat();
+        };
+
+        // ═══════════════════════════════════════════════════════════
+        // V2: SEARCH SCREEN — búsqueda dedicada con resultados en vivo
+        // ═══════════════════════════════════════════════════════════
+        var _searchTimer=null;
+        function getRecentSearches(){
+            try{var raw=localStorage.getItem('dewan_recent_searches');return raw?JSON.parse(raw).slice(0,6):[]}catch(e){return[]}
+        }
+        function saveRecentSearch(q){
+            q=(q||'').trim();
+            if(!q||q.length<2) return;
+            var recent=getRecentSearches().filter(function(r){return r.toLowerCase()!==q.toLowerCase()});
+            recent.unshift(q);
+            recent=recent.slice(0,6);
+            try{localStorage.setItem('dewan_recent_searches',JSON.stringify(recent))}catch(e){}
+        }
+        window.removeRecentSearch=function(q){
+            var recent=getRecentSearches().filter(function(r){return r!==q});
+            try{localStorage.setItem('dewan_recent_searches',JSON.stringify(recent))}catch(e){}
+            renderSearchIdle();
+        };
+
+        var SEARCH_SUGGESTIONS=['bolón','encebollado','almuerzo','pollo broster','pizza','hamburguesa','chaulafan','ceviche','desayuno','café','postres','alitas'];
+
+        window.showSearch=function(prefill){
+            currentView='search';
+            var q=(prefill!=null?prefill:(sessionData.busqueda_texto||'')).trim();
+            var h='<div class="search-header-v2">'+
+                '<button class="btn-back" onclick="renderHome()" aria-label="Volver">←</button>'+
+                '<div class="search-input-wrap">'+
+                    '<span class="search-input-wrap-icon">🔍</span>'+
+                    '<input class="search-input" id="search-input" type="search" placeholder="Platos o restaurantes…" autocomplete="off" />'+
+                    '<button class="search-clear" id="search-clear" onclick="clearSearchInput()" aria-label="Limpiar">✕</button>'+
+                '</div>'+
+            '</div>'+
+            '<div id="search-results-area"></div>';
+            app.innerHTML=h;
+            var input=document.getElementById('search-input');
+            input.value=q;
+            input.addEventListener('input',handleSearchInput);
+            input.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();input.blur()}});
+            setTimeout(function(){input.focus()},80);
+            if(q){
+                document.getElementById('search-clear').classList.add('visible');
+                doSearch(q);
+            } else {
+                renderSearchIdle();
+            }
+        };
+
+        function handleSearchInput(e){
+            var q=e.target.value;
+            document.getElementById('search-clear').classList.toggle('visible',!!q);
+            clearTimeout(_searchTimer);
+            if(!q.trim()){renderSearchIdle();return}
+            _searchTimer=setTimeout(function(){doSearch(q)},250);
+        }
+
+        window.clearSearchInput=function(){
+            var input=document.getElementById('search-input');
+            input.value='';
+            document.getElementById('search-clear').classList.remove('visible');
+            renderSearchIdle();
+            input.focus();
+        };
+
+        window.runSearchFromChip=function(q){
+            var input=document.getElementById('search-input');
+            if(input){input.value=q;document.getElementById('search-clear').classList.add('visible')}
+            doSearch(q);
+        };
+
+        function renderSearchIdle(){
+            var area=document.getElementById('search-results-area');
+            if(!area) return;
+            var recent=getRecentSearches();
+            var html='';
+            if(recent.length){
+                html+='<div class="search-section-title-v2">🕒 Recientes</div>';
+                html+='<div class="chip-row">';
+                recent.forEach(function(r){
+                    html+='<button class="chip-btn" onclick="runSearchFromChip(\''+jsEsc(r)+'\')">'+esc(r)+'<span class="chip-btn-rm" onclick="event.stopPropagation();removeRecentSearch(\''+jsEsc(r)+'\')" aria-label="Quitar">✕</span></button>';
+                });
+                html+='</div>';
+            }
+            html+='<div class="search-section-title-v2">✨ Sugerencias</div>';
+            html+='<div class="chip-row">';
+            SEARCH_SUGGESTIONS.forEach(function(s){
+                html+='<button class="chip-btn" onclick="runSearchFromChip(\''+jsEsc(s)+'\')">'+esc(s)+'</button>';
+            });
+            html+='</div>';
+            area.innerHTML=html;
+        }
+
+        function renderSearchSkeletons(){
+            var area=document.getElementById('search-results-area');
+            if(!area) return;
+            area.innerHTML='<div style="padding:16px 0 0"><div class="skel-row"></div><div class="skel-row"></div><div class="skel-row"></div></div>';
+        }
+
+        // V2.1: Agrupa platos por restaurante_id, devuelve array {rest, count, items}
+        function aggregatePlatesByRest(plates){
+            var byRest={};
+            plates.forEach(function(p){
+                var key=p.restaurante_id||p.restaurante_nombre;
+                if(!key) return;
+                if(!byRest[key]) byRest[key]={id:p.restaurante_id,nombre:p.restaurante_nombre,count:0,items:[]};
+                byRest[key].count++;
+                byRest[key].items.push(p);
+            });
+            // Mapear a objetos restaurante reales (con horario, distancia, etc.)
+            var arr=[];
+            Object.keys(byRest).forEach(function(k){
+                var rb=byRest[k];
+                var r=(sessionData.resultados||[]).find(function(x){return x.id===rb.id||x.nombre===rb.nombre});
+                if(r){
+                    var enriched=Object.assign({},r,{_matchCount:rb.count,_matchItems:rb.items});
+                    arr.push(enriched);
+                }
+            });
+            return arr;
+        }
+
+        function sortRestsByMatch(rests){
+            rests.sort(function(a,b){
+                var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                var va=sa===true?0:sa===null?1:2;
+                var vb=sb===true?0:sb===null?1:2;
+                if(va!==vb) return va-vb;
+                if((a._matchCount||0)!==(b._matchCount||0)) return (b._matchCount||0)-(a._matchCount||0);
+                return (a.distancia_km||999)-(b.distancia_km||999);
+            });
+            return rests;
+        }
+
+        // V2.2: Score de relevancia por keywords (nombre > categoría > platos)
+        // Devuelve un score para rankear, y flagea al restaurante como especialista o no.
+        function scoreRestRelevance(r,keywords){
+            var n=removeAccents((r.nombre||'').toLowerCase());
+            var c=removeAccents((r.categoria||'').toLowerCase());
+            var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
+            var nameMatch=false,catMatch=false;
+            for(var i=0;i<keywords.length;i++){
+                var k=removeAccents((keywords[i]||'').toLowerCase()).trim();
+                if(!k||k.length<2) continue;
+                if(n.indexOf(k)!==-1) nameMatch=true;
+                if(c.indexOf(k)!==-1||t.indexOf(k)!==-1) catMatch=true;
+            }
+            var score=0;
+            if(nameMatch) score+=10000;
+            if(catMatch) score+=3000;
+            score+=(r._matchCount||0)*20;
+            r._score=score;
+            r._specialist=score>=3000;
+            r._nameMatch=nameMatch;
+            r._catMatch=catMatch;
+            return score;
+        }
+
+        function rankRestsByKeywords(rests,keywords){
+            rests.forEach(function(r){scoreRestRelevance(r,keywords)});
+            rests.sort(function(a,b){
+                var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                var va=sa===true?0:sa===null?1:2;
+                var vb=sb===true?0:sb===null?1:2;
+                if(va!==vb) return va-vb;
+                if(a._score!==b._score) return b._score-a._score;
+                return (a.distancia_km||999)-(b.distancia_km||999);
+            });
+            return rests;
+        }
+
+        function partitionRests(rests){
+            var specs=[],others=[];
+            rests.forEach(function(r){
+                if(r._specialist) specs.push(r); else others.push(r);
+            });
+            return {specs:specs,others:others};
+        }
+
+        function doSearch(query){
+            var q=(query||'').trim();
+            if(!q){renderSearchIdle();return}
+            renderSearchSkeletons();
+
+            // 1) Match directo por nombre/categoría del restaurante (client-side)
+            var qNorm=removeAccents(q.toLowerCase());
+            var directRests=(sessionData.resultados||[]).filter(function(r){
+                var n=removeAccents((r.nombre||'').toLowerCase());
+                var c=removeAccents((r.categoria||'').toLowerCase());
+                var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
+                return n.indexOf(qNorm)!==-1||c.indexOf(qNorm)!==-1||t.indexOf(qNorm)!==-1;
+            });
+
+            // 2) Query server-side a menu_items (con ilike), agrupar por restaurante — paginado
+            var enc=encodeURIComponent('%'+q+'%');
+            var ors='nombre_item.ilike.'+enc+',descripcion.ilike.'+enc+',categoria_menu.ilike.'+enc;
+            fetchAllMatchingPlates(ors)
+                .then(function(plates){
+                    var restsByPlates=aggregatePlatesByRest(plates);
+
+                    // 3) Combinar: dedup y rankear por score de relevancia
+                    var seen={};
+                    var combined=[];
+                    directRests.forEach(function(r){if(!seen[r.id||r.nombre]){seen[r.id||r.nombre]=true;combined.push(r)}});
+                    restsByPlates.forEach(function(r){if(!seen[r.id||r.nombre]){seen[r.id||r.nombre]=true;combined.push(r)}});
+                    rankRestsByKeywords(combined,[q]);
+
+                    saveRecentSearch(q);
+                    renderSearchResults(q,combined,plates);
+                }).catch(function(){
+                    saveRecentSearch(q);
+                    renderSearchResults(q,directRests,[]);
+                });
+        }
+
+        function renderRestCardRowV2(r,idx,openCmd){
+            var color=getColor(idx);
+            var metaParts=[];
+            if(r._matchCount) metaParts.push('<span class="badge-count">'+r._matchCount+' plato'+(r._matchCount===1?'':'s')+'</span>');
+            if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
+            if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
+            if(window._clientGPS) metaParts.push('<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>');
+            if(r.categoria&&!r._matchCount) metaParts.push('<span>'+esc(r.categoria)+'</span>');
+            return '<div class="rest-compact" onclick="'+openCmd+'" style="border-color:'+color+'22">'+
+                '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
+                '<div class="rest-compact-body">'+
+                    '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+'</div>'+
+                    '<div class="rest-compact-info">'+
+                        '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
+                        '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
+                    '</div>'+
+                    '<span class="rest-compact-chevron">›</span>'+
+                '</div>'+
+            '</div>';
+        }
+
+        // V3.0: Tarjeta tipo grilla 3 columnas (home default). Muestra foto si existe, sino emoji.
+        function renderRestCardGrid(r,idx,openCmd){
+            var color=getColor(idx);
+            var isOpen=isRestOpen(r.horario);
+            var hasImg=r.imagen_url||r.logo_url||r.foto_url;
+            var metaBits=[];
+            if(r._matchCount) metaBits.push('<span class="grid3-badge-count">'+r._matchCount+'</span>');
+            if(r.tiempo_estimado_min) metaBits.push('⏱ '+r.tiempo_estimado_min+'m');
+            if(r.distancia_km) metaBits.push('📍 '+r.distancia_km+'km');
+            else if(window._clientGPS&&r.precio_delivery) metaBits.push('🛵 $'+Number(r.precio_delivery).toFixed(2));
+            return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+color+'25">'+
+                '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
+                    '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
+                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                    (isOpen===false?'<span class="grid3-closed">CERRADO</span>':'')+
+                '</div>'+
+                '<div class="grid3-body">'+
+                    '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
+                    (metaBits.length?'<div class="grid3-meta">'+metaBits.join(' · ')+'</div>':'')+
+                '</div>'+
+            '</div>';
+        }
+
+        function renderSearchResults(query,rests,plates){
+            var area=document.getElementById('search-results-area');
+            if(!area) return;
+            if(!rests.length&&!plates.length){
+                area.innerHTML='<div class="search-empty-state-v2">'+
+                    '<div class="search-empty-icon">🔎</div>'+
+                    '<div class="search-empty-title">No encontramos "'+esc(query)+'"</div>'+
+                    '<div class="search-empty-text">Prueba con otro término o explora una categoría desde el home.</div>'+
+                '</div>';
+                return;
+            }
+            var html='';
+            if(rests.length){
+                var parts=partitionRests(rests);
+                var hasSpecs=parts.specs.length>0;
+                var hasBoth=hasSpecs&&parts.others.length>0;
+                var globalIdx=0;
+                // V2.6: si matchea por nombre del restaurante → menú completo;
+                //       si es match por plato/categoría → menú filtrado por la query
+                function clickCmd(r){
+                    if(r._nameMatch) return 'openRest(\''+jsEsc(r.nombre)+'\')';
+                    return 'openRestFiltered(\''+jsEsc(r.nombre)+'\',\''+jsEsc(query)+'\')';
+                }
+
+                if(hasSpecs){
+                    html+='<div class="search-section-title-v2">'+(hasBoth?'✨ Especialistas en "':'🏪 Restaurantes que venden "')+esc(query)+'"<span class="search-section-count">'+parts.specs.length+'</span></div>';
+                    html+='<div style="padding:4px 0 0">';
+                    parts.specs.forEach(function(r){html+=renderRestCardRowV2(r,globalIdx++,clickCmd(r))});
+                    html+='</div>';
+                }
+                if(parts.others.length){
+                    html+='<div class="search-section-title-v2">'+(hasSpecs?'🏪 También ofrecen "'+esc(query)+'"':'🏪 Restaurantes que venden "'+esc(query)+'"')+'<span class="search-section-count">'+parts.others.length+'</span></div>';
+                    html+='<div style="padding:4px 0 0">';
+                    parts.others.forEach(function(r){html+=renderRestCardRowV2(r,globalIdx++,clickCmd(r))});
+                    html+='</div>';
+                }
+            }
+            // SECCIÓN SECUNDARIA: platos individuales (los más relevantes)
+            if(plates.length){
+                var topPlates=plates.slice(0,8);
+                html+='<div class="search-section-title-v2">🍽 Platos populares<span class="search-section-count">'+topPlates.length+(plates.length>8?'+':'')+'</span></div>';
+                topPlates.forEach(function(p){
+                    html+='<div class="plate-card" onclick="openRestFiltered(\''+jsEsc(p.restaurante_nombre||'')+'\',\''+jsEsc(query)+'\')">'+
+                        '<div class="plate-emoji">'+getEmojiPlato(p.nombre_item)+'</div>'+
+                        '<div class="plate-info">'+
+                            '<div class="plate-name">'+esc(p.nombre_item)+'</div>'+
+                            '<div class="plate-rest">🏪 '+esc(p.restaurante_nombre||'—')+'</div>'+
+                        '</div>'+
+                        '<div class="plate-price">$'+Number(p.precio||0).toFixed(2)+'</div>'+
+                    '</div>';
+                });
+            }
+            area.innerHTML=html;
+        }
+
+        window.openRestByName=function(name){
+            var r=(sessionData.resultados||[]).find(function(x){return x.nombre===name});
+            if(r) openRest(r.nombre);
+        };
+
+        // V2.1: abrir restaurante con filtro de búsqueda (solo muestra platos que matchean)
+        window.openRestFiltered=function(name,query){
+            window._restFilter={type:'q',value:query};
+            openRest(name);
+        };
+        window.openRestCatFiltered=function(name,catKey){
+            window._restFilter={type:'cat',value:catKey};
+            openRest(name);
+        };
+        window.clearRestFilter=function(){
+            window._restFilter=null;
+            openRest(currentRestIdx);
         };
 
         // ── CART + CHECKOUT UNIFICADO ──
@@ -1058,10 +1823,25 @@
             }
             h+='</div>';
 
-            // FIX #3: CTA claro + microcopy que explica qué va a pasar
-            h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
-            h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
-                '<span>✅ Confirmar pedido</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
+            // V2.3: Detectar si falta ubicación (sin GPS y sin dirección escrita)
+            var hasAddr=window._clientAddr&&window._clientAddr.trim().length>=6;
+            var needsLoc=!window._clientGPS&&!hasAddr;
+
+            if(needsLoc){
+                h+='<div class="loc-missing-banner">'+
+                    '<div class="loc-missing-icon">⚠️</div>'+
+                    '<div class="loc-missing-content">'+
+                        '<div class="loc-missing-title">Falta tu ubicación</div>'+
+                        '<div class="loc-missing-text">Toca arriba 📍 <strong>Usar mi ubicación GPS</strong> o escribe tu dirección en el campo para poder enviar tu pedido.</div>'+
+                    '</div>'+
+                '</div>';
+                h+='<button class="btn btn-wa btn-wa-need-loc" style="display:flex;justify-content:center" onclick="sendWA()">'+
+                    '<span>📍 Agrega tu ubicación para continuar</span></button>';
+            } else {
+                h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
+                h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
+                    '<span>✅ Confirmar pedido</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
+            }
             h+='</div>';
             app.innerHTML=h;
             document.getElementById('cart-float').style.display='none';
@@ -1146,6 +1926,26 @@
 
         // sendWA — CAMBIO 3: incluir dirección de texto si no hay GPS
         window.sendWA=function(){
+            // V2.3: Enforce GPS o dirección manual antes de enviar
+            var addrInputCheck=document.getElementById('loc-addr');
+            var addrVal=addrInputCheck?addrInputCheck.value.trim():(window._clientAddr||'').trim();
+            if(!window._clientGPS&&(!addrVal||addrVal.length<6)){
+                // Scroll + pulso visual hacia la sección de ubicación
+                var locSection=document.getElementById('loc-section');
+                if(locSection){
+                    locSection.scrollIntoView({behavior:'smooth',block:'start'});
+                    setTimeout(function(){
+                        pulseHint(locSection);
+                        var gpsBtn=document.getElementById('btn-gps-cart');
+                        var addrInput=document.getElementById('loc-addr');
+                        if(gpsBtn) pulseHint(gpsBtn);
+                        if(addrInput) pulseHint(addrInput);
+                    },220);
+                } else {
+                    openGPSStrict();
+                }
+                return;
+            }
             var byRest={};window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
             var t=cartTotals();
             var msg='Hola! Quiero pedir:\n\n';
@@ -1414,6 +2214,48 @@
             window._almPending=null;
             closeModal();
             refreshView();
+        };
+
+        // V2: Modal estricto para forzar GPS o dirección antes de pedir
+        window.openGPSStrict=function(){
+            var modalRoot=document.getElementById('modal-root');
+            var content=document.getElementById('modal-content');
+            if(!modalRoot||!content) return;
+            content.innerHTML='<div class="gps-strict">'+
+                '<button class="modal-close" onclick="closeModal()" aria-label="Cerrar">✕</button>'+
+                '<div class="gps-strict-icon">📍</div>'+
+                '<div class="gps-strict-title">¿Dónde llevamos tu pedido?</div>'+
+                '<div class="gps-strict-text">Para que tu rider te encuentre al toque necesitamos tu ubicación o una dirección.</div>'+
+                '<div class="gps-strict-actions">'+
+                    '<button class="btn btn-accent" style="margin:0" onclick="gpsStrictUseLocation()">📍 Usar mi ubicación GPS</button>'+
+                    '<button class="btn btn-outline" style="margin:0" onclick="gpsStrictUseAddress()">📝 Escribir mi dirección</button>'+
+                '</div>'+
+            '</div>';
+            modalRoot.classList.add('visible');
+        };
+        function pulseHint(el){
+            if(!el) return;
+            el.classList.add('pulse-hint');
+            setTimeout(function(){try{el.classList.remove('pulse-hint')}catch(e){}},6000);
+        }
+        window.gpsStrictUseLocation=function(){
+            closeModal();
+            setTimeout(function(){
+                var gpsBtn=document.getElementById('btn-gps-cart');
+                if(gpsBtn){pulseHint(gpsBtn);gpsBtn.scrollIntoView({behavior:'smooth',block:'center'})}
+                // Dispara la solicitud de GPS directamente
+                if(typeof requestGPSCart==='function'){setTimeout(function(){if(gpsBtn) gpsBtn.click()},300);}
+            },150);
+        };
+        window.gpsStrictUseAddress=function(){
+            closeModal();
+            setTimeout(function(){
+                var addrInput=document.getElementById('loc-addr');
+                if(addrInput){
+                    addrInput.scrollIntoView({behavior:'smooth',block:'center'});
+                    setTimeout(function(){addrInput.focus();pulseHint(addrInput)},320);
+                }
+            },150);
         };
     })();
     </script>
