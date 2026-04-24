@@ -983,6 +983,33 @@
         window.renderHome=function(){
             currentView='home';
             window._restFilter=null; // V2.1: limpiar filtro de menú al volver al home
+
+            // V4.1: Deep link de categoría desde WhatsApp
+            // Si la busqueda_texto que viene del bot coincide con una categoría conocida
+            // (pollo, pizza, almuerzo, mariscos, hamburguesa, postres, bebidas),
+            // activar directamente la categoría (como si el cliente tocara el botón),
+            // en vez de ponerla en el buscador → así ve la plancha completa (ej. 41
+            // restaurantes de almuerzos) en lugar de 3 coincidencias textuales.
+            if(!window._deepLinkProcessed&&sessionData&&sessionData.busqueda_texto){
+                window._deepLinkProcessed=true;
+                var rawBusq=removeAccents(sessionData.busqueda_texto.toLowerCase().trim());
+                if(rawBusq&&!window._activeCat){
+                    var matchedCat=null;
+                    for(var ck in CAT_MAP_V2){
+                        var kws=CAT_MAP_V2[ck].kw;
+                        for(var i=0;i<kws.length;i++){
+                            if(rawBusq.indexOf(removeAccents(kws[i].toLowerCase()))!==-1){matchedCat=ck;break}
+                        }
+                        if(matchedCat)break;
+                    }
+                    if(matchedCat){
+                        window._activeCat=matchedCat;
+                        sessionData.busqueda_texto=''; // evitar prefill redundante en buscador
+                        try{console.log('%cDeep link → categoria '+matchedCat,'color:#B8FF00')}catch(e){}
+                    }
+                }
+            }
+
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
             var busqTexto=(sessionData.busqueda_texto||'').toLowerCase();
             if(busqTexto&&busqTexto!=='comida'){
