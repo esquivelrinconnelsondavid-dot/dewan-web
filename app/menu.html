@@ -239,6 +239,9 @@
         .cart-float-bump{animation:cart-bump 0.42s cubic-bezier(0.34,1.56,0.64,1)}
         @keyframes cart-bump{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
 
+        /* V4.2: Particula que vuela del boton "+" al carrito al agregar */
+        .fly-particle{position:fixed;z-index:200;pointer-events:none;font-size:1.4rem;will-change:transform,opacity;filter:drop-shadow(0 4px 12px rgba(184,255,0,0.55));font-family:system-ui;line-height:1;user-select:none}
+
         /* Cart page — V4 Premium */
         .cart-header{padding:20px 16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(14,14,16,0.88);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);z-index:50}
         .cart-header-title{font-weight:900;font-size:1.45rem;letter-spacing:-0.03em;line-height:1}
@@ -293,15 +296,29 @@
         .preview-chip-price{color:#FF7A00;font-weight:700;margin-left:4px}
         .preview-chip-more{font-weight:800;color:var(--acc)}
 
-        /* Rest detail header — V4 Premium: hero dramatico con avatar flotante */
-        .rest-detail-header{position:relative;padding:18px 16px 20px;border-bottom:1px solid var(--border);overflow:hidden;isolation:isolate}
-        .rest-detail-header::before{content:'';position:absolute;inset:-10% -20% auto -20%;height:75%;background:radial-gradient(ellipse at 30% 20%,var(--rest-color,rgba(184,255,0,0.18)) 0%,transparent 55%),radial-gradient(ellipse at 80% 10%,rgba(184,255,0,0.08) 0%,transparent 50%);pointer-events:none;z-index:-1;filter:blur(20px)}
-        .rest-detail-header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:50%;background:linear-gradient(180deg,transparent 0%,var(--bg) 100%);pointer-events:none;z-index:-1}
-        .rest-detail-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;position:relative;z-index:2}
-        .rest-detail-info{display:flex;gap:14px;align-items:center;position:relative;z-index:2}
-        .rest-detail-avatar{width:76px;height:76px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;flex-shrink:0;box-shadow:0 10px 30px rgba(0,0,0,0.45),0 2px 6px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.08);position:relative;overflow:hidden;background-clip:padding-box}
+        /* Rest detail header — V4.2 Premium: hero estilo "Cocina de la Mama" con foto + card flotante */
+        .rest-detail-header{position:relative;padding:0 0 18px;border-bottom:1px solid var(--border);overflow:hidden;isolation:isolate}
+        .rest-detail-header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:35%;background:linear-gradient(180deg,transparent 0%,var(--bg) 100%);pointer-events:none;z-index:0}
+        /* Zona de foto del local (cabecera). Si no hay imagen real, usa un gradient con el color del restaurante. */
+        .rest-detail-photo{position:relative;height:180px;background-color:var(--card2);background-size:cover;background-position:center;background-repeat:no-repeat;overflow:hidden}
+        .rest-detail-photo::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 30%,var(--rest-color,rgba(184,255,0,0.2)) 0%,transparent 55%),radial-gradient(ellipse at 80% 60%,rgba(184,255,0,0.10) 0%,transparent 55%);pointer-events:none;mix-blend-mode:screen}
+        .rest-detail-photo::after{content:'';position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(180deg,transparent 0%,rgba(14,14,16,0.85) 80%,var(--bg) 100%);pointer-events:none}
+        .rest-detail-photo-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:0.18;filter:blur(0.5px) drop-shadow(0 6px 20px rgba(0,0,0,0.4))}
+        .rest-detail-nav{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 0;position:absolute;top:0;left:0;right:0;z-index:3}
+        .rest-detail-nav .btn-back,.rest-detail-nav .btn-cart{background:rgba(20,20,24,0.78);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 14px rgba(0,0,0,0.45)}
+        /* Card flotante con la info del local */
+        .rest-detail-card{position:relative;z-index:2;margin:-46px 14px 0;padding:16px;background:linear-gradient(180deg,#1c1c20 0%,var(--card) 100%);border:1px solid rgba(255,255,255,0.06);border-radius:20px;box-shadow:0 14px 36px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.04)}
+        .rest-detail-info{display:flex;gap:14px;align-items:center}
+        .rest-detail-avatar{width:62px;height:62px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;box-shadow:0 6px 18px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.1);position:relative;overflow:hidden;background-clip:padding-box}
         .rest-detail-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
-        .rest-detail-name{font-weight:900;font-size:1.32rem;line-height:1.15;letter-spacing:-0.02em}
+        .rest-detail-name{font-weight:900;font-size:1.26rem;line-height:1.15;letter-spacing:-0.025em;color:var(--texto)}
+        .rest-meta{display:flex;gap:8px;margin-top:5px;font-size:0.74rem;flex-wrap:wrap;align-items:center}
+        .rest-meta span{color:var(--gris-2);display:inline-flex;align-items:center;gap:3px;font-weight:600;letter-spacing:-0.01em}
+        /* Pills de "Rapido 25min" / "Envio gratis" */
+        .rest-pills{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+        .rest-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(0,210,106,0.13);color:#00D26A;font-size:0.72rem;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:-0.01em;border:1px solid rgba(0,210,106,0.22)}
+        .rest-pill.is-rating{background:rgba(184,255,0,0.1);color:var(--acc);border-color:rgba(184,255,0,0.22)}
+        .rest-pill.is-neutral{background:var(--card2);color:var(--gris-2);border-color:var(--border)}
 
         .app-footer{text-align:center;padding:20px 20px 80px;font-size:0.7rem;color:var(--gris)}
         body.has-cart{padding-bottom:80px}
@@ -478,18 +495,24 @@
         /* V2.1: Badge cuenta de platos por restaurante en búsqueda/categoría */
         .rest-compact-meta .badge-count{background:var(--acc-soft);color:var(--acc);font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:0.02em}
 
-        /* V2.3: Banner de advertencia "falta ubicación" en checkout */
-        .loc-missing-banner{margin:10px 0 14px;padding:14px 16px;background:rgba(255,179,0,0.08);border:1.5px solid rgba(255,179,0,0.4);border-radius:14px;display:flex;align-items:flex-start;gap:12px}
-        .loc-missing-icon{font-size:1.35rem;flex-shrink:0;margin-top:-1px}
+        /* V4.2: Banner premium de "falta ubicacion" en checkout */
+        .loc-missing-banner{margin:14px 0 12px;padding:14px 16px;background:linear-gradient(135deg,rgba(255,179,0,0.12) 0%,rgba(255,179,0,0.04) 100%);border:1.5px solid rgba(255,179,0,0.32);border-radius:16px;display:flex;align-items:flex-start;gap:12px;position:relative;overflow:hidden}
+        .loc-missing-banner::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#FFB800,#FF8800)}
+        .loc-missing-icon{font-size:1.4rem;flex-shrink:0;margin-top:-1px;animation:loc-icon-pulse 2.4s ease-in-out infinite}
+        @keyframes loc-icon-pulse{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-2px) rotate(-5deg)}75%{transform:translateY(-2px) rotate(5deg)}}
         .loc-missing-content{flex:1;min-width:0}
-        .loc-missing-title{font-weight:900;font-size:0.9rem;color:#FFB800;margin-bottom:2px;letter-spacing:-0.01em}
-        .loc-missing-text{font-size:0.78rem;color:var(--gris-2);line-height:1.4;font-weight:600}
+        .loc-missing-title{font-weight:900;font-size:0.92rem;color:#FFB800;margin-bottom:3px;letter-spacing:-0.01em}
+        .loc-missing-text{font-size:0.78rem;color:var(--gris-2);line-height:1.45;font-weight:600}
         @keyframes loc-hint-pulse{0%{box-shadow:0 0 0 0 rgba(184,255,0,0.7),0 0 0 0 rgba(184,255,0,0)}70%{box-shadow:0 0 0 10px rgba(184,255,0,0),0 0 30px rgba(184,255,0,0.2)}100%{box-shadow:0 0 0 0 rgba(184,255,0,0)}}
         .loc-addr-input.pulse-hint,.btn-gps-main.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
         .loc-section.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
 
-        .btn-wa-need-loc{background:var(--card);color:var(--acc);border:1.5px dashed var(--acc);box-shadow:none}
-        .btn-wa-need-loc:active{background:var(--acc-soft)}
+        /* CTA "agrega tu ubicacion" — V4.2 premium (deshabilitado pero invitando) */
+        .btn-wa-need-loc{background:linear-gradient(180deg,#1f1f24 0%,#17171b 100%)!important;color:var(--gris-2)!important;border:1.5px solid var(--border)!important;box-shadow:0 2px 10px rgba(0,0,0,0.25)!important;cursor:not-allowed;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column;padding:14px 18px!important;font-size:0.82rem!important;line-height:1.35;font-weight:700!important;letter-spacing:-0.01em;text-transform:none}
+        .btn-wa-need-loc-primary{font-size:0.95rem;font-weight:900;color:var(--texto);display:flex;align-items:center;gap:8px;letter-spacing:-0.02em}
+        .btn-wa-need-loc-primary span:first-child{font-size:1.05rem;animation:loc-icon-pulse 2.4s ease-in-out infinite}
+        .btn-wa-need-loc-hint{font-size:0.7rem;color:var(--gris-2);font-weight:600;letter-spacing:0.02em}
+        .btn-wa-need-loc:active{transform:none}
 
         /* V2.1: Banner de filtro activo dentro del menú del restaurante */
         .rest-filter-banner{margin:10px 14px 4px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(184,255,0,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.78rem;font-weight:700;color:var(--acc);letter-spacing:-0.01em}
@@ -751,7 +774,13 @@
                 var data=JSON.parse(raw);
                 // Descartar si tiene más de 2 horas
                 if(Date.now()-data.ts>2*60*60*1000){localStorage.removeItem(getCartKey());return}
-                if(data.items&&data.items.length) window._cart=data.items;
+                if(data.items&&data.items.length){
+                    // V4.2: sanitizar precios al cargar (defensa contra valores corruptos en cache)
+                    window._cart=data.items.map(function(c){
+                        if(c){c.precio=parsePrice(c.precio);c.delivery=parsePrice(c.delivery);c.qty=parsePrice(c.qty)||1}
+                        return c;
+                    }).filter(function(c){return c&&c.precio>0});
+                }
             }catch(e){}
         }
         function clearCartStorage(){
@@ -1233,16 +1262,23 @@
             if((!r.productos||r.productos.length===0)&&r.id&&!r._loadAttempted){
                 r._loadAttempted=true;
                 var colorLoad=getColor(ridx);
-                app.innerHTML='<div class="rest-detail-header" style="--rest-color:'+colorLoad+'33;background:linear-gradient(180deg,'+colorLoad+'22 0%,var(--bg) 95%)">'+
+                var hasImgLoad=!!(r.imagen_url||r.logo_url||r.foto_url);
+                var heroBgLoad=hasImgLoad?'background-image:url('+esc(r.imagen_url||r.logo_url||r.foto_url)+')':'';
+                app.innerHTML='<div class="rest-detail-header" style="--rest-color:'+colorLoad+'40">'+
+                    '<div class="rest-detail-photo" style="'+heroBgLoad+(hasImgLoad?'':';background-color:'+colorLoad+'22')+'">'+
+                        (hasImgLoad?'':'<span class="rest-detail-photo-fallback">'+getEmoji(r.nombre)+'</span>')+
+                    '</div>'+
                     '<div class="rest-detail-nav">'+
                         '<button class="btn-back" onclick="renderHome()">←</button>'+
                         '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒</button>'+
                     '</div>'+
-                    '<div class="rest-detail-info">'+
-                        '<div class="rest-detail-avatar" style="background:'+colorLoad+'20;border:2px solid '+colorLoad+'40">'+getEmoji(r.nombre)+
-                            ((r.imagen_url||r.logo_url||r.foto_url)?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                    '<div class="rest-detail-card">'+
+                        '<div class="rest-detail-info">'+
+                            '<div class="rest-detail-avatar" style="background:'+colorLoad+'25;border:2px solid '+colorLoad+'45">'+getEmoji(r.nombre)+
+                                (hasImgLoad?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                            '</div>'+
+                            '<div style="flex:1;min-width:0"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div></div>'+
                         '</div>'+
-                        '<div style="flex:1"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div></div>'+
                     '</div>'+
                 '</div>'+
                 '<div style="padding:10px 14px">'+
@@ -1313,28 +1349,38 @@
                 if(!prods.length) prods=allProds;
             }
 
-            var h='<div class="rest-detail-header" style="--rest-color:'+color+'33;background:linear-gradient(180deg,'+color+'22 0%,var(--bg) 95%)">'+
+            var hasImg=!!(r.imagen_url||r.logo_url||r.foto_url);
+            var heroBg=hasImg?'background-image:url('+esc(r.imagen_url||r.logo_url||r.foto_url)+')':'';
+            var deliveryPrice=parsePrice(r.precio_delivery);
+            var deliveryPill=window._clientGPS
+                ?(deliveryPrice>0
+                    ?'<span class="rest-pill is-neutral"><span>🛵</span> Envío $'+deliveryPrice.toFixed(2)+'</span>'
+                    :'<span class="rest-pill"><span>🛵</span> Envío gratis</span>')
+                :'<span class="rest-pill is-neutral"><span>🛵</span> Envío al ubicar</span>';
+            var distPill=r.distancia_km?'<span class="rest-pill is-neutral"><span>📍</span> '+r.distancia_km+' km</span>':'';
+            var h='<div class="rest-detail-header" style="--rest-color:'+color+'40">'+
+                '<div class="rest-detail-photo" style="'+heroBg+(hasImg?'':';background-color:'+color+'22')+'">'+
+                    (hasImg?'':'<span class="rest-detail-photo-fallback">'+getEmoji(r.nombre)+'</span>')+
+                '</div>'+
                 '<div class="rest-detail-nav">'+
                     '<button class="btn-back" onclick="renderHome()">←</button>'+
-                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒 '+(window._cart.length?cartTotals().items+' · $'+cartTotals().subtotal.toFixed(2):'Vacio')+'</button>'+
+                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒'+(window._cart.length?' '+cartTotals().items:'')+'</button>'+
                 '</div>'+
-                '<div class="rest-detail-info">'+
-                    '<div class="rest-detail-avatar" style="background:'+color+'20;border:2px solid '+color+'40">'+getEmoji(r.nombre)+
-                        ((r.imagen_url||r.logo_url||r.foto_url)?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
-                    '</div>'+
-                    '<div style="flex:1"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
-                        '<div class="rest-meta" style="margin-top:6px">'+
-                            (r.distancia_km?'<span>📍 '+r.distancia_km+' km</span>':'')+
-                            (r.tiempo_estimado_min?'<span>⏱ ~'+r.tiempo_estimado_min+' min</span>':'')+
-                            (window._clientGPS?'<span>🛵 $'+(r.precio_delivery||0).toFixed(2)+'</span>':'')+
+                '<div class="rest-detail-card">'+
+                    '<div class="rest-detail-info">'+
+                        '<div class="rest-detail-avatar" style="background:'+color+'25;border:2px solid '+color+'45">'+getEmoji(r.nombre)+
+                            (hasImg?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                        '</div>'+
+                        '<div style="flex:1;min-width:0">'+
+                            '<div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
+                            (r.categoria?'<div class="rest-meta">'+esc(r.categoria)+(r.distancia_km?' · 📍 '+r.distancia_km+' km':'')+'</div>':(r.distancia_km?'<div class="rest-meta">📍 '+r.distancia_km+' km</div>':''))+
                         '</div>'+
                     '</div>'+
-                '</div>'+
-                '<div class="info-strip">'+
-                    infoBox('⏱','~'+(r.tiempo_estimado_min||25)+' min','Entrega')+
-                    infoBox('📍',(r.distancia_km||'?')+' km','Distancia')+
-                    (window._clientGPS?infoBox('🛵','$'+(r.precio_delivery||0).toFixed(2),'Delivery'):'')+
-                    infoBox('🍽',prods.length,'Platos')+
+                    '<div class="rest-pills">'+
+                        '<span class="rest-pill"><span>⚡</span> '+(r.tiempo_estimado_min||25)+' min</span>'+
+                        deliveryPill+
+                        '<span class="rest-pill is-rating"><span>🍽</span> '+prods.length+' platos</span>'+
+                    '</div>'+
                 '</div>'+
             '</div>';
 
@@ -1903,12 +1949,17 @@
                         '<div class="loc-missing-text">Toca arriba 📍 <strong>Usar mi ubicación GPS</strong> o escribe tu dirección en el campo para poder enviar tu pedido.</div>'+
                     '</div>'+
                 '</div>';
-                h+='<button class="btn btn-wa btn-wa-need-loc" style="display:flex;justify-content:center" onclick="sendWA()">'+
-                    '<span>📍 Agrega tu ubicación para continuar</span></button>';
+                // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
+                h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
+                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2))+'</span></span>'+
+                    '<span class="btn-wa-need-loc-hint">Agrega tu ubicación arriba para activar</span>'+
+                '</button>';
             } else {
                 h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
-                h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between" onclick="sendWA()">'+
-                    '<span>✅ Confirmar pedido</span><span>'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></button>';
+                h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
+                    '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
+                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span>'+
+                '</button>';
             }
             h+='</div>';
             app.innerHTML=h;
@@ -1916,12 +1967,74 @@
         };
 
         // ── CART LOGIC ──
+        // V4.2: parser defensivo de precios — soporta "6.50", "6,50", null, undefined → siempre devuelve Number
+        function parsePrice(v){
+            if(v==null)return 0;
+            if(typeof v==='number')return isFinite(v)?v:0;
+            var n=parseFloat(String(v).replace(',','.'));
+            return isFinite(n)?n:0;
+        }
+
+        // V4.2: Particula que vuela del punto (x0,y0) hasta el carrito flotante
+        // Da feedback visual de "se agrego" + sensacion de progreso/recompensa.
+        function flyFromPoint(x0,y0,emoji){
+            try{
+                if(x0==null||y0==null)return;
+                var cart=document.getElementById('cart-float');
+                if(!cart||cart.style.display==='none'){
+                    // Cart aun no visible: usar bottom-center como destino aproximado
+                    var x1d=window.innerWidth/2,y1d=window.innerHeight-32;
+                    return _spawnParticle(x0,y0,x1d,y1d,emoji);
+                }
+                var ctaEl=cart.querySelector('.cart-float-cta')||cart;
+                var dRect=ctaEl.getBoundingClientRect();
+                _spawnParticle(x0,y0,dRect.left+dRect.width/2,dRect.top+dRect.height/2,emoji);
+            }catch(e){}
+        }
+        function _spawnParticle(x0,y0,x1,y1,emoji){
+            var p=document.createElement('span');
+            p.className='fly-particle';
+            p.textContent=emoji||'✨';
+            p.style.left=(x0-12)+'px';
+            p.style.top=(y0-12)+'px';
+            p.style.transform='translate(0,0) scale(1)';
+            p.style.opacity='1';
+            p.style.transition='none';
+            document.body.appendChild(p);
+            void p.offsetWidth; // reflow para que la transicion arranque
+            var dx=x1-x0,dy=y1-y0;
+            p.style.transition='transform 620ms cubic-bezier(0.55,0,0.65,1),opacity 620ms ease-in';
+            p.style.transform='translate('+dx+'px,'+dy+'px) scale(0.32) rotate(360deg)';
+            p.style.opacity='0';
+            setTimeout(function(){if(p.parentNode)p.parentNode.removeChild(p)},680);
+        }
+        // Captura las coordenadas del boton + tocado ANTES del refreshView()
+        function captureClickPoint(){
+            try{
+                var ev=window.event;
+                if(ev){
+                    var t=ev.changedTouches&&ev.changedTouches[0];
+                    if(t)return{x:t.clientX,y:t.clientY};
+                    if(ev.clientX!=null)return{x:ev.clientX,y:ev.clientY};
+                    var tgt=ev.currentTarget||ev.target;
+                    if(tgt&&tgt.getBoundingClientRect){var r=tgt.getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2}}
+                }
+            }catch(e){}
+            return null;
+        }
+        function pickEmojiForFly(nombre){
+            try{return getEmojiPlato(nombre)||'✨'}catch(e){return '✨'}
+        }
+
         window.addCart=function(rest,nombre,precio,delivery){
+            var p=parsePrice(precio),d=parsePrice(delivery);
+            var pt=captureClickPoint();
             var c=findCart(rest,nombre);
-            if(c){c.qty++}else{window._cart.push({restaurante:rest,nombre:nombre,precio:precio,delivery:delivery,qty:1})}
+            if(c){c.qty++;c.precio=p;c.delivery=d}else{window._cart.push({restaurante:rest,nombre:nombre,precio:p,delivery:d,qty:1})}
             saveCart(); // CAMBIO 2
             markEtapa('agrego_carrito');
             refreshView();
+            if(pt)requestAnimationFrame(function(){flyFromPoint(pt.x,pt.y,pickEmojiForFly(nombre))});
         };
         window.removeCart=function(rest,nombre){
             var c=findCart(rest,nombre);
@@ -1938,13 +2051,18 @@
         }
         function cartTotals(){
             var items=0,sub=0,dels={};
-            window._cart.forEach(function(c){items+=c.qty;sub+=c.precio*c.qty;dels[c.restaurante]=c.delivery||0});
+            window._cart.forEach(function(c){
+                var q=parsePrice(c.qty),p=parsePrice(c.precio);
+                items+=q;sub+=p*q;
+                dels[c.restaurante]=parsePrice(c.delivery);
+            });
             var del=0;Object.keys(dels).forEach(function(k){del+=dels[k]});
             return{items:items,subtotal:sub,delivery:del,total:sub+del};
         }
         // Animated count-up del total: anima de `from` a `to` con easeOutCubic
         function animateMoney(el,from,to,duration,suffix){
             if(!el)return;
+            from=parsePrice(from);to=parsePrice(to);
             if(duration==null)duration=420;
             suffix=suffix||'';
             if(Math.abs(to-from)<0.005){el.textContent='$'+to.toFixed(2)+suffix;return}
