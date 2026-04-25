@@ -126,7 +126,7 @@
         .rest-compact-stripe{width:4px;flex-shrink:0}
         .rest-compact-body{flex:1;padding:12px 12px 12px 14px;display:flex;gap:12px;align-items:center;min-width:0}
         .rest-compact-avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.2);position:relative;overflow:hidden}
-        .rest-compact-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+        .rest-compact-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--card2)}
         .rest-compact-info{flex:1;min-width:0}
         .rest-compact-name{font-weight:800;font-size:0.95rem;line-height:1.2;letter-spacing:-0.01em;display:flex;align-items:center;gap:6px;color:var(--texto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .rest-compact-meta{display:flex;gap:10px;margin-top:4px;font-size:0.74rem;color:var(--gris-2);font-weight:700;flex-wrap:wrap}
@@ -310,7 +310,7 @@
         .rest-detail-card{position:relative;z-index:2;margin:-46px 14px 0;padding:16px;background:linear-gradient(180deg,#1c1c20 0%,var(--card) 100%);border:1px solid rgba(255,255,255,0.06);border-radius:20px;box-shadow:0 14px 36px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.04)}
         .rest-detail-info{display:flex;gap:14px;align-items:center}
         .rest-detail-avatar{width:62px;height:62px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;box-shadow:0 6px 18px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.1);position:relative;overflow:hidden;background-clip:padding-box}
-        .rest-detail-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+        .rest-detail-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:var(--card2)}
         .rest-detail-name{font-weight:900;font-size:1.26rem;line-height:1.15;letter-spacing:-0.025em;color:var(--texto)}
         .rest-meta{display:flex;gap:8px;margin-top:5px;font-size:0.74rem;flex-wrap:wrap;align-items:center}
         .rest-meta span{color:var(--gris-2);display:inline-flex;align-items:center;gap:3px;font-weight:600;letter-spacing:-0.01em}
@@ -1273,8 +1273,8 @@
                     '</div>'+
                     '<div class="rest-detail-card">'+
                         '<div class="rest-detail-info">'+
-                            '<div class="rest-detail-avatar" style="background:'+colorLoad+'25;border:2px solid '+colorLoad+'45">'+getEmoji(r.nombre)+
-                                (hasImgLoad?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                            '<div class="rest-detail-avatar" style="background:'+colorLoad+'25;border:2px solid '+colorLoad+'45">'+
+                                (hasImgLoad?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
                             '</div>'+
                             '<div style="flex:1;min-width:0"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div></div>'+
                         '</div>'+
@@ -1367,8 +1367,8 @@
                 '</div>'+
                 '<div class="rest-detail-card">'+
                     '<div class="rest-detail-info">'+
-                        '<div class="rest-detail-avatar" style="background:'+color+'25;border:2px solid '+color+'45">'+getEmoji(r.nombre)+
-                            (hasImg?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                        '<div class="rest-detail-avatar" style="background:'+color+'25;border:2px solid '+color+'45">'+
+                            (hasImg?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
                         '</div>'+
                         '<div style="flex:1;min-width:0">'+
                             '<div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
@@ -1746,8 +1746,8 @@
             return '<div class="rest-compact" onclick="'+openCmd+'" style="border-color:'+color+'22">'+
                 '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
                 '<div class="rest-compact-body">'+
-                    '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+getEmoji(r.nombre)+
-                        (hasImg?'<img src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                    '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+
+                        (hasImg?'<img src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
                     '</div>'+
                     '<div class="rest-compact-info">'+
                         '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
