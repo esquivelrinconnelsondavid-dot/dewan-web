@@ -507,6 +507,22 @@
         .loc-addr-input.pulse-hint,.btn-gps-main.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
         .loc-section.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
 
+        /* V4.6: Selector de método de pago — Efectivo / Transferencia */
+        .pay-section{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;margin:12px 0 16px;box-shadow:0 4px 18px rgba(0,0,0,0.22)}
+        .pay-title{font-weight:900;font-size:1rem;margin-bottom:14px;display:flex;align-items:center;gap:8px;letter-spacing:-0.01em}
+        .pay-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .pay-btn{background:var(--card2);border:1.5px solid var(--border);border-radius:14px;padding:14px 12px;font-family:inherit;font-weight:800;font-size:0.88rem;cursor:pointer;color:var(--gris-2);display:flex;flex-direction:column;align-items:center;gap:6px;transition:all 0.2s;letter-spacing:-0.01em}
+        .pay-btn:active{transform:scale(0.97)}
+        .pay-btn-icon{font-size:1.5rem;line-height:1}
+        .pay-btn.is-active{background:var(--acc-soft);border-color:var(--acc);color:var(--texto);box-shadow:0 0 0 3px rgba(184,255,0,0.08),inset 0 1px 0 rgba(255,255,255,0.05)}
+        .pay-btn.is-active .pay-btn-icon{filter:drop-shadow(0 2px 6px rgba(184,255,0,0.4))}
+        .pay-transfer-note{display:none;align-items:flex-start;gap:10px;margin-top:14px;padding:12px 14px;background:linear-gradient(135deg,rgba(184,255,0,0.08) 0%,rgba(184,255,0,0.02) 100%);border:1.5px solid rgba(184,255,0,0.28);border-radius:14px;position:relative;overflow:hidden;animation:pay-note-in 0.3s ease-out}
+        .pay-transfer-note::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--acc),#7ACC00)}
+        @keyframes pay-note-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+        .pay-transfer-note-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px}
+        .pay-transfer-note-text{font-size:0.8rem;color:var(--texto);line-height:1.45;font-weight:600;letter-spacing:-0.01em}
+        .pay-transfer-note-text strong{color:var(--acc);font-weight:900}
+
         /* CTA "agrega tu ubicacion" — V4.2 premium (deshabilitado pero invitando) */
         .btn-wa-need-loc{background:linear-gradient(180deg,#1f1f24 0%,#17171b 100%)!important;color:var(--gris-2)!important;border:1.5px solid var(--border)!important;box-shadow:0 2px 10px rgba(0,0,0,0.25)!important;cursor:not-allowed;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column;padding:14px 18px!important;font-size:0.82rem!important;line-height:1.35;font-weight:700!important;letter-spacing:-0.01em;text-transform:none}
         .btn-wa-need-loc-primary{font-size:0.95rem;font-weight:900;color:var(--texto);display:flex;align-items:center;gap:8px;letter-spacing:-0.02em}
@@ -617,6 +633,19 @@
         window._cart=[];
         window._clientGPS=null;
         window._clientAddr=''; // CAMBIO 3: dirección de texto
+        // V4.6: método de pago — 'efectivo' (default) | 'transferencia'. Persiste en localStorage.
+        try{window._payMethod=localStorage.getItem('dewan_pay_method')||'efectivo'}catch(e){window._payMethod='efectivo'}
+        window.setPayMethod=function(m){
+            window._payMethod=(m==='transferencia'?'transferencia':'efectivo');
+            try{localStorage.setItem('dewan_pay_method',window._payMethod)}catch(e){}
+            // Update UI sin re-renderizar todo el carrito
+            var btnE=document.getElementById('pay-btn-efectivo');
+            var btnT=document.getElementById('pay-btn-transferencia');
+            var note=document.getElementById('pay-transfer-note');
+            if(btnE) btnE.classList.toggle('is-active',window._payMethod==='efectivo');
+            if(btnT) btnT.classList.toggle('is-active',window._payMethod==='transferencia');
+            if(note) note.style.display=window._payMethod==='transferencia'?'flex':'none';
+        };
 
         // V2: sin token también funciona — es el acceso "directo a la app"
         // Marcar visita (si hay token) y cargar catálogo completo.
@@ -2007,6 +2036,24 @@
             }
             h+='</div>';
 
+            // V4.6: Selector de método de pago
+            var payIsTransfer=window._payMethod==='transferencia';
+            h+='<div class="pay-section">'+
+                '<div class="pay-title">💳 ¿Cómo prefieres pagar?</div>'+
+                '<div class="pay-options">'+
+                    '<button type="button" class="pay-btn'+(!payIsTransfer?' is-active':'')+'" id="pay-btn-efectivo" onclick="setPayMethod(\'efectivo\')">'+
+                        '<span class="pay-btn-icon">💵</span><span>Efectivo</span>'+
+                    '</button>'+
+                    '<button type="button" class="pay-btn'+(payIsTransfer?' is-active':'')+'" id="pay-btn-transferencia" onclick="setPayMethod(\'transferencia\')">'+
+                        '<span class="pay-btn-icon">🏦</span><span>Transferencia</span>'+
+                    '</button>'+
+                '</div>'+
+                '<div class="pay-transfer-note" id="pay-transfer-note" style="display:'+(payIsTransfer?'flex':'none')+'">'+
+                    '<span class="pay-transfer-note-icon">💡</span>'+
+                    '<span class="pay-transfer-note-text">El motorizado te dará el <strong>número de cuenta</strong> al entregar tu pedido para que hagas la transferencia.</span>'+
+                '</div>'+
+            '</div>';
+
             // V2.3: Detectar si falta ubicación (sin GPS y sin dirección escrita)
             var hasAddr=window._clientAddr&&window._clientAddr.trim().length>=6;
             var needsLoc=!window._clientGPS&&!hasAddr;
@@ -2272,6 +2319,12 @@
                 msg+='📍 Dirección: '+window._clientAddr.trim()+'\n\n';
             } else {
                 msg+='📍 _Enviar ubicacion por este chat_\n\n';
+            }
+            // V4.6: Método de pago
+            if(window._payMethod==='transferencia'){
+                msg+='💳 *Pago: Transferencia* 🏦\n_(El motorizado entregará el número de cuenta al llegar)_\n\n';
+            } else {
+                msg+='💳 *Pago: Efectivo* 💵\n\n';
             }
             msg+='Token: '+token;
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
