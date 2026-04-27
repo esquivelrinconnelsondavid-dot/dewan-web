@@ -733,29 +733,37 @@
                 };
                 restoreCart();
 
-                // V4.3: Deep link de categoria desde WhatsApp
-                // Si la busqueda_texto del bot coincide con una categoria conocida (pollo, pizza,
-                // almuerzo, mariscos, hamburguesa, postres, bebidas), activar esa categoria via
-                // toggleCategoryV2 — que dispara la query global a menu_items y carga TODOS los
-                // restaurantes con platos de esa categoria (ej. 127 de pollo, 36 de almuerzo),
-                // no solo los pocos que matchean en nombre del restaurante.
+                // V4.4: Deep link inteligente desde WhatsApp
+                // Tres caminos según la palabra que envía el bot:
+                //   1) Palabra GENERICA de categoría ("almuerzos", "pollo", "pizza"...) → activar
+                //      la categoría completa con toggleCategoryV2 (ej. 36 restaurantes de almuerzo,
+                //      127 de pollo). Solo matchea con `core` (no con keywords accesorias).
+                //   2) Palabra ESPECIFICA ("encebollado", "ceviche", "alitas", "chaulafan",
+                //      "hot dogs"...) → ejecutar búsqueda automática con showSearch(palabra)
+                //      → muestra solo restaurantes que TIENEN ese plato específico.
+                //   3) Sin palabra → home normal.
                 var deepLinkCat=null;
-                if(sessionData.busqueda_texto){
-                    var rawBusq=removeAccents(sessionData.busqueda_texto.toLowerCase().trim());
-                    if(rawBusq){
-                        for(var ck in CAT_MAP_V2){
-                            var kws=CAT_MAP_V2[ck].kw;
-                            for(var i=0;i<kws.length;i++){
-                                if(rawBusq.indexOf(removeAccents(kws[i].toLowerCase()))!==-1){deepLinkCat=ck;break}
-                            }
-                            if(deepLinkCat)break;
+                var rawBusq=sessionData.busqueda_texto?removeAccents(sessionData.busqueda_texto.toLowerCase().trim()):'';
+                if(rawBusq){
+                    for(var ck in CAT_MAP_V2){
+                        var coreKws=CAT_MAP_V2[ck].core||CAT_MAP_V2[ck].kw;
+                        for(var i=0;i<coreKws.length;i++){
+                            // Match exacto de palabra (no substring) — evita que "alitas" matchee con "polleria"
+                            var coreNorm=removeAccents(coreKws[i].toLowerCase());
+                            if(rawBusq===coreNorm||rawBusq===coreNorm+'s'){deepLinkCat=ck;break}
                         }
+                        if(deepLinkCat)break;
                     }
                 }
                 if(deepLinkCat){
-                    sessionData.busqueda_texto=''; // evitar prefill redundante en el buscador
-                    try{console.log('%cDeep link → categoria '+deepLinkCat,'color:#B8FF00')}catch(e){}
-                    toggleCategoryV2(deepLinkCat); // dispara query global y renderea
+                    sessionData.busqueda_texto='';
+                    try{console.log('%cDeep link → categoría '+deepLinkCat,'color:#B8FF00')}catch(e){}
+                    toggleCategoryV2(deepLinkCat);
+                } else if(rawBusq){
+                    try{console.log('%cDeep link → búsqueda automática "'+sessionData.busqueda_texto+'"','color:#FF6B35')}catch(e){}
+                    var qToSearch=sessionData.busqueda_texto;
+                    sessionData.busqueda_texto='';
+                    showSearch(qToSearch);
                 } else {
                     renderHome();
                 }
@@ -914,13 +922,27 @@
         // IMPORTANTE: PostgreSQL ILIKE no hace accent-folding, por eso incluimos
         // las variantes con tilde y sin tilde para que la query server las matchee.
         var CAT_MAP_V2={
-            pollo:{icon:'🍗',label:'Pollo',kw:['pollo','pollos','broster','alita','alitas','presa','presas','chicken','polleria','pollería']},
-            pizza:{icon:'🍕',label:'Pizza',kw:['pizza','pizzas','pizzer']},
-            almuerzo:{icon:'🍱',label:'Almuerzo',kw:['almuerzo','almuerzos','menú','menu','menús','menus','ejecutivo','ejecutivos']},
-            mariscos:{icon:'🐟',label:'Mariscos',kw:['marisco','mariscos','ceviche','ceviches','encebollado','pescado','camaron','camarón','camarones','camarónes','concha','langosta','cangrejo','atun','atún']},
-            hamburguesa:{icon:'🍔',label:'Hamburguesas',kw:['hambur','burger']},
-            postres:{icon:'🧁',label:'Postres',kw:['postre','postres','helado','helados','torta','tortas','pastel','pasteles','pasteleria','pastelería','bizcocho','bizcochos','dulce','dulces','pastry','cupcake','cheesecake','bolleria','bollería']},
-            bebidas:{icon:'🥤',label:'Bebidas',kw:['bebida','bebidas','jugo','jugos','refresco','refrescos','gaseosa','gaseosas','cafe','café','cafeteria','cafetería','batido','batidos','smoothie','agua']}
+            pollo:{icon:'🍗',label:'Pollo',
+                core:['pollo','pollos','polleria','pollería'],
+                kw:['pollo','pollos','broster','alita','alitas','presa','presas','chicken','polleria','pollería']},
+            pizza:{icon:'🍕',label:'Pizza',
+                core:['pizza','pizzas','pizzeria','pizzería'],
+                kw:['pizza','pizzas','pizzer']},
+            almuerzo:{icon:'🍱',label:'Almuerzo',
+                core:['almuerzo','almuerzos','menu del dia','menú del día','menus del dia','menús del día'],
+                kw:['almuerzo','almuerzos','menú','menu','menús','menus','ejecutivo','ejecutivos']},
+            mariscos:{icon:'🐟',label:'Mariscos',
+                core:['marisco','mariscos','marisqueria','marisquería','cevicheria','cevichería'],
+                kw:['marisco','mariscos','ceviche','ceviches','encebollado','pescado','camaron','camarón','camarones','camarónes','concha','langosta','cangrejo','atun','atún']},
+            hamburguesa:{icon:'🍔',label:'Hamburguesas',
+                core:['hamburguesa','hamburguesas','hamburgueseria','hamburguesería','hambur','burger','burgers','burguer'],
+                kw:['hambur','burger']},
+            postres:{icon:'🧁',label:'Postres',
+                core:['postre','postres','dulce','dulces','pasteleria','pastelería','reposteria','repostería','heladeria','heladería'],
+                kw:['postre','postres','helado','helados','torta','tortas','pastel','pasteles','pasteleria','pastelería','bizcocho','bizcochos','dulce','dulces','pastry','cupcake','cheesecake','bolleria','bollería']},
+            bebidas:{icon:'🥤',label:'Bebidas',
+                core:['bebida','bebidas','cafeteria','cafetería','jugueria','juguería'],
+                kw:['bebida','bebidas','jugo','jugos','refresco','refrescos','gaseosa','gaseosas','cafe','café','cafeteria','cafetería','batido','batidos','smoothie','agua']}
         };
         var CAT_KEYS_V2=['pollo','pizza','almuerzo','mariscos','hamburguesa','postres','bebidas'];
 
