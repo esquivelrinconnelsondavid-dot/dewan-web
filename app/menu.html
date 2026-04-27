@@ -858,6 +858,43 @@
         function removeAccents(s){
             return s.replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ñ/g,'n').replace(/ü/g,'u');
         }
+        // V4.5: Generar variantes razonables de una palabra de búsqueda para cubrir
+        // tildes (datos con/sin acento) y plurales (chifa↔chifas). Limitado a ~10 variantes
+        // para no inflar la query SQL del OR.
+        function generateSearchVariants(q){
+            var lower=(q||'').toLowerCase().trim();
+            if(!lower)return[];
+            var set={};
+            set[lower]=true;
+            // Sin tildes
+            var noAcc=removeAccents(lower);
+            set[noAcc]=true;
+            // Plurales: si termina en 's', sin 's'; si no, +'s'
+            function addPlural(w){
+                if(w.length<3)return;
+                if(w.charAt(w.length-1)==='s') set[w.slice(0,-1)]=true;
+                else set[w+'s']=true;
+            }
+            addPlural(lower); addPlural(noAcc);
+            // Si la palabra original no tiene tildes, generar variantes con tilde en cada vocal
+            // (cubre el caso "chaulafan" → "chaulafán" cuando los datos tienen tilde).
+            // Solo para palabras de hasta 14 chars para mantener la query SQL en tamaño razonable.
+            if(lower===noAcc&&lower.length<=14){
+                var vmap={a:'á',e:'é',i:'í',o:'ó',u:'ú'};
+                for(var i=0;i<noAcc.length;i++){
+                    var c=noAcc.charAt(i);
+                    if(vmap[c]){
+                        var variant=noAcc.slice(0,i)+vmap[c]+noAcc.slice(i+1);
+                        set[variant]=true;
+                        // y su plural
+                        if(variant.charAt(variant.length-1)==='s') set[variant.slice(0,-1)]=true;
+                        else set[variant+'s']=true;
+                    }
+                }
+            }
+            // Devolver hasta 12 variantes (suficiente para la mayoría)
+            return Object.keys(set).slice(0,12);
+        }
         function simplify(s){
             s=s.toLowerCase().replace(/[^a-záéíóúñü]/g,'');
             var r='';for(var i=0;i<s.length;i++){if(i===0||s[i]!==s[i-1])r+=s[i]}return r;
@@ -1725,7 +1762,7 @@
             if(!q){renderSearchIdle();return}
             renderSearchSkeletons();
 
-            // 1) Match directo por nombre/categoría del restaurante (client-side)
+            // 1) Match directo por nombre/categoría del restaurante (client-side, ya normaliza)
             var qNorm=removeAccents(q.toLowerCase());
             var directRests=(sessionData.resultados||[]).filter(function(r){
                 var n=removeAccents((r.nombre||'').toLowerCase());
@@ -1734,9 +1771,20 @@
                 return n.indexOf(qNorm)!==-1||c.indexOf(qNorm)!==-1||t.indexOf(qNorm)!==-1;
             });
 
-            // 2) Query server-side a menu_items (con ilike), agrupar por restaurante — paginado
-            var enc=encodeURIComponent('%'+q+'%');
-            var ors='nombre_item.ilike.'+enc+',descripcion.ilike.'+enc+',categoria_menu.ilike.'+enc;
+            // 2) V4.5: Generar variantes de la query para cubrir tildes y plurales
+            //    "chaulafan" → ["chaulafan","chaulafans","cháulafan","chaúlafan","chaulafán",...]
+            //    "chifas" → ["chifas","chifa"]
+            //    "café" → ["café","cafe","cafés","cafes"]
+            var variants=generateSearchVariants(q);
+            // Construir OR con cada variante × 3 columnas (nombre_item, descripcion, categoria_menu)
+            var orParts=[];
+            variants.forEach(function(v){
+                var enc=encodeURIComponent('%'+v+'%');
+                orParts.push('nombre_item.ilike.'+enc);
+                orParts.push('descripcion.ilike.'+enc);
+                orParts.push('categoria_menu.ilike.'+enc);
+            });
+            var ors=orParts.join(',');
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
                     var restsByPlates=aggregatePlatesByRest(plates);
@@ -1827,16 +1875,17 @@
                     return 'openRestFiltered(\''+jsEsc(r.nombre)+'\',\''+jsEsc(query)+'\')';
                 }
 
+                // V4.5: usar grilla 3-columnas (igual que la home/categorias) en vez de filas compactas
                 if(hasSpecs){
                     html+='<div class="search-section-title-v2">'+(hasBoth?'✨ Especialistas en "':'🏪 Restaurantes que venden "')+esc(query)+'"<span class="search-section-count">'+parts.specs.length+'</span></div>';
-                    html+='<div style="padding:4px 0 0">';
-                    parts.specs.forEach(function(r){html+=renderRestCardRowV2(r,globalIdx++,clickCmd(r))});
+                    html+='<div class="grid3-wrap">';
+                    parts.specs.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
                 }
                 if(parts.others.length){
                     html+='<div class="search-section-title-v2">'+(hasSpecs?'🏪 También ofrecen "'+esc(query)+'"':'🏪 Restaurantes que venden "'+esc(query)+'"')+'<span class="search-section-count">'+parts.others.length+'</span></div>';
-                    html+='<div style="padding:4px 0 0">';
-                    parts.others.forEach(function(r){html+=renderRestCardRowV2(r,globalIdx++,clickCmd(r))});
+                    html+='<div class="grid3-wrap">';
+                    parts.others.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
                 }
             }
