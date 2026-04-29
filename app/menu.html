@@ -1660,14 +1660,17 @@
             var q=e.target.value;
             document.getElementById('search-clear').classList.toggle('visible',!!q);
             clearTimeout(_searchTimer);
-            if(!q.trim()){renderSearchIdle();return}
-            _searchTimer=setTimeout(function(){doSearch(q)},250);
+            if(!q.trim()){window._searchSeq=(window._searchSeq||0)+1;renderSearchIdle();return}
+            // V4.7: 320ms da margen para escribir 1-2 letras más antes de disparar query
+            _searchTimer=setTimeout(function(){doSearch(q)},320);
         }
 
         window.clearSearchInput=function(){
             var input=document.getElementById('search-input');
             input.value='';
             document.getElementById('search-clear').classList.remove('visible');
+            window._searchSeq=(window._searchSeq||0)+1; // invalidar queries en vuelo
+            clearTimeout(_searchTimer);
             renderSearchIdle();
             input.focus();
         };
@@ -1786,9 +1789,15 @@
             return {specs:specs,others:others};
         }
 
+        // V4.7: Contador de secuencia para búsquedas — evita race conditions en mobile
+        // donde queries lentas pueden volver desordenadas y sobrescribir resultados nuevos
+        // con resultados viejos (ej: query "p" llega después de query "po" y muestra basura).
+        window._searchSeq=0;
+
         function doSearch(query){
             var q=(query||'').trim();
             if(!q){renderSearchIdle();return}
+            var mySeq=++window._searchSeq;
             renderSearchSkeletons();
 
             // 1) Match directo por nombre/categoría del restaurante (client-side, ya normaliza)
@@ -1816,6 +1825,8 @@
             var ors=orParts.join(',');
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
+                    // V4.7: descartar si ya hay una búsqueda más reciente (resultado obsoleto)
+                    if(mySeq!==window._searchSeq) return;
                     var restsByPlates=aggregatePlatesByRest(plates);
 
                     // 3) Combinar: dedup y rankear por score de relevancia
@@ -1828,6 +1839,7 @@
                     saveRecentSearch(q);
                     renderSearchResults(q,combined,plates);
                 }).catch(function(){
+                    if(mySeq!==window._searchSeq) return;
                     saveRecentSearch(q);
                     renderSearchResults(q,directRests,[]);
                 });
