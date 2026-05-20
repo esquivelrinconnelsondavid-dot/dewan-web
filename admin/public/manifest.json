@@ -1,0 +1,10 @@
+{
+  "name": "DEWAN Admin",
+  "short_name": "DEWAN Admin",
+  "scope": "/admin/",
+  "start_url": "/admin/",
+  "display": "standalone",
+  "background_color": "#0D0D0D",
+  "theme_color": "#FFD700",
+  "icons": []
+}
