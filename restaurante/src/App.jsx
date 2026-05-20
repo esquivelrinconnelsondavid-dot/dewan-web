@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Header from './components/Header';
 import LoginScreen from './components/LoginScreen';
 import PedidoEntrante from './components/PedidoEntrante';
 import PedidoEnPreparacion from './components/PedidoEnPreparacion';
+import TabBar from './components/TabBar';
+import VistaHoy from './components/VistaHoy';
 import { useAuth } from './hooks/useAuth';
 import { usePedidosRestaurante } from './hooks/usePedidosRestaurante';
 import {
@@ -13,8 +15,14 @@ import {
   stopAllAlerts,
 } from './lib/notifications';
 
+const TABS = [
+  { id: 'pedidos', label: 'Pedidos' },
+  { id: 'hoy', label: 'Hoy' },
+];
+
 function Panel({ restaurante, onLogout }) {
   const { entrantes, enPreparacion, cargando } = usePedidosRestaurante(restaurante);
+  const [tab, setTab] = useState('pedidos');
 
   // Permisos de notificación y wake lock al montar.
   useEffect(() => {
@@ -60,49 +68,56 @@ function Panel({ restaurante, onLogout }) {
   return (
     <div className="h-full flex flex-col">
       <Header restaurante={restaurante} onLogout={onLogout} />
+      <TabBar tabs={TABS} active={tab} onChange={setTab} />
 
       <div className="flex-1 overflow-y-auto pb-8">
-        {entrantes.length > 0 && (
-          <section className="px-3 pt-3">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-nuevo animate-pulse" />
-              <h2 className="text-xs font-bold uppercase tracking-widest text-nuevo">
-                Nuevos pedidos ({entrantes.length})
-              </h2>
-            </div>
-            <div className="space-y-2">
-              {entrantes.map((p) => (
-                <PedidoEntrante key={p.id} pedido={p} />
-              ))}
-            </div>
-          </section>
+        {tab === 'pedidos' && (
+          <>
+            {entrantes.length > 0 && (
+              <section className="px-3 pt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-nuevo animate-pulse" />
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-nuevo">
+                    Nuevos pedidos ({entrantes.length})
+                  </h2>
+                </div>
+                <div className="space-y-2">
+                  {entrantes.map((p) => (
+                    <PedidoEntrante key={p.id} pedido={p} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {enPreparacion.length > 0 && (
+              <section className="px-3 pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-preparando" />
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-preparando">
+                    En preparación ({enPreparacion.length})
+                  </h2>
+                </div>
+                <div className="space-y-2">
+                  {enPreparacion.map((p) => (
+                    <PedidoEnPreparacion key={p.id} pedido={p} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {sinPedidos && (
+              <div className="h-full flex flex-col items-center justify-center px-6 text-center mt-20">
+                <p className="text-7xl mb-4">🍽️</p>
+                <h2 className="text-white font-bold text-xl mb-2">Esperando pedidos…</h2>
+                <p className="text-gray-400 text-sm max-w-xs">
+                  Mantén esta pantalla abierta. Los pedidos sonarán al entrar.
+                </p>
+              </div>
+            )}
+          </>
         )}
 
-        {enPreparacion.length > 0 && (
-          <section className="px-3 pt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-preparando" />
-              <h2 className="text-xs font-bold uppercase tracking-widest text-preparando">
-                En preparación ({enPreparacion.length})
-              </h2>
-            </div>
-            <div className="space-y-2">
-              {enPreparacion.map((p) => (
-                <PedidoEnPreparacion key={p.id} pedido={p} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {sinPedidos && (
-          <div className="h-full flex flex-col items-center justify-center px-6 text-center mt-20">
-            <p className="text-7xl mb-4">🍽️</p>
-            <h2 className="text-white font-bold text-xl mb-2">Esperando pedidos…</h2>
-            <p className="text-gray-400 text-sm max-w-xs">
-              Mantén esta pantalla abierta. Los pedidos sonarán al entrar.
-            </p>
-          </div>
-        )}
+        {tab === 'hoy' && <VistaHoy restaurante={restaurante} />}
       </div>
     </div>
   );
