@@ -1494,7 +1494,7 @@
                         window._almMenuData.push({desc:p.descripcion});
                         var almQty=countAlmuerzoCart(r.nombre,p.nombre);
                         var precioDisp=almData.precio?'$'+Number(almData.precio).toFixed(2):'—';
-                        h+='<div class="dest-card'+(almQty?' in-cart':'')+'" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">'+
+                        h+='<div class="dest-card'+(almQty?' in-cart':'')+'" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(r.id||'')+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">'+
                             '<div class="dest-emoji">🍱</div>'+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
@@ -1505,7 +1505,7 @@
                     } else {
                         var ci=findCart(r.nombre,p.nombre);
                         var qty=ci?ci.qty:0;
-                        h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">'+
+                        h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(r.id||'')+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">'+
                             '<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>'+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
@@ -1566,7 +1566,7 @@
                                     '<div class="prod-desc">'+descLegible+'</div>'+
                                     '<div class="prod-bottom">'+
                                         '<span class="prod-price">'+precioDisplay+'</span>'+
-                                        '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">+</button>'+
+                                        '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(r.id||'')+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">+</button>'+
                                     '</div>'+
                                 '</div>'+
                             '</div>'+
@@ -1590,9 +1590,9 @@
                                             '<div class="qty-ctrl">'+
                                                 '<button class="btn-qty btn-qty-minus" aria-label="Quitar" onclick="event.stopPropagation();removeCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\')">−</button>'+
                                                 '<span class="qty-num">'+qty+'</span>'+
-                                                '<button class="btn-qty btn-qty-plus" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">+</button>'+
+                                                '<button class="btn-qty btn-qty-plus" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(r.id||'')+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">+</button>'+
                                             '</div>'
-                                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">+</button>'
+                                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(r.id||'')+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">+</button>'
                                         )+
                                     '</div>'+
                                 '</div>'+
@@ -2014,7 +2014,7 @@
                             '<div class="qty-ctrl">'+
                                 '<button class="btn-qty btn-qty-minus" onclick="removeCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\')">-</button>'+
                                 '<span class="qty-num">'+c.qty+'</span>'+
-                                '<button class="btn-qty btn-qty-plus" onclick="addCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\','+c.precio+','+c.delivery+')">+</button>'+
+                                '<button class="btn-qty btn-qty-plus" onclick="addCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.restaurante_id||'')+'\',\''+jsEsc(c.nombre)+'\','+c.precio+','+c.delivery+')">+</button>'+
                             '</div>'+
                             '<div class="cart-nota-wrap"><span class="cart-nota-icon">✏️</span><input type="text" class="cart-nota-input" placeholder="Notas: sin cebolla, extra salsa..." value="'+esc(c.nota||'')+'" onchange="updateNota('+cartIdx+',this.value)" oninput="updateNota('+cartIdx+',this.value)"></div>'+
                         '</div>';
@@ -2155,11 +2155,11 @@
             try{return getEmojiPlato(nombre)||'✨'}catch(e){return '✨'}
         }
 
-        window.addCart=function(rest,nombre,precio,delivery){
+        window.addCart=function(rest,restId,nombre,precio,delivery){
             var p=parsePrice(precio),d=parsePrice(delivery);
             var pt=captureClickPoint();
             var c=findCart(rest,nombre);
-            if(c){c.qty++;c.precio=p;c.delivery=d}else{window._cart.push({restaurante:rest,nombre:nombre,precio:p,delivery:d,qty:1})}
+            if(c){c.qty++;c.precio=p;c.delivery=d;if(restId)c.restaurante_id=restId}else{window._cart.push({restaurante:rest,restaurante_id:restId||null,nombre:nombre,precio:p,delivery:d,qty:1})}
             saveCart(); // CAMBIO 2
             markEtapa('agrego_carrito');
             refreshView();
@@ -2339,6 +2339,77 @@
                 msg+='💳 *Pago: Efectivo* 💵\n\n';
             }
             msg+='Token: '+token;
+
+            // === NUEVO: Insertar pedidos directamente en Supabase con monto calculado ===
+            // NOTA: n8n debe verificar pedidos_delivery WHERE conversation_id = token
+            // antes de insertar, para no duplicar. Token único por sesión de carrito.
+            try {
+              var pedidosCreados = [];
+              for (var restNombre in byRest) {
+                var items = byRest[restNombre];
+                if (!items.length) continue;
+                var subtotalRest = 0;
+                var deliveryRest = 0;
+                items.forEach(function(c){
+                  subtotalRest += parsePrice(c.precio) * parsePrice(c.qty);
+                  deliveryRest = parsePrice(c.delivery); // todos los items del restaurante comparten delivery
+                });
+                var montoComision = Math.round(subtotalRest * 0.10 * 100) / 100;
+                // Detalle estructurado (texto plano formato lista)
+                var detalleLineas = items.map(function(c){
+                  var line = c.qty + 'x ' + c.nombre + ' ($' + (parsePrice(c.precio) * parsePrice(c.qty)).toFixed(2) + ')';
+                  if (c.almuerzoChoices) {
+                    var catOrder = ['entrada','sopa','segundo','guarnicion','jugo','postre'];
+                    catOrder.forEach(function(cat){
+                      if (c.almuerzoChoices[cat]) line += '\n   • ' + cat + ': ' + c.almuerzoChoices[cat];
+                    });
+                  }
+                  if (c.nota) line += '\n   📝 ' + c.nota;
+                  return line;
+                }).join('\n');
+
+                var restauranteId = items[0].restaurante_id || null;
+
+                var pedidoData = {
+                  restaurante: restNombre,
+                  restaurante_id: restauranteId,
+                  detalle_pedido: detalleLineas,
+                  monto_total: subtotalRest,
+                  monto_comision: montoComision,
+                  comision_la_paga: 'restaurante',
+                  precio_calculado: deliveryRest > 0 ? deliveryRest : null,
+                  intencion: 'pedido_comida',
+                  estado_pedido: 'pendiente_restaurante',
+                  conversation_id: token,
+                  direccion_entrega: (window._clientAddr || '').trim() || null,
+                  ubicacion_lat: window._clientGPS ? String(window._clientGPS.lat) : null,
+                  ubicacion_lng: window._clientGPS ? String(window._clientGPS.lng) : null,
+                };
+
+                // Fire-and-forget: no bloqueamos la apertura de WhatsApp si falla
+                fetch(SB_URL + '/rest/v1/pedidos_delivery', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SB_KEY,
+                    'Authorization': 'Bearer ' + SB_KEY,
+                    'Prefer': 'return=minimal',
+                  },
+                  body: JSON.stringify(pedidoData),
+                }).then(function(r){
+                  if (!r.ok) console.warn('[pedido] insert no-ok', r.status);
+                  else console.log('[pedido] insertado para', restNombre, '$' + subtotalRest.toFixed(2));
+                }).catch(function(e){
+                  console.warn('[pedido] error insert:', e);
+                });
+                pedidosCreados.push(restNombre);
+              }
+              console.log('[pedido] creados:', pedidosCreados.length, 'pedido(s)');
+            } catch (e) {
+              console.warn('[pedido] excepcion general:', e);
+            }
+            // === FIN BLOQUE NUEVO ===
+
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
             // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
             var resumen={items:t.items,total:window._clientGPS?t.total:t.subtotal,conGPS:!!window._clientGPS};
@@ -2475,7 +2546,7 @@
             saveCart(); // CAMBIO 2
             refreshView();
         };
-        window.openAlmuerzoModal=function(rest,nombre,almIdx,delivery){
+        window.openAlmuerzoModal=function(rest,restId,nombre,almIdx,delivery){
             var descRaw=window._almMenuData[almIdx].desc;
             var data=parseAlmuerzo(descRaw);
             if(!data)return;
@@ -2525,7 +2596,7 @@
                 '<button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancelar</button>'+
             '</div>';
 
-            window._almPending={rest:rest,nombre:nombre,precio:precio,delivery:delivery,needsSelection:needsSelection};
+            window._almPending={rest:rest,restId:restId||null,nombre:nombre,precio:precio,delivery:delivery,needsSelection:needsSelection};
 
             document.getElementById('modal-content').innerHTML=h;
 
@@ -2561,6 +2632,7 @@
             });
             window._cart.push({
                 restaurante:p.rest,
+                restaurante_id:p.restId||null,
                 nombre:p.nombre,
                 precio:p.precio,
                 delivery:p.delivery,
