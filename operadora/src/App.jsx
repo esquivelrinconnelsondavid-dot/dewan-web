@@ -4,11 +4,14 @@ import StatsBar from './components/StatsBar';
 import EmbudoClientes from './components/EmbudoClientes';
 import SeccionPedidos from './components/SeccionPedidos';
 import PedidoNuevo from './components/PedidoNuevo';
+import PedidoEscalado from './components/PedidoEscalado';
 import PedidoPreparando from './components/PedidoPreparando';
 import PedidoBuscando from './components/PedidoBuscando';
 import PedidoEnCamino from './components/PedidoEnCamino';
 import PedidoEntregado from './components/PedidoEntregado';
+import RestaurantesOnline from './components/RestaurantesOnline';
 import { usePedidos } from './hooks/usePedidos';
+import { useRestaurantesOnline } from './hooks/useRestaurantesOnline';
 import { requestPushPermission, unlockAudio } from './lib/notifications';
 
 const PIN = import.meta.env.VITE_APP_PIN || '1234';
@@ -62,7 +65,8 @@ function PinScreen({ onUnlock }) {
 }
 
 function Panel() {
-  const { nuevos, preparando, buscando, enCamino, entregados, cargando } = usePedidos();
+  const { nuevos, preparando, buscando, enCamino, entregados, escalados, cargando } = usePedidos();
+  const { restaurantes: restaurantesOnline, total: totalOnline } = useRestaurantesOnline();
 
   // Pedir permisos de notificación al montar
   useEffect(() => {
@@ -104,10 +108,21 @@ function Panel() {
         buscando={buscando.length}
         enCamino={enCamino.length}
         entregados={entregados.length}
+        escalados={escalados.length}
       />
+      <RestaurantesOnline restaurantes={restaurantesOnline} total={totalOnline} />
       <EmbudoClientes />
 
       <div className="flex-1 overflow-y-auto pb-8">
+        {/* Escalados a operadora */}
+        {escalados.length > 0 && (
+          <SeccionPedidos titulo="Escalados a operadora" color="bg-buscando" count={escalados.length}>
+            {escalados.map((p) => (
+              <PedidoEscalado key={p.id} pedido={p} />
+            ))}
+          </SeccionPedidos>
+        )}
+
         {/* Nuevos pedidos */}
         {nuevos.length > 0 && (
           <SeccionPedidos titulo="Nuevos pedidos" color="bg-nuevo" count={nuevos.length}>
@@ -161,7 +176,8 @@ function Panel() {
         )}
 
         {/* Vacío */}
-        {nuevos.length === 0 &&
+        {escalados.length === 0 &&
+          nuevos.length === 0 &&
           preparando.length === 0 &&
           buscando.length === 0 &&
           enCamino.length === 0 &&

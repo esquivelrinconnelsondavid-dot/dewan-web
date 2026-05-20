@@ -88,6 +88,19 @@ export function usePedidos() {
                 `${nuevo.restaurante} - ${nuevo.detalle_pedido}`
               );
             }
+            // Si fue escalado a operadora (ningún restaurante respondió), alertar
+            if (
+              nuevo.escalado_operadora === true &&
+              viejo?.escalado_operadora !== true &&
+              !pedidosAnterioresRef.current.has(nuevo.id)
+            ) {
+              pedidosAnterioresRef.current.add(nuevo.id);
+              startAlertLoop(nuevo.id);
+              showPushNotification(
+                `🚨 Pedido escalado #${nuevo.id}`,
+                `${nuevo.restaurante || 'Sin restaurante'} - ${nuevo.detalle_pedido || ''}`
+              );
+            }
           }
 
           if (eventType === 'DELETE') {
@@ -124,6 +137,14 @@ export function usePedidos() {
     ['aceptado', 'en_camino', 'en_camino_entrega', 'llegado'].includes(p.estado_pedido)
   );
   const entregados = pedidos.filter((p) => p.estado_pedido === 'entregado');
+  const escalados = pedidos.filter(
+    (p) =>
+      p.escalado_operadora === true &&
+      p.restaurante_aceptado !== true &&
+      p.restaurante_rechazado !== true &&
+      p.estado_pedido !== 'cancelado' &&
+      p.estado_pedido !== 'entregado'
+  );
 
   return {
     pedidos,
@@ -132,6 +153,7 @@ export function usePedidos() {
     buscando,
     enCamino,
     entregados,
+    escalados,
     cargando,
     recargar: cargar,
   };

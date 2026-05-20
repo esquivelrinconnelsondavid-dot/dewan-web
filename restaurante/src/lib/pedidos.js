@@ -5,9 +5,18 @@ import { supabase } from './supabase';
 // La lógica de "buscar motorizado" (cambio a estado 'confirmado' cuando
 // se cumple el timer) sigue manejada por el sistema existente.
 
-export async function aceptarPedido(pedidoId, minutos) {
+// Porcentaje de comisión que se queda DEWAN sobre el monto total del pedido.
+// Modelo A: la paga el restaurante (neto_restaurante = monto_total - monto_comision).
+export const COMISION_PORCENTAJE = 10;
+
+export async function aceptarPedido(pedidoId, { minutos, montoTotal }) {
   const ahora = new Date();
   const lanzamiento = new Date(ahora.getTime() + minutos * 60000);
+
+  // 10% del monto, pagada por el restaurante.
+  const montoComision = montoTotal != null
+    ? Math.round(montoTotal * COMISION_PORCENTAJE) / 100
+    : null;
 
   const { error } = await supabase
     .from('pedidos_delivery')
@@ -21,6 +30,9 @@ export async function aceptarPedido(pedidoId, minutos) {
       // como "sin atender" si por alguna razón sigue mirando la lista.
       operadora_atendido: true,
       operadora_atendido_at: ahora.toISOString(),
+      monto_total: montoTotal ?? null,
+      monto_comision: montoComision,
+      comision_la_paga: montoTotal != null ? 'restaurante' : null,
     })
     .eq('id', pedidoId);
 

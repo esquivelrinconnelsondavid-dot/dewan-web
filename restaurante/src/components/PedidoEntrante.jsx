@@ -14,6 +14,7 @@ function tiempoSinAtender(fechaCreacion) {
 export default function PedidoEntrante({ pedido }) {
   const [cargando, setCargando] = useState(false);
   const [tiempoTexto, setTiempoTexto] = useState(tiempoSinAtender(pedido.fecha_creacion));
+  const [monto, setMonto] = useState('');
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -22,10 +23,20 @@ export default function PedidoEntrante({ pedido }) {
     return () => clearInterval(id);
   }, [pedido.fecha_creacion]);
 
+  const montoNum = parseFloat(monto) || 0;
+  const comisionRedondeada = Math.round(montoNum * 0.10 * 100) / 100;
+  const neto = montoNum - comisionRedondeada;
+
   const aceptar = async (minutos) => {
     setCargando(true);
     try {
-      await aceptarPedido(pedido.id, minutos);
+      const montoNumEnvio = monto.trim() === '' ? null : parseFloat(monto);
+      if (montoNumEnvio !== null && (Number.isNaN(montoNumEnvio) || montoNumEnvio <= 0)) {
+        alert('Monto inválido');
+        setCargando(false);
+        return;
+      }
+      await aceptarPedido(pedido.id, { minutos, montoTotal: montoNumEnvio });
       stopAlertLoop(pedido.id);
     } catch (e) {
       console.error('Error al aceptar:', e);
@@ -89,6 +100,34 @@ export default function PedidoEntrante({ pedido }) {
           🏠 <span className="text-gray-300">{pedido.direccion_entrega}</span>
         </div>
       )}
+
+      <div className="mb-3">
+        <label className="text-xs text-gray-400 font-semibold uppercase tracking-wider block mb-1">
+          Monto del pedido
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">$</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={monto}
+            onChange={(e) => {
+              const v = e.target.value.replace(',', '.');
+              if (v === '' || /^\d*\.?\d{0,2}$/.test(v)) setMonto(v);
+            }}
+            className="w-full bg-fondo border border-borde rounded-lg pl-7 pr-3 py-2 text-white text-lg focus:outline-none focus:border-dewan"
+          />
+        </div>
+        {monto.trim() !== '' && montoNum > 0 ? (
+          <p className="text-[11px] text-gray-400 mt-1">
+            Comisión DEWAN (10%): <span className="text-nuevo font-semibold">${comisionRedondeada.toFixed(2)}</span>
+            {' · '}Te queda: <span className="text-encamino font-semibold">${neto.toFixed(2)}</span>
+          </p>
+        ) : (
+          <p className="text-[11px] text-gray-500 mt-1">Opcional. Si lo dejas vacío, se acepta sin monto.</p>
+        )}
+      </div>
 
       <div className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wider">
         Tiempo de preparación

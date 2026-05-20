@@ -1,5 +1,13 @@
-export default function StatsBar({ nuevos, preparando, buscando, enCamino, entregados }) {
+export default function StatsBar({
+  nuevos,
+  preparando,
+  buscando,
+  enCamino,
+  entregados,
+  escalados = 0,
+}) {
   const items = [
+    { label: 'Esc', count: escalados, color: 'bg-buscando' },
     { label: 'Pend', count: nuevos, color: 'bg-nuevo' },
     { label: 'Prep', count: preparando, color: 'bg-preparando' },
     { label: 'Moto', count: buscando + enCamino, color: 'bg-buscando' },
