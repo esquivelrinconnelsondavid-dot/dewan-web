@@ -1458,7 +1458,7 @@
             var deliveryPrice=parsePrice(r.precio_delivery);
             var deliveryPill=window._clientGPS
                 ?(deliveryPrice>0
-                    ?'<span class="rest-pill is-neutral"><span>🛵</span> Envío '+fmtMoney(deliveryPrice,r.moneda)+'</span>'
+                    ?'<span class="rest-pill is-neutral"><span>🛵</span> Envío '+fmtCOP(deliveryPrice)+'</span>'
                     :'<span class="rest-pill"><span>🛵</span> Envío gratis</span>')
                 :'<span class="rest-pill is-neutral"><span>🛵</span> Envío al ubicar</span>';
             var distPill=r.distancia_km?'<span class="rest-pill is-neutral"><span>📍</span> '+r.distancia_km+' km</span>':'';
@@ -1869,7 +1869,7 @@
             if(r._matchCount) metaParts.push('<span class="badge-count">'+r._matchCount+' plato'+(r._matchCount===1?'':'s')+'</span>');
             if(r.tiempo_estimado_min) metaParts.push('<span>⏱ ~'+r.tiempo_estimado_min+' min</span>');
             if(r.distancia_km) metaParts.push('<span>📍 '+r.distancia_km+' km</span>');
-            if(window._clientGPS) metaParts.push('<span>🛵 '+fmtMoney(r.precio_delivery||0,r.moneda)+'</span>');
+            if(window._clientGPS) metaParts.push('<span>🛵 '+fmtCOP(r.precio_delivery||0)+'</span>');
             if(r.categoria&&!r._matchCount) metaParts.push('<span>'+esc(r.categoria)+'</span>');
             return '<div class="rest-compact" onclick="'+openCmd+'" style="border-color:'+color+'22">'+
                 '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
@@ -1895,7 +1895,7 @@
             if(r._matchCount) metaBits.push('<span class="grid3-badge-count">'+r._matchCount+'</span>');
             if(r.tiempo_estimado_min) metaBits.push('⏱ '+r.tiempo_estimado_min+'m');
             if(r.distancia_km) metaBits.push('📍 '+r.distancia_km+'km');
-            else if(window._clientGPS&&r.precio_delivery) metaBits.push('🛵 '+fmtMoney(Number(r.precio_delivery),r.moneda));
+            else if(window._clientGPS&&r.precio_delivery) metaBits.push('🛵 '+fmtCOP(Number(r.precio_delivery)));
             return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+color+'25">'+
                 '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
                     '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
@@ -2043,8 +2043,8 @@
             h+='<div class="cart-summary-box">'+
                 '<div class="cart-summary-title">Resumen</div>'+
                 '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">'+fmtMoney(t.subtotal,cartMoneda())+'</span></div>'+
-                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">'+fmtMoney(t.delivery,cartMoneda())+'</span></div>':'')+
-                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?fmtMoney(t.total,cartMoneda()):fmtMoney(t.subtotal,cartMoneda())+' + envío')+'</span></div>'+
+                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">'+fmtCOP(t.delivery)+'</span></div>':'')+
+                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?fmtMoney(t.subtotal,cartMoneda())+' + '+fmtCOP(t.delivery):fmtMoney(t.subtotal,cartMoneda())+' + envío')+'</span></div>'+
             '</div>';
 
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
@@ -2097,14 +2097,14 @@
                 '</div>';
                 // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
                 h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
-                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?fmtMoney(t.total,cartMoneda()):fmtMoney(t.subtotal,cartMoneda()))+'</span></span>'+
+                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?fmtMoney(t.subtotal,cartMoneda())+' + '+fmtCOP(t.delivery):fmtMoney(t.subtotal,cartMoneda()))+'</span></span>'+
                     '<span class="btn-wa-need-loc-hint">Agrega tu ubicación arriba para activar</span>'+
                 '</button>';
             } else {
                 h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
                 h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
                     '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
-                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?fmtMoney(t.total,cartMoneda()):fmtMoney(t.subtotal,cartMoneda())+' + envío')+'</span>'+
+                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?fmtMoney(t.subtotal,cartMoneda())+' + '+fmtCOP(t.delivery):fmtMoney(t.subtotal,cartMoneda())+' + envío')+'</span>'+
                 '</button>';
             }
             h+='</div>';
@@ -2247,8 +2247,8 @@
                     var pieces=t.items+' '+(t.items===1?'plato':'platos');
                     subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'');
                 }
-                var toVal=window._clientGPS?t.total:t.subtotal;
-                var suffix=window._clientGPS?'':' + envío';
+                var toVal=t.subtotal;
+                var suffix=window._clientGPS?' + '+fmtCOP(t.delivery):' + envío';
                 animateMoney(totalEl,window._cartFloatPrevTotal,toVal,wasVisible?420:0,suffix,cartMoneda());
                 window._cartFloatPrevTotal=toVal;
                 document.body.classList.add('has-cart');
@@ -2336,7 +2336,8 @@
                 msg+='\n';
             });
             if(window._clientGPS){
-                msg+='💰 *Total: '+fmtMoney(t.total,cartMoneda())+'* (incluye delivery)\n\n';
+                msg+='💰 *Subtotal: '+fmtMoney(t.subtotal,cartMoneda())+'*\n';
+                msg+='🛵 *Delivery: '+fmtCOP(t.delivery)+'*\n\n';
             } else {
                 msg+='💰 *Subtotal: '+fmtMoney(t.subtotal,cartMoneda())+'* + envío (se calcula al compartir ubicación)\n\n';
             }
@@ -2361,7 +2362,7 @@
             msg+='Token: '+token;
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
             // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
-            var resumen={items:t.items,total:window._clientGPS?t.total:t.subtotal,conGPS:!!window._clientGPS,moneda:cartMoneda()};
+            var resumen={items:t.items,subtotal:t.subtotal,delivery:t.delivery,conGPS:!!window._clientGPS,moneda:cartMoneda()};
             markEtapa('confirmo');
             closeModal();
             showSuccessScreen(resumen);
@@ -2375,7 +2376,8 @@
                 '<div class="success-text">Abrimos WhatsApp con tu pedido listo. Revisa que se haya enviado el mensaje y espera la confirmación de nuestro operador.</div>'+
                 '<div class="success-box">'+
                     '<div class="success-row"><span>Productos</span><span>'+resumen.items+'</span></div>'+
-                    '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>'+fmtMoney(resumen.total,resumen.moneda||'COP')+(resumen.conGPS?'':' + envío')+'</span></div>'+
+                    '<div class="success-row"><span>Subtotal</span><span>'+fmtMoney(resumen.subtotal,resumen.moneda||'COP')+'</span></div>'+
+                    (resumen.conGPS?'<div class="success-row"><span>Delivery</span><span>'+fmtCOP(resumen.delivery)+'</span></div>':'<div class="success-row"><span>Envío</span><span style="color:var(--gris)">por calcular</span></div>')+
                 '</div>'+
                 '<div class="success-hint">¿No se abrió WhatsApp?</div>'+
                 '<button class="btn btn-wa" onclick="sendWA()">📲 Reintentar envío</button>'+
