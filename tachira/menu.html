@@ -818,7 +818,8 @@
                         nombre:it.nombre_item,
                         precio:Number(it.precio)||0,
                         categoria:it.categoria_menu||'General',
-                        descripcion:it.descripcion||''
+                        descripcion:it.descripcion||'',
+                        foto_url:it.foto_url||null
                     }});
                     window._menuCache[restId]=norm;
                     return norm;
@@ -1509,7 +1510,7 @@
                         var ci=findCart(r.nombre,p.nombre);
                         var qty=ci?ci.qty:0;
                         h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">'+
-                            '<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>'+
+                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">'+fmtCOP(Number(p.precio))+'</span>'+
@@ -1579,7 +1580,7 @@
                         var qty=ci?ci.qty:0;
                         h+='<div class="prod-card'+(qty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
-                                '<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>'+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                                 '<div class="prod-info">'+
                                     ((isFirstInCat||qty)?'<div class="prod-badges">'+
                                         (isFirstInCat?'<span class="badge badge-recomendado">⭐ Recomendado</span>':'')+
