@@ -625,10 +625,19 @@
         var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtbWZtY2FqZ3NrZ2R0YmF6Ynl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDY1NzAsImV4cCI6MjA5MTg4MjU3MH0.jXArI6rxthXWNLHDUeTnopqC3DLt5e00NKj1cYSkhhk';
         // TODO: cambiar cuando esté el número WhatsApp Venezuela
         var WA='584000000000';
-        // Formato moneda Táchira: COP "9.000 COP" | USD "$9.99"
+        // Formato moneda Táchira: USD "$9.99" | COP "9.000 COP" | EUR "€9.99" | VES "Bs 9,99"
         function fmtCOP(n){return (Math.round(Number(n)||0)).toLocaleString('es-CO')+' COP'}
         function fmtUSD(n){return '$'+(Number(n)||0).toFixed(2)}
-        function fmtMoney(n,moneda){return (moneda==='USD')?fmtUSD(n):fmtCOP(n)}
+        function fmtEUR(n){return '€'+(Number(n)||0).toFixed(2)}
+        function fmtVES(n){return 'Bs '+(Number(n)||0).toFixed(2).replace('.',',')}
+        function fmtMoney(n,moneda){
+            switch(moneda){
+                case 'USD': return fmtUSD(n);
+                case 'EUR': return fmtEUR(n);
+                case 'VES': return fmtVES(n);
+                default: return fmtCOP(n);
+            }
+        }
         function cartMoneda(){if(!window._cart||!window._cart.length)return 'COP';return window._cart[0].moneda||'COP'}
         function restMonedaByNombre(nombre){try{var arr=(sessionData&&sessionData.resultados)||[];for(var i=0;i<arr.length;i++){if(arr[i].nombre===nombre)return arr[i].moneda||'COP'}}catch(e){}return 'COP'}
         var app=document.getElementById('app');
