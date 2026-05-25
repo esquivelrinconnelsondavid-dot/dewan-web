@@ -1477,6 +1477,18 @@
             var catMap={};
             prods.forEach(function(p){var c=p.categoria||'General';if(!catMap[c])catMap[c]=[];catMap[c].push(p)});
             var cats=Object.keys(catMap);
+            // Orden de prioridad: comida primero, bebidas y postres al final
+            function _catRank(name){
+                var n=removeAccents((name||'').toLowerCase());
+                if(n.indexOf('almuerzo')!==-1) return 0;
+                if(n.indexOf('promocion')!==-1||n.indexOf('combo')!==-1||n.indexOf('especial')!==-1) return 1;
+                if(n.indexOf('entrada')!==-1||n.indexOf('aperitivo')!==-1||n.indexOf('picadita')!==-1||n.indexOf('sopa')!==-1) return 2;
+                if(n.indexOf('bebida')!==-1||n.indexOf('jugo')!==-1||n.indexOf('gaseosa')!==-1||n.indexOf('cerveza')!==-1||n.indexOf('michelad')!==-1||n.indexOf('cocktail')!==-1||n.indexOf('coctel')!==-1||n.indexOf('vino')!==-1||n.indexOf('cafe')!==-1||n.indexOf('te ')!==-1||n.indexOf('infusion')!==-1) return 8;
+                if(n.indexOf('postre')!==-1||n.indexOf('helado')!==-1||n.indexOf('dulce')!==-1) return 9;
+                if(n.indexOf('adicional')!==-1||n.indexOf('extra')!==-1||n.indexOf('salsa')!==-1) return 7;
+                return 5; // platos fuertes y demás comida
+            }
+            cats.sort(function(a,b){var ra=_catRank(a),rb=_catRank(b);if(ra!==rb)return ra-rb;return a.localeCompare(b)});
             var showCat=cats.length>1||(cats.length===1&&cats[0]!=='General');
 
             // ── Destacados carousel (curatorial: primeros platos del menú) ──
