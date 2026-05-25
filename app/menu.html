@@ -168,7 +168,7 @@
         .prod-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:10px;transition:border-color 0.2s,background 0.2s,transform 0.15s}
         .prod-card.in-cart{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.025)}
         .prod-top{display:flex;gap:12px;align-items:flex-start}
-        .prod-emoji{width:48px;height:48px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.65rem;flex-shrink:0;border:1px solid var(--border)}
+        .prod-emoji{width:84px;height:84px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:2.6rem;flex-shrink:0;border:1px solid var(--border)}
         .prod-info{flex:1;min-width:0}
         .prod-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}
         .badge{font-size:0.6rem;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:0.04em;display:inline-flex;align-items:center;gap:3px}
@@ -216,7 +216,7 @@
         .dest-card{flex-shrink:0;width:160px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 12px 12px;scroll-snap-align:start;position:relative;transition:border-color 0.2s,transform 0.15s;cursor:pointer}
         .dest-card:active{transform:scale(0.98)}
         .dest-card.in-cart{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.025)}
-        .dest-emoji{width:56px;height:56px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin-bottom:12px;border:1px solid var(--border)}
+        .dest-emoji{width:96px;height:96px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:2.8rem;margin-bottom:12px;border:1px solid var(--border)}
         .dest-name{font-weight:800;font-size:0.85rem;line-height:1.25;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.15em;letter-spacing:-0.01em}
         .dest-footer{display:flex;align-items:center;justify-content:space-between;gap:6px}
         .dest-price{font-weight:800;font-size:0.98rem;color:var(--texto);letter-spacing:-0.01em}
@@ -251,7 +251,7 @@
         .cart-rest-label{font-weight:900;font-size:0.72rem;color:var(--acc);padding:14px 2px 8px;letter-spacing:0.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
         .cart-rest-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(184,255,0,0.2),transparent)}
         .cart-item{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;display:flex;gap:12px;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.18),inset 0 1px 0 rgba(255,255,255,0.02);transition:border-color 0.2s}
-        .cart-item-emoji{width:56px;height:56px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.85rem;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04)}
+        .cart-item-emoji{width:72px;height:72px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);overflow:hidden}
         .cart-summary-box{background:linear-gradient(180deg,var(--card) 0%,#17171B 100%);border:1px solid var(--border);border-radius:20px;padding:18px 18px 20px;margin:12px 0 16px;box-shadow:0 4px 18px rgba(0,0,0,0.22)}
         .cart-summary-title{font-weight:900;font-size:0.72rem;color:var(--gris-2);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
         .cart-summary-title::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -1506,7 +1506,7 @@
                     } else {
                         var ci=findCart(r.nombre,p.nombre);
                         var qty=ci?ci.qty:0;
-                        h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">'+
+                        h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\')">'+
                             (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
@@ -1591,7 +1591,7 @@
                                             '<div class="qty-ctrl">'+
                                                 '<button class="btn-qty btn-qty-minus" aria-label="Quitar" onclick="event.stopPropagation();removeCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\')">−</button>'+
                                                 '<span class="qty-num">'+qty+'</span>'+
-                                                '<button class="btn-qty btn-qty-plus" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">+</button>'+
+                                                '<button class="btn-qty btn-qty-plus" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\')">+</button>'+
                                             '</div>'
                                             :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+')">+</button>'
                                         )+
@@ -2007,7 +2007,7 @@
                         '</div>';
                     } else {
                         h+='<div class="cart-item" style="flex-wrap:wrap">'+
-                            '<div class="cart-item-emoji">'+getEmojiPlato(c.nombre)+'</div>'+
+                            (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(c.foto_url)+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\''+jsEsc(getEmojiPlato(c.nombre))+'\'"></div>':'<div class="cart-item-emoji">'+getEmojiPlato(c.nombre)+'</div>')+
                             '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
                                 '<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+c.precio.toFixed(2)+' c/u</div>'+
                                 '<div style="color:var(--acc);font-weight:900;font-size:1rem;margin-top:2px">$'+(c.precio*c.qty).toFixed(2)+'</div>'+
@@ -2015,7 +2015,7 @@
                             '<div class="qty-ctrl">'+
                                 '<button class="btn-qty btn-qty-minus" onclick="removeCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\')">-</button>'+
                                 '<span class="qty-num">'+c.qty+'</span>'+
-                                '<button class="btn-qty btn-qty-plus" onclick="addCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\','+c.precio+','+c.delivery+')">+</button>'+
+                                '<button class="btn-qty btn-qty-plus" onclick="addCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\','+c.precio+','+c.delivery+',\''+jsEsc(c.foto_url||'')+'\')">+</button>'+
                             '</div>'+
                             '<div class="cart-nota-wrap"><span class="cart-nota-icon">✏️</span><input type="text" class="cart-nota-input" placeholder="Notas: sin cebolla, extra salsa..." value="'+esc(c.nota||'')+'" onchange="updateNota('+cartIdx+',this.value)" oninput="updateNota('+cartIdx+',this.value)"></div>'+
                         '</div>';
@@ -2156,11 +2156,12 @@
             try{return getEmojiPlato(nombre)||'✨'}catch(e){return '✨'}
         }
 
-        window.addCart=function(rest,nombre,precio,delivery){
+        window.addCart=function(rest,nombre,precio,delivery,fotoUrl){
             var p=parsePrice(precio),d=parsePrice(delivery);
             var pt=captureClickPoint();
             var c=findCart(rest,nombre);
-            if(c){c.qty++;c.precio=p;c.delivery=d}else{window._cart.push({restaurante:rest,nombre:nombre,precio:p,delivery:d,qty:1})}
+            if(c){c.qty++;c.precio=p;c.delivery=d;if(fotoUrl)c.foto_url=fotoUrl;}
+            else{window._cart.push({restaurante:rest,nombre:nombre,precio:p,delivery:d,qty:1,foto_url:fotoUrl||null})}
             saveCart(); // CAMBIO 2
             markEtapa('agrego_carrito');
             refreshView();
