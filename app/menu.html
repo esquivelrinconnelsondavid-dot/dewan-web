@@ -1032,10 +1032,9 @@
             return {g:'Buenas noches',s:'¿Qué cenamos?'};
         }
 
-        // V2.8: Ventana horaria para almuerzos del día (12:00 a 15:00)
+        // Almuerzos del día disponibles a cualquier hora
         function isAlmuerzoHour(){
-            var h=new Date().getHours();
-            return h>=12&&h<15;
+            return true;
         }
 
         // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
