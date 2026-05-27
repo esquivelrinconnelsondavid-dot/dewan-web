@@ -546,6 +546,19 @@
         .grid3-name{font-weight:800;font-size:0.75rem;line-height:1.15;color:var(--texto);letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.72em}
         .grid3-meta{font-size:0.6rem;color:var(--gris-2);font-weight:700;margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;line-height:1.2}
         .grid3-badge-count{background:var(--acc-soft);color:var(--acc);font-size:0.56rem;font-weight:900;padding:1px 6px;border-radius:20px;letter-spacing:0.02em}
+        /* "Precio del local" — claim verde discreto bajo el nombre del aliado */
+        .grid3-precio-local{font-size:0.62rem;color:#22c55e;font-weight:800;margin-top:3px;letter-spacing:0.01em;display:flex;align-items:center;gap:2px}
+        /* Sección destacada de aliados en home */
+        .destacados-section{margin:6px 0 12px}
+        .destacados-title{padding:0 14px 8px;font-size:0.78rem;font-weight:900;color:var(--texto);letter-spacing:-0.01em;display:flex;align-items:center;gap:6px}
+        .destacados-title-acc{color:#22c55e}
+        .destacados-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:0 14px 6px;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}
+        .destacados-scroll::-webkit-scrollbar{display:none}
+        .destacados-card{flex:0 0 130px;scroll-snap-align:start;background:var(--card);border:1.5px solid rgba(34,197,94,0.35);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s;position:relative}
+        .destacados-card:active{transform:scale(0.97)}
+        .destacados-card .grid3-top{aspect-ratio:1/1}
+        .destacados-card .grid3-body{padding:7px 9px 9px}
+        .destacados-card .grid3-name{font-weight:800;font-size:0.72rem;line-height:1.15;color:var(--texto);letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.65em}
         .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
         /* Badge Aliado: visible, dorado, esquina sup-izq */
         .aliado-badge{position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#1a1a1a;font-size:0.55rem;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:0.04em;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:3;display:flex;align-items:center;gap:2px}
@@ -1359,6 +1372,31 @@
                 } else {
                     // Home sin filtro: socios primero, silenciosos detrás de botón
                     var homeBy=partitionBySocio(rests);
+                    // Sección destacada: carousel horizontal con aliados (solo si hay aliados)
+                    var aliadosDestacados=homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'});
+                    if(aliadosDestacados.length){
+                        h+='<div class="destacados-section">';
+                        h+='<div class="destacados-title">⭐ <span class="destacados-title-acc">Sin recargo · Precio del local</span></div>';
+                        h+='<div class="destacados-scroll">';
+                        aliadosDestacados.forEach(function(r,idx){
+                            var hasImg=r.imagen_url||r.logo_url||r.foto_url;
+                            var isOpen=isRestOpen(r.horario);
+                            var color=getColor(idx);
+                            h+='<div class="destacados-card grid3-card" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:rgba(34,197,94,0.35)">'+
+                                '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
+                                    '<span class="aliado-badge">⭐ Aliado</span>'+
+                                    '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
+                                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                                    (isOpen===false?'<span class="grid3-closed">CERRADO</span>':'')+
+                                '</div>'+
+                                '<div class="grid3-body">'+
+                                    '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
+                                    '<div class="grid3-precio-local">✓ Precio del local</div>'+
+                                '</div>'+
+                            '</div>';
+                        });
+                        h+='</div></div>';
+                    }
                     h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+homeBy.socios.length+'</div>';
                     if(homeBy.socios.length){
                         h+='<div class="grid3-wrap">';
@@ -2060,6 +2098,7 @@
                 '</div>'+
                 '<div class="grid3-body">'+
                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
+                    (isAliado?'<div class="grid3-precio-local">✓ Precio del local</div>':'')+
                     (metaBits.length?'<div class="grid3-meta">'+metaBits.join(' · ')+'</div>':'')+
                 '</div>'+
             '</div>';
