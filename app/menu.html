@@ -1948,7 +1948,14 @@
         window._showSilenciosos=false;
         window.toggleSilenciosos=function(){
             window._showSilenciosos=!window._showSilenciosos;
-            refreshView();
+            // currentView puede ser 'search' — refreshView no lo maneja, hay que
+            // re-llamar renderSearchResults con los datos cacheados.
+            if(currentView==='search'&&window._lastSearchData){
+                var ls=window._lastSearchData;
+                renderSearchResults(ls.query,ls.rests,ls.plates);
+            } else {
+                refreshView();
+            }
             // Scroll suave hacia los silenciosos recién mostrados
             if(window._showSilenciosos){
                 setTimeout(function(){
@@ -2086,7 +2093,6 @@
         // Es bulletproof contra el inline onclick que no funciona consistentemente en mobile.
         function _handleServiceFeeTap(e){
             var t=e.target;
-            // .closest fallback (walk manual)
             while(t&&t!==document.body){
                 if(t.getAttribute&&t.getAttribute('data-service-fee')==='1'){
                     try{console.log('[badge tap]',e.type,'target=',t.className)}catch(_){}
@@ -2096,7 +2102,10 @@
                     var now=Date.now();
                     if(window._lastServiceFeeTap&&now-window._lastServiceFeeTap<500) return false;
                     window._lastServiceFeeTap=now;
-                    openServiceFeeInfo();
+                    // setTimeout 0: deferir apertura del modal al siguiente tick.
+                    // El click event actual termina ANTES de que el modal exista,
+                    // así nada puede cerrarlo accidentalmente.
+                    setTimeout(function(){openServiceFeeInfo()},0);
                     return false;
                 }
                 t=t.parentNode;
@@ -2155,6 +2164,8 @@
         };
 
         function renderSearchResults(query,rests,plates){
+            // Cachear última búsqueda para que toggleSilenciosos pueda re-renderizar
+            window._lastSearchData={query:query,rests:rests,plates:plates};
             var area=document.getElementById('search-results-area');
             if(!area) return;
             if(!rests.length&&!plates.length){
