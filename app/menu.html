@@ -2077,17 +2077,18 @@
                 t=t.parentNode;
             }
         }
-        // Múltiples eventos en capture para máxima compatibilidad mobile
+        // SOLO click — escuchar mousedown/pointerup hace que el modal se abra
+        // antes que click resuelva, y el click cae sobre el overlay del modal
+        // recién insertado → dispara closeServiceFeeInfo → modal se cierra solo.
         document.addEventListener('click',_handleServiceFeeTap,true);
-        document.addEventListener('touchstart',_handleServiceFeeTap,true);
-        document.addEventListener('touchend',_handleServiceFeeTap,true);
-        document.addEventListener('pointerup',_handleServiceFeeTap,true);
-        document.addEventListener('mousedown',_handleServiceFeeTap,true);
 
         // Modal explicación de tarifa de servicio (texto pensado para no asustar)
         window.openServiceFeeInfo=function(){
             if(document.getElementById('service-fee-modal')) return;
-            var html='<div id="service-fee-modal" class="modal-overlay" onclick="closeServiceFeeInfo()">'+
+            window._modalOpenedAt=Date.now();
+            // Overlay solo cierra si el click ocurre >300ms después de abrir
+            // (evita race: click residual del tap del badge cae sobre overlay)
+            var html='<div id="service-fee-modal" class="modal-overlay" onclick="if(Date.now()-window._modalOpenedAt>300)closeServiceFeeInfo()">'+
                 '<div class="modal-card" onclick="event.stopPropagation()">'+
                     '<div class="modal-header"><span>ℹ️ Tarifa de servicio</span><button class="modal-close" onclick="closeServiceFeeInfo()">×</button></div>'+
                     '<div class="modal-body">'+
