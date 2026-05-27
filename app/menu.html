@@ -562,6 +562,14 @@
         .modal-ok{width:100%;background:var(--acc);color:#111;border:none;border-radius:14px;padding:13px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit}
         .modal-ok:active{transform:scale(0.98)}
         @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+        /* Botón "Ver otros restaurantes" — separa visualmente a los no-socios */
+        .ver-otros-btn{display:block;width:calc(100% - 28px);margin:18px 14px 6px;padding:14px 18px;background:var(--card);border:1.5px dashed var(--border);border-radius:16px;color:var(--texto);font-family:inherit;cursor:pointer;text-align:center;transition:all 0.2s;letter-spacing:-0.01em}
+        .ver-otros-btn:active{transform:scale(0.985);border-color:var(--acc)}
+        .ver-otros-title{display:block;font-size:0.92rem;font-weight:900;margin-bottom:3px}
+        .ver-otros-count{display:inline-block;background:var(--acc);color:#111;font-size:0.72rem;font-weight:900;padding:1px 8px;border-radius:20px;margin-left:5px;vertical-align:middle}
+        .ver-otros-hint{display:block;font-size:0.72rem;color:var(--gris);font-weight:600}
+        .ocultar-otros-btn{display:block;width:calc(100% - 28px);margin:16px 14px 4px;padding:10px;background:transparent;border:1px solid var(--border);border-radius:14px;color:var(--gris);font-family:inherit;font-size:0.78rem;font-weight:800;cursor:pointer}
+        .ocultar-otros-btn:active{background:var(--card2)}
         .rest-filter-banner-text{flex:1;line-height:1.35}
         .rest-filter-banner-text strong{color:var(--acc);font-weight:900}
         .rest-filter-banner button{background:rgba(184,255,0,0.15);border:1px solid rgba(184,255,0,0.3);color:var(--acc);font-size:0.7rem;font-weight:800;padding:6px 11px;border-radius:100px;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all 0.15s;letter-spacing:-0.01em}
@@ -1094,6 +1102,7 @@
         window._catLoading=false;
 
         window.toggleCategoryV2=function(key){
+            window._showSilenciosos=false; // reset al cambiar de categoría
             if(window._activeCat===key){
                 window._activeCat=null;
                 renderHome();
@@ -1290,31 +1299,63 @@
                 if(window._activeCat){
                     var cmActive=CAT_MAP_V2[window._activeCat];
                     var parts=partitionRests(rests);
-                    var hasSpecs=parts.specs.length>0;
-                    var hasBoth=hasSpecs&&parts.others.length>0;
+                    // Dentro de specs y others, separar socios de silenciosos
+                    var specsBy=partitionBySocio(parts.specs);
+                    var othersBy=partitionBySocio(parts.others);
+                    var hasSpecs=specsBy.socios.length>0;
+                    var hasOthers=othersBy.socios.length>0;
+                    var hasBoth=hasSpecs&&hasOthers;
+                    var totalSilenciosos=specsBy.silenciosos.length+othersBy.silenciosos.length;
                     var gIdx=0;
                     function catCmd(name){return 'openRestCatFiltered(\''+jsEsc(name)+'\',\''+window._activeCat+'\')'}
 
                     if(hasSpecs){
                         h+='<div class="list-section-title">'+(hasBoth?'✨ Especialistas en '+cmActive.label:'🏪 Resultados')+'</div>';
                         h+='<div class="grid3-wrap">';
-                        parts.specs.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        specsBy.socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
                     }
-                    if(parts.others.length){
+                    if(hasOthers){
                         h+='<div class="list-section-title">'+(hasSpecs?'🏪 También ofrecen '+cmActive.label:'🏪 Resultados')+'</div>';
                         h+='<div class="grid3-wrap">';
-                        parts.others.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        othersBy.socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        h+='</div>';
+                    }
+                    // Botón Ver otros restaurantes + silenciosos
+                    h+=renderSilenciososBtn(totalSilenciosos);
+                    if(window._showSilenciosos&&totalSilenciosos>0){
+                        h+='<div id="silenciosos-section">';
+                        h+='<div class="list-section-title">🏪 Otros restaurantes</div>';
+                        h+='<div class="grid3-wrap">';
+                        specsBy.silenciosos.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        othersBy.silenciosos.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        h+='</div>';
+                        h+=renderOcultarSilenciososBtn();
                         h+='</div>';
                     }
                 } else {
-                    // Home sin filtro: título + grilla de todos
-                    h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+rests.length+'</div>';
-                    h+='<div class="grid3-wrap">';
-                    rests.forEach(function(r,idx){
-                        h+=renderRestCardGrid(r,idx,'openRest(\''+jsEsc(r.nombre)+'\')');
-                    });
-                    h+='</div>';
+                    // Home sin filtro: socios primero, silenciosos detrás de botón
+                    var homeBy=partitionBySocio(rests);
+                    h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+homeBy.socios.length+'</div>';
+                    if(homeBy.socios.length){
+                        h+='<div class="grid3-wrap">';
+                        homeBy.socios.forEach(function(r,idx){
+                            h+=renderRestCardGrid(r,idx,'openRest(\''+jsEsc(r.nombre)+'\')');
+                        });
+                        h+='</div>';
+                    }
+                    h+=renderSilenciososBtn(homeBy.silenciosos.length);
+                    if(window._showSilenciosos&&homeBy.silenciosos.length){
+                        h+='<div id="silenciosos-section">';
+                        h+='<div class="list-section-title">🏪 Otros restaurantes</div>';
+                        h+='<div class="grid3-wrap">';
+                        homeBy.silenciosos.forEach(function(r,idx){
+                            h+=renderRestCardGrid(r,homeBy.socios.length+idx,'openRest(\''+jsEsc(r.nombre)+'\')');
+                        });
+                        h+='</div>';
+                        h+=renderOcultarSilenciososBtn();
+                        h+='</div>';
+                    }
                 }
             }
             h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
@@ -1837,6 +1878,45 @@
             return {specs:specs,others:others};
         }
 
+        // Separa por tipo comercial: socios (aliado + cliente_paga) van arriba.
+        // Silenciosos se ocultan detrás de "Ver otros restaurantes".
+        function partitionBySocio(rests){
+            var socios=[],silenciosos=[];
+            rests.forEach(function(r){
+                var t=r.tipo_acuerdo;
+                if(t==='aliado'||t==='cliente_paga') socios.push(r);
+                else silenciosos.push(r);
+            });
+            return {socios:socios,silenciosos:silenciosos};
+        }
+        // Estado global: el cliente toca "Ver otros" → revela silenciosos en la vista actual.
+        // Se resetea al cambiar de categoría / al volver al home / al buscar.
+        window._showSilenciosos=false;
+        window.toggleSilenciosos=function(){
+            window._showSilenciosos=!window._showSilenciosos;
+            refreshView();
+            // Scroll suave hacia los silenciosos recién mostrados
+            if(window._showSilenciosos){
+                setTimeout(function(){
+                    var s=document.getElementById('silenciosos-section');
+                    if(s) s.scrollIntoView({behavior:'smooth',block:'start'});
+                },50);
+            }
+        };
+        // Botón "Ver otros restaurantes (N)" — texto neutro, explica el porqué del recargo
+        function renderSilenciososBtn(count){
+            if(!count) return '';
+            if(window._showSilenciosos) return '';
+            return '<button class="ver-otros-btn" onclick="toggleSilenciosos()">'+
+                '<span class="ver-otros-title">Ver otros restaurantes <span class="ver-otros-count">'+count+'</span></span>'+
+                '<span class="ver-otros-hint">Aplica tarifa de servicio</span>'+
+            '</button>';
+        }
+        function renderOcultarSilenciososBtn(){
+            if(!window._showSilenciosos) return '';
+            return '<button class="ocultar-otros-btn" onclick="toggleSilenciosos()">↑ Ocultar otros restaurantes</button>';
+        }
+
         // V4.7: Contador de secuencia para búsquedas — evita race conditions en mobile
         // donde queries lentas pueden volver desordenadas y sobrescribir resultados nuevos
         // con resultados viejos (ej: query "p" llega después de query "po" y muestra basura).
@@ -1845,6 +1925,7 @@
         function doSearch(query){
             var q=(query||'').trim();
             if(!q){renderSearchIdle();return}
+            window._showSilenciosos=false; // reset al iniciar nueva búsqueda
             var mySeq=++window._searchSeq;
             renderSearchSkeletons();
 
@@ -2011,16 +2092,35 @@
                 }
 
                 // V4.5: usar grilla 3-columnas (igual que la home/categorias) en vez de filas compactas
-                if(hasSpecs){
-                    html+='<div class="search-section-title-v2">'+(hasBoth?'✨ Especialistas en "':'🏪 Restaurantes que venden "')+esc(query)+'"<span class="search-section-count">'+parts.specs.length+'</span></div>';
+                // Dentro de specs y others, separar socios de silenciosos
+                var specsBy=partitionBySocio(parts.specs);
+                var othersBy=partitionBySocio(parts.others);
+                var hasSpecsSoc=specsBy.socios.length>0;
+                var hasOthersSoc=othersBy.socios.length>0;
+                var totalSilenciosos=specsBy.silenciosos.length+othersBy.silenciosos.length;
+
+                if(hasSpecsSoc){
+                    html+='<div class="search-section-title-v2">'+(hasSpecsSoc&&hasOthersSoc?'✨ Especialistas en "':'🏪 Restaurantes que venden "')+esc(query)+'"<span class="search-section-count">'+specsBy.socios.length+'</span></div>';
                     html+='<div class="grid3-wrap">';
-                    parts.specs.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                    specsBy.socios.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
                 }
-                if(parts.others.length){
-                    html+='<div class="search-section-title-v2">'+(hasSpecs?'🏪 También ofrecen "'+esc(query)+'"':'🏪 Restaurantes que venden "'+esc(query)+'"')+'<span class="search-section-count">'+parts.others.length+'</span></div>';
+                if(hasOthersSoc){
+                    html+='<div class="search-section-title-v2">'+(hasSpecsSoc?'🏪 También ofrecen "'+esc(query)+'"':'🏪 Restaurantes que venden "'+esc(query)+'"')+'<span class="search-section-count">'+othersBy.socios.length+'</span></div>';
                     html+='<div class="grid3-wrap">';
-                    parts.others.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                    othersBy.socios.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                    html+='</div>';
+                }
+                // Botón Ver otros restaurantes + silenciosos
+                html+=renderSilenciososBtn(totalSilenciosos);
+                if(window._showSilenciosos&&totalSilenciosos>0){
+                    html+='<div id="silenciosos-section">';
+                    html+='<div class="search-section-title-v2">🏪 Otros restaurantes<span class="search-section-count">'+totalSilenciosos+'</span></div>';
+                    html+='<div class="grid3-wrap">';
+                    specsBy.silenciosos.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                    othersBy.silenciosos.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                    html+='</div>';
+                    html+=renderOcultarSilenciososBtn();
                     html+='</div>';
                 }
             }
