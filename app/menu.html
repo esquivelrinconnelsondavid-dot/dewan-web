@@ -1042,8 +1042,8 @@
                 core:['desayuno','desayunos','brunch'],
                 kw:['desayuno','desayunos','brunch','tostada','tostadas','huevo','huevos','panqueque','panqueques','waffle','waffles','bolón','bolon','bolones','tigrillo','humita','humitas','empanada de viento','jugo de naranja','café con leche']},
             fastfood:{icon:'🍔',label:'Hamburguesas',canonica:'Hamburguesas / Fast food',
-                core:['hamburgues','burger','alitas','salchipapa','comida rapida','comida rápida','fast food','americano'],
-                kw:['hambur','burger','alita','alitas','salchipapa','salchipapas','papipollo','wrap','chuleta','milanesa']},
+                core:['hamburgues','burger','salchipapa','comida rapida','comida rápida','fast food','americano'],
+                kw:['hambur','burger','salchipapa','salchipapas','papipollo']},
             mariscos:{icon:'🐟',label:'Mariscos',canonica:'Mariscos / Cevichería',
                 core:['marisco','cevich','manaba','manabita','costeñ'],
                 kw:['marisco','mariscos','ceviche','ceviches','encebollado','pescado','camaron','camarón','camarones','concha','conchas','langosta','cangrejo','atun','atún','corvina','tilapia']},
@@ -1057,8 +1057,8 @@
                 core:['parrilla','asadero','grill','bbq','argentin'],
                 kw:['parrilla','parrillada','asadero','grill','bbq','chorizo','costilla','costillas','carne','carnes','churrasco','pincho','pinchos','lomo','filete']},
             pollo:{icon:'🍗',label:'Pollo',canonica:'Pollo',
-                core:['pollo','pollos','polleria','pollería','broaster','broster'],
-                kw:['pollo','pollos','broster','broaster','alita','alitas','presa','presas','chicken']},
+                core:['pollo','pollos','polleria','pollería','broaster','broster','alitas','wings'],
+                kw:['pollo','pollos','broster','broaster','alita','alitas','wing','wings','presa','presas','chicken','ala','alas']},
             chifa:{icon:'🥡',label:'Chifa',canonica:'Chifa / China',
                 core:['chifa','china','chino','asia','asiático','asiatico'],
                 kw:['chifa','china','chino','arroz','chaulafan','chaulafán','tallarín','tallarin','tallarines','wantán','wantan','rollito']},
@@ -2084,6 +2084,7 @@
 
         // Modal explicación de tarifa de servicio (texto pensado para no asustar)
         window.openServiceFeeInfo=function(){
+            try{console.log('[openServiceFeeInfo] llamado, existe modal?',!!document.getElementById('service-fee-modal'))}catch(_){}
             if(document.getElementById('service-fee-modal')) return;
             window._modalOpenedAt=Date.now();
             // Overlay solo cierra si el click ocurre >300ms después de abrir
@@ -2100,8 +2101,10 @@
                 '</div>'+
             '</div>';
             document.body.insertAdjacentHTML('beforeend',html);
+            try{console.log('[openServiceFeeInfo] modal insertado, existe en DOM?',!!document.getElementById('service-fee-modal'))}catch(_){}
         };
         window.closeServiceFeeInfo=function(){
+            try{console.log('[closeServiceFeeInfo] llamado')}catch(_){}
             var m=document.getElementById('service-fee-modal');
             if(m) m.remove();
         };
