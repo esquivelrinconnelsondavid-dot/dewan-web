@@ -1138,10 +1138,39 @@
                 renderHome();
                 return;
             }
-            // Query a menu_items con todas las keywords de la categoría (paginada)
+            var cm=CAT_MAP_V2[key];
+            // ESTRATEGIA NUEVA (2026-05-27): categoria_canonica como FUENTE DE VERDAD.
+            // - Si la categoría tiene canonica (Pizza, Pollo, Hamburguesas, etc.):
+            //   los restaurantes de esa canonica aparecen SIEMPRE en el top, aunque
+            //   no tengan platos con keywords que matcheen.
+            // - Solo "Almuerzo" y "Desayunos" siguen con kw-match en menu_items
+            //   (son categorías virtuales — el restaurante puede ser de cualquier
+            //   canonica si vende ese tipo de plato).
+            if(cm.canonica){
+                // ── Camino directo: filtrar por categoria_canonica ──
+                var fromCanonica=(sessionData.resultados||[]).filter(function(r){
+                    return r.categoria_canonica===cm.canonica;
+                }).map(function(r){
+                    return Object.assign({},r,{_specialist:true,_matchCount:0,_matchItems:[]});
+                });
+                // Sort: aliados primero, después cliente_paga, después silenciosos
+                fromCanonica.sort(function(a,b){
+                    var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                    var va=sa===true?0:sa===null?1:2;
+                    var vb=sb===true?0:sb===null?1:2;
+                    if(va!==vb) return va-vb;
+                    var ta={aliado:0,cliente_paga:1,silencioso:2}[a.tipo_acuerdo]||2;
+                    var tb={aliado:0,cliente_paga:1,silencioso:2}[b.tipo_acuerdo]||2;
+                    if(ta!==tb) return ta-tb;
+                    return (a.distancia_km||999)-(b.distancia_km||999);
+                });
+                window._catRestsCache[key]=fromCanonica;
+                renderHome();
+                return;
+            }
+            // ── Camino legacy: Almuerzo / Desayunos vía kw-match en menu_items ──
             window._catLoading=true;
             renderHome();
-            var cm=CAT_MAP_V2[key];
             var ors=cm.kw.map(function(k){
                 var kEnc=encodeURIComponent('%'+k+'%');
                 return 'nombre_item.ilike.'+kEnc+',descripcion.ilike.'+kEnc+',categoria_menu.ilike.'+kEnc;
@@ -1149,9 +1178,7 @@
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
                     var rests=aggregatePlatesByRest(plates);
-                    // V2.5 + V2.8: Para 'almuerzo', incluir restaurantes de almuerzos_hoy y boostearlos,
-                    // pero SOLO durante horario de almuerzo (12:00–15:00)
-                    if(key==='almuerzo'&&window._almuerzosHoy&&isAlmuerzoHour()){
+                    if(key==='almuerzo'&&window._almuerzosHoy){
                         var already={};
                         rests.forEach(function(r){if(r.id) already[r.id]=true});
                         Object.keys(window._almuerzosHoy).forEach(function(rid){
@@ -1167,20 +1194,18 @@
                         });
                     }
                     rankRestsByKeywords(rests,cm.kw);
-                    // Boost: los que tienen almuerzo_hoy suben como especialistas reales (solo en horario)
-                    if(key==='almuerzo'&&isAlmuerzoHour()){
-                        rests.forEach(function(r){
-                            if(r._hasAlmuerzoHoy){r._score=(r._score||0)+15000;r._specialist=true}
-                        });
-                        rests.sort(function(a,b){
-                            var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
-                            var va=sa===true?0:sa===null?1:2;
-                            var vb=sb===true?0:sb===null?1:2;
-                            if(va!==vb) return va-vb;
-                            if(a._score!==b._score) return b._score-a._score;
-                            return (a.distancia_km||999)-(b.distancia_km||999);
-                        });
-                    }
+                    // Boost aliados al top (sin importar score de kw)
+                    rests.sort(function(a,b){
+                        var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                        var va=sa===true?0:sa===null?1:2;
+                        var vb=sb===true?0:sb===null?1:2;
+                        if(va!==vb) return va-vb;
+                        var ta={aliado:0,cliente_paga:1,silencioso:2}[a.tipo_acuerdo]||2;
+                        var tb={aliado:0,cliente_paga:1,silencioso:2}[b.tipo_acuerdo]||2;
+                        if(ta!==tb) return ta-tb;
+                        if((a._score||0)!==(b._score||0)) return (b._score||0)-(a._score||0);
+                        return (a.distancia_km||999)-(b.distancia_km||999);
+                    });
                     window._catRestsCache[key]=rests;
                     window._catLoading=false;
                     if(window._activeCat===key) renderHome();
@@ -2082,31 +2107,51 @@
         // recién insertado → dispara closeServiceFeeInfo → modal se cierra solo.
         document.addEventListener('click',_handleServiceFeeTap,true);
 
-        // Modal explicación de tarifa de servicio (texto pensado para no asustar)
-        window.openServiceFeeInfo=function(){
-            try{console.log('[openServiceFeeInfo] llamado, existe modal?',!!document.getElementById('service-fee-modal'))}catch(_){}
+        // Modal explicación de tarifa de servicio: PRE-RENDERIZADO en DOM.
+        // No se inserta on-demand → cero race conditions con el click event.
+        // Se inserta una vez al cargar y solo se muestra/oculta con CSS.
+        function ensureServiceFeeModal(){
             if(document.getElementById('service-fee-modal')) return;
-            window._modalOpenedAt=Date.now();
-            // Overlay solo cierra si el click ocurre >300ms después de abrir
-            // (evita race: click residual del tap del badge cae sobre overlay)
-            var html='<div id="service-fee-modal" class="modal-overlay" onclick="if(Date.now()-window._modalOpenedAt>300)closeServiceFeeInfo()">'+
-                '<div class="modal-card" onclick="event.stopPropagation()">'+
-                    '<div class="modal-header"><span>ℹ️ Tarifa de servicio</span><button class="modal-close" onclick="closeServiceFeeInfo()">×</button></div>'+
+            var html='<div id="service-fee-modal" class="modal-overlay" style="display:none">'+
+                '<div class="modal-card">'+
+                    '<div class="modal-header"><span>ℹ️ Tarifa de servicio</span><button class="modal-close" type="button">×</button></div>'+
                     '<div class="modal-body">'+
                         '<p>Este restaurante aún no es <strong>⭐ Aliado DEWAN</strong>.</p>'+
                         '<p>Al hacer tu pedido agregamos una pequeña <strong>tarifa de servicio</strong> que nos permite mantener la logística, la app y el delivery funcionando para ti.</p>'+
                         '<p>Los restaurantes <strong>⭐ Aliados</strong> no tienen este recargo — pagas exactamente lo mismo que en el local.</p>'+
-                        '<button class="modal-ok" onclick="closeServiceFeeInfo()">Entendido</button>'+
+                        '<button class="modal-ok" type="button">Entendido</button>'+
                     '</div>'+
                 '</div>'+
             '</div>';
             document.body.insertAdjacentHTML('beforeend',html);
-            try{console.log('[openServiceFeeInfo] modal insertado, existe en DOM?',!!document.getElementById('service-fee-modal'))}catch(_){}
+            // Bindeos: cierre por overlay (click fuera de card), por X y por botón OK
+            var modal=document.getElementById('service-fee-modal');
+            if(!modal) return;
+            modal.addEventListener('click',function(e){
+                // Solo cerrar si tocaron el overlay, no el card interior
+                if(e.target===modal && Date.now()-window._modalOpenedAt>250) closeServiceFeeInfo();
+            });
+            var x=modal.querySelector('.modal-close');
+            if(x) x.addEventListener('click',function(e){e.stopPropagation();closeServiceFeeInfo()});
+            var ok=modal.querySelector('.modal-ok');
+            if(ok) ok.addEventListener('click',function(e){e.stopPropagation();closeServiceFeeInfo()});
+        }
+        // Insertar tan pronto el DOM esté listo
+        if(document.readyState==='loading'){
+            document.addEventListener('DOMContentLoaded',ensureServiceFeeModal);
+        } else {
+            ensureServiceFeeModal();
+        }
+        window.openServiceFeeInfo=function(){
+            ensureServiceFeeModal();
+            var m=document.getElementById('service-fee-modal');
+            if(!m) return;
+            window._modalOpenedAt=Date.now();
+            m.style.display='flex';
         };
         window.closeServiceFeeInfo=function(){
-            try{console.log('[closeServiceFeeInfo] llamado')}catch(_){}
             var m=document.getElementById('service-fee-modal');
-            if(m) m.remove();
+            if(m) m.style.display='none';
         };
 
         function renderSearchResults(query,rests,plates){
