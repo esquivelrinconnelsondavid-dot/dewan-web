@@ -1139,36 +1139,9 @@
                 return;
             }
             var cm=CAT_MAP_V2[key];
-            // ESTRATEGIA NUEVA (2026-05-27): categoria_canonica como FUENTE DE VERDAD.
-            // - Si la categoría tiene canonica (Pizza, Pollo, Hamburguesas, etc.):
-            //   los restaurantes de esa canonica aparecen SIEMPRE en el top, aunque
-            //   no tengan platos con keywords que matcheen.
-            // - Solo "Almuerzo" y "Desayunos" siguen con kw-match en menu_items
-            //   (son categorías virtuales — el restaurante puede ser de cualquier
-            //   canonica si vende ese tipo de plato).
-            if(cm.canonica){
-                // ── Camino directo: filtrar por categoria_canonica ──
-                var fromCanonica=(sessionData.resultados||[]).filter(function(r){
-                    return r.categoria_canonica===cm.canonica;
-                }).map(function(r){
-                    return Object.assign({},r,{_specialist:true,_matchCount:0,_matchItems:[]});
-                });
-                // Sort: aliados primero, después cliente_paga, después silenciosos
-                fromCanonica.sort(function(a,b){
-                    var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
-                    var va=sa===true?0:sa===null?1:2;
-                    var vb=sb===true?0:sb===null?1:2;
-                    if(va!==vb) return va-vb;
-                    var ta={aliado:0,cliente_paga:1,silencioso:2}[a.tipo_acuerdo]||2;
-                    var tb={aliado:0,cliente_paga:1,silencioso:2}[b.tipo_acuerdo]||2;
-                    if(ta!==tb) return ta-tb;
-                    return (a.distancia_km||999)-(b.distancia_km||999);
-                });
-                window._catRestsCache[key]=fromCanonica;
-                renderHome();
-                return;
-            }
-            // ── Camino legacy: Almuerzo / Desayunos vía kw-match en menu_items ──
+            // UNIFICADO (2026-05-27): TODAS las categorías usan kw-match en menu_items
+            // — igual que la búsqueda. El restaurante aparece SOLO si vende algún plato
+            // que matchee las keywords de la categoría. Aliados van al top.
             window._catLoading=true;
             renderHome();
             var ors=cm.kw.map(function(k){
@@ -1194,7 +1167,7 @@
                         });
                     }
                     rankRestsByKeywords(rests,cm.kw);
-                    // Boost aliados al top (sin importar score de kw)
+                    // Boost aliados al top: primero aliado, luego cliente_paga, luego silencioso
                     rests.sort(function(a,b){
                         var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
                         var va=sa===true?0:sa===null?1:2;
