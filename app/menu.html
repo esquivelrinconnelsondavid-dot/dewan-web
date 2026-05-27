@@ -927,7 +927,7 @@
         // ── Recalcular distancias con GPS del cliente ──
         function recalcDistances(rests){
             if(!window._clientGPS) return rests;
-            var TARIFA_BASE=1.50,KM_INCLUIDOS=3,PRECIO_POR_KM=0.50,FACTOR_RUTA=1.3;
+            var TARIFA_BASE=2.00,KM_INCLUIDOS=3,PRECIO_POR_KM=0.50,FACTOR_RUTA=1.3;
             // V2.7 FIX: mutar el objeto original en vez de copiar a mano
             // (antes se perdía r.id y otros campos, rompiendo la carga de menu_items)
             rests.forEach(function(r){
@@ -2183,7 +2183,7 @@
                     '<div class="sf-modal-header"><span>ℹ️ Tarifa de servicio</span><button class="sf-modal-close" type="button">×</button></div>'+
                     '<div class="sf-modal-body">'+
                         '<p>Este restaurante aún no es <strong>⭐ Aliado DEWAN</strong>.</p>'+
-                        '<p>Al hacer tu pedido agregamos una pequeña <strong>tarifa de servicio</strong> que nos permite mantener la logística, la app y el delivery funcionando para ti.</p>'+
+                        '<p>Agregamos una <strong>tarifa de servicio fija de $0.10</strong> que nos permite mantener la logística, la app y el delivery funcionando para ti.</p>'+
                         '<p>Los restaurantes <strong>⭐ Aliados</strong> no tienen este recargo — pagas exactamente lo mismo que en el local.</p>'+
                         '<button class="sf-modal-ok" type="button">Entendido</button>'+
                     '</div>'+
@@ -2529,13 +2529,10 @@
         function findCart(rest,nombre){
             for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices)return window._cart[i]}return null;
         }
-        // Tarifa de servicio escalonada (solo para restaurantes NO aliados)
-        // ≤$5 → $0.50 fija | $5-$15 → 10% | >$15 → $1.50 + 5% sobre el exceso
+        // Tarifa de servicio fija $0.10 (solo para restaurantes NO aliados)
         function calcServiceFee(sub){
             if(sub<=0) return 0;
-            if(sub<=5) return 0.50;
-            if(sub<=15) return Math.round(sub*10)/100; // 10%
-            return Math.round((1.50+(sub-15)*0.05)*100)/100;
+            return 0.10;
         }
         function getRestByName(name){
             var found=null;
