@@ -425,9 +425,8 @@
 
         /* Category chips row */
         .cat-chips-wrap{padding:14px 0 6px}
-        .cat-chips-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 14px 2px;-webkit-overflow-scrolling:touch}
-        .cat-chips-scroll::-webkit-scrollbar{display:none}
-        .cat-chip{flex-shrink:0;padding:10px 13px 10px 11px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--texto);font-size:0.82rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:all 0.15s;letter-spacing:-0.01em}
+        .cat-chips-scroll{display:flex;flex-wrap:wrap;gap:7px;padding:0 14px 4px}
+        .cat-chip{padding:8px 11px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--texto);font-size:0.76rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;letter-spacing:-0.01em}
         .cat-chip:active{transform:scale(0.96)}
         .cat-chip.active{background:var(--acc);color:#111;border-color:var(--acc);box-shadow:0 2px 10px rgba(184,255,0,0.25)}
         .cat-chip-icon{font-size:1.05rem}
@@ -785,6 +784,19 @@
                     _session:sess,
                     expira_at:sess?sess.expira_at:null
                 };
+                // Diagnóstico: tipo_acuerdo en consola para verificar API
+                try{
+                    var counts={aliado:0,cliente_paga:0,silencioso:0,undefined:0,otro:0};
+                    sessionData.resultados.forEach(function(r){
+                        var k=r.tipo_acuerdo;
+                        if(k==='aliado'||k==='cliente_paga'||k==='silencioso') counts[k]++;
+                        else if(k===undefined||k===null) counts.undefined++;
+                        else counts.otro++;
+                    });
+                    console.log('%c[DEWAN tipo_acuerdo]','color:#B8FF00;font-weight:bold',counts);
+                    var aliados=sessionData.resultados.filter(function(r){return r.tipo_acuerdo==='aliado'}).map(function(r){return r.nombre});
+                    console.log('%c[Aliados ('+aliados.length+')]','color:#FFD700;font-weight:bold',aliados);
+                }catch(e){console.warn('Diagnóstico tipo_acuerdo falló:',e)}
                 restoreCart();
 
                 // V4.4: Deep link inteligente desde WhatsApp
