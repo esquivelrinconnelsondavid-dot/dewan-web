@@ -559,6 +559,15 @@
         .destacados-card .grid3-top{aspect-ratio:1/1}
         .destacados-card .grid3-body{padding:7px 9px 9px}
         .destacados-card .grid3-name{font-weight:800;font-size:0.72rem;line-height:1.15;color:var(--texto);letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.65em}
+        /* Banner Mundial 2026 — Ecuador colores */
+        .mundial-banner{position:relative;margin:0 14px 12px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#FFD60A 0%,#FFD60A 40%,#003893 65%,#FF0000 100%);padding:14px 44px 14px 16px;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,0.25);cursor:pointer}
+        .mundial-banner:active{transform:scale(0.99)}
+        .mundial-banner-title{font-size:0.92rem;font-weight:900;line-height:1.2;letter-spacing:-0.01em;text-shadow:0 2px 6px rgba(0,0,0,0.4)}
+        .mundial-banner-sub{font-size:0.72rem;font-weight:700;color:#fff;margin-top:3px;opacity:0.95;text-shadow:0 1px 3px rgba(0,0,0,0.4)}
+        .mundial-banner-x{position:absolute;top:7px;right:7px;width:24px;height:24px;background:rgba(0,0,0,0.35);border:none;border-radius:50%;color:#fff;font-size:0.85rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit}
+        .mundial-banner-x:active{background:rgba(0,0,0,0.55)}
+        @keyframes mundialPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+        .mundial-flag{display:inline-block;animation:mundialPulse 2s ease-in-out infinite;margin-right:4px}
         .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
         /* Badge Aliado: visible, dorado, esquina sup-izq */
         .aliado-badge{position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#1a1a1a;font-size:0.55rem;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:0.04em;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:3;display:flex;align-items:center;gap:2px}
@@ -1050,6 +1059,9 @@
             tipica:{icon:'🥘',label:'Comida típica',canonica:'Comida típica',
                 core:['restaurante','tradicional','típica','tipica','hornado','seco'],
                 kw:['típica','tipica','tradicional','hornado','hornados','seco','secos','encebollado','yapingacho','llapingacho','locro','sancocho','caldo','sopa','mote','fritada','tigrillo','humita','humitas']},
+            partido:{icon:'⚽',label:'Antojos partido',canonica:null,
+                core:['alita','hamburguesa','burger','pizza','salchipapa','picadita','nachos'],
+                kw:['alita','alitas','wing','wings','hambur','burger','pizza','salchipapa','salchipapas','papipollo','papas','papi','picada','picadita','picaditas','nachos','hot dog','choripan','chorihuevo','aros','onion ring','tequeño','tequeños','empanada','empanadas','tacos','quesadilla','mozzarella','mollejas','mollejitas','chifles','chuleta']},
             almuerzo:{icon:'🍱',label:'Almuerzo',canonica:null,
                 core:['almuerzo','almuerzos','menú del día','menu del dia','ejecutivo'],
                 kw:['almuerzo','almuerzos','menú del día','menu del dia','menú del dia','menu del día','ejecutivo','ejecutivos','menú','menu','menús','menus']},
@@ -1090,7 +1102,7 @@
                 core:['sushi','japones','japonés','japonesa'],
                 kw:['sushi','japones','japonés','japonesa','maki','nigiri','sashimi','tempura','ramen','udon']}
         };
-        var CAT_KEYS_V2=['almuerzo','desayunos','tipica','fastfood','mariscos','cafeteria','pizza','parrilla','pollo','chifa','postres','internacional','mexicana','sushi'];
+        var CAT_KEYS_V2=['partido','almuerzo','desayunos','tipica','fastfood','mariscos','cafeteria','pizza','parrilla','pollo','chifa','postres','internacional','mexicana','sushi'];
 
         function matchCategoryV2(r,catKey){
             var cm=CAT_MAP_V2[catKey];if(!cm)return false;
@@ -1117,6 +1129,32 @@
         // Almuerzos del día disponibles a cualquier hora
         function isAlmuerzoHour(){
             return true;
+        }
+
+        // Mundial 2026: del 11 jun al 19 jul. Damos margen extra de hype.
+        // Para desactivar manualmente: cambiar a return false.
+        function isMundial(){
+            var now=new Date();
+            var start=new Date('2026-06-01T00:00:00');
+            var end=new Date('2026-07-25T23:59:59');
+            return now>=start&&now<=end;
+        }
+        window.dismissMundialBanner=function(ev){
+            try{ev&&ev.stopPropagation()}catch(_){}
+            try{sessionStorage.setItem('dewan_mundial_dismissed','1')}catch(_){}
+            var b=document.getElementById('mundial-banner');
+            if(b) b.style.display='none';
+        };
+        function mundialBannerDismissed(){
+            try{return sessionStorage.getItem('dewan_mundial_dismissed')==='1'}catch(_){return false}
+        }
+        function renderMundialBanner(){
+            if(!isMundial()||mundialBannerDismissed()) return '';
+            return '<div class="mundial-banner" id="mundial-banner" onclick="toggleCategoryV2(\'partido\')">'+
+                '<button class="mundial-banner-x" onclick="dismissMundialBanner(event)" aria-label="Cerrar">×</button>'+
+                '<div class="mundial-banner-title"><span class="mundial-flag">🇪🇨</span> ¡Vamos por la copa!</div>'+
+                '<div class="mundial-banner-sub">Toca aquí para ver los Antojos del Partido ⚽</div>'+
+            '</div>';
         }
 
         // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
@@ -1264,9 +1302,13 @@
                 '</button>'+
             '</div>';
 
-            // Chips de categoría
+            // Banner Mundial (solo durante el período, dismissible)
+            h+=renderMundialBanner();
+
+            // Chips de categoría. Mundial: 'partido' solo aparece en período.
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
             CAT_KEYS_V2.forEach(function(k){
+                if(k==='partido'&&!isMundial()) return;
                 var c=CAT_MAP_V2[k];
                 var active=window._activeCat===k;
                 h+='<button class="cat-chip'+(active?' active':'')+'" onclick="toggleCategoryV2(\''+k+'\')">'+
