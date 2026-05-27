@@ -545,6 +545,23 @@
         .grid3-meta{font-size:0.6rem;color:var(--gris-2);font-weight:700;margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;line-height:1.2}
         .grid3-badge-count{background:var(--acc-soft);color:var(--acc);font-size:0.56rem;font-weight:900;padding:1px 6px;border-radius:20px;letter-spacing:0.02em}
         .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+        /* Badge Aliado: visible, dorado, esquina sup-izq */
+        .aliado-badge{position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#1a1a1a;font-size:0.55rem;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:0.04em;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:3;display:flex;align-items:center;gap:2px}
+        /* Tarifa servicio: discreto, neutro, esquina sup-der (sólo si no hay CERRADO) */
+        .service-fee-badge{position:absolute;top:6px;right:6px;background:rgba(148,163,184,0.22);color:#cbd5e1;font-size:0.52rem;font-weight:700;padding:2px 6px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:3px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(148,163,184,0.3);z-index:3;letter-spacing:0.02em}
+        .service-fee-badge:active{background:rgba(148,163,184,0.34)}
+        /* Modal explicación tarifa */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;animation:modalFadeIn 0.2s ease-out}
+        .modal-card{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:380px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+        .modal-header{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:1.02rem;border-bottom:1px solid var(--border)}
+        .modal-close{background:transparent;border:none;color:var(--texto);font-size:1.5rem;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:0;line-height:1}
+        .modal-close:active{background:var(--card2)}
+        .modal-body{padding:18px}
+        .modal-body p{margin:0 0 12px;line-height:1.55;font-size:0.9rem;color:var(--texto)}
+        .modal-body p:last-of-type{margin-bottom:18px}
+        .modal-ok{width:100%;background:var(--acc);color:#111;border:none;border-radius:14px;padding:13px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit}
+        .modal-ok:active{transform:scale(0.98)}
+        @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
         .rest-filter-banner-text{flex:1;line-height:1.35}
         .rest-filter-banner-text strong{color:var(--acc);font-weight:900}
         .rest-filter-banner button{background:rgba(184,255,0,0.15);border:1px solid rgba(184,255,0,0.3);color:var(--acc);font-size:0.7rem;font-weight:800;padding:6px 11px;border-radius:100px;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all 0.15s;letter-spacing:-0.01em}
@@ -988,33 +1005,52 @@
         // V2: Categorías del catálogo (mapeo keyword-based)
         // IMPORTANTE: PostgreSQL ILIKE no hace accent-folding, por eso incluimos
         // las variantes con tilde y sin tilde para que la query server las matchee.
+        // 12 categorías canónicas alineadas con restaurantes.categoria_canonica
         var CAT_MAP_V2={
-            pollo:{icon:'🍗',label:'Pollo',
-                core:['pollo','pollos','polleria','pollería'],
-                kw:['pollo','pollos','broster','alita','alitas','presa','presas','chicken','polleria','pollería']},
-            pizza:{icon:'🍕',label:'Pizza',
-                core:['pizza','pizzas','pizzeria','pizzería'],
-                kw:['pizza','pizzas','pizzer']},
-            almuerzo:{icon:'🍱',label:'Almuerzo',
-                core:['almuerzo','almuerzos','menu del dia','menú del día','menus del dia','menús del día'],
-                kw:['almuerzo','almuerzos','menú','menu','menús','menus','ejecutivo','ejecutivos']},
-            mariscos:{icon:'🐟',label:'Mariscos',
-                core:['marisco','mariscos','marisqueria','marisquería','cevicheria','cevichería'],
-                kw:['marisco','mariscos','ceviche','ceviches','encebollado','pescado','camaron','camarón','camarones','camarónes','concha','langosta','cangrejo','atun','atún']},
-            hamburguesa:{icon:'🍔',label:'Hamburguesas',
-                core:['hamburguesa','hamburguesas','hamburgueseria','hamburguesería','hambur','burger','burgers','burguer'],
-                kw:['hambur','burger']},
-            postres:{icon:'🧁',label:'Postres',
-                core:['postre','postres','dulce','dulces','pasteleria','pastelería','reposteria','repostería','heladeria','heladería'],
-                kw:['postre','postres','helado','helados','torta','tortas','pastel','pasteles','pasteleria','pastelería','bizcocho','bizcochos','dulce','dulces','pastry','cupcake','cheesecake','bolleria','bollería']},
-            bebidas:{icon:'🥤',label:'Bebidas',
-                core:['bebida','bebidas','cafeteria','cafetería','jugueria','juguería'],
-                kw:['bebida','bebidas','jugo','jugos','refresco','refrescos','gaseosa','gaseosas','cafe','café','cafeteria','cafetería','batido','batidos','smoothie','agua']}
+            tipica:{icon:'🍱',label:'Comida típica',canonica:'Comida típica',
+                core:['restaurante','tradicional','típica','tipica','hornado','seco','almuerzo','menú'],
+                kw:['almuerzo','almuerzos','menú','menu','menús','menus','típica','tipica','tradicional','hornado','hornados','seco','secos','encebollado','yapingacho','llapingacho','locro','sancocho','caldo','sopa','mote','fritada','tigrillo','humita','humitas']},
+            fastfood:{icon:'🍔',label:'Hamburguesas',canonica:'Hamburguesas / Fast food',
+                core:['hamburgues','burger','alitas','salchipapa','comida rapida','comida rápida','fast food','americano'],
+                kw:['hambur','burger','alita','alitas','salchipapa','salchipapas','papipollo','wrap','chuleta','milanesa']},
+            mariscos:{icon:'🐟',label:'Mariscos',canonica:'Mariscos / Cevichería',
+                core:['marisco','cevich','manaba','manabita','costeñ'],
+                kw:['marisco','mariscos','ceviche','ceviches','encebollado','pescado','camaron','camarón','camarones','concha','conchas','langosta','cangrejo','atun','atún','corvina','tilapia']},
+            cafeteria:{icon:'☕',label:'Cafetería',canonica:'Cafetería / Desayunos',
+                core:['café','cafe','cafetería','cafeteria','desayuno','desayunos','sánduches','sanduches','brunch'],
+                kw:['café','cafe','desayuno','desayunos','sánduche','sanduche','sandwich','sánduches','sanduches','tostada','huevo','huevos','jugo','jugos','batido','batidos','smoothie','tamal','tamales']},
+            pizza:{icon:'🍕',label:'Pizza',canonica:'Pizza',
+                core:['pizza','pizzería','pizzeria','italian'],
+                kw:['pizza','pizzas','pizzer','italian','pasta','pastas','calzone','lasagn']},
+            parrilla:{icon:'🥩',label:'Parrilladas',canonica:'Parrilladas / Carnes',
+                core:['parrilla','asadero','grill','bbq','argentin'],
+                kw:['parrilla','parrillada','asadero','grill','bbq','chorizo','costilla','costillas','carne','carnes','churrasco','pincho','pinchos','lomo','filete']},
+            pollo:{icon:'🍗',label:'Pollo',canonica:'Pollo',
+                core:['pollo','pollos','polleria','pollería','broaster','broster'],
+                kw:['pollo','pollos','broster','broaster','alita','alitas','presa','presas','chicken']},
+            chifa:{icon:'🥡',label:'Chifa',canonica:'Chifa / China',
+                core:['chifa','china','chino','asia','asiático','asiatico'],
+                kw:['chifa','china','chino','arroz','chaulafan','chaulafán','tallarín','tallarin','tallarines','wantán','wantan','rollito']},
+            postres:{icon:'🧁',label:'Postres',canonica:'Postres / Helados',
+                core:['postre','helado','heladería','heladeria','repostería','reposteria','dulce'],
+                kw:['postre','postres','helado','helados','torta','tortas','pastel','pasteles','bizcocho','cupcake','cheesecake','mochi','brownie','waffle','dona','donas']},
+            internacional:{icon:'🌎',label:'Internacional',canonica:'Comida internacional',
+                core:['shawarma','árabe','arabe','venezolan','italian','mediterráneo','mediterraneo'],
+                kw:['shawarma','árabe','arabe','venezolan','arepa','arepas','empanada','empanadas','italian','michelada','micheladas']},
+            mexicana:{icon:'🌮',label:'Mexicana',canonica:'Mexicana',
+                core:['mexican','taco','tacos','burrito'],
+                kw:['mexican','taco','tacos','burrito','burritos','fajita','fajitas','quesadilla','quesadillas','enchilada','enchiladas','nachos','guacamole']},
+            sushi:{icon:'🍣',label:'Sushi',canonica:'Sushi / Japonesa',
+                core:['sushi','japones','japonés','japonesa'],
+                kw:['sushi','japones','japonés','japonesa','maki','nigiri','sashimi','tempura','ramen','udon']}
         };
-        var CAT_KEYS_V2=['pollo','pizza','almuerzo','mariscos','hamburguesa','postres','bebidas'];
+        var CAT_KEYS_V2=['tipica','fastfood','mariscos','cafeteria','pizza','parrilla','pollo','chifa','postres','internacional','mexicana','sushi'];
 
         function matchCategoryV2(r,catKey){
             var cm=CAT_MAP_V2[catKey];if(!cm)return false;
+            // Match preferente por categoria_canonica (post-consolidación SQL)
+            if(cm.canonica && r.categoria_canonica===cm.canonica) return true;
+            // Fallback por keywords para restaurantes sin canonica todavía
             var n=removeAccents((r.nombre||'').toLowerCase());
             var c=removeAccents((r.categoria||'').toLowerCase());
             var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
@@ -1891,8 +1927,15 @@
             if(r.tiempo_estimado_min) metaBits.push('⏱ '+r.tiempo_estimado_min+'m');
             if(r.distancia_km) metaBits.push('📍 '+r.distancia_km+'km');
             else if(window._clientGPS&&r.precio_delivery) metaBits.push('🛵 $'+Number(r.precio_delivery).toFixed(2));
+            // Badges según tipo de acuerdo
+            var isAliado=r.tipo_acuerdo==='aliado';
+            var aliadoBadge=isAliado?'<span class="aliado-badge">⭐ Aliado</span>':'';
+            // El badge de servicio sólo si no es aliado Y el local está abierto (para no chocar con CERRADO)
+            var feeBadge=(!isAliado&&isOpen!==false)?'<span class="service-fee-badge" onclick="event.stopPropagation();openServiceFeeInfo()">ⓘ +servicio</span>':'';
             return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+color+'25">'+
                 '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
+                    aliadoBadge+
+                    feeBadge+
                     '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
                     (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
                     (isOpen===false?'<span class="grid3-closed">CERRADO</span>':'')+
@@ -1903,6 +1946,27 @@
                 '</div>'+
             '</div>';
         }
+
+        // Modal explicación de tarifa de servicio (texto pensado para no asustar)
+        window.openServiceFeeInfo=function(){
+            if(document.getElementById('service-fee-modal')) return;
+            var html='<div id="service-fee-modal" class="modal-overlay" onclick="closeServiceFeeInfo()">'+
+                '<div class="modal-card" onclick="event.stopPropagation()">'+
+                    '<div class="modal-header"><span>ℹ️ Tarifa de servicio</span><button class="modal-close" onclick="closeServiceFeeInfo()">×</button></div>'+
+                    '<div class="modal-body">'+
+                        '<p>Este restaurante aún no es <strong>⭐ Aliado DEWAN</strong>.</p>'+
+                        '<p>Al hacer tu pedido agregamos una pequeña <strong>tarifa de servicio</strong> que nos permite mantener la logística, la app y el delivery funcionando para ti.</p>'+
+                        '<p>Los restaurantes <strong>⭐ Aliados</strong> no tienen este recargo — pagas exactamente lo mismo que en el local.</p>'+
+                        '<button class="modal-ok" onclick="closeServiceFeeInfo()">Entendido</button>'+
+                    '</div>'+
+                '</div>'+
+            '</div>';
+            document.body.insertAdjacentHTML('beforeend',html);
+        };
+        window.closeServiceFeeInfo=function(){
+            var m=document.getElementById('service-fee-modal');
+            if(m) m.remove();
+        };
 
         function renderSearchResults(query,rests,plates){
             var area=document.getElementById('search-results-area');
