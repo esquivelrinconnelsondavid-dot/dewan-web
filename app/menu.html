@@ -1015,9 +1015,15 @@
         // las variantes con tilde y sin tilde para que la query server las matchee.
         // 12 categorías canónicas alineadas con restaurantes.categoria_canonica
         var CAT_MAP_V2={
-            tipica:{icon:'🍱',label:'Comida típica',canonica:'Comida típica',
-                core:['restaurante','tradicional','típica','tipica','hornado','seco','almuerzo','menú'],
-                kw:['almuerzo','almuerzos','menú','menu','menús','menus','típica','tipica','tradicional','hornado','hornados','seco','secos','encebollado','yapingacho','llapingacho','locro','sancocho','caldo','sopa','mote','fritada','tigrillo','humita','humitas']},
+            tipica:{icon:'🥘',label:'Comida típica',canonica:'Comida típica',
+                core:['restaurante','tradicional','típica','tipica','hornado','seco'],
+                kw:['típica','tipica','tradicional','hornado','hornados','seco','secos','encebollado','yapingacho','llapingacho','locro','sancocho','caldo','sopa','mote','fritada','tigrillo','humita','humitas']},
+            almuerzo:{icon:'🍱',label:'Almuerzo',canonica:null,
+                core:['almuerzo','almuerzos','menú del día','menu del dia','ejecutivo'],
+                kw:['almuerzo','almuerzos','menú del día','menu del dia','menú del dia','menu del día','ejecutivo','ejecutivos','menú','menu','menús','menus']},
+            desayunos:{icon:'🥐',label:'Desayunos',canonica:null,
+                core:['desayuno','desayunos','brunch'],
+                kw:['desayuno','desayunos','brunch','tostada','tostadas','huevo','huevos','panqueque','panqueques','waffle','waffles','bolón','bolon','bolones','tigrillo','humita','humitas','empanada de viento','jugo de naranja','café con leche']},
             fastfood:{icon:'🍔',label:'Hamburguesas',canonica:'Hamburguesas / Fast food',
                 core:['hamburgues','burger','alitas','salchipapa','comida rapida','comida rápida','fast food','americano'],
                 kw:['hambur','burger','alita','alitas','salchipapa','salchipapas','papipollo','wrap','chuleta','milanesa']},
@@ -1052,7 +1058,7 @@
                 core:['sushi','japones','japonés','japonesa'],
                 kw:['sushi','japones','japonés','japonesa','maki','nigiri','sashimi','tempura','ramen','udon']}
         };
-        var CAT_KEYS_V2=['tipica','fastfood','mariscos','cafeteria','pizza','parrilla','pollo','chifa','postres','internacional','mexicana','sushi'];
+        var CAT_KEYS_V2=['almuerzo','desayunos','tipica','fastfood','mariscos','cafeteria','pizza','parrilla','pollo','chifa','postres','internacional','mexicana','sushi'];
 
         function matchCategoryV2(r,catKey){
             var cm=CAT_MAP_V2[catKey];if(!cm)return false;
@@ -1882,6 +1888,12 @@
         // Silenciosos se ocultan detrás de "Ver otros restaurantes".
         function partitionBySocio(rests){
             var socios=[],silenciosos=[];
+            // FALLBACK: si la API no devuelve tipo_acuerdo (PostgREST schema cache,
+            // columna no propagada) → tratar todos como socios para no romper la app.
+            var anyHasField=rests.some(function(r){return typeof r.tipo_acuerdo==='string'});
+            if(!anyHasField){
+                return {socios:rests.slice(),silenciosos:[]};
+            }
             rests.forEach(function(r){
                 var t=r.tipo_acuerdo;
                 if(t==='aliado'||t==='cliente_paga') socios.push(r);
@@ -2012,7 +2024,7 @@
             var isAliado=r.tipo_acuerdo==='aliado';
             var aliadoBadge=isAliado?'<span class="aliado-badge">⭐ Aliado</span>':'';
             // El badge de servicio sólo si no es aliado Y el local está abierto (para no chocar con CERRADO)
-            var feeBadge=(!isAliado&&isOpen!==false)?'<span class="service-fee-badge" onclick="tapServiceFee(event)" ontouchstart="tapServiceFee(event)">ⓘ +servicio</span>':'';
+            var feeBadge=(!isAliado&&isOpen!==false)?'<span class="service-fee-badge" data-service-fee="1">ⓘ +servicio</span>':'';
             return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+color+'25">'+
                 '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
                     aliadoBadge+
@@ -2028,23 +2040,28 @@
             '</div>';
         }
 
-        // Wrapper robusto para tap del badge: previene que el card abra el restaurante
-        // y evita doble-fire en mobile (touchstart + click).
-        window.tapServiceFee=function(e){
-            e=e||window.event;
-            if(e){
-                if(e.stopPropagation) e.stopPropagation();
-                if(e.preventDefault) e.preventDefault();
-                if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-                e.cancelBubble=true;
-                // Anti doble-fire: si ya disparamos en los últimos 400ms, ignorar
-                var now=Date.now();
-                if(window._lastServiceFeeTap&&now-window._lastServiceFeeTap<400) return false;
-                window._lastServiceFeeTap=now;
+        // Listener delegado en CAPTURE phase — corre ANTES del onclick del card padre.
+        // Es bulletproof contra el inline onclick que no funciona consistentemente en mobile.
+        function _handleServiceFeeTap(e){
+            var t=e.target;
+            // .closest no es soportado en navegadores muy viejos — usar walk manual
+            while(t&&t!==document.body){
+                if(t.getAttribute&&t.getAttribute('data-service-fee')==='1'){
+                    e.stopPropagation();
+                    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+                    e.preventDefault();
+                    // Anti doble-fire (touchend + click)
+                    var now=Date.now();
+                    if(window._lastServiceFeeTap&&now-window._lastServiceFeeTap<400) return;
+                    window._lastServiceFeeTap=now;
+                    openServiceFeeInfo();
+                    return;
+                }
+                t=t.parentNode;
             }
-            openServiceFeeInfo();
-            return false;
-        };
+        }
+        document.addEventListener('click',_handleServiceFeeTap,true);
+        document.addEventListener('touchend',_handleServiceFeeTap,true);
 
         // Modal explicación de tarifa de servicio (texto pensado para no asustar)
         window.openServiceFeeInfo=function(){
