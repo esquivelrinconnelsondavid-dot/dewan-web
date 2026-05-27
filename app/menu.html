@@ -573,6 +573,8 @@
         .aliado-badge{position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#1a1a1a;font-size:0.55rem;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:0.04em;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:3;display:flex;align-items:center;gap:2px}
         /* Tarifa servicio: discreto, neutro, esquina sup-der (sólo si no hay CERRADO) */
         .service-fee-badge{position:absolute;top:5px;right:5px;background:rgba(148,163,184,0.28);color:#e2e8f0;font-size:0.58rem;font-weight:800;padding:4px 9px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(148,163,184,0.4);z-index:5;letter-spacing:0.02em;-webkit-tap-highlight-color:rgba(184,255,0,0.3);user-select:none;min-height:24px;touch-action:manipulation}
+        .top-semana-badge{position:absolute;bottom:6px;left:6px;background:linear-gradient(135deg,#FF6B35,#FF3D00);color:#fff;font-size:0.55rem;font-weight:900;padding:3px 8px;border-radius:20px;letter-spacing:0.04em;box-shadow:0 2px 8px rgba(255,61,0,0.45);z-index:4;display:inline-flex;align-items:center;gap:3px;animation:topSemanaPulse 2.4s ease-in-out infinite}
+        @keyframes topSemanaPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
         .service-fee-badge:active{background:rgba(184,255,0,0.35);transform:scale(0.96)}
         /* Modal explicación tarifa — clase única para evitar conflicto con .modal-overlay del sistema */
         .sf-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;opacity:1;pointer-events:auto;animation:sfModalFadeIn 0.2s ease-out}
@@ -782,7 +784,8 @@
                 restaurante_lat:r.latitud, restaurante_lng:r.longitud,
                 // Campos de tier comercial (post 2026-05-26)
                 tipo_acuerdo:r.tipo_acuerdo,
-                categoria_canonica:r.categoria_canonica
+                categoria_canonica:r.categoria_canonica,
+                top_semana:r.top_semana===true
             };
         }
 
@@ -918,6 +921,19 @@
         }
 
         // ── Haversine para calcular distancias client-side ──
+        // Rotación diaria determinística (mismo orden todo el día, cambia cada día)
+        function dailyShuffle(arr){
+            if(!arr||arr.length<2) return arr;
+            var d=new Date();
+            var seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+            var a=arr.slice();
+            for(var i=a.length-1;i>0;i--){
+                seed=(seed*9301+49297)%233280;
+                var j=Math.floor((seed/233280)*(i+1));
+                var tmp=a[i];a[i]=a[j];a[j]=tmp;
+            }
+            return a;
+        }
         function haversine(lat1,lng1,lat2,lng2){
             var R=6371;var dLat=(lat2-lat1)*Math.PI/180;var dLng=(lng2-lng1)*Math.PI/180;
             var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
@@ -1415,7 +1431,7 @@
                     // Home sin filtro: socios primero, silenciosos detrás de botón
                     var homeBy=partitionBySocio(rests);
                     // Sección destacada: carousel horizontal con aliados (solo si hay aliados)
-                    var aliadosDestacados=homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'});
+                    var aliadosDestacados=dailyShuffle(homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'}));
                     if(aliadosDestacados.length){
                         h+='<div class="destacados-section">';
                         h+='<div class="destacados-title">⭐ <span class="destacados-title-acc">Sin recargo · Precio del local</span></div>';
@@ -1427,6 +1443,7 @@
                             h+='<div class="destacados-card grid3-card" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:rgba(34,197,94,0.35)">'+
                                 '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
                                     '<span class="aliado-badge">⭐ Aliado</span>'+
+                                    (r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'')+
                                     '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
                                     (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
                                     (isOpen===false?'<span class="grid3-closed">CERRADO</span>':'')+
@@ -2130,10 +2147,12 @@
             var aliadoBadge=isAliado?'<span class="aliado-badge">⭐ Aliado</span>':'';
             // El badge de servicio sólo si no es aliado Y el local está abierto (para no chocar con CERRADO)
             var feeBadge=(!isAliado&&isOpen!==false)?'<span class="service-fee-badge" data-service-fee="1">ⓘ +servicio</span>':'';
+            var topBadge=r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'';
             return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+color+'25">'+
                 '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
                     aliadoBadge+
                     feeBadge+
+                    topBadge+
                     '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
                     (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
                     (isOpen===false?'<span class="grid3-closed">CERRADO</span>':'')+
