@@ -178,6 +178,7 @@
         .badge-cat{background:var(--card2);color:var(--gris-2);border:1px solid var(--border)}
         .prod-name{font-weight:800;font-size:0.96rem;line-height:1.25;letter-spacing:-0.01em}
         .prod-desc{color:var(--gris-2);font-size:0.78rem;margin-top:4px;line-height:1.45}
+        .prod-envase{color:var(--gris);font-size:0.7rem;margin-top:4px;font-weight:700;letter-spacing:0.01em}
         .prod-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px}
         .prod-price{font-weight:800;font-size:1.1rem;color:var(--texto);letter-spacing:-0.01em}
         .btn-agregar{width:36px;height:36px;border-radius:50%;background:var(--acc);color:#111;border:none;font-weight:900;font-size:1.3rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s;box-shadow:0 2px 10px rgba(184,255,0,0.2);flex-shrink:0}
@@ -858,7 +859,8 @@
                         precio:Number(it.precio)||0,
                         categoria:it.categoria_menu||'General',
                         descripcion:it.descripcion||'',
-                        foto_url:it.foto_url||null
+                        foto_url:it.foto_url||null,
+                        cargo_envase:Number(it.cargo_envase)||0
                     }});
                     window._menuCache[restId]=norm;
                     return norm;
@@ -1615,7 +1617,7 @@
                     } else {
                         var ci=findCart(r.nombre,p.nombre);
                         var qty=ci?ci.qty:0;
-                        h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\')">'+
+                        h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+')">'+
                             (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
@@ -1694,15 +1696,16 @@
                                     '</div>':'')+
                                     '<div class="prod-name">'+esc(p.nombre)+'</div>'+
                                     (p.descripcion?'<div class="prod-desc">'+esc(p.descripcion)+'</div>':'')+
+                                    (p.cargo_envase>0?'<div class="prod-envase">+ envase $'+Number(p.cargo_envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
                                         '<span class="prod-price">$'+Number(p.precio).toFixed(2)+'</span>'+
                                         (qty>0?
                                             '<div class="qty-ctrl">'+
                                                 '<button class="btn-qty btn-qty-minus" aria-label="Quitar" onclick="event.stopPropagation();removeCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\')">−</button>'+
                                                 '<span class="qty-num">'+qty+'</span>'+
-                                                '<button class="btn-qty btn-qty-plus" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\')">+</button>'+
+                                                '<button class="btn-qty btn-qty-plus" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+')">+</button>'+
                                             '</div>'
-                                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\')">+</button>'
+                                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+')">+</button>'
                                         )+
                                     '</div>'+
                                 '</div>'+
@@ -2286,10 +2289,11 @@
             });
 
             // Resumen
-            var totalSinDelivery=t.subtotal+t.serviceFee;
+            var totalSinDelivery=t.subtotal+t.serviceFee+t.envases;
             h+='<div class="cart-summary-box">'+
                 '<div class="cart-summary-title">Resumen</div>'+
                 '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">$'+t.subtotal.toFixed(2)+'</span></div>'+
+                (t.envases>0?'<div class="cart-row"><span class="cart-row-label">Envases</span><span class="cart-row-val">$'+t.envases.toFixed(2)+'</span></div>':'')+
                 (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Tarifa de servicio <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">$'+t.delivery.toFixed(2)+'</span></div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío')+'</span></div>'+
@@ -2345,14 +2349,14 @@
                 '</div>';
                 // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
                 h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
-                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee).toFixed(2))+'</span></span>'+
+                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2))+'</span></span>'+
                     '<span class="btn-wa-need-loc-hint">Agrega tu ubicación arriba para activar</span>'+
                 '</button>';
             } else {
                 h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
                 h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
                     '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
-                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee).toFixed(2)+' + envío')+'</span>'+
+                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+' + envío')+'</span>'+
                 '</button>';
             }
             h+='</div>';
@@ -2420,12 +2424,12 @@
             try{return getEmojiPlato(nombre)||'✨'}catch(e){return '✨'}
         }
 
-        window.addCart=function(rest,nombre,precio,delivery,fotoUrl){
-            var p=parsePrice(precio),d=parsePrice(delivery);
+        window.addCart=function(rest,nombre,precio,delivery,fotoUrl,cargoEnvase){
+            var p=parsePrice(precio),d=parsePrice(delivery),e=parsePrice(cargoEnvase);
             var pt=captureClickPoint();
             var c=findCart(rest,nombre);
-            if(c){c.qty++;c.precio=p;c.delivery=d;if(fotoUrl)c.foto_url=fotoUrl;}
-            else{window._cart.push({restaurante:rest,nombre:nombre,precio:p,delivery:d,qty:1,foto_url:fotoUrl||null})}
+            if(c){c.qty++;c.precio=p;c.delivery=d;c.cargo_envase=e;if(fotoUrl)c.foto_url=fotoUrl;}
+            else{window._cart.push({restaurante:rest,nombre:nombre,precio:p,delivery:d,qty:1,foto_url:fotoUrl||null,cargo_envase:e})}
             saveCart(); // CAMBIO 2
             markEtapa('agrego_carrito');
             refreshView();
@@ -2463,13 +2467,15 @@
         }
 
         function cartTotals(){
-            var items=0,sub=0,dels={},subsByRest={};
+            var items=0,sub=0,dels={},subsByRest={},envases=0;
             window._cart.forEach(function(c){
-                var q=parsePrice(c.qty),p=parsePrice(c.precio);
+                var q=parsePrice(c.qty),p=parsePrice(c.precio),e=parsePrice(c.cargo_envase);
                 items+=q;sub+=p*q;
+                envases+=e*q;
                 dels[c.restaurante]=parsePrice(c.delivery);
                 subsByRest[c.restaurante]=(subsByRest[c.restaurante]||0)+p*q;
             });
+            envases=Math.round(envases*100)/100;
             var del=0;Object.keys(dels).forEach(function(k){del+=dels[k]});
             // Tarifa de servicio: sólo para restaurantes NO aliados
             var serviceFee=0;
@@ -2479,7 +2485,7 @@
                 }
             });
             serviceFee=Math.round(serviceFee*100)/100;
-            return{items:items,subtotal:sub,delivery:del,serviceFee:serviceFee,total:sub+del+serviceFee};
+            return{items:items,subtotal:sub,envases:envases,delivery:del,serviceFee:serviceFee,total:sub+del+serviceFee+envases};
         }
         // Animated count-up del total: anima de `from` a `to` con easeOutCubic
         function animateMoney(el,from,to,duration,suffix){
@@ -2520,7 +2526,7 @@
                     var pieces=t.items+' '+(t.items===1?'plato':'platos');
                     subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'');
                 }
-                var toVal=window._clientGPS?t.total:(t.subtotal+t.serviceFee);
+                var toVal=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
                 var suffix=window._clientGPS?'':' + envío';
                 animateMoney(totalEl,window._cartFloatPrevTotal,toVal,wasVisible?420:0,suffix);
                 window._cartFloatPrevTotal=toVal;
@@ -2608,14 +2614,19 @@
                 });
                 msg+='\n';
             });
-            if(t.serviceFee>0){
+            if(t.serviceFee>0||t.envases>0){
                 msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'*\n';
-                msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
+                if(t.envases>0) msg+='📦 Envases: $'+t.envases.toFixed(2)+'\n';
+                if(t.serviceFee>0) msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
             }
             if(window._clientGPS){
-                msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye delivery'+(t.serviceFee>0?' y servicio':'')+')\n\n';
+                var incExtras=[];
+                incExtras.push('delivery');
+                if(t.envases>0) incExtras.push('envases');
+                if(t.serviceFee>0) incExtras.push('servicio');
+                msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye '+incExtras.join(', ')+')\n\n';
             } else {
-                msg+='💰 *'+(t.serviceFee>0?'Subtotal + servicio':'Subtotal')+': $'+(t.subtotal+t.serviceFee).toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
+                msg+='💰 *Total parcial: $'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
             }
             // Capturar valor actual del campo de dirección/referencia
             var addrInput=document.getElementById('loc-addr');
@@ -2638,7 +2649,7 @@
             msg+='Token: '+token;
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
             // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
-            var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee),conGPS:!!window._clientGPS};
+            var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases),conGPS:!!window._clientGPS};
             markEtapa('confirmo');
             closeModal();
             showSuccessScreen(resumen);
