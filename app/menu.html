@@ -425,8 +425,10 @@
 
         /* Category chips row */
         .cat-chips-wrap{padding:14px 0 6px}
-        .cat-chips-scroll{display:flex;flex-wrap:wrap;gap:7px;padding:0 14px 4px}
-        .cat-chip{padding:8px 11px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--texto);font-size:0.76rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;letter-spacing:-0.01em}
+        /* 2 filas con scroll horizontal en cada una — más compacto que multi-wrap */
+        .cat-chips-scroll{display:grid;grid-auto-flow:column;grid-template-rows:auto auto;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0 14px 4px;-webkit-overflow-scrolling:touch;grid-auto-columns:max-content}
+        .cat-chips-scroll::-webkit-scrollbar{display:none}
+        .cat-chip{padding:8px 11px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--texto);font-size:0.78rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;letter-spacing:-0.01em}
         .cat-chip:active{transform:scale(0.96)}
         .cat-chip.active{background:var(--acc);color:#111;border-color:var(--acc);box-shadow:0 2px 10px rgba(184,255,0,0.25)}
         .cat-chip-icon{font-size:1.05rem}
@@ -2056,24 +2058,28 @@
         // Es bulletproof contra el inline onclick que no funciona consistentemente en mobile.
         function _handleServiceFeeTap(e){
             var t=e.target;
-            // .closest no es soportado en navegadores muy viejos — usar walk manual
+            // .closest fallback (walk manual)
             while(t&&t!==document.body){
                 if(t.getAttribute&&t.getAttribute('data-service-fee')==='1'){
+                    try{console.log('[badge tap]',e.type,'target=',t.className)}catch(_){}
                     e.stopPropagation();
                     if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-                    e.preventDefault();
-                    // Anti doble-fire (touchend + click)
+                    if(e.cancelable) e.preventDefault();
                     var now=Date.now();
-                    if(window._lastServiceFeeTap&&now-window._lastServiceFeeTap<400) return;
+                    if(window._lastServiceFeeTap&&now-window._lastServiceFeeTap<500) return false;
                     window._lastServiceFeeTap=now;
                     openServiceFeeInfo();
-                    return;
+                    return false;
                 }
                 t=t.parentNode;
             }
         }
+        // Múltiples eventos en capture para máxima compatibilidad mobile
         document.addEventListener('click',_handleServiceFeeTap,true);
+        document.addEventListener('touchstart',_handleServiceFeeTap,true);
         document.addEventListener('touchend',_handleServiceFeeTap,true);
+        document.addEventListener('pointerup',_handleServiceFeeTap,true);
+        document.addEventListener('mousedown',_handleServiceFeeTap,true);
 
         // Modal explicación de tarifa de servicio (texto pensado para no asustar)
         window.openServiceFeeInfo=function(){
