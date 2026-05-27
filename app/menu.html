@@ -551,18 +551,18 @@
         /* Tarifa servicio: discreto, neutro, esquina sup-der (sólo si no hay CERRADO) */
         .service-fee-badge{position:absolute;top:5px;right:5px;background:rgba(148,163,184,0.28);color:#e2e8f0;font-size:0.58rem;font-weight:800;padding:4px 9px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(148,163,184,0.4);z-index:5;letter-spacing:0.02em;-webkit-tap-highlight-color:rgba(184,255,0,0.3);user-select:none;min-height:24px;touch-action:manipulation}
         .service-fee-badge:active{background:rgba(184,255,0,0.35);transform:scale(0.96)}
-        /* Modal explicación tarifa */
-        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;animation:modalFadeIn 0.2s ease-out}
-        .modal-card{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:380px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
-        .modal-header{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:1.02rem;border-bottom:1px solid var(--border)}
-        .modal-close{background:transparent;border:none;color:var(--texto);font-size:1.5rem;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:0;line-height:1}
-        .modal-close:active{background:var(--card2)}
-        .modal-body{padding:18px}
-        .modal-body p{margin:0 0 12px;line-height:1.55;font-size:0.9rem;color:var(--texto)}
-        .modal-body p:last-of-type{margin-bottom:18px}
-        .modal-ok{width:100%;background:var(--acc);color:#111;border:none;border-radius:14px;padding:13px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit}
-        .modal-ok:active{transform:scale(0.98)}
-        @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+        /* Modal explicación tarifa — clase única para evitar conflicto con .modal-overlay del sistema */
+        .sf-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px;opacity:1;pointer-events:auto;animation:sfModalFadeIn 0.2s ease-out}
+        .sf-modal-card{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:380px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+        .sf-modal-header{padding:16px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:900;font-size:1.02rem;border-bottom:1px solid var(--border)}
+        .sf-modal-close{background:transparent;border:none;color:var(--texto);font-size:1.5rem;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:0;line-height:1}
+        .sf-modal-close:active{background:var(--card2)}
+        .sf-modal-body{padding:18px}
+        .sf-modal-body p{margin:0 0 12px;line-height:1.55;font-size:0.9rem;color:var(--texto)}
+        .sf-modal-body p:last-of-type{margin-bottom:18px}
+        .sf-modal-ok{width:100%;background:var(--acc);color:#111;border:none;border-radius:14px;padding:13px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit}
+        .sf-modal-ok:active{transform:scale(0.98)}
+        @keyframes sfModalFadeIn{from{opacity:0}to{opacity:1}}
         /* Botón "Ver otros restaurantes" — separa visualmente a los no-socios */
         .ver-otros-btn{display:block;width:calc(100% - 28px);margin:18px 14px 6px;padding:14px 18px;background:var(--card);border:1.5px dashed var(--border);border-radius:16px;color:var(--texto);font-family:inherit;cursor:pointer;text-align:center;transition:all 0.2s;letter-spacing:-0.01em}
         .ver-otros-btn:active{transform:scale(0.985);border-color:var(--acc)}
@@ -2094,28 +2094,26 @@
         // Se inserta una vez al cargar y solo se muestra/oculta con CSS.
         function ensureServiceFeeModal(){
             if(document.getElementById('service-fee-modal')) return;
-            var html='<div id="service-fee-modal" class="modal-overlay" style="display:none">'+
-                '<div class="modal-card">'+
-                    '<div class="modal-header"><span>ℹ️ Tarifa de servicio</span><button class="modal-close" type="button">×</button></div>'+
-                    '<div class="modal-body">'+
+            var html='<div id="service-fee-modal" class="sf-modal-overlay" style="display:none">'+
+                '<div class="sf-modal-card">'+
+                    '<div class="sf-modal-header"><span>ℹ️ Tarifa de servicio</span><button class="sf-modal-close" type="button">×</button></div>'+
+                    '<div class="sf-modal-body">'+
                         '<p>Este restaurante aún no es <strong>⭐ Aliado DEWAN</strong>.</p>'+
                         '<p>Al hacer tu pedido agregamos una pequeña <strong>tarifa de servicio</strong> que nos permite mantener la logística, la app y el delivery funcionando para ti.</p>'+
                         '<p>Los restaurantes <strong>⭐ Aliados</strong> no tienen este recargo — pagas exactamente lo mismo que en el local.</p>'+
-                        '<button class="modal-ok" type="button">Entendido</button>'+
+                        '<button class="sf-modal-ok" type="button">Entendido</button>'+
                     '</div>'+
                 '</div>'+
             '</div>';
             document.body.insertAdjacentHTML('beforeend',html);
-            // Bindeos: cierre por overlay (click fuera de card), por X y por botón OK
             var modal=document.getElementById('service-fee-modal');
             if(!modal) return;
             modal.addEventListener('click',function(e){
-                // Solo cerrar si tocaron el overlay, no el card interior
                 if(e.target===modal && Date.now()-window._modalOpenedAt>250) closeServiceFeeInfo();
             });
-            var x=modal.querySelector('.modal-close');
+            var x=modal.querySelector('.sf-modal-close');
             if(x) x.addEventListener('click',function(e){e.stopPropagation();closeServiceFeeInfo()});
-            var ok=modal.querySelector('.modal-ok');
+            var ok=modal.querySelector('.sf-modal-ok');
             if(ok) ok.addEventListener('click',function(e){e.stopPropagation();closeServiceFeeInfo()});
         }
         // Insertar tan pronto el DOM esté listo
