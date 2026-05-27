@@ -1131,11 +1131,11 @@
             return true;
         }
 
-        // Mundial 2026: del 11 jun al 19 jul. Damos margen extra de hype.
-        // Para desactivar manualmente: cambiar a return false.
+        // Mundial 2026: del 11 jun al 19 jul. Pre-hype desde 20 mayo, margen
+        // post-final hasta 25 jul. Para desactivar manualmente: return false.
         function isMundial(){
             var now=new Date();
-            var start=new Date('2026-06-01T00:00:00');
+            var start=new Date('2026-05-20T00:00:00');
             var end=new Date('2026-07-25T23:59:59');
             return now>=start&&now<=end;
         }
