@@ -548,8 +548,8 @@
         /* Badge Aliado: visible, dorado, esquina sup-izq */
         .aliado-badge{position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#1a1a1a;font-size:0.55rem;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:0.04em;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:3;display:flex;align-items:center;gap:2px}
         /* Tarifa servicio: discreto, neutro, esquina sup-der (sólo si no hay CERRADO) */
-        .service-fee-badge{position:absolute;top:6px;right:6px;background:rgba(148,163,184,0.22);color:#cbd5e1;font-size:0.52rem;font-weight:700;padding:2px 6px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:3px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(148,163,184,0.3);z-index:3;letter-spacing:0.02em}
-        .service-fee-badge:active{background:rgba(148,163,184,0.34)}
+        .service-fee-badge{position:absolute;top:5px;right:5px;background:rgba(148,163,184,0.28);color:#e2e8f0;font-size:0.58rem;font-weight:800;padding:4px 9px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(148,163,184,0.4);z-index:5;letter-spacing:0.02em;-webkit-tap-highlight-color:rgba(184,255,0,0.3);user-select:none;min-height:24px;touch-action:manipulation}
+        .service-fee-badge:active{background:rgba(184,255,0,0.35);transform:scale(0.96)}
         /* Modal explicación tarifa */
         .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;animation:modalFadeIn 0.2s ease-out}
         .modal-card{background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:380px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
@@ -1931,7 +1931,7 @@
             var isAliado=r.tipo_acuerdo==='aliado';
             var aliadoBadge=isAliado?'<span class="aliado-badge">⭐ Aliado</span>':'';
             // El badge de servicio sólo si no es aliado Y el local está abierto (para no chocar con CERRADO)
-            var feeBadge=(!isAliado&&isOpen!==false)?'<span class="service-fee-badge" onclick="event.stopPropagation();openServiceFeeInfo()">ⓘ +servicio</span>':'';
+            var feeBadge=(!isAliado&&isOpen!==false)?'<span class="service-fee-badge" onclick="tapServiceFee(event)" ontouchstart="tapServiceFee(event)">ⓘ +servicio</span>':'';
             return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+color+'25">'+
                 '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
                     aliadoBadge+
@@ -1946,6 +1946,24 @@
                 '</div>'+
             '</div>';
         }
+
+        // Wrapper robusto para tap del badge: previene que el card abra el restaurante
+        // y evita doble-fire en mobile (touchstart + click).
+        window.tapServiceFee=function(e){
+            e=e||window.event;
+            if(e){
+                if(e.stopPropagation) e.stopPropagation();
+                if(e.preventDefault) e.preventDefault();
+                if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+                e.cancelBubble=true;
+                // Anti doble-fire: si ya disparamos en los últimos 400ms, ignorar
+                var now=Date.now();
+                if(window._lastServiceFeeTap&&now-window._lastServiceFeeTap<400) return false;
+                window._lastServiceFeeTap=now;
+            }
+            openServiceFeeInfo();
+            return false;
+        };
 
         // Modal explicación de tarifa de servicio (texto pensado para no asustar)
         window.openServiceFeeInfo=function(){
@@ -2099,11 +2117,13 @@
             });
 
             // Resumen
+            var totalSinDelivery=t.subtotal+t.serviceFee;
             h+='<div class="cart-summary-box">'+
                 '<div class="cart-summary-title">Resumen</div>'+
                 '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">$'+t.subtotal.toFixed(2)+'</span></div>'+
+                (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Tarifa de servicio <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">$'+t.delivery.toFixed(2)+'</span></div>':'')+
-                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span></div>'+
+                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío')+'</span></div>'+
             '</div>';
 
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
@@ -2156,14 +2176,14 @@
                 '</div>';
                 // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
                 h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
-                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2))+'</span></span>'+
+                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee).toFixed(2))+'</span></span>'+
                     '<span class="btn-wa-need-loc-hint">Agrega tu ubicación arriba para activar</span>'+
                 '</button>';
             } else {
                 h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
                 h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
                     '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
-                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+t.subtotal.toFixed(2)+' + envío')+'</span>'+
+                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee).toFixed(2)+' + envío')+'</span>'+
                 '</button>';
             }
             h+='</div>';
@@ -2255,15 +2275,42 @@
         function findCart(rest,nombre){
             for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices)return window._cart[i]}return null;
         }
+        // Tarifa de servicio escalonada (solo para restaurantes NO aliados)
+        // ≤$5 → $0.50 fija | $5-$15 → 10% | >$15 → $1.50 + 5% sobre el exceso
+        function calcServiceFee(sub){
+            if(sub<=0) return 0;
+            if(sub<=5) return 0.50;
+            if(sub<=15) return Math.round(sub*10)/100; // 10%
+            return Math.round((1.50+(sub-15)*0.05)*100)/100;
+        }
+        function getRestByName(name){
+            var found=null;
+            (sessionData.resultados||[]).forEach(function(r){if(r.nombre===name) found=r});
+            return found;
+        }
+        function isAliadoRest(name){
+            var r=getRestByName(name);
+            return !!(r && r.tipo_acuerdo==='aliado');
+        }
+
         function cartTotals(){
-            var items=0,sub=0,dels={};
+            var items=0,sub=0,dels={},subsByRest={};
             window._cart.forEach(function(c){
                 var q=parsePrice(c.qty),p=parsePrice(c.precio);
                 items+=q;sub+=p*q;
                 dels[c.restaurante]=parsePrice(c.delivery);
+                subsByRest[c.restaurante]=(subsByRest[c.restaurante]||0)+p*q;
             });
             var del=0;Object.keys(dels).forEach(function(k){del+=dels[k]});
-            return{items:items,subtotal:sub,delivery:del,total:sub+del};
+            // Tarifa de servicio: sólo para restaurantes NO aliados
+            var serviceFee=0;
+            Object.keys(subsByRest).forEach(function(rest){
+                if(!isAliadoRest(rest)){
+                    serviceFee+=calcServiceFee(subsByRest[rest]);
+                }
+            });
+            serviceFee=Math.round(serviceFee*100)/100;
+            return{items:items,subtotal:sub,delivery:del,serviceFee:serviceFee,total:sub+del+serviceFee};
         }
         // Animated count-up del total: anima de `from` a `to` con easeOutCubic
         function animateMoney(el,from,to,duration,suffix){
@@ -2304,7 +2351,7 @@
                     var pieces=t.items+' '+(t.items===1?'plato':'platos');
                     subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'');
                 }
-                var toVal=window._clientGPS?t.total:t.subtotal;
+                var toVal=window._clientGPS?t.total:(t.subtotal+t.serviceFee);
                 var suffix=window._clientGPS?'':' + envío';
                 animateMoney(totalEl,window._cartFloatPrevTotal,toVal,wasVisible?420:0,suffix);
                 window._cartFloatPrevTotal=toVal;
@@ -2392,10 +2439,14 @@
                 });
                 msg+='\n';
             });
+            if(t.serviceFee>0){
+                msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'*\n';
+                msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
+            }
             if(window._clientGPS){
-                msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye delivery)\n\n';
+                msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye delivery'+(t.serviceFee>0?' y servicio':'')+')\n\n';
             } else {
-                msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
+                msg+='💰 *'+(t.serviceFee>0?'Subtotal + servicio':'Subtotal')+': $'+(t.subtotal+t.serviceFee).toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
             }
             // Capturar valor actual del campo de dirección/referencia
             var addrInput=document.getElementById('loc-addr');
@@ -2418,7 +2469,7 @@
             msg+='Token: '+token;
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
             // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
-            var resumen={items:t.items,total:window._clientGPS?t.total:t.subtotal,conGPS:!!window._clientGPS};
+            var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee),conGPS:!!window._clientGPS};
             markEtapa('confirmo');
             closeModal();
             showSuccessScreen(resumen);
