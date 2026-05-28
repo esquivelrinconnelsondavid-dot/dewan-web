@@ -579,6 +579,16 @@
         .cart-row-final{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px;margin-top:6px;background:linear-gradient(90deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08));border:2px solid #16a34a;border-radius:12px;color:#15803d;font-weight:900;font-size:1.35rem}
         .cart-row-final span:first-child{font-size:0.95rem;text-transform:uppercase;letter-spacing:0.04em}
         .cart-row-final-hint{font-size:0.72rem;color:#16a34a;font-weight:700;margin-top:4px;text-align:right;padding-right:4px}
+        /* Input WhatsApp opcional + banner VUELVE */
+        .tel-cupon-box{margin:10px 14px 4px;padding:10px 12px;background:rgba(34,197,94,0.06);border:1px dashed #16a34a;border-radius:10px}
+        .tel-cupon-label{font-size:0.78rem;color:#15803d;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+        .tel-cupon-input{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:8px;font-size:0.95rem;font-family:inherit;background:#fff}
+        .tel-cupon-input:focus{outline:none;border-color:#16a34a;box-shadow:0 0 0 3px rgba(34,197,94,0.15)}
+        .vuelve-banner{position:relative;margin:0 14px 12px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#f97316 0%,#fb923c 50%,#fbbf24 100%);padding:14px 44px 14px 16px;color:#fff;box-shadow:0 4px 14px rgba(249,115,22,0.35)}
+        .vuelve-banner-title{font-size:0.95rem;font-weight:900;line-height:1.2}
+        .vuelve-banner-sub{font-size:0.74rem;font-weight:700;color:#fff;margin-top:3px;opacity:0.95}
+        .price-tachado{text-decoration:line-through;color:#94a3b8;font-weight:600;font-size:0.78rem;margin-right:4px}
+        .price-cupon{color:#15803d;font-weight:800}
         @keyframes mundialPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
         .mundial-flag{display:inline-block;animation:mundialPulse 2s ease-in-out infinite;margin-right:4px}
         .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -829,6 +839,10 @@
 
         // V2: Cargar TODOS los restaurantes activos + (si hay token) la session para tracking/prefill
         function loadSession(){
+            // Consulta cupón activo del cliente si ya tenemos teléfono guardado (in-flight, no bloqueante)
+            if(leerTelClienteLocal()) fetchCuponActivoCliente().then(function(c){
+                if(c && currentView==='home') renderHome();
+            });
             var restsReq=fetch(SB_URL+'/rest/v1/restaurantes?select=*&activo=eq.true&order=nombre.asc',{headers:supaHeaders()})
                 .then(function(r){return r.json()});
             var almReq=fetch(SB_URL+'/rest/v1/almuerzos_hoy?select=*',{headers:supaHeaders()})
@@ -1235,19 +1249,88 @@
                 '<div class="cupon-banner-sub">Lo aplicamos automáticamente al confirmar por WhatsApp</div>'+
             '</div>';
         }
-        // Cupones — utilidades para el carrito
+        // Banner cupón VUELVE para clientes recurrentes (sale solo si fetchCuponActivoCliente trajo algo)
+        function renderVuelveBanner(){
+            var c=window._cuponActivoCache;
+            if(!c) return '';
+            var hint=cuponVenceHint(c.vence_en);
+            return '<div class="vuelve-banner">'+
+                '<div class="vuelve-banner-title">🔁 Tienes $'+c.monto.toFixed(2)+' de descuento</div>'+
+                '<div class="vuelve-banner-sub">'+(hint||'Listo para tu próximo pedido')+' · pedido mínimo $'+c.min_pedido.toFixed(2)+'</div>'+
+            '</div>';
+        }
+        // === CUPONES (B1: Opción C híbrida) ===========================
         function yaPidio(){
             try{return localStorage.getItem('dewan_first_order_done')==='1'}catch(_){return false}
         }
         function marcarYaPidio(){
             try{localStorage.setItem('dewan_first_order_done','1')}catch(_){}
         }
-        // Devuelve descuento estimado a mostrar en carrito (0 si no aplica).
-        // Solo BIENVENIDA por ahora (VUELVE requiere conocer al cliente, pendiente).
+        function normalizarTelEcuador(raw){
+            var s=String(raw||'').replace(/[^0-9]/g,'');
+            if(!s) return '';
+            if(s.indexOf('593')===0 && s.length>=12) return s.slice(0,12);
+            if(s.indexOf('0')===0 && s.length===10) return '593'+s.slice(1);
+            if(s.length===9) return '593'+s;
+            return s;
+        }
+        function leerTelClienteLocal(){
+            try{return localStorage.getItem('dewan_tel_cliente')||''}catch(_){return ''}
+        }
+        function guardarTelClienteLocal(tel){
+            var norm=normalizarTelEcuador(tel);
+            if(!norm) return;
+            try{localStorage.setItem('dewan_tel_cliente',norm)}catch(_){}
+        }
+        // Cache 10 min del cupón activo consultado a BD
+        window._cuponActivoCache=null;
+        function fetchCuponActivoCliente(){
+            var tel=leerTelClienteLocal();
+            if(!tel) return Promise.resolve(null);
+            if(window._cuponActivoCache && (Date.now()-window._cuponActivoCache.fetchedAt)<10*60*1000){
+                return Promise.resolve(window._cuponActivoCache);
+            }
+            var url=SB_URL+'/rest/v1/cupones_usuario?telefono=eq.'+encodeURIComponent(tel)+'&usado_en=is.null&select=*&order=monto.desc&limit=5';
+            return fetch(url,{headers:supaHeaders()}).then(function(r){return r.json()}).then(function(arr){
+                if(!Array.isArray(arr)||!arr.length){window._cuponActivoCache=null;return null}
+                var ahora=new Date();
+                for(var i=0;i<arr.length;i++){
+                    var c=arr[i];
+                    if(c.vence_en && new Date(c.vence_en)<ahora) continue;
+                    window._cuponActivoCache={
+                        codigo:c.codigo, monto:Number(c.monto),
+                        min_pedido:Number(c.min_pedido||0),
+                        vence_en:c.vence_en, fetchedAt:Date.now()
+                    };
+                    return window._cuponActivoCache;
+                }
+                window._cuponActivoCache=null;
+                return null;
+            }).catch(function(){return null});
+        }
+        function cuponVenceHint(vence_en){
+            if(!vence_en) return '';
+            var ahora=new Date(), v=new Date(vence_en);
+            var ms=v-ahora;
+            if(ms<=0) return '';
+            var horas=Math.floor(ms/(60*60*1000));
+            if(horas<24) return '⏰ vence en '+horas+'h';
+            var dias=Math.ceil(horas/24);
+            return '⏰ vence en '+dias+'d';
+        }
+        // Estimación que se muestra en el carrito:
+        // - Cliente nuevo (no pidió aún): BIENVENIDA $0.50 si subtotal>=$4
+        // - Cliente recurrente con cupón VUELVE en BD: el cupón real
+        // - Cliente recurrente sin cupón activo: nada
         function estimarCuponCarrito(subtotal){
-            if(yaPidio()) return {codigo:null,monto:0};
-            if(subtotal<4) return {codigo:null,monto:0};
-            return {codigo:'BIENVENIDA',monto:0.50};
+            if(!yaPidio()){
+                if(subtotal<4) return {codigo:null,monto:0};
+                return {codigo:'BIENVENIDA',monto:0.50,vence_en:null};
+            }
+            var c=window._cuponActivoCache;
+            if(!c) return {codigo:null,monto:0};
+            if(subtotal<c.min_pedido) return {codigo:null,monto:0};
+            return {codigo:c.codigo,monto:c.monto,vence_en:c.vence_en};
         }
 
         // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
@@ -1397,8 +1480,10 @@
 
             // Banner Mundial (solo durante el período, dismissible)
             h+=renderMundialBanner();
-            // Banner cupón bienvenida (Despliegue 2)
+            // Banner cupón bienvenida (cliente nuevo)
             h+=renderCuponBanner();
+            // Banner cupón VUELVE (cliente recurrente con cupón activo en BD)
+            h+=renderVuelveBanner();
 
             // Chips de categoría. Mundial: 'partido' solo aparece en período.
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
@@ -2489,6 +2574,13 @@
                 :'')+
             '</div>';
 
+            // Input WhatsApp opcional (B1: para recibir cupones VUELVE en visitas siguientes)
+            var telGuardado=leerTelClienteLocal();
+            h+='<div class="tel-cupon-box">'+
+                '<div class="tel-cupon-label">📱 Tu WhatsApp <span style="color:#94a3b8;font-weight:600">(opcional, para tu cupón de bienvenida)</span></div>'+
+                '<input type="tel" class="tel-cupon-input" id="cart-tel-cliente" placeholder="0999888777" value="'+esc(telGuardado)+'" oninput="window._telClienteInput=this.value">'+
+            '</div>';
+
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
             h+='<div class="loc-section" id="loc-section">';
             h+='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>';
@@ -2840,9 +2932,15 @@
                 msg+='💳 *Pago: Efectivo* 💵\n\n';
             }
             msg+='Token: '+token;
+            // Guardar teléfono del cliente si lo escribió (para próximas consultas de cupón)
+            var telCli=window._telClienteInput||document.getElementById('cart-tel-cliente');
+            if(telCli && typeof telCli!=='string') telCli=telCli.value;
+            if(telCli) guardarTelClienteLocal(telCli);
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
             // Marcar que ya intentó enviar 1er pedido — futuras visitas no prometen BIENVENIDA en carrito
             marcarYaPidio();
+            // Invalidar cache de cupones para que próxima visita consulte BD fresca
+            window._cuponActivoCache=null;
             // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
             var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases),conGPS:!!window._clientGPS};
             markEtapa('confirmo');
