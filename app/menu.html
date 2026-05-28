@@ -785,8 +785,33 @@
                 // Campos de tier comercial (post 2026-05-26)
                 tipo_acuerdo:r.tipo_acuerdo,
                 categoria_canonica:r.categoria_canonica,
-                top_semana:r.top_semana===true
+                top_semana:r.top_semana===true,
+                // Pricing v2 (2026-05-28): markup por tier para colchón de cupones
+                markup_pct:Number(r.markup_pct)||0
             };
+        }
+
+        // === DEWAN Pricing v2 (2026-05-28) ===
+        // Aplica markup + charm pricing (.49/.99) a un precio base de plato
+        // según el tier del restaurante. Si markup=0, devuelve precio sin tocar.
+        function aplicarCharmPricing(p){
+            if(!p||p<=0) return p;
+            // Estrategia: tomar entero + decidir .49 o .99 según cercanía
+            var floor=Math.floor(p);
+            var frac=p-floor;
+            // <0.25 → .Xfloor-1.99? mejor: redondeamos al .49/.99 más cercano hacia arriba para no perder margen
+            if(frac<=0.49) return floor+0.49;
+            return floor+0.99;
+        }
+        function applyTierPricing(precioBase,rest){
+            if(!rest||!rest.markup_pct) return precioBase;
+            var conMarkup=precioBase*(1+rest.markup_pct/100);
+            return aplicarCharmPricing(conMarkup);
+        }
+        function getRestById(restId){
+            var found=null;
+            (sessionData.resultados||[]).forEach(function(r){if(r.id===restId) found=r});
+            return found;
         }
 
         // V2: Cargar TODOS los restaurantes activos + (si hay token) la session para tracking/prefill
@@ -878,15 +903,21 @@
             return fetch(url,{headers:supaHeaders()})
                 .then(function(r){return r.json()})
                 .then(function(items){
-                    var norm=(items||[]).map(function(it){return {
-                        id:it.id,
-                        nombre:it.nombre_item,
-                        precio:Number(it.precio)||0,
-                        categoria:it.categoria_menu||'General',
-                        descripcion:it.descripcion||'',
-                        foto_url:it.foto_url||null,
-                        cargo_envase:Number(it.cargo_envase)||0
-                    }});
+                    // Pricing v2: aplicar markup + charm pricing según tier del rest
+                    var rest=getRestById(restId);
+                    var norm=(items||[]).map(function(it){
+                        var precioBase=Number(it.precio)||0;
+                        return {
+                            id:it.id,
+                            nombre:it.nombre_item,
+                            precio:applyTierPricing(precioBase,rest),
+                            precio_base:precioBase, // guardado para auditoría/cupones futuro
+                            categoria:it.categoria_menu||'General',
+                            descripcion:it.descripcion||'',
+                            foto_url:it.foto_url||null,
+                            cargo_envase:Number(it.cargo_envase)||0
+                        };
+                    });
                     window._menuCache[restId]=norm;
                     return norm;
                 });
@@ -1587,10 +1618,14 @@
             // V2.8: solo durante horario de almuerzo (12:00–15:00)
             var almHoy=window._almuerzosHoy&&window._almuerzosHoy[r.id];
             if(almHoy&&almHoy.opciones&&almHoy.opciones.length&&!r._almuerzoInjected&&isAlmuerzoHour()){
+                // Pricing v2: aplicar markup + charm también al almuerzo del día
+                var almPrecioBase=Number(almHoy.precio)||0;
+                var almPrecioFinal=applyTierPricing(almPrecioBase,r);
                 var almProduct={
                     nombre:'Almuerzo del día',
-                    precio:Number(almHoy.precio)||0,
-                    descripcion:'ALMUERZO_OPTS:'+JSON.stringify({precio:Number(almHoy.precio)||0,opciones:almHoy.opciones}),
+                    precio:almPrecioFinal,
+                    precio_base:almPrecioBase,
+                    descripcion:'ALMUERZO_OPTS:'+JSON.stringify({precio:almPrecioFinal,opciones:almHoy.opciones}),
                     categoria:'🍱 Almuerzo del día'
                 };
                 r.productos=[almProduct].concat(r.productos||[]);
@@ -2562,6 +2597,11 @@
             var r=getRestByName(name);
             return !!(r && r.tipo_acuerdo==='aliado');
         }
+        // Pricing v2: solo silenciosos pagan tarifa de servicio
+        function isSilenciosoRest(name){
+            var r=getRestByName(name);
+            return !!(r && r.tipo_acuerdo==='silencioso');
+        }
 
         function cartTotals(){
             var items=0,sub=0,dels={},subsByRest={},envases=0;
@@ -2574,10 +2614,11 @@
             });
             envases=Math.round(envases*100)/100;
             var del=0;Object.keys(dels).forEach(function(k){del+=dels[k]});
-            // Tarifa de servicio: sólo para restaurantes NO aliados
+            // Pricing v2: solo silenciosos pagan tarifa de servicio.
+            // Aliados y cliente_paga ya tienen markup en el precio, no se les cobra extra.
             var serviceFee=0;
             Object.keys(subsByRest).forEach(function(rest){
-                if(!isAliadoRest(rest)){
+                if(isSilenciosoRest(rest)){
                     serviceFee+=calcServiceFee(subsByRest[rest]);
                 }
             });
