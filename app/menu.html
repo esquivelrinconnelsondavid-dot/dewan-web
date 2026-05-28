@@ -2717,11 +2717,8 @@
                 if(t.serviceFee>0) msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
             }
             if(window._clientGPS){
-                var incExtras=[];
-                incExtras.push('delivery');
-                if(t.envases>0) incExtras.push('envases');
-                if(t.serviceFee>0) incExtras.push('servicio');
-                msg+='💰 *Total: $'+t.total.toFixed(2)+'* (incluye '+incExtras.join(', ')+')\n\n';
+                msg+='🛵 Envío: $'+(t.delivery||0).toFixed(2)+'\n';
+                msg+='💰 *Total: $'+t.total.toFixed(2)+'*\n\n';
             } else {
                 msg+='💰 *Total parcial: $'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
             }
