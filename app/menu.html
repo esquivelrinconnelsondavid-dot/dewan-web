@@ -1236,8 +1236,6 @@
             '</div>';
         }
         // Cupones — utilidades para el carrito
-        // yaPidio(): true si el cliente ya hizo al menos 1 pedido (localStorage marcado al confirmar).
-        // Esto evita prometer BIENVENIDA a clientes recurrentes.
         function yaPidio(){
             try{return localStorage.getItem('dewan_first_order_done')==='1'}catch(_){return false}
         }
@@ -1245,7 +1243,7 @@
             try{localStorage.setItem('dewan_first_order_done','1')}catch(_){}
         }
         // Devuelve descuento estimado a mostrar en carrito (0 si no aplica).
-        // Solo BIENVENIDA por ahora (VUELVE requiere identificar al cliente, próxima iteración).
+        // Solo BIENVENIDA por ahora (VUELVE requiere conocer al cliente, pendiente).
         function estimarCuponCarrito(subtotal){
             if(yaPidio()) return {codigo:null,monto:0};
             if(subtotal<4) return {codigo:null,monto:0};
