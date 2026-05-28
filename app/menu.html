@@ -572,6 +572,12 @@
         .cupon-banner-sub{font-size:0.74rem;font-weight:700;color:#fff;margin-top:3px;opacity:0.95}
         .cupon-banner-x{position:absolute;top:7px;right:7px;width:24px;height:24px;background:rgba(0,0,0,0.30);border:none;border-radius:50%;color:#fff;font-size:0.85rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit}
         .cupon-banner-x:active{background:rgba(0,0,0,0.50)}
+        /* Líneas de cupón dentro del carrito */
+        .cart-row-cupon{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed #16a34a;margin-top:4px;color:#16a34a;font-weight:800}
+        .cart-row-cupon .lab{display:flex;align-items:center;gap:6px;font-size:0.88rem}
+        .cart-row-cupon .val{font-variant-numeric:tabular-nums}
+        .cart-row-final{display:flex;justify-content:space-between;padding:10px 0 4px;color:#0f172a;font-weight:900;font-size:1.05rem;border-top:2px solid #16a34a}
+        .cart-row-final-hint{font-size:0.7rem;color:#16a34a;font-weight:700;margin-top:-2px;text-align:right}
         @keyframes mundialPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
         .mundial-flag{display:inline-block;animation:mundialPulse 2s ease-in-out infinite;margin-right:4px}
         .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -1221,12 +1227,28 @@
             try{return sessionStorage.getItem('dewan_cupon_dismissed')==='1'}catch(_){return false}
         }
         function renderCuponBanner(){
-            if(cuponBannerDismissed()) return '';
+            if(cuponBannerDismissed()||yaPidio()) return '';
             return '<div class="cupon-banner" id="cupon-banner">'+
                 '<button class="cupon-banner-x" onclick="dismissCuponBanner(event)" aria-label="Cerrar">×</button>'+
                 '<div class="cupon-banner-title">🎁 Tu primer pedido tiene $0.50 de descuento</div>'+
                 '<div class="cupon-banner-sub">Lo aplicamos automáticamente al confirmar por WhatsApp</div>'+
             '</div>';
+        }
+        // Cupones — utilidades para el carrito
+        // yaPidio(): true si el cliente ya hizo al menos 1 pedido (localStorage marcado al confirmar).
+        // Esto evita prometer BIENVENIDA a clientes recurrentes.
+        function yaPidio(){
+            try{return localStorage.getItem('dewan_first_order_done')==='1'}catch(_){return false}
+        }
+        function marcarYaPidio(){
+            try{localStorage.setItem('dewan_first_order_done','1')}catch(_){}
+        }
+        // Devuelve descuento estimado a mostrar en carrito (0 si no aplica).
+        // Solo BIENVENIDA por ahora (VUELVE requiere identificar al cliente, próxima iteración).
+        function estimarCuponCarrito(subtotal){
+            if(yaPidio()) return {codigo:null,monto:0};
+            if(subtotal<4) return {codigo:null,monto:0};
+            return {codigo:'BIENVENIDA',monto:0.50};
         }
 
         // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
@@ -2452,6 +2474,8 @@
 
             // Resumen
             var totalSinDelivery=t.subtotal+t.serviceFee+t.envases;
+            var cupEst=estimarCuponCarrito(t.subtotal);
+            var totalConCupon=Math.max(0,(window._clientGPS?t.total:totalSinDelivery)-cupEst.monto);
             h+='<div class="cart-summary-box">'+
                 '<div class="cart-summary-title">Resumen</div>'+
                 '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">$'+t.subtotal.toFixed(2)+'</span></div>'+
@@ -2459,6 +2483,11 @@
                 (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Tarifa de servicio <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">$'+t.delivery.toFixed(2)+'</span></div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío')+'</span></div>'+
+                (cupEst.monto>0?
+                    '<div class="cart-row-cupon"><span class="lab">🎁 Cupón '+cupEst.codigo+'</span><span class="val">-$'+cupEst.monto.toFixed(2)+'</span></div>'+
+                    '<div class="cart-row-final"><span>Pagas</span><span>'+(window._clientGPS?'$'+totalConCupon.toFixed(2):'$'+totalConCupon.toFixed(2)+' + envío')+'</span></div>'+
+                    '<div class="cart-row-final-hint">✓ Se aplica al confirmar por WhatsApp</div>'
+                :'')+
             '</div>';
 
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
@@ -2813,6 +2842,8 @@
             }
             msg+='Token: '+token;
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
+            // Marcar que ya intentó enviar 1er pedido — futuras visitas no prometen BIENVENIDA en carrito
+            marcarYaPidio();
             // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
             var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases),conGPS:!!window._clientGPS};
             markEtapa('confirmo');
