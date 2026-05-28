@@ -566,6 +566,12 @@
         .mundial-banner-sub{font-size:0.72rem;font-weight:700;color:#fff;margin-top:3px;opacity:0.95;text-shadow:0 1px 3px rgba(0,0,0,0.4)}
         .mundial-banner-x{position:absolute;top:7px;right:7px;width:24px;height:24px;background:rgba(0,0,0,0.35);border:none;border-radius:50%;color:#fff;font-size:0.85rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit}
         .mundial-banner-x:active{background:rgba(0,0,0,0.55)}
+        /* Banner cupón bienvenida (Despliegue 2 cupones) */
+        .cupon-banner{position:relative;margin:0 14px 12px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#16a34a 0%,#22c55e 50%,#84cc16 100%);padding:14px 44px 14px 16px;color:#fff;box-shadow:0 4px 14px rgba(34,197,94,0.35)}
+        .cupon-banner-title{font-size:0.95rem;font-weight:900;line-height:1.2;letter-spacing:-0.01em}
+        .cupon-banner-sub{font-size:0.74rem;font-weight:700;color:#fff;margin-top:3px;opacity:0.95}
+        .cupon-banner-x{position:absolute;top:7px;right:7px;width:24px;height:24px;background:rgba(0,0,0,0.30);border:none;border-radius:50%;color:#fff;font-size:0.85rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit}
+        .cupon-banner-x:active{background:rgba(0,0,0,0.50)}
         @keyframes mundialPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
         .mundial-flag{display:inline-block;animation:mundialPulse 2s ease-in-out infinite;margin-right:4px}
         .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -1203,6 +1209,25 @@
                 '<div class="mundial-banner-sub">Toca aquí para ver los Antojos del Partido ⚽</div>'+
             '</div>';
         }
+        // Banner cupón bienvenida (Despliegue 2 — genérico, sin auth).
+        // El descuento real se aplica en el bot WhatsApp tras identificar el teléfono.
+        function dismissCuponBanner(e){
+            if(e){e.stopPropagation();e.preventDefault()}
+            try{sessionStorage.setItem('dewan_cupon_dismissed','1')}catch(_){}
+            var b=document.getElementById('cupon-banner');
+            if(b) b.style.display='none';
+        }
+        function cuponBannerDismissed(){
+            try{return sessionStorage.getItem('dewan_cupon_dismissed')==='1'}catch(_){return false}
+        }
+        function renderCuponBanner(){
+            if(cuponBannerDismissed()) return '';
+            return '<div class="cupon-banner" id="cupon-banner">'+
+                '<button class="cupon-banner-x" onclick="dismissCuponBanner(event)" aria-label="Cerrar">×</button>'+
+                '<div class="cupon-banner-title">🎁 Tu primer pedido tiene $0.50 de descuento</div>'+
+                '<div class="cupon-banner-sub">Lo aplicamos automáticamente al confirmar por WhatsApp</div>'+
+            '</div>';
+        }
 
         // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
         function fetchAllMatchingPlates(orsParam,selectCols){
@@ -1351,6 +1376,8 @@
 
             // Banner Mundial (solo durante el período, dismissible)
             h+=renderMundialBanner();
+            // Banner cupón bienvenida (Despliegue 2)
+            h+=renderCuponBanner();
 
             // Chips de categoría. Mundial: 'partido' solo aparece en período.
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
