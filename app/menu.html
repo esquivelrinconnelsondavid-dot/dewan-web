@@ -2740,7 +2740,11 @@
             Object.keys(byRest).forEach(function(rest){
                 msg+='🏪 *'+rest+'*\n';
                 byRest[rest].forEach(function(c){
-                    msg+='  - '+c.qty+'x '+c.nombre+' ($'+(c.precio*c.qty).toFixed(2)+')\n';
+                    // FIX 2026-05-28: mostrar precio UNITARIO con sufijo c/u si qty>1.
+                    // Antes mostraba (c.precio*c.qty) pero el parser n8n lo trataba como
+                    // unitario y multiplicaba otra vez por qty -> subtotal inflado.
+                    var precioStr=c.qty>1 ? '$'+c.precio.toFixed(2)+' c/u' : '$'+c.precio.toFixed(2);
+                    msg+='  - '+c.qty+'x '+c.nombre+' ('+precioStr+')\n';
                     if(c.almuerzoChoices){
                         var catOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
                         var catLabels={entrada:'Entrada',sopa:'Sopa',segundo:'Segundo',guarnicion:'Guarnición',jugo:'Jugo',postre:'Postre'};
@@ -2752,11 +2756,10 @@
                 });
                 msg+='\n';
             });
-            if(t.serviceFee>0||t.envases>0){
-                msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'*\n';
-                if(t.envases>0) msg+='📦 Envases: $'+t.envases.toFixed(2)+'\n';
-                if(t.serviceFee>0) msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
-            }
+            // FIX 2026-05-28: SIEMPRE incluir Subtotal como red de seguridad para el parser.
+            msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'*\n';
+            if(t.envases>0) msg+='📦 Envases: $'+t.envases.toFixed(2)+'\n';
+            if(t.serviceFee>0) msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
             if(window._clientGPS){
                 msg+='🛵 Envío: $'+(t.delivery||0).toFixed(2)+'\n';
                 msg+='💰 *Total: $'+t.total.toFixed(2)+'*\n\n';
