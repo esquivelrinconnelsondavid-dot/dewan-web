@@ -571,10 +571,10 @@
         .mundial-banner-sub{font-size:0.72rem;font-weight:700;color:#fff;margin-top:3px;opacity:0.95;text-shadow:0 1px 3px rgba(0,0,0,0.4)}
         .mundial-banner-x{position:absolute;top:7px;right:7px;width:24px;height:24px;background:rgba(0,0,0,0.35);border:none;border-radius:50%;color:#fff;font-size:0.85rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit}
         .mundial-banner-x:active{background:rgba(0,0,0,0.55)}
-        .promo-home-banner{display:flex;align-items:center;gap:12px;margin:0 14px 12px;border-radius:16px;background:linear-gradient(135deg,#ff6a00 0%,#ff3b30 100%);padding:13px 16px;color:#fff;box-shadow:0 4px 14px rgba(255,59,48,0.30)}
+        .promo-home-banner{display:flex;align-items:center;gap:12px;margin:0 14px 12px;border-radius:16px;background:linear-gradient(135deg,#B8FF00 0%,#8fd400 100%);padding:13px 16px;color:#0e1407;box-shadow:0 4px 14px rgba(184,255,0,0.28)}
         .promo-home-banner-emoji{font-size:1.7rem;flex-shrink:0;line-height:1}
-        .promo-home-banner-title{font-size:0.98rem;font-weight:900;letter-spacing:-0.01em;line-height:1.15}
-        .promo-home-banner-sub{font-size:0.74rem;font-weight:700;opacity:0.95;margin-top:2px;line-height:1.2}
+        .promo-home-banner-title{font-size:1rem;font-weight:900;letter-spacing:-0.01em;line-height:1.15;color:#0e1407}
+        .promo-home-banner-sub{font-size:0.74rem;font-weight:800;opacity:0.85;margin-top:2px;line-height:1.2;color:#1c2a0a}
         /* Banner cupón bienvenida (Despliegue 2 cupones) */
         .cupon-banner{position:relative;margin:0 14px 12px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#16a34a 0%,#22c55e 50%,#84cc16 100%);padding:14px 44px 14px 16px;color:#fff;box-shadow:0 4px 14px rgba(34,197,94,0.35)}
         .cupon-banner-title{font-size:0.95rem;font-weight:900;line-height:1.2;letter-spacing:-0.01em}
@@ -586,8 +586,8 @@
         .cart-row-cupon .lab{display:flex;align-items:center;gap:6px;font-size:0.92rem}
         .cart-row-cupon .val{font-variant-numeric:tabular-nums;font-size:1rem}
         .precio-tachado{text-decoration:line-through;color:var(--gris);opacity:0.7;font-weight:600;margin-right:4px}
-        .cart-row-ahorro{color:#15803d;font-weight:800}
-        .cart-row-ahorro .cart-row-val{color:#15803d}
+        .cart-row-ahorro{color:#15803d;font-weight:900;background:rgba(34,197,94,0.10);border-radius:8px;padding:8px 10px;margin-top:2px}
+        .cart-row-ahorro .cart-row-val{color:#15803d;font-size:1.05rem}
         .cart-row-final{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px;margin-top:6px;background:linear-gradient(90deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08));border:2px solid #16a34a;border-radius:12px;color:#15803d;font-weight:900;font-size:1.35rem}
         .cart-row-final span:first-child{font-size:0.95rem;text-transform:uppercase;letter-spacing:0.04em}
         .cart-row-final-hint{font-size:0.72rem;color:#16a34a;font-weight:700;margin-top:4px;text-align:right;padding-right:4px}
@@ -1274,11 +1274,14 @@
         }
         // Banner de promo en el home (gancho principal arriba): "Hasta 10% de descuento".
         function renderPromoBanner(){
+            var sub=esFinde()
+                ? 'En aliados pagas lo mismo que en el local · sin recargos escondidos'
+                : 'Sin recargos escondidos · hoy con descuento en aliados 🔥';
             return '<div class="promo-home-banner">'+
-                '<div class="promo-home-banner-emoji">🔥</div>'+
+                '<div class="promo-home-banner-emoji">🛵</div>'+
                 '<div class="promo-home-banner-txt">'+
-                    '<div class="promo-home-banner-title">Hasta 10% de descuento HOY</div>'+
-                    '<div class="promo-home-banner-sub">En restaurantes aliados · paga el precio del local o menos 🛵</div>'+
+                    '<div class="promo-home-banner-title">Paga el PRECIO DEL LOCAL</div>'+
+                    '<div class="promo-home-banner-sub">'+sub+'</div>'+
                 '</div>'+
             '</div>';
         }
@@ -2017,9 +2020,9 @@
                                     (p.descripcion?'<div class="prod-desc">'+esc(p.descripcion)+'</div>':'')+
                                     (p.cargo_envase>0?'<div class="prod-envase">+ envase $'+Number(p.cargo_envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
-                                        (p.precio_regular&&p.precio_regular>p.precio?'<span class="prod-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
+                                        (p.precio_regular&&Math.round((p.precio_regular-p.precio)/p.precio_regular*100)>=10?'<span class="prod-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
                                         '<span class="prod-price">$'+Number(p.precio).toFixed(2)+'</span>'+
-                                        (p.precio_regular&&p.precio_regular>p.precio?'<span class="prod-disc-pct">🔥 -'+Math.round((p.precio_regular-p.precio)/p.precio_regular*100)+'%</span>':'')+
+                                        (p.precio_regular&&Math.round((p.precio_regular-p.precio)/p.precio_regular*100)>=10?'<span class="prod-disc-pct">🔥 -'+Math.round((p.precio_regular-p.precio)/p.precio_regular*100)+'%</span>':'')+
                                         (qty>0?
                                             '<div class="qty-ctrl">'+
                                                 '<button class="btn-qty btn-qty-minus" aria-label="Quitar" onclick="event.stopPropagation();removeCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\')">−</button>'+
@@ -2383,7 +2386,7 @@
                 '</div>'+
                 '<div class="grid3-body">'+
                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
-                    (isAliado?'<div class="grid3-precio-local">✓ Precio del local'+(descuentoPctRest(r)>0?' <span class="promo-badge">🔥 -'+descuentoPctRest(r)+'% HOY</span>':'')+'</div>':'')+
+                    (isAliado?'<div class="grid3-precio-local">✓ Precio del local'+(descuentoPctRest(r)>=10?' <span class="promo-badge">🔥 -'+descuentoPctRest(r)+'%</span>':'')+'</div>':'')+
                     (metaBits.length?'<div class="grid3-meta">'+metaBits.join(' · ')+'</div>':'')+
                 '</div>'+
             '</div>';
@@ -2623,10 +2626,10 @@
                 (t.envases>0?'<div class="cart-row"><span class="cart-row-label">Envases</span><span class="cart-row-val">$'+t.envases.toFixed(2)+'</span></div>':'')+
                 (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Tarifa de servicio <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">$'+t.delivery.toFixed(2)+'</span></div>':'')+
-                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío')+'</span></div>'+
+                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío desde $2')+'</span></div>'+
                 (cupEst.monto>0?
                     '<div class="cart-row-cupon"><span class="lab">🎁 Cupón '+cupEst.codigo+'</span><span class="val">-$'+cupEst.monto.toFixed(2)+'</span></div>'+
-                    '<div class="cart-row-final"><span>Pagas</span><span>'+(window._clientGPS?'$'+totalConCupon.toFixed(2):'$'+totalConCupon.toFixed(2)+' + envío')+'</span></div>'+
+                    '<div class="cart-row-final"><span>Pagas</span><span>'+(window._clientGPS?'$'+totalConCupon.toFixed(2):'$'+totalConCupon.toFixed(2)+' + envío desde $2')+'</span></div>'+
                     '<div class="cart-row-final-hint">✓ Se aplica al confirmar por WhatsApp</div>'
                 :'')+
             '</div>';
@@ -2688,7 +2691,7 @@
                 h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
                 h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
                     '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
-                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+' + envío')+'</span>'+
+                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+' + envío desde $2')+'</span>'+
                 '</button>';
             }
             h+='</div>';
@@ -2862,10 +2865,11 @@
                 if(subEl){
                     var rests=Object.keys(window._cart.reduce(function(a,c){a[c.restaurante]=1;return a},{})).length;
                     var pieces=t.items+' '+(t.items===1?'plato':'platos');
-                    subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'');
+                    var cup=(typeof yaPidio==='function'&&!yaPidio()&&t.subtotal>=4)?' · 🎁 -$0.50 1er pedido':'';
+                    subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'')+cup;
                 }
                 var toVal=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
-                var suffix=window._clientGPS?'':' + envío';
+                var suffix=window._clientGPS?'':' + envío desde $2';
                 animateMoney(totalEl,window._cartFloatPrevTotal,toVal,wasVisible?420:0,suffix);
                 window._cartFloatPrevTotal=toVal;
                 document.body.classList.add('has-cart');
@@ -3002,12 +3006,12 @@
         // FIX #4: pantalla de éxito con resumen + CTA para nuevo pedido
         function showSuccessScreen(resumen){
             var h='<div class="success-screen">'+
-                '<div class="success-icon-wrap"><div class="success-icon">✅</div></div>'+
-                '<div class="success-title">¡Pedido enviado!</div>'+
-                '<div class="success-text">Abrimos WhatsApp con tu pedido listo. Revisa que se haya enviado el mensaje y espera la confirmación de nuestro operador.</div>'+
+                '<div class="success-icon-wrap"><div class="success-icon">📲</div></div>'+
+                '<div class="success-title">Último paso: presiona ENVIAR</div>'+
+                '<div class="success-text">Abrimos WhatsApp con tu pedido. <strong>Presiona el botón ENVIAR dentro de WhatsApp</strong> para que tu pedido llegue. Sin registro ni tarjeta · pagas al recibir 🛵</div>'+
                 '<div class="success-box">'+
                     '<div class="success-row"><span>Productos</span><span>'+resumen.items+'</span></div>'+
-                    '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío')+'</span></div>'+
+                    '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío desde $2')+'</span></div>'+
                 '</div>'+
                 '<div class="success-hint">¿No se abrió WhatsApp?</div>'+
                 '<button class="btn btn-wa" onclick="sendWA()">📲 Reintentar envío</button>'+
