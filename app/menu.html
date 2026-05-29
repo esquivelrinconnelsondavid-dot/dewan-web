@@ -183,6 +183,8 @@
         .prod-price{font-weight:800;font-size:1.1rem;color:var(--texto);letter-spacing:-0.01em}
         .prod-price-antes{font-weight:600;font-size:0.85rem;color:var(--gris);text-decoration:line-through;margin-right:6px;opacity:0.7}
         .prod-price-badge{font-size:0.62rem;font-weight:800;color:#0a7d2c;background:rgba(16,160,60,0.12);border-radius:6px;padding:2px 6px;margin-left:6px;text-transform:uppercase;letter-spacing:0.03em;vertical-align:middle}
+        .promo-badge{display:inline-block;background:#ff3b30;color:#fff;font-size:0.6rem;font-weight:900;padding:2px 7px;border-radius:6px;margin-left:4px;letter-spacing:0.02em;vertical-align:middle}
+        .prod-disc-pct{font-size:0.66rem;font-weight:900;color:#ff3b30;margin-left:6px;white-space:nowrap}
         .btn-agregar{width:36px;height:36px;border-radius:50%;background:var(--acc);color:#111;border:none;font-weight:900;font-size:1.3rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s;box-shadow:0 2px 10px rgba(184,255,0,0.2);flex-shrink:0}
         .btn-agregar:active{transform:scale(0.88)}
         .btn-agregar.btn-agregar-wide{width:auto;height:auto;padding:10px 18px;border-radius:12px;font-size:0.82rem;gap:6px}
@@ -864,6 +866,13 @@
             if(!rest||rest.tipo_acuerdo!=='aliado'||esBebida(categoria)||!precioBase||precioBase<=0) return null;
             var reg=aplicarCharmPricing(precioBase*(1+REGULAR_PCT/100));
             return reg; // se compara contra el precio cobrado en el render/checkout
+        }
+        // % de descuento que se muestra en la tarjeta del restaurante (solo aliados).
+        function descuentoPctRest(rest){
+            if(!rest||rest.tipo_acuerdo!=='aliado') return 0;
+            var cobrado=esFinde()?(Number(rest.markup_pct)||0):0;
+            var d=Math.round((REGULAR_PCT-cobrado)/(100+REGULAR_PCT)*100);
+            return d>0?d:0;
         }
         function getRestById(restId){
             var found=null;
@@ -1912,6 +1921,7 @@
                             (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
+                                (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
                                 '<span class="dest-price">$'+Number(p.precio).toFixed(2)+'</span>'+
                                 (qty?'<span class="dest-qty-mini">×'+qty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
                             '</div>'+
@@ -1989,7 +1999,9 @@
                                     (p.descripcion?'<div class="prod-desc">'+esc(p.descripcion)+'</div>':'')+
                                     (p.cargo_envase>0?'<div class="prod-envase">+ envase $'+Number(p.cargo_envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
+                                        (p.precio_regular&&p.precio_regular>p.precio?'<span class="prod-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
                                         '<span class="prod-price">$'+Number(p.precio).toFixed(2)+'</span>'+
+                                        (p.precio_regular&&p.precio_regular>p.precio?'<span class="prod-disc-pct">🔥 -'+Math.round((p.precio_regular-p.precio)/p.precio_regular*100)+'%</span>':'')+
                                         (qty>0?
                                             '<div class="qty-ctrl">'+
                                                 '<button class="btn-qty btn-qty-minus" aria-label="Quitar" onclick="event.stopPropagation();removeCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\')">−</button>'+
@@ -2353,7 +2365,7 @@
                 '</div>'+
                 '<div class="grid3-body">'+
                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
-                    (isAliado?'<div class="grid3-precio-local">✓ Precio del local</div>':'')+
+                    (isAliado?'<div class="grid3-precio-local">✓ Precio del local'+(descuentoPctRest(r)>0?' <span class="promo-badge">🔥 -'+descuentoPctRest(r)+'% HOY</span>':'')+'</div>':'')+
                     (metaBits.length?'<div class="grid3-meta">'+metaBits.join(' · ')+'</div>':'')+
                 '</div>'+
             '</div>';
