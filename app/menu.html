@@ -838,13 +838,11 @@
             var conMarkup=precioBase*(1+rest.markup_pct/100);
             return aplicarCharmPricing(conMarkup);
         }
-        // Precio "ancla" tachado (SOLO visual) para aliados: el precio con recargo que pagaría
-        // en otras apps. NUNCA se cobra; el cliente paga el precio del local. null = no mostrar tachado.
-        var ANCLA_VISUAL_PCT=10;
-        function precioAncla(precioBase,rest,categoria){
-            if(!rest||rest.tipo_acuerdo!=='aliado') return null;
-            if(esBebida(categoria)||!precioBase||precioBase<=0) return null;
-            return aplicarCharmPricing(precioBase*(1+ANCLA_VISUAL_PCT/100));
+        // Descuento de promo del restaurante (dinámico). 0 = sin promo.
+        // Regla de oro: el % nunca debería superar la comisión que absorbe el local.
+        function promoPctOf(rest){
+            var p=rest?Number(rest.promo_pct):0;
+            return (p>0&&p<=50)?p:0;
         }
         function getRestById(restId){
             var found=null;
@@ -953,7 +951,6 @@
                             id:it.id,
                             nombre:it.nombre_item,
                             precio:applyTierPricing(precioBase,rest,it.categoria_menu),
-                            precio_antes:precioAncla(precioBase,rest,it.categoria_menu),
                             precio_base:precioBase, // guardado para auditoría/cupones futuro
                             categoria:it.categoria_menu||'General',
                             descripcion:it.descripcion||'',
@@ -1763,7 +1760,6 @@
                 var almProduct={
                     nombre:'Almuerzo del día',
                     precio:almPrecioFinal,
-                    precio_antes:precioAncla(almPrecioBase,r,'Almuerzo del día'),
                     precio_base:almPrecioBase,
                     descripcion:'ALMUERZO_OPTS:'+JSON.stringify({precio:almPrecioFinal,opciones:almHoy.opciones}),
                     categoria:'🍱 Almuerzo del día'
@@ -1893,7 +1889,6 @@
                             (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
-                                (p.precio_antes&&p.precio_antes>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_antes).toFixed(2)+'</span>':'')+
                                 '<span class="dest-price">$'+Number(p.precio).toFixed(2)+'</span>'+
                                 (qty?'<span class="dest-qty-mini">×'+qty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
                             '</div>'+
@@ -1971,9 +1966,7 @@
                                     (p.descripcion?'<div class="prod-desc">'+esc(p.descripcion)+'</div>':'')+
                                     (p.cargo_envase>0?'<div class="prod-envase">+ envase $'+Number(p.cargo_envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
-                                        (p.precio_antes&&p.precio_antes>p.precio?'<span class="prod-price-antes">$'+Number(p.precio_antes).toFixed(2)+'</span>':'')+
                                         '<span class="prod-price">$'+Number(p.precio).toFixed(2)+'</span>'+
-                                        (p.precio_antes&&p.precio_antes>p.precio?'<span class="prod-price-badge">✓ Precio local</span>':'')+
                                         (qty>0?
                                             '<div class="qty-ctrl">'+
                                                 '<button class="btn-qty btn-qty-minus" aria-label="Quitar" onclick="event.stopPropagation();removeCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\')">−</button>'+
