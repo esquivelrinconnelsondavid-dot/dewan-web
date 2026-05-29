@@ -865,6 +865,8 @@
         function precioRegular(precioBase,rest,categoria){
             if(!rest||rest.tipo_acuerdo!=='aliado'||esBebida(categoria)||!precioBase||precioBase<=0) return null;
             var reg=aplicarCharmPricing(precioBase*(1+REGULAR_PCT/100));
+            // Honesto/sutil: si el redondeo .99 infla demasiado (platos baratos), NO mostrar tachado.
+            if(reg/precioBase>1.12) return null;
             return reg; // se compara contra el precio cobrado en el render/checkout
         }
         // % de descuento que se muestra en la tarjeta del restaurante (solo aliados).
