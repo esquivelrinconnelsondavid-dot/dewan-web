@@ -784,7 +784,7 @@
                     method:'PATCH',
                     headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
                     body:JSON.stringify(body)
-                });
+                }).catch(function(){});
             }catch(e){}
         }
 
@@ -2534,7 +2534,7 @@
                             '<div class="qty-ctrl">'+
                                 '<button class="btn-qty btn-qty-minus" onclick="removeCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\')">-</button>'+
                                 '<span class="qty-num">'+c.qty+'</span>'+
-                                '<button class="btn-qty btn-qty-plus" onclick="addCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\','+c.precio+','+c.delivery+',\''+jsEsc(c.foto_url||'')+'\')">+</button>'+
+                                '<button class="btn-qty btn-qty-plus" onclick="addCart(\''+jsEsc(c.restaurante)+'\',\''+jsEsc(c.nombre)+'\','+c.precio+','+c.delivery+',\''+jsEsc(c.foto_url||'')+'\','+(c.cargo_envase||0)+')">+</button>'+
                             '</div>'+
                             '<div class="cart-nota-wrap"><span class="cart-nota-icon">✏️</span><input type="text" class="cart-nota-input" placeholder="Notas: sin cebolla, extra salsa..." value="'+esc(c.nota||'')+'" onchange="updateNota('+cartIdx+',this.value)" oninput="updateNota('+cartIdx+',this.value)"></div>'+
                         '</div>';
@@ -2689,7 +2689,7 @@
             var p=parsePrice(precio),d=parsePrice(delivery),e=parsePrice(cargoEnvase);
             var pt=captureClickPoint();
             var c=findCart(rest,nombre);
-            if(c){c.qty++;c.precio=p;c.delivery=d;c.cargo_envase=e;if(fotoUrl)c.foto_url=fotoUrl;}
+            if(c){c.qty++;c.precio=p;c.delivery=d;if(cargoEnvase!=null)c.cargo_envase=e;if(fotoUrl)c.foto_url=fotoUrl;}
             else{window._cart.push({restaurante:rest,nombre:nombre,precio:p,delivery:d,qty:1,foto_url:fotoUrl||null,cargo_envase:e})}
             saveCart(); // CAMBIO 2
             markEtapa('agrego_carrito');
@@ -3153,7 +3153,7 @@
 
         // V2: Modal estricto para forzar GPS o dirección antes de pedir
         window.openGPSStrict=function(){
-            var modalRoot=document.getElementById('modal-root');
+            var modalRoot=document.getElementById('modal-overlay');
             var content=document.getElementById('modal-content');
             if(!modalRoot||!content) return;
             content.innerHTML='<div class="gps-strict">'+
