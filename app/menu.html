@@ -571,6 +571,10 @@
         .mundial-banner-sub{font-size:0.72rem;font-weight:700;color:#fff;margin-top:3px;opacity:0.95;text-shadow:0 1px 3px rgba(0,0,0,0.4)}
         .mundial-banner-x{position:absolute;top:7px;right:7px;width:24px;height:24px;background:rgba(0,0,0,0.35);border:none;border-radius:50%;color:#fff;font-size:0.85rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit}
         .mundial-banner-x:active{background:rgba(0,0,0,0.55)}
+        .promo-home-banner{display:flex;align-items:center;gap:12px;margin:0 14px 12px;border-radius:16px;background:linear-gradient(135deg,#ff6a00 0%,#ff3b30 100%);padding:13px 16px;color:#fff;box-shadow:0 4px 14px rgba(255,59,48,0.30)}
+        .promo-home-banner-emoji{font-size:1.7rem;flex-shrink:0;line-height:1}
+        .promo-home-banner-title{font-size:0.98rem;font-weight:900;letter-spacing:-0.01em;line-height:1.15}
+        .promo-home-banner-sub{font-size:0.74rem;font-weight:700;opacity:0.95;margin-top:2px;line-height:1.2}
         /* Banner cupón bienvenida (Despliegue 2 cupones) */
         .cupon-banner{position:relative;margin:0 14px 12px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#16a34a 0%,#22c55e 50%,#84cc16 100%);padding:14px 44px 14px 16px;color:#fff;box-shadow:0 4px 14px rgba(34,197,94,0.35)}
         .cupon-banner-title{font-size:0.95rem;font-weight:900;line-height:1.2;letter-spacing:-0.01em}
@@ -1268,6 +1272,16 @@
         function mundialBannerDismissed(){
             try{return sessionStorage.getItem('dewan_mundial_dismissed')==='1'}catch(_){return false}
         }
+        // Banner de promo en el home (gancho principal arriba): "Hasta 10% de descuento".
+        function renderPromoBanner(){
+            return '<div class="promo-home-banner">'+
+                '<div class="promo-home-banner-emoji">🔥</div>'+
+                '<div class="promo-home-banner-txt">'+
+                    '<div class="promo-home-banner-title">Hasta 10% de descuento HOY</div>'+
+                    '<div class="promo-home-banner-sub">En restaurantes aliados · paga el precio del local o menos 🛵</div>'+
+                '</div>'+
+            '</div>';
+        }
         function renderMundialBanner(){
             if(!isMundial()||mundialBannerDismissed()) return '';
             return '<div class="mundial-banner" id="mundial-banner" onclick="toggleCategoryV2(\'partido\')">'+
@@ -1514,6 +1528,8 @@
                 '</button>'+
             '</div>';
 
+            // Banner promo principal (hasta 10% en aliados) — gancho arriba
+            h+=renderPromoBanner();
             // Banner Mundial (solo durante el período, dismissible)
             h+=renderMundialBanner();
             // Banner cupón bienvenida (cliente nuevo)
