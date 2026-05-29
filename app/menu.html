@@ -181,6 +181,8 @@
         .prod-envase{color:var(--gris);font-size:0.7rem;margin-top:4px;font-weight:700;letter-spacing:0.01em}
         .prod-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px}
         .prod-price{font-weight:800;font-size:1.1rem;color:var(--texto);letter-spacing:-0.01em}
+        .prod-price-antes{font-weight:600;font-size:0.85rem;color:var(--gris);text-decoration:line-through;margin-right:6px;opacity:0.7}
+        .prod-price-badge{font-size:0.62rem;font-weight:800;color:#0a7d2c;background:rgba(16,160,60,0.12);border-radius:6px;padding:2px 6px;margin-left:6px;text-transform:uppercase;letter-spacing:0.03em;vertical-align:middle}
         .btn-agregar{width:36px;height:36px;border-radius:50%;background:var(--acc);color:#111;border:none;font-weight:900;font-size:1.3rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s;box-shadow:0 2px 10px rgba(184,255,0,0.2);flex-shrink:0}
         .btn-agregar:active{transform:scale(0.88)}
         .btn-agregar.btn-agregar-wide{width:auto;height:auto;padding:10px 18px;border-radius:12px;font-size:0.82rem;gap:6px}
@@ -221,6 +223,7 @@
         .dest-name{font-weight:800;font-size:0.85rem;line-height:1.25;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.15em;letter-spacing:-0.01em}
         .dest-footer{display:flex;align-items:center;justify-content:space-between;gap:6px}
         .dest-price{font-weight:800;font-size:0.98rem;color:var(--texto);letter-spacing:-0.01em}
+        .dest-price-antes{font-weight:600;font-size:0.78rem;color:var(--gris);text-decoration:line-through;margin-right:5px;opacity:0.7}
         .dest-plus{width:30px;height:30px;border-radius:50%;background:var(--acc);color:#111;border:none;font-weight:900;font-size:1.15rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s;box-shadow:0 2px 8px rgba(184,255,0,0.2);flex-shrink:0}
         .dest-plus:active{transform:scale(0.88)}
         .dest-qty-mini{background:var(--acc);color:#111;border-radius:100px;padding:4px 10px;font-weight:900;font-size:0.74rem;display:inline-flex;align-items:center;gap:4px}
@@ -822,10 +825,26 @@
             if(frac<=0.49) return floor+0.49;
             return floor+0.99;
         }
-        function applyTierPricing(precioBase,rest){
+        // Bebidas: NUNCA markup ni redondeo — van al precio EXACTO del local.
+        function esBebida(categoria){
+            if(!categoria) return false;
+            return /bebida|jugo|frapp|michelada|mojito|milk based|batido|gaseosa|cerveza|c[oó]ctel|\bsoda\b|booble|refresco/i.test(categoria);
+        }
+        // Precio que el cliente PAGA. Aliados y silenciosos tienen markup_pct=0 -> precio del local.
+        // cliente_paga tiene markup_pct=5 -> el cliente asume ese recargo. Bebidas: siempre precio del local.
+        function applyTierPricing(precioBase,rest,categoria){
             if(!rest||!rest.markup_pct) return precioBase;
+            if(esBebida(categoria)) return precioBase;
             var conMarkup=precioBase*(1+rest.markup_pct/100);
             return aplicarCharmPricing(conMarkup);
+        }
+        // Precio "ancla" tachado (SOLO visual) para aliados: el precio con recargo que pagaría
+        // en otras apps. NUNCA se cobra; el cliente paga el precio del local. null = no mostrar tachado.
+        var ANCLA_VISUAL_PCT=10;
+        function precioAncla(precioBase,rest,categoria){
+            if(!rest||rest.tipo_acuerdo!=='aliado') return null;
+            if(esBebida(categoria)||!precioBase||precioBase<=0) return null;
+            return aplicarCharmPricing(precioBase*(1+ANCLA_VISUAL_PCT/100));
         }
         function getRestById(restId){
             var found=null;
@@ -933,7 +952,8 @@
                         return {
                             id:it.id,
                             nombre:it.nombre_item,
-                            precio:applyTierPricing(precioBase,rest),
+                            precio:applyTierPricing(precioBase,rest,it.categoria_menu),
+                            precio_antes:precioAncla(precioBase,rest,it.categoria_menu),
                             precio_base:precioBase, // guardado para auditoría/cupones futuro
                             categoria:it.categoria_menu||'General',
                             descripcion:it.descripcion||'',
@@ -1739,10 +1759,11 @@
             if(almHoy&&almHoy.opciones&&almHoy.opciones.length&&!r._almuerzoInjected&&isAlmuerzoHour()){
                 // Pricing v2: aplicar markup + charm también al almuerzo del día
                 var almPrecioBase=Number(almHoy.precio)||0;
-                var almPrecioFinal=applyTierPricing(almPrecioBase,r);
+                var almPrecioFinal=applyTierPricing(almPrecioBase,r,'Almuerzo del día');
                 var almProduct={
                     nombre:'Almuerzo del día',
                     precio:almPrecioFinal,
+                    precio_antes:precioAncla(almPrecioBase,r,'Almuerzo del día'),
                     precio_base:almPrecioBase,
                     descripcion:'ALMUERZO_OPTS:'+JSON.stringify({precio:almPrecioFinal,opciones:almHoy.opciones}),
                     categoria:'🍱 Almuerzo del día'
@@ -1872,6 +1893,7 @@
                             (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
+                                (p.precio_antes&&p.precio_antes>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_antes).toFixed(2)+'</span>':'')+
                                 '<span class="dest-price">$'+Number(p.precio).toFixed(2)+'</span>'+
                                 (qty?'<span class="dest-qty-mini">×'+qty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
                             '</div>'+
@@ -1949,7 +1971,9 @@
                                     (p.descripcion?'<div class="prod-desc">'+esc(p.descripcion)+'</div>':'')+
                                     (p.cargo_envase>0?'<div class="prod-envase">+ envase $'+Number(p.cargo_envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
+                                        (p.precio_antes&&p.precio_antes>p.precio?'<span class="prod-price-antes">$'+Number(p.precio_antes).toFixed(2)+'</span>':'')+
                                         '<span class="prod-price">$'+Number(p.precio).toFixed(2)+'</span>'+
+                                        (p.precio_antes&&p.precio_antes>p.precio?'<span class="prod-price-badge">✓ Precio local</span>':'')+
                                         (qty>0?
                                             '<div class="qty-ctrl">'+
                                                 '<button class="btn-qty btn-qty-minus" aria-label="Quitar" onclick="event.stopPropagation();removeCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\')">−</button>'+
