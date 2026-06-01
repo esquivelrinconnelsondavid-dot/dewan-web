@@ -2809,11 +2809,12 @@
         }
 
         function cartTotals(){
-            var items=0,sub=0,subReg=0,dels={},subsByRest={},envases=0;
+            var items=0,sub=0,subReg=0,dels={},subsByRest={},envases=0,subBase=0;
             window._cart.forEach(function(c){
                 var q=parsePrice(c.qty),p=parsePrice(c.precio),e=parsePrice(c.cargo_envase);
                 var pr=(c.precio_regular!=null&&parsePrice(c.precio_regular)>p)?parsePrice(c.precio_regular):p;
                 items+=q;sub+=p*q;subReg+=pr*q;
+                var pb=(c.precio_base!=null&&parsePrice(c.precio_base)>0)?parsePrice(c.precio_base):p;subBase+=pb*q;
                 envases+=e*q;
                 dels[c.restaurante]=parsePrice(c.delivery);
                 subsByRest[c.restaurante]=(subsByRest[c.restaurante]||0)+p*q;
@@ -2830,7 +2831,7 @@
                 }
             });
             serviceFee=Math.round(serviceFee*100)/100;
-            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,serviceFee:serviceFee,total:sub+del+serviceFee+envases};
+            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,total:sub+del+serviceFee+envases};
         }
         // Animated count-up del total: anima de `from` a `to` con easeOutCubic
         function animateMoney(el,from,to,duration,suffix){
@@ -2966,6 +2967,7 @@
             });
             // FIX 2026-05-28: SIEMPRE incluir Subtotal como red de seguridad para el parser.
             msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'*\n';
+            if(t.subtotalBase>0&&t.subtotalBase<t.subtotal) msg+='Base local: $'+t.subtotalBase.toFixed(2)+'\n';
             if(t.envases>0) msg+='📦 Envases: $'+t.envases.toFixed(2)+'\n';
             if(t.serviceFee>0) msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
             if(window._clientGPS){
