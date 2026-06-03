@@ -1676,32 +1676,20 @@
             if(!(window._activeCat&&window._catLoading)){
                 if(window._activeCat){
                     var cmActive=CAT_MAP_V2[window._activeCat];
-                    var parts=partitionRests(rests);
-                    // Dentro de specs y others, separar socios de silenciosos
-                    var specsBy=partitionBySocio(parts.specs);
-                    var othersBy=partitionBySocio(parts.others);
-                    var hasSpecs=specsBy.socios.length>0;
-                    var hasOthers=othersBy.socios.length>0;
-                    var hasBoth=hasSpecs&&hasOthers;
-                    var totalSilenciosos=specsBy.silenciosos.length+othersBy.silenciosos.length;
+                    // V5: una sola lista de resultados (sin separar especialistas / también ofrecen).
+                    // rests ya viene ordenado aliado→cliente_paga→relevancia desde toggleCategoryV2.
+                    var allBy=partitionBySocio(rests);
                     var gIdx=0;
                     function catCmd(name){return 'openRestCatFiltered(\''+jsEsc(name)+'\',\''+window._activeCat+'\')'}
 
-                    if(hasSpecs){
-                        h+='<div class="list-section-title">'+(hasBoth?'✨ Especialistas en '+cmActive.label:'🏪 Resultados')+'</div>';
+                    if(allBy.socios.length){
+                        h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
                         h+='<div class="grid3-wrap">';
-                        specsBy.socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
-                        h+='</div>';
-                    }
-                    if(hasOthers){
-                        h+='<div class="list-section-title">'+(hasSpecs?'🏪 También ofrecen '+cmActive.label:'🏪 Resultados')+'</div>';
-                        h+='<div class="grid3-wrap">';
-                        othersBy.socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        allBy.socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
                     }
                     // "Más opciones": silenciosos visibles como 2º nivel (variedad), preview + ver más.
-                    var silCat=specsBy.silenciosos.concat(othersBy.silenciosos);
-                    h+=renderMasOpciones(silCat,gIdx,function(r){return catCmd(r.nombre)});
+                    h+=renderMasOpciones(allBy.silenciosos,gIdx,function(r){return catCmd(r.nombre)});
                 } else {
                     // Home sin filtro: socios primero, silenciosos detrás de botón
                     var homeBy=partitionBySocio(rests);
@@ -2557,9 +2545,6 @@
             }
             var html='';
             if(rests.length){
-                var parts=partitionRests(rests);
-                var hasSpecs=parts.specs.length>0;
-                var hasBoth=hasSpecs&&parts.others.length>0;
                 var globalIdx=0;
                 // V2.6: si matchea por nombre del restaurante → menú completo;
                 //       si es match por plato/categoría → menú filtrado por la query
@@ -2568,29 +2553,17 @@
                     return 'openRestFiltered(\''+jsEsc(r.nombre)+'\',\''+jsEsc(query)+'\')';
                 }
 
-                // V4.5: usar grilla 3-columnas (igual que la home/categorias) en vez de filas compactas
-                // Dentro de specs y others, separar socios de silenciosos
-                var specsBy=partitionBySocio(parts.specs);
-                var othersBy=partitionBySocio(parts.others);
-                var hasSpecsSoc=specsBy.socios.length>0;
-                var hasOthersSoc=othersBy.socios.length>0;
-                var totalSilenciosos=specsBy.silenciosos.length+othersBy.silenciosos.length;
-
-                if(hasSpecsSoc){
-                    html+='<div class="search-section-title-v2">'+(hasSpecsSoc&&hasOthersSoc?'✨ Especialistas en "':'🏪 Restaurantes que venden "')+esc(query)+'"<span class="search-section-count">'+specsBy.socios.length+'</span></div>';
+                // V5: una sola lista de resultados (sin separar especialistas / también ofrecen),
+                // ordenada por relevancia. Los silenciosos van abajo en "Más opciones".
+                var allBy=partitionBySocio(rests);
+                if(allBy.socios.length){
+                    html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+allBy.socios.length+'</span></div>';
                     html+='<div class="grid3-wrap">';
-                    specsBy.socios.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
-                    html+='</div>';
-                }
-                if(hasOthersSoc){
-                    html+='<div class="search-section-title-v2">'+(hasSpecsSoc?'🏪 También ofrecen "'+esc(query)+'"':'🏪 Restaurantes que venden "'+esc(query)+'"')+'<span class="search-section-count">'+othersBy.socios.length+'</span></div>';
-                    html+='<div class="grid3-wrap">';
-                    othersBy.socios.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                    allBy.socios.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
                 }
                 // "Más opciones": silenciosos visibles como 2º nivel (variedad), preview + ver más.
-                var silSearch=specsBy.silenciosos.concat(othersBy.silenciosos);
-                html+=renderMasOpciones(silSearch,globalIdx,function(r){return clickCmd(r)},'search-section-title-v2');
+                html+=renderMasOpciones(allBy.silenciosos,globalIdx,function(r){return clickCmd(r)},'search-section-title-v2');
             }
             // SECCIÓN SECUNDARIA: platos individuales (los más relevantes)
             if(plates.length){
