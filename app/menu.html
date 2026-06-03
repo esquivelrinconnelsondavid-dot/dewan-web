@@ -1125,6 +1125,44 @@
             // Devolver hasta 12 variantes (suficiente para la mayoría)
             return Object.keys(set).slice(0,12);
         }
+
+        // ── Sinónimos de comida (Riobamba/Ecuador) ──
+        // Cada grupo es un set de términos equivalentes. Si la búsqueda toca uno,
+        // expandimos a TODO el grupo para encontrar platos reales aunque no contengan
+        // la palabra exacta (ej. "chifa" → chaulafán, tallarín, arroz chaufa, wantán).
+        // OJO: solo alimenta la query de PLATOS (menu_items), no la categoría del local,
+        // para no reintroducir falsos positivos.
+        var FOOD_SYNONYMS=[
+            ['chifa','chaulafan','tallarin','arroz chaufa','chaufa','wantan','comida china','lumpia'],
+            ['pollo','broaster','brosterizado','alitas','presa de pollo'],
+            ['hamburguesa','burger','hamburguesas'],
+            ['pizza','pizzeria','pizzas'],
+            ['mariscos','ceviche','cebiche','encebollado','camaron','corviche','pescado frito'],
+            ['parrilla','asado','churrasco','carne asada','a la brasa','lomo'],
+            ['sushi','maki','makis','nigiri','sushi rolls'],
+            ['mexicana','taco','tacos','burrito','quesadilla','nachos'],
+            ['almuerzo','menu del dia','menu ejecutivo','seco','sopa del dia'],
+            ['salchipapa','salchipapas','papas fritas'],
+            ['jugo','batido','frappe','milkshake','malteada','smoothie'],
+            ['postre','helado','torta','pastel','cheesecake','brownie'],
+            ['hot dog','hotdog','perro caliente','choripan'],
+            ['shawarma','shawerma','doner','kebab'],
+            ['desayuno','bolon','tigrillo','humita','tamal']
+        ];
+        // Devuelve términos extra para expandir la búsqueda según los sinónimos tocados.
+        function expandSynonyms(q){
+            var qn=removeAccents((q||'').toLowerCase()).trim();
+            if(qn.length<3) return [];
+            var extra={};
+            FOOD_SYNONYMS.forEach(function(group){
+                var hit=group.some(function(term){
+                    var tn=removeAccents(term.toLowerCase());
+                    return qn===tn||qn.indexOf(tn)!==-1||(qn.length>=4&&tn.indexOf(qn)!==-1);
+                });
+                if(hit) group.forEach(function(term){extra[removeAccents(term.toLowerCase())]=true});
+            });
+            return Object.keys(extra);
+        }
         function simplify(s){
             s=s.toLowerCase().replace(/[^a-záéíóúñü]/g,'');
             var r='';for(var i=0;i<s.length;i++){if(i===0||s[i]!==s[i-1])r+=s[i]}return r;
@@ -2336,6 +2374,10 @@
             //    "chifas" → ["chifas","chifa"]
             //    "café" → ["café","cafe","cafés","cafes"]
             var variants=generateSearchVariants(q);
+            // V5: expandir con sinónimos de comida para encontrar platos reales aunque
+            // no contengan la palabra exacta (ej. "chifa" → chaulafán/tallarín/...).
+            expandSynonyms(q).forEach(function(t){if(variants.indexOf(t)===-1)variants.push(t)});
+            variants=variants.slice(0,30); // cap para mantener la URL del OR en tamaño razonable
             // Construir OR con cada variante × 3 columnas (nombre_item, descripcion, categoria_menu)
             var orParts=[];
             variants.forEach(function(v){
