@@ -1695,18 +1695,9 @@
                         othersBy.socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
                     }
-                    // Botón Ver otros restaurantes + silenciosos
-                    h+=renderSilenciososBtn(totalSilenciosos);
-                    if(window._showSilenciosos&&totalSilenciosos>0){
-                        h+='<div id="silenciosos-section">';
-                        h+='<div class="list-section-title">🏪 Otros restaurantes</div>';
-                        h+='<div class="grid3-wrap">';
-                        specsBy.silenciosos.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
-                        othersBy.silenciosos.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
-                        h+='</div>';
-                        h+=renderOcultarSilenciososBtn();
-                        h+='</div>';
-                    }
+                    // "Más opciones": silenciosos visibles como 2º nivel (variedad), preview + ver más.
+                    var silCat=specsBy.silenciosos.concat(othersBy.silenciosos);
+                    h+=renderMasOpciones(silCat,gIdx,function(r){return catCmd(r.nombre)});
                 } else {
                     // Home sin filtro: socios primero, silenciosos detrás de botón
                     var homeBy=partitionBySocio(rests);
@@ -1746,24 +1737,8 @@
                         h+='</div>';
                     }
                     // "Más opciones": no-aliados (silenciosos). Visibles para dar variedad,
-                    // sin badges ni promo, separados de los socios. Preview de 8 + expandir el resto.
-                    if(homeBy.silenciosos.length){
-                        var silH=homeBy.silenciosos;
-                        var previewN=8;
-                        var showAllSil=window._showSilenciosos;
-                        var visiblesSil=showAllSil?silH:silH.slice(0,previewN);
-                        h+='<div id="silenciosos-section">';
-                        h+='<div class="list-section-title">🍽 Más opciones · '+silH.length+'</div>';
-                        h+='<div class="grid3-wrap">';
-                        visiblesSil.forEach(function(r,idx){
-                            h+=renderRestCardGrid(r,homeBy.socios.length+idx,'openRest(\''+jsEsc(r.nombre)+'\')');
-                        });
-                        h+='</div>';
-                        if(silH.length>previewN){
-                            h+=showAllSil?renderOcultarSilenciososBtn():renderSilenciososBtn(silH.length-previewN);
-                        }
-                        h+='</div>';
-                    }
+                    // sin badges ni promo, separados de los socios. Preview + expandir el resto.
+                    h+=renderMasOpciones(homeBy.silenciosos,homeBy.socios.length,function(r){return 'openRest(\''+jsEsc(r.nombre)+'\')'});
                 }
             }
             h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
@@ -2337,14 +2312,34 @@
         function renderSilenciososBtn(count){
             if(!count) return '';
             if(window._showSilenciosos) return '';
+            // Etiqueta suavizada: dar variedad, no espantar (el fee es solo $0.10 y se ve en el carrito).
             return '<button class="ver-otros-btn" onclick="toggleSilenciosos()">'+
-                '<span class="ver-otros-title">Ver otros restaurantes <span class="ver-otros-count">'+count+'</span></span>'+
-                '<span class="ver-otros-hint">Aplica tarifa de servicio</span>'+
+                '<span class="ver-otros-title">Ver más locales <span class="ver-otros-count">'+count+'</span></span>'+
             '</button>';
         }
         function renderOcultarSilenciososBtn(){
             if(!window._showSilenciosos) return '';
-            return '<button class="ocultar-otros-btn" onclick="toggleSilenciosos()">↑ Ocultar otros restaurantes</button>';
+            return '<button class="ocultar-otros-btn" onclick="toggleSilenciosos()">↑ Ver menos</button>';
+        }
+        // Cuántos silenciosos se muestran como preview antes del "ver más" (variedad sin listar todo).
+        var SILENCIOSOS_PREVIEW=12;
+        // Sección "Más opciones" reutilizable (home / categorías / búsqueda).
+        // sil=array de silenciosos; baseIdx=índice para getColor; cmdFn=onclick por restaurante;
+        // titleCls=clase del título según la vista.
+        function renderMasOpciones(sil,baseIdx,cmdFn,titleCls){
+            if(!sil||!sil.length) return '';
+            var showAll=window._showSilenciosos;
+            var vis=showAll?sil:sil.slice(0,SILENCIOSOS_PREVIEW);
+            var h='<div id="silenciosos-section">';
+            h+='<div class="'+(titleCls||'list-section-title')+'">🍽 Más opciones · '+sil.length+'</div>';
+            h+='<div class="grid3-wrap">';
+            vis.forEach(function(r,i){h+=renderRestCardGrid(r,baseIdx+i,cmdFn(r))});
+            h+='</div>';
+            if(sil.length>SILENCIOSOS_PREVIEW){
+                h+=showAll?renderOcultarSilenciososBtn():renderSilenciososBtn(sil.length-SILENCIOSOS_PREVIEW);
+            }
+            h+='</div>';
+            return h;
         }
 
         // V4.7: Contador de secuencia para búsquedas — evita race conditions en mobile
@@ -2585,18 +2580,9 @@
                     othersBy.socios.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
                 }
-                // Botón Ver otros restaurantes + silenciosos
-                html+=renderSilenciososBtn(totalSilenciosos);
-                if(window._showSilenciosos&&totalSilenciosos>0){
-                    html+='<div id="silenciosos-section">';
-                    html+='<div class="search-section-title-v2">🏪 Otros restaurantes<span class="search-section-count">'+totalSilenciosos+'</span></div>';
-                    html+='<div class="grid3-wrap">';
-                    specsBy.silenciosos.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
-                    othersBy.silenciosos.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
-                    html+='</div>';
-                    html+=renderOcultarSilenciososBtn();
-                    html+='</div>';
-                }
+                // "Más opciones": silenciosos visibles como 2º nivel (variedad), preview + ver más.
+                var silSearch=specsBy.silenciosos.concat(othersBy.silenciosos);
+                html+=renderMasOpciones(silSearch,globalIdx,function(r){return clickCmd(r)},'search-section-title-v2');
             }
             // SECCIÓN SECUNDARIA: platos individuales (los más relevantes)
             if(plates.length){
