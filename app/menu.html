@@ -269,6 +269,8 @@
         .cart-row-label{color:var(--gris-2);font-weight:600}
         .cart-row-val{font-weight:800;font-variant-numeric:tabular-nums}
         .cart-total-row{display:flex;justify-content:space-between;align-items:baseline;padding-top:16px;margin-top:10px;border-top:1.5px solid var(--border)}
+        .promo-envio-badge{font-size:0.62rem;font-weight:900;background:var(--cta-soft);color:var(--cta-hover);border:1px solid rgba(217,58,11,0.30);border-radius:6px;padding:2px 6px;letter-spacing:0.01em;vertical-align:middle;white-space:nowrap}
+        .promo-nudge{display:flex;justify-content:center;align-items:center;gap:5px;color:var(--acc);font-weight:800;font-size:0.82rem;background:var(--acc-soft);border-radius:10px;padding:9px 12px;margin:6px 0 2px}
         .cart-total-label{font-weight:900;font-size:1rem;letter-spacing:-0.01em}
         .cart-total-val{font-weight:900;font-size:1.55rem;color:var(--acc);letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1}
 
@@ -2635,7 +2637,8 @@
                 (t.subtotalRegular>t.subtotal?'<div class="cart-row cart-row-ahorro"><span class="cart-row-label">🎉 Ahorras</span><span class="cart-row-val">-$'+(t.subtotalRegular-t.subtotal).toFixed(2)+'</span></div>':'')+
                 (t.envases>0?'<div class="cart-row"><span class="cart-row-label">Envases</span><span class="cart-row-val">$'+t.envases.toFixed(2)+'</span></div>':'')+
                 (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Tarifa de servicio <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
-                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery</span><span class="cart-row-val">$'+t.delivery.toFixed(2)+'</span></div>':'')+
+                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
+                (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío desde $2')+'</span></div>'+
                 (cupEst.monto>0?
                     '<div class="cart-row-cupon"><span class="lab">🎁 Cupón '+cupEst.codigo+'</span><span class="val">-$'+cupEst.monto.toFixed(2)+'</span></div>'+
@@ -2795,6 +2798,17 @@
         function findCart(rest,nombre){
             for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices)return window._cart[i]}return null;
         }
+        // ── Promo "Envío $1 · Lun-Mié · pedidos de $8+" ──
+        // dias: 1=Lun,2=Mar,3=Mié (Date.getDay, hora local del dispositivo).
+        // Solo envíos cercanos (base ≤ $2) y pedidos con subtotal ≥ $8. El moto SIEMPRE
+        // cobra su tarifa completa; DEWAN absorbe la diferencia (cubierta por el markup de la comida).
+        var PROMO_ENVIO={dias:[1,2,3],minSubtotal:8,precio:1.00,baseMax:2.00};
+        function promoEnvioDiaActivo(){return PROMO_ENVIO.dias.indexOf(new Date().getDay())!==-1}
+        // Delivery de UN local con la promo aplicada. baseDel=envío base del local; sub=subtotal de comida de TODO el pedido.
+        function deliveryConPromo(baseDel,sub){
+            if(promoEnvioDiaActivo()&&sub>=PROMO_ENVIO.minSubtotal&&baseDel>0&&baseDel<=PROMO_ENVIO.baseMax+0.005&&PROMO_ENVIO.precio<baseDel) return PROMO_ENVIO.precio;
+            return baseDel;
+        }
         // Tarifa de servicio fija $0.10 (solo para restaurantes NO aliados)
         function calcServiceFee(sub){
             if(sub<=0) return 0;
@@ -2828,7 +2842,14 @@
             });
             subReg=Math.round(subReg*100)/100;
             envases=Math.round(envases*100)/100;
-            var del=0;Object.keys(dels).forEach(function(k){del+=dels[k]});
+            var del=0,delFull=0,promoSavings=0,tieneLocalCercano=false;
+            Object.keys(dels).forEach(function(k){
+                var base=dels[k];
+                if(base>0&&base<=PROMO_ENVIO.baseMax+0.005) tieneLocalCercano=true;
+                var d=deliveryConPromo(base,sub);
+                del+=d;delFull+=base;if(d<base)promoSavings+=base-d;
+            });
+            del=Math.round(del*100)/100;delFull=Math.round(delFull*100)/100;promoSavings=Math.round(promoSavings*100)/100;
             // Pricing v2: solo silenciosos pagan tarifa de servicio.
             // Aliados y cliente_paga ya tienen markup en el precio, no se les cobra extra.
             var serviceFee=0;
@@ -2838,7 +2859,7 @@
                 }
             });
             serviceFee=Math.round(serviceFee*100)/100;
-            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,total:sub+del+serviceFee+envases};
+            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,deliveryFull:delFull,promoEnvio:promoSavings>0,promoEnvioSavings:promoSavings,promoDiaActivo:promoEnvioDiaActivo(),tieneLocalCercano:tieneLocalCercano,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,total:sub+del+serviceFee+envases};
         }
         // Animated count-up del total: anima de `from` a `to` con easeOutCubic
         function animateMoney(el,from,to,duration,suffix){
@@ -2978,7 +2999,7 @@
             if(t.envases>0) msg+='📦 Envases: $'+t.envases.toFixed(2)+'\n';
             if(t.serviceFee>0) msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
             if(window._clientGPS){
-                msg+='🛵 Envío: $'+(t.delivery||0).toFixed(2)+'\n';
+                msg+='🛵 Envío: $'+(t.delivery||0).toFixed(2)+(t.promoEnvio?' (promo Lun-Mié, antes $'+t.deliveryFull.toFixed(2)+')':'')+'\n';
                 msg+='💰 *Total: $'+t.total.toFixed(2)+'*\n\n';
             } else {
                 msg+='💰 *Total parcial: $'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
