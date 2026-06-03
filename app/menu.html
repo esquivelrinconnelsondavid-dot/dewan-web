@@ -1518,9 +1518,13 @@
             // que matchee las keywords de la categoría. Aliados van al top.
             window._catLoading=true;
             renderHome();
+            // PRECISIÓN: las categorías matchean por NOMBRE y CATEGORÍA del plato, NO por la
+            // descripción (que lista ingredientes y arrastra locales equivocados, ej. un marisquería
+            // con "alitas BBQ" en la descripción caía en Pollo). La búsqueda libre (doSearch) SÍ
+            // mantiene la descripción, donde el recall importa más.
             var ors=cm.kw.map(function(k){
                 var kEnc=encodeURIComponent('%'+k+'%');
-                return 'nombre_item.ilike.'+kEnc+',descripcion.ilike.'+kEnc+',categoria_menu.ilike.'+kEnc;
+                return 'nombre_item.ilike.'+kEnc+',categoria_menu.ilike.'+kEnc;
             }).join(',');
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
@@ -2503,7 +2507,7 @@
                 '<div class="grid3-body">'+
                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
                     (cat?'<div class="grid3-cat"><span class="grid3-cat-name">'+cat+'</span></div>':'')+
-                    (isAliado?'<div class="grid3-aliado-perks"><span class="grid3-pl">✓ Precio local</span>'+(promoEnvioDiaActivo()?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'')+
+                    (isAliado?'<div class="grid3-aliado-perks"><span class="grid3-pl">✓ Precio local</span>'+((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'')+
                     '<div class="grid3-meta">'+metaBits.join(' · ')+'</div>'+
                 '</div>'+
             '</div>';
