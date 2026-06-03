@@ -567,6 +567,13 @@
         .grid3-envio1{font-size:0.58rem;color:var(--cta-hover);font-weight:900;background:var(--cta-soft);border:1px solid rgba(217,58,11,0.30);border-radius:6px;padding:1px 5px;white-space:nowrap}
         /* Banner de la sección de aliados destacados (categoría/búsqueda) */
         .aliados-banner{margin:0 14px 10px;padding:8px 12px;background:linear-gradient(135deg,rgba(34,197,94,0.14),rgba(255,182,39,0.10));border:1px solid rgba(34,197,94,0.30);border-radius:12px;font-size:0.72rem;font-weight:800;color:#22c55e;display:flex;align-items:center;gap:6px;line-height:1.3}
+        /* Chip slim que acompaña al banner de envío $1 (cupón degradado) */
+        .promo-chip{margin:-6px 14px 12px;padding:6px 12px;background:var(--card2);border:1px solid var(--border);border-radius:10px;font-size:0.72rem;font-weight:800;color:var(--gris-2)}
+        /* Pills de valor en la cabecera del restaurante */
+        .rest-pill-aliado{background:rgba(34,197,94,0.14)!important;border-color:rgba(34,197,94,0.35)!important;color:#22c55e!important;font-weight:800}
+        .rest-pill-envio1{background:var(--cta-soft)!important;border-color:rgba(217,58,11,0.30)!important;color:var(--cta-hover)!important;font-weight:800}
+        /* Gancho de retorno en la pantalla de éxito */
+        .success-return{margin:14px auto 0;max-width:320px;padding:10px 14px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.25);border-radius:12px;font-size:0.82rem;font-weight:700;color:#22c55e;line-height:1.35}
         /* "Precio del local" — claim verde discreto bajo el nombre del aliado */
         .grid3-precio-local{font-size:0.62rem;color:#22c55e;font-weight:800;margin-top:3px;letter-spacing:0.01em;display:flex;align-items:center;gap:2px}
         /* Sección destacada de aliados en home */
@@ -1341,22 +1348,32 @@
                 '</div>'+
             '</div>';
         }
-        // Banner slim de la promo de envío (solo días Lun-Mié). Gancho en el home.
+        // Nombre del día de promo (Lun-Mié) para el gancho "ritual semanal".
+        function nombreDiaPromo(){return {1:'lunes',2:'martes',3:'miércoles'}[new Date().getDay()]||'hoy'}
+        // Banner de la promo de envío $1 (solo Lun-Mié). Enmarcado como ritual del día.
         function renderEnvioPromoBanner(){
             if(!promoEnvioDiaActivo()) return '';
             return '<div class="promo-home-banner">'+
                 '<div class="promo-home-banner-emoji">🛵</div>'+
                 '<div class="promo-home-banner-txt">'+
-                    '<div class="promo-home-banner-title">Envío a $1 hoy 🔥</div>'+
-                    '<div class="promo-home-banner-sub">En pedidos de $8+ · lunes a miércoles</div>'+
+                    '<div class="promo-home-banner-title">Hoy es '+nombreDiaPromo()+' de envío a $1</div>'+
+                    '<div class="promo-home-banner-sub">En aliados cercanos · pedidos desde $8 · solo lunes, martes y miércoles</div>'+
                 '</div>'+
             '</div>';
         }
-        // Home más liviano: UN solo banner a la vez por prioridad, en vez de apilar 4.
+        // Chip slim de cupón para acompañar (no tapar) el banner de envío $1 los Lun-Mié.
+        function renderCuponChip(){
+            var c=window._cuponActivoCache;
+            if(c) return '<div class="promo-chip">🔁 + tienes $'+c.monto.toFixed(2)+' de descuento listo</div>';
+            if(!cuponBannerDismissed()&&!yaPidio()) return '<div class="promo-chip">🎁 + tu primer pedido lleva $0.50 menos (desde $4)</div>';
+            return '';
+        }
+        // Home: UN banner GANADOR. Lun-Mié gana el envío $1 (ritual del día) + cupón a chip;
+        // el resto de días, prioridad VUELVE > cupón > Mundial > Precio del local.
         function renderHomeBanner(){
+            if(promoEnvioDiaActivo()) return renderEnvioPromoBanner()+renderCuponChip();
             var b=renderVuelveBanner(); if(b) return b;
             b=renderCuponBanner(); if(b) return b;
-            b=renderEnvioPromoBanner(); if(b) return b;
             b=renderMundialBanner(); if(b) return b;
             return renderPromoBanner();
         }
@@ -1383,8 +1400,8 @@
             if(cuponBannerDismissed()||yaPidio()) return '';
             return '<div class="cupon-banner" id="cupon-banner">'+
                 '<button class="cupon-banner-x" onclick="dismissCuponBanner(event)" aria-label="Cerrar">×</button>'+
-                '<div class="cupon-banner-title">🎁 Tu primer pedido tiene $0.50 de descuento</div>'+
-                '<div class="cupon-banner-sub">Lo aplicamos automáticamente al confirmar por WhatsApp</div>'+
+                '<div class="cupon-banner-title">🎁 Bienvenido — tu primer pedido lleva $0.50 de descuento</div>'+
+                '<div class="cupon-banner-sub">✓ Se aplica solo al confirmar por WhatsApp · en pedidos desde $4</div>'+
             '</div>';
         }
         // Banner cupón VUELVE para clientes recurrentes (sale solo si fetchCuponActivoCliente trajo algo)
@@ -1647,9 +1664,12 @@
                 var dismissed=false;
                 try{dismissed=sessionStorage.getItem('dewan_gps_dismissed')==='1'}catch(e){}
                 if(!dismissed){
+                    var gpsTxt=promoEnvioDiaActivo()
+                        ? 'Activa tu ubicación · si tienes un aliado cerca, hoy el envío puede bajar a $1 (pedidos desde $8, Lun-Mié)'
+                        : 'Activa tu ubicación y mira distancias y el envío real de cada local';
                     h+='<div class="gps-banner" id="gps-banner" onclick="requestGPSFromBanner(event)">'+
                         '<span style="font-size:1.1rem">📍</span>'+
-                        '<span class="gps-banner-text">Activa tu ubicación para ver distancias y delivery real</span>'+
+                        '<span class="gps-banner-text">'+gpsTxt+'</span>'+
                         '<button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>'+
                     '</div>';
                 }
@@ -1704,7 +1724,7 @@
                     var aliadosDestacados=dailyShuffle(homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'}));
                     if(aliadosDestacados.length){
                         h+='<div class="destacados-section">';
-                        h+='<div class="destacados-title">⭐ <span class="destacados-title-acc">Sin recargo · Precio del local</span></div>';
+                        h+='<div class="destacados-title">⭐ <span class="destacados-title-acc">Aliados de hoy · Precio del local'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</span></div>';
                         h+='<div class="destacados-scroll">';
                         aliadosDestacados.forEach(function(r,idx){
                             var hasImg=r.imagen_url||r.logo_url||r.foto_url;
@@ -1722,6 +1742,7 @@
                                 '<div class="grid3-body">'+
                                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
                                     '<div class="grid3-precio-local">✓ Precio del local</div>'+
+                                    (promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005?'<div style="margin-top:3px"><span class="grid3-envio1">🛵 Hoy envío $1</span></div>':'')+
                                 '</div>'+
                             '</div>';
                         });
@@ -1909,6 +1930,11 @@
                     :'<span class="rest-pill"><span>🛵</span> Envío gratis</span>')
                 :'<span class="rest-pill is-neutral"><span>🛵</span> Envío al ubicar</span>';
             var distPill=r.distancia_km?'<span class="rest-pill is-neutral"><span>📍</span> '+r.distancia_km+' km</span>':'';
+            // GUARDA: "Precio del local" SOLO aliado real (nunca cliente_paga, que lleva markup oculto).
+            var precioLocalPill=(r.tipo_acuerdo==='aliado')?'<span class="rest-pill rest-pill-aliado">✓ Precio del local</span>':'';
+            // Envío $1 (socios cercanos, día de promo, con GPS para verificar cercanía).
+            var _esSocio=(r.tipo_acuerdo==='aliado'||r.tipo_acuerdo==='cliente_paga');
+            var envio1Pill=(promoEnvioDiaActivo()&&_esSocio&&window._clientGPS&&deliveryPrice>0&&deliveryPrice<=2.005)?'<span class="rest-pill rest-pill-envio1">🛵 Envío $1 (desde $8)</span>':'';
             var h='<div class="rest-detail-header" style="--rest-color:'+color+'40">'+
                 '<div class="rest-detail-photo" style="'+heroBg+(hasImg?'':';background-color:'+color+'22')+'">'+
                     (hasImg?'':'<span class="rest-detail-photo-fallback">'+getEmoji(r.nombre)+'</span>')+
@@ -1928,8 +1954,10 @@
                         '</div>'+
                     '</div>'+
                     '<div class="rest-pills">'+
+                        precioLocalPill+
                         '<span class="rest-pill"><span>⚡</span> '+(r.tiempo_estimado_min||25)+' min</span>'+
                         deliveryPill+
+                        envio1Pill+
                         '<span class="rest-pill is-rating"><span>🍽</span> '+prods.length+' platos</span>'+
                     '</div>'+
                 '</div>'+
@@ -2166,6 +2194,10 @@
             if(!area) return;
             var recent=getRecentSearches();
             var html='';
+            // Gancho de valor en la pantalla de búsqueda vacía (antes no tenía nada)
+            html+='<div class="aliados-banner">'+(promoEnvioDiaActivo()
+                ? '🛵 Hoy es '+nombreDiaPromo()+' de envío a $1 — en aliados cercanos, pedidos desde $8 (Lun-Mié)'
+                : '⭐ En aliados pagas el precio del local, sin recargos escondidos')+'</div>';
             if(recent.length){
                 html+='<div class="search-section-title-v2">🕒 Recientes</div>';
                 html+='<div class="chip-row">';
@@ -2954,8 +2986,15 @@
                 if(subEl){
                     var rests=Object.keys(window._cart.reduce(function(a,c){a[c.restaurante]=1;return a},{})).length;
                     var pieces=t.items+' '+(t.items===1?'plato':'platos');
-                    var cup=(typeof yaPidio==='function'&&!yaPidio()&&t.subtotal>=4)?' · 🎁 -$0.50 1er pedido':'';
-                    subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'')+cup;
+                    // Nudge de envío $1 viajando en el sticky (gradiente de meta). Prioridad sobre el cupón.
+                    var envioNudge='';
+                    if(window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano){
+                        envioNudge=t.subtotal<PROMO_ENVIO.minSubtotal
+                            ? ' · 🛵 suma $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' y tu envío baja a $1'
+                            : ' · ✅ hoy tu envío es $1';
+                    }
+                    var cup=(!envioNudge&&typeof yaPidio==='function'&&!yaPidio()&&t.subtotal>=4)?' · 🎁 -$0.50 1er pedido':'';
+                    subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'')+envioNudge+cup;
                 }
                 var toVal=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
                 var suffix=window._clientGPS?'':' + envío desde $2';
@@ -3082,12 +3121,14 @@
             // UUID anónimo del dispositivo - el bot lo vincula al teléfono real al recibir pedido
             msg+='Cliente: '+obtenerUuidCliente();
             window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
+            // Capturar si ERA primer pedido ANTES de marcar (para el gancho de retorno en la pantalla de éxito)
+            var eraPrimerPedido=!yaPidio();
             // Marcar que ya intentó enviar 1er pedido — visitas siguientes consultan cupón en BD por uuid
             marcarYaPidio();
             // Invalidar cache de cupones para que próxima visita consulte BD fresca
             window._cuponActivoCache=null;
             // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
-            var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases),conGPS:!!window._clientGPS};
+            var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases),conGPS:!!window._clientGPS,primerPedido:eraPrimerPedido};
             markEtapa('confirmo');
             closeModal();
             showSuccessScreen(resumen);
@@ -3103,6 +3144,9 @@
                     '<div class="success-row"><span>Productos</span><span>'+resumen.items+'</span></div>'+
                     '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío desde $2')+'</span></div>'+
                 '</div>'+
+                '<div class="success-return">'+(resumen.primerPedido
+                    ? '💚 Cuando confirmes por WhatsApp, te espera un descuento por volver la próxima.'
+                    : '💚 Gracias por preferir el precio del local · te avisamos por WhatsApp cuando tengas un descuento listo.')+'</div>'+
                 '<div class="success-hint">¿No se abrió WhatsApp?</div>'+
                 '<button class="btn btn-wa" onclick="sendWA()">📲 Reintentar envío</button>'+
                 '<button class="btn-ghost" onclick="resetAfterOrder()">Hacer otro pedido</button>'+
