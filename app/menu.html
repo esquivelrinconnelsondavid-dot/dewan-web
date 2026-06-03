@@ -2321,13 +2321,14 @@
             var mySeq=++window._searchSeq;
             renderSearchSkeletons();
 
-            // 1) Match directo por nombre/categoría del restaurante (client-side, ya normaliza)
+            // 1) Match directo SOLO por NOMBRE del restaurante (señal fuerte e inequívoca, ej. "Chifa X").
+            //    NO matcheamos por la categoría/tipo del restaurante: esa etiqueta (puesta a mano)
+            //    era la fuente de falsos positivos (locales tagueados con algo que en realidad no venden).
+            //    Lo que decide si un local aparece es lo que REALMENTE vende → sus platos (restsByPlates).
             var qNorm=removeAccents(q.toLowerCase());
             var directRests=(sessionData.resultados||[]).filter(function(r){
                 var n=removeAccents((r.nombre||'').toLowerCase());
-                var c=removeAccents((r.categoria||'').toLowerCase());
-                var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
-                return n.indexOf(qNorm)!==-1||c.indexOf(qNorm)!==-1||t.indexOf(qNorm)!==-1;
+                return n.indexOf(qNorm)!==-1;
             });
 
             // 2) V4.5: Generar variantes de la query para cubrir tildes y plurales
