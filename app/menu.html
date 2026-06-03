@@ -1295,6 +1295,25 @@
                 '</div>'+
             '</div>';
         }
+        // Banner slim de la promo de envío (solo días Lun-Mié). Gancho en el home.
+        function renderEnvioPromoBanner(){
+            if(!promoEnvioDiaActivo()) return '';
+            return '<div class="promo-home-banner">'+
+                '<div class="promo-home-banner-emoji">🛵</div>'+
+                '<div class="promo-home-banner-txt">'+
+                    '<div class="promo-home-banner-title">Envío a $1 hoy 🔥</div>'+
+                    '<div class="promo-home-banner-sub">En pedidos de $8+ · lunes a miércoles</div>'+
+                '</div>'+
+            '</div>';
+        }
+        // Home más liviano: UN solo banner a la vez por prioridad, en vez de apilar 4.
+        function renderHomeBanner(){
+            var b=renderVuelveBanner(); if(b) return b;
+            b=renderCuponBanner(); if(b) return b;
+            b=renderEnvioPromoBanner(); if(b) return b;
+            b=renderMundialBanner(); if(b) return b;
+            return renderPromoBanner();
+        }
         function renderMundialBanner(){
             if(!isMundial()||mundialBannerDismissed()) return '';
             return '<div class="mundial-banner" id="mundial-banner" onclick="toggleCategoryV2(\'partido\')">'+
@@ -1541,14 +1560,8 @@
                 '</button>'+
             '</div>';
 
-            // Banner promo principal (hasta 10% en aliados) — gancho arriba
-            h+=renderPromoBanner();
-            // Banner Mundial (solo durante el período, dismissible)
-            h+=renderMundialBanner();
-            // Banner cupón bienvenida (cliente nuevo)
-            h+=renderCuponBanner();
-            // Banner cupón VUELVE (cliente recurrente con cupón activo en BD)
-            h+=renderVuelveBanner();
+            // Home liviano: UN solo banner por prioridad (cupón > promo envío > Mundial > precio del local)
+            h+=renderHomeBanner();
 
             // Chips de categoría. Mundial: 'partido' solo aparece en período.
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
@@ -1694,16 +1707,23 @@
                         });
                         h+='</div>';
                     }
-                    h+=renderSilenciososBtn(homeBy.silenciosos.length);
-                    if(window._showSilenciosos&&homeBy.silenciosos.length){
+                    // "Más opciones": no-aliados (silenciosos). Visibles para dar variedad,
+                    // sin badges ni promo, separados de los socios. Preview de 8 + expandir el resto.
+                    if(homeBy.silenciosos.length){
+                        var silH=homeBy.silenciosos;
+                        var previewN=8;
+                        var showAllSil=window._showSilenciosos;
+                        var visiblesSil=showAllSil?silH:silH.slice(0,previewN);
                         h+='<div id="silenciosos-section">';
-                        h+='<div class="list-section-title">🏪 Otros restaurantes</div>';
+                        h+='<div class="list-section-title">🍽 Más opciones · '+silH.length+'</div>';
                         h+='<div class="grid3-wrap">';
-                        homeBy.silenciosos.forEach(function(r,idx){
+                        visiblesSil.forEach(function(r,idx){
                             h+=renderRestCardGrid(r,homeBy.socios.length+idx,'openRest(\''+jsEsc(r.nombre)+'\')');
                         });
                         h+='</div>';
-                        h+=renderOcultarSilenciososBtn();
+                        if(silH.length>previewN){
+                            h+=showAllSil?renderOcultarSilenciososBtn():renderSilenciososBtn(silH.length-previewN);
+                        }
                         h+='</div>';
                     }
                 }
@@ -2804,9 +2824,14 @@
         // cobra su tarifa completa; DEWAN absorbe la diferencia (cubierta por el markup de la comida).
         var PROMO_ENVIO={dias:[1,2,3],minSubtotal:8,precio:1.00,baseMax:2.00};
         function promoEnvioDiaActivo(){return PROMO_ENVIO.dias.indexOf(new Date().getDay())!==-1}
+        // La promo de envío es un beneficio de socios: aliados y cliente_paga. Silenciosos NO.
+        function esSocioPromo(restName){
+            var r=getRestByName(restName);
+            return !!(r && (r.tipo_acuerdo==='aliado'||r.tipo_acuerdo==='cliente_paga'));
+        }
         // Delivery de UN local con la promo aplicada. baseDel=envío base del local; sub=subtotal de comida de TODO el pedido.
-        function deliveryConPromo(baseDel,sub){
-            if(promoEnvioDiaActivo()&&sub>=PROMO_ENVIO.minSubtotal&&baseDel>0&&baseDel<=PROMO_ENVIO.baseMax+0.005&&PROMO_ENVIO.precio<baseDel) return PROMO_ENVIO.precio;
+        function deliveryConPromo(baseDel,sub,restName){
+            if(promoEnvioDiaActivo()&&sub>=PROMO_ENVIO.minSubtotal&&baseDel>0&&baseDel<=PROMO_ENVIO.baseMax+0.005&&PROMO_ENVIO.precio<baseDel&&esSocioPromo(restName)) return PROMO_ENVIO.precio;
             return baseDel;
         }
         // Tarifa de servicio fija $0.10 (solo para restaurantes NO aliados)
@@ -2845,8 +2870,8 @@
             var del=0,delFull=0,promoSavings=0,tieneLocalCercano=false;
             Object.keys(dels).forEach(function(k){
                 var base=dels[k];
-                if(base>0&&base<=PROMO_ENVIO.baseMax+0.005) tieneLocalCercano=true;
-                var d=deliveryConPromo(base,sub);
+                if(base>0&&base<=PROMO_ENVIO.baseMax+0.005&&esSocioPromo(k)) tieneLocalCercano=true;
+                var d=deliveryConPromo(base,sub,k);
                 del+=d;delFull+=base;if(d<base)promoSavings+=base-d;
             });
             del=Math.round(del*100)/100;delFull=Math.round(delFull*100)/100;promoSavings=Math.round(promoSavings*100)/100;
