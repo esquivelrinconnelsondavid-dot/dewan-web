@@ -1156,7 +1156,8 @@
         // para no reintroducir falsos positivos.
         var FOOD_SYNONYMS=[
             ['chifa','chaulafan','tallarin','arroz chaufa','chaufa','wantan','comida china','lumpia'],
-            ['pollo','broaster','brosterizado','alitas','presa de pollo'],
+            ['pollo','broaster','brosterizado','presa de pollo'],
+            ['alitas','wings','alitas bbq'],
             ['hamburguesa','burger','hamburguesas'],
             ['pizza','pizzeria','pizzas'],
             ['mariscos','ceviche','cebiche','encebollado','camaron','corviche','pescado frito'],
@@ -1719,24 +1720,22 @@
             if(!(window._activeCat&&window._catLoading)){
                 if(window._activeCat){
                     var cmActive=CAT_MAP_V2[window._activeCat];
-                    // V7: 3 niveles -> aliados (destacados) / cliente_paga / silenciosos ("Más opciones").
+                    // V8: 2 secciones -> (aliados primero + cliente_paga, juntos) y "Más opciones" (silenciosos).
                     var aliados=rests.filter(function(r){return r.tipo_acuerdo==='aliado'});
                     var clientePaga=rests.filter(function(r){return r.tipo_acuerdo==='cliente_paga'});
                     var silenc=rests.filter(function(r){return r.tipo_acuerdo!=='aliado'&&r.tipo_acuerdo!=='cliente_paga'});
+                    var socios=aliados.concat(clientePaga); // aliados primero, luego cliente_paga
                     var gIdx=0;
                     function catCmd(name){return 'openRestCatFiltered(\''+jsEsc(name)+'\',\''+window._activeCat+'\')'}
-                    if(aliados.length){
-                        h+=renderAliadosSection(aliados,gIdx,function(r){return catCmd(r.nombre)},'list-section-title');
-                        gIdx+=aliados.length;
-                    }
-                    if(clientePaga.length){
+                    if(socios.length){
                         h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
+                        if(aliados.length) h+='<div class="aliados-banner">⭐ Precio del local · sin recargos'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
                         h+='<div class="grid3-wrap">';
-                        clientePaga.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
                     }
                     if(silenc.length){
-                        if(!aliados.length&&!clientePaga.length){
+                        if(!socios.length){
                             h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
                             h+='<div class="grid3-wrap">';
                             silenc.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
@@ -2683,22 +2682,20 @@
                     return 'openRestFiltered(\''+jsEsc(r.nombre)+'\',\''+jsEsc(query)+'\')';
                 }
 
-                // V7: 3 niveles -> aliados (destacados) / cliente_paga / silenciosos ("Más opciones").
+                // V8: 2 secciones -> (aliados primero + cliente_paga, juntos) y "Más opciones" (silenciosos).
                 var aliados=rests.filter(function(r){return r.tipo_acuerdo==='aliado'});
                 var clientePaga=rests.filter(function(r){return r.tipo_acuerdo==='cliente_paga'});
                 var silenc=rests.filter(function(r){return r.tipo_acuerdo!=='aliado'&&r.tipo_acuerdo!=='cliente_paga'});
-                if(aliados.length){
-                    html+=renderAliadosSection(aliados,globalIdx,function(r){return clickCmd(r)},'search-section-title-v2');
-                    globalIdx+=aliados.length;
-                }
-                if(clientePaga.length){
-                    html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+clientePaga.length+'</span></div>';
+                var socios=aliados.concat(clientePaga); // aliados primero, luego cliente_paga
+                if(socios.length){
+                    html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+socios.length+'</span></div>';
+                    if(aliados.length) html+='<div class="aliados-banner">⭐ Precio del local · sin recargos'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
                     html+='<div class="grid3-wrap">';
-                    clientePaga.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                    socios.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
                 }
                 if(silenc.length){
-                    if(!aliados.length&&!clientePaga.length){
+                    if(!socios.length){
                         html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+silenc.length+'</span></div>';
                         html+='<div class="grid3-wrap">';
                         silenc.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
