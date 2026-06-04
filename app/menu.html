@@ -1532,8 +1532,9 @@
             // mantiene la descripción, donde el recall importa más.
             var ors;
             if(key==='promohoy'){
-                // Promos del día: ítems PROMO_OPTS cuyo "dia" sea el de hoy (getDay 0-6).
-                ors='descripcion.ilike.'+encodeURIComponent('%"dia":'+new Date().getDay()+'%');
+                // Promos válidas HOY: con "dia" de hoy (getDay 0-6) O permanentes (PROMO_OPTS sin "dia").
+                ors='descripcion.ilike.'+encodeURIComponent('%"dia":'+new Date().getDay()+'%')+
+                    ',and(descripcion.ilike.'+encodeURIComponent('%PROMO_OPTS%')+',descripcion.not.ilike.'+encodeURIComponent('%"dia":%')+')';
             } else {
                 ors=cm.kw.map(function(k){
                     var kEnc=encodeURIComponent('%'+k+'%');
@@ -1718,22 +1719,31 @@
             if(!(window._activeCat&&window._catLoading)){
                 if(window._activeCat){
                     var cmActive=CAT_MAP_V2[window._activeCat];
-                    // V6: aliados DESTACADOS arriba (con sus ganchos) + el resto (cliente_paga +
-                    // silenciosos) en "Más opciones". rests ya viene ordenado desde toggleCategoryV2.
+                    // V7: 3 niveles -> aliados (destacados) / cliente_paga / silenciosos ("Más opciones").
                     var aliados=rests.filter(function(r){return r.tipo_acuerdo==='aliado'});
-                    var resto=rests.filter(function(r){return r.tipo_acuerdo!=='aliado'});
+                    var clientePaga=rests.filter(function(r){return r.tipo_acuerdo==='cliente_paga'});
+                    var silenc=rests.filter(function(r){return r.tipo_acuerdo!=='aliado'&&r.tipo_acuerdo!=='cliente_paga'});
                     var gIdx=0;
                     function catCmd(name){return 'openRestCatFiltered(\''+jsEsc(name)+'\',\''+window._activeCat+'\')'}
-
                     if(aliados.length){
                         h+=renderAliadosSection(aliados,gIdx,function(r){return catCmd(r.nombre)},'list-section-title');
                         gIdx+=aliados.length;
-                        h+=renderMasOpciones(resto,gIdx,function(r){return catCmd(r.nombre)});
-                    } else if(resto.length){
+                    }
+                    if(clientePaga.length){
                         h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
                         h+='<div class="grid3-wrap">';
-                        resto.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                        clientePaga.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
+                    }
+                    if(silenc.length){
+                        if(!aliados.length&&!clientePaga.length){
+                            h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
+                            h+='<div class="grid3-wrap">';
+                            silenc.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                            h+='</div>';
+                        } else {
+                            h+=renderMasOpciones(silenc,gIdx,function(r){return catCmd(r.nombre)});
+                        }
                     }
                 } else {
                     // Home sin filtro: socios primero, silenciosos detrás de botón
@@ -2673,18 +2683,29 @@
                     return 'openRestFiltered(\''+jsEsc(r.nombre)+'\',\''+jsEsc(query)+'\')';
                 }
 
-                // V6: aliados DESTACADOS arriba (con ganchos) + el resto en "Más opciones".
+                // V7: 3 niveles -> aliados (destacados) / cliente_paga / silenciosos ("Más opciones").
                 var aliados=rests.filter(function(r){return r.tipo_acuerdo==='aliado'});
-                var resto=rests.filter(function(r){return r.tipo_acuerdo!=='aliado'});
+                var clientePaga=rests.filter(function(r){return r.tipo_acuerdo==='cliente_paga'});
+                var silenc=rests.filter(function(r){return r.tipo_acuerdo!=='aliado'&&r.tipo_acuerdo!=='cliente_paga'});
                 if(aliados.length){
                     html+=renderAliadosSection(aliados,globalIdx,function(r){return clickCmd(r)},'search-section-title-v2');
                     globalIdx+=aliados.length;
-                    html+=renderMasOpciones(resto,globalIdx,function(r){return clickCmd(r)},'search-section-title-v2');
-                } else if(resto.length){
-                    html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+resto.length+'</span></div>';
+                }
+                if(clientePaga.length){
+                    html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+clientePaga.length+'</span></div>';
                     html+='<div class="grid3-wrap">';
-                    resto.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                    clientePaga.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
+                }
+                if(silenc.length){
+                    if(!aliados.length&&!clientePaga.length){
+                        html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+silenc.length+'</span></div>';
+                        html+='<div class="grid3-wrap">';
+                        silenc.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
+                        html+='</div>';
+                    } else {
+                        html+=renderMasOpciones(silenc,globalIdx,function(r){return clickCmd(r)},'search-section-title-v2');
+                    }
                 }
             }
             // SECCIÓN SECUNDARIA: platos individuales (los más relevantes)
