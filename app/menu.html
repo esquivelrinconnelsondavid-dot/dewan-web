@@ -1250,6 +1250,7 @@
         // las variantes con tilde y sin tilde para que la query server las matchee.
         // 12 categorías canónicas alineadas con restaurantes.categoria_canonica
         var CAT_MAP_V2={
+            promohoy:{icon:'🔥',label:'Promos de hoy',canonica:null,core:[],kw:[]},
             tipica:{icon:'🥘',label:'Comida típica',canonica:'Comida típica',
                 core:['restaurante','tradicional','típica','tipica','hornado','seco'],
                 kw:['típica','tipica','tradicional','hornado','hornados','seco de','encebollado','yapingacho','llapingacho','locro','sancocho','mote pillo','mote sucio','motepata','mote con','fritada','tigrillo','humita','humitas']},
@@ -1296,7 +1297,7 @@
                 core:['sushi','japones','japonés','japonesa'],
                 kw:['sushi','japones','japonés','japonesa','maki','nigiri','sashimi','tempura','ramen','udon']}
         };
-        var CAT_KEYS_V2=['partido','almuerzo','desayunos','tipica','fastfood','mariscos','cafeteria','pizza','parrilla','pollo','chifa','postres','internacional','mexicana','sushi'];
+        var CAT_KEYS_V2=['promohoy','partido','almuerzo','desayunos','tipica','fastfood','mariscos','cafeteria','pizza','parrilla','pollo','chifa','postres','internacional','mexicana','sushi'];
 
         function matchCategoryV2(r,catKey){
             var cm=CAT_MAP_V2[catKey];if(!cm)return false;
@@ -1529,10 +1530,16 @@
             // descripción (que lista ingredientes y arrastra locales equivocados, ej. un marisquería
             // con "alitas BBQ" en la descripción caía en Pollo). La búsqueda libre (doSearch) SÍ
             // mantiene la descripción, donde el recall importa más.
-            var ors=cm.kw.map(function(k){
-                var kEnc=encodeURIComponent('%'+k+'%');
-                return 'nombre_item.ilike.'+kEnc+',categoria_menu.ilike.'+kEnc;
-            }).join(',');
+            var ors;
+            if(key==='promohoy'){
+                // Promos del día: ítems PROMO_OPTS cuyo "dia" sea el de hoy (getDay 0-6).
+                ors='descripcion.ilike.'+encodeURIComponent('%"dia":'+new Date().getDay()+'%');
+            } else {
+                ors=cm.kw.map(function(k){
+                    var kEnc=encodeURIComponent('%'+k+'%');
+                    return 'nombre_item.ilike.'+kEnc+',categoria_menu.ilike.'+kEnc;
+                }).join(',');
+            }
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
                     var rests=aggregatePlatesByRest(plates);
@@ -2006,6 +2013,7 @@
                 destacados.forEach(function(p){
                     var almData=parseAlmuerzo(p.descripcion);
                     var wingsData=almData?null:parseWings(p.descripcion);
+                    if(wingsData&&wingsData.dia!=null&&new Date().getDay()!==wingsData.dia){return;} // promo de otro día: ocultar
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
                         window._almMenuData.push({desc:p.descripcion});
@@ -2023,9 +2031,13 @@
                         var wIdx=window._wingsMenuData.length;
                         window._wingsMenuData.push({desc:p.descripcion});
                         var wQty=countWingsCart(r.nombre,p.nombre);
+                        var wHasSauce=!!(wingsData.salsas&&wingsData.salsas.length&&(wingsData.sabores||0)>0);
                         var wPrecio=applyTierPricing(Number(wingsData.precio||0),r,p.categoria||'Alitas');
-                        h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')">'+
-                            '<div class="dest-emoji">🍗</div>'+
+                        var wClick=wHasSauce
+                            ?'openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')'
+                            :'addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)';
+                        h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();'+wClick+'">'+
+                            '<div class="dest-emoji">'+(wingsData.dia!=null?'🔥':'🍗')+'</div>'+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">$'+wPrecio.toFixed(2)+'</span>'+
@@ -2080,6 +2092,7 @@
                     var isFirstInCat=idxInCat===0&&showCat;
                     var almData=parseAlmuerzo(p.descripcion);
                     var wingsData=almData?null:parseWings(p.descripcion);
+                    if(wingsData&&wingsData.dia!=null&&new Date().getDay()!==wingsData.dia){return;} // promo de otro día: ocultar
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
                         window._almMenuData.push({desc:p.descripcion});
@@ -2107,19 +2120,24 @@
                         var wIdx=window._wingsMenuData.length;
                         window._wingsMenuData.push({desc:p.descripcion});
                         var wQty=countWingsCart(r.nombre,p.nombre);
-                        var wSab=wingsData.sabores+' '+(wingsData.sabores===1?'salsa':'salsas');
+                        var wHasSauce=!!(wingsData.salsas&&wingsData.salsas.length&&(wingsData.sabores||0)>0);
+                        var wSab=(wingsData.sabores||0)+' '+((wingsData.sabores||0)===1?'salsa':'salsas');
                         var wPrecio=applyTierPricing(Number(wingsData.precio||0),r,p.categoria||'Alitas');
+                        var wDescTxt=wingsData.desc?(esc(wingsData.desc)+(wHasSauce?' · 🌶️ Elige '+wSab:'')):('🌶️ Elige '+wSab+' (puedes repetir)');
+                        var wBtn=wHasSauce
+                            ?'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')">+</button>'
+                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)">+</button>';
                         h+='<div class="prod-card'+(wQty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
-                                '<div class="prod-emoji">🍗</div>'+
+                                '<div class="prod-emoji">'+(wingsData.dia!=null?'🔥':'🍗')+'</div>'+
                                 '<div class="prod-info">'+
                                     (wQty?'<div class="prod-badges"><span class="badge badge-cart">×'+wQty+' en carrito</span></div>':'')+
                                     '<div class="prod-name">'+esc(p.nombre)+'</div>'+
-                                    '<div class="prod-desc">🌶️ Elige '+wSab+' (puedes repetir)</div>'+
+                                    '<div class="prod-desc">'+wDescTxt+'</div>'+
                                     (wingsData.envase>0?'<div class="prod-envase">+ envase $'+Number(wingsData.envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
                                         '<span class="prod-price">$'+wPrecio.toFixed(2)+'</span>'+
-                                        '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')">+</button>'+
+                                        wBtn+
                                     '</div>'+
                                 '</div>'+
                             '</div>'+
@@ -3432,8 +3450,12 @@
         // viven en los datos: cada tamaño es su propio ítem con su 'sabores'.
         window._wingsMenuData=window._wingsMenuData||[];
         function parseWings(desc){
-            if(!desc||desc.indexOf('WINGS_OPTS:')!==0) return null;
-            try{ return JSON.parse(desc.slice('WINGS_OPTS:'.length)); }catch(_){ return null; }
+            if(!desc) return null;
+            // WINGS_OPTS = alitas normales; PROMO_OPTS = promo (puede traer 'dia' para mostrarse
+            // solo ese día, y 'desc' con el texto). Ambas pueden traer salsas (abren el modal).
+            var pfx = desc.indexOf('WINGS_OPTS:')===0 ? 'WINGS_OPTS:' : (desc.indexOf('PROMO_OPTS:')===0 ? 'PROMO_OPTS:' : null);
+            if(!pfx) return null;
+            try{ return JSON.parse(desc.slice(pfx.length)); }catch(_){ return null; }
         }
         function countWingsCart(rest,nombre){
             var n=0; window._cart.forEach(function(c){if(c.restaurante===rest&&c.nombre===nombre&&c.wingsChoices)n++}); return n;
