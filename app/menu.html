@@ -1154,35 +1154,38 @@
         // la palabra exacta (ej. "chifa" → chaulafán, tallarín, arroz chaufa, wantán).
         // OJO: solo alimenta la query de PLATOS (menu_items), no la categoría del local,
         // para no reintroducir falsos positivos.
+        // Cada grupo: t = DISPARADORES (palabras de CATEGORÍA que sí expanden), all = términos a buscar.
+        // Buscar un disparador ("mariscos","chifa") expande a sus platos. Buscar un PLATO específico
+        // ("encebollado","ceviche","lomo") NO expande -> se busca solo ese plato (más preciso).
         var FOOD_SYNONYMS=[
-            ['chifa','chaulafan','tallarin','arroz chaufa','chaufa','wantan','comida china','lumpia'],
-            ['pollo','broaster','brosterizado','presa de pollo'],
-            ['alitas','wings','alitas bbq'],
-            ['hamburguesa','burger','hamburguesas'],
-            ['pizza','pizzeria','pizzas'],
-            ['mariscos','ceviche','cebiche','encebollado','camaron','corviche','pescado frito'],
-            ['parrilla','asado','churrasco','carne asada','a la brasa','lomo'],
-            ['sushi','maki','makis','nigiri','sushi rolls'],
-            ['mexicana','taco','tacos','burrito','quesadilla','nachos'],
-            ['almuerzo','menu del dia','menu ejecutivo','seco','sopa del dia'],
-            ['salchipapa','salchipapas','papas fritas'],
-            ['jugo','batido','frappe','milkshake','malteada','smoothie'],
-            ['postre','helado','torta','pastel','cheesecake','brownie'],
-            ['hot dog','hotdog','perro caliente','choripan'],
-            ['shawarma','shawerma','doner','kebab'],
-            ['desayuno','bolon','tigrillo','humita','tamal']
+            {t:['chifa','chifas','comida china'], all:['chifa','chaulafan','tallarin','arroz chaufa','chaufa','wantan','comida china','lumpia']},
+            {t:['pollo','pollos','polleria','broaster'], all:['pollo','broaster','brosterizado','presa de pollo']},
+            {t:['alitas','wings'], all:['alitas','wings','alitas bbq']},
+            {t:['hamburguesa','hamburguesas','burger'], all:['hamburguesa','burger','hamburguesas']},
+            {t:['pizza','pizzas','pizzeria'], all:['pizza','pizzeria','pizzas']},
+            {t:['mariscos','marisco','marisqueria'], all:['mariscos','ceviche','cebiche','encebollado','camaron','corviche','pescado frito']},
+            {t:['parrilla','parrillada','parrilladas','asadero'], all:['parrilla','asado','churrasco','carne asada','a la brasa','lomo']},
+            {t:['sushi','japonesa','japones'], all:['sushi','maki','makis','nigiri','sushi rolls']},
+            {t:['mexicana','mexicano','comida mexicana'], all:['mexicana','taco','tacos','burrito','quesadilla','nachos']},
+            {t:['almuerzo','almuerzos','menu del dia'], all:['almuerzo','menu del dia','menu ejecutivo','seco','sopa del dia']},
+            {t:['salchipapa','salchipapas'], all:['salchipapa','salchipapas','papas fritas']},
+            {t:['jugo','jugos','batido','batidos'], all:['jugo','batido','frappe','milkshake','malteada','smoothie']},
+            {t:['postre','postres','heladeria'], all:['postre','helado','torta','pastel','cheesecake','brownie']},
+            {t:['hot dog','hotdog','perro caliente'], all:['hot dog','hotdog','perro caliente','choripan']},
+            {t:['shawarma','shawerma'], all:['shawarma','shawerma','doner','kebab']},
+            {t:['desayuno','desayunos'], all:['desayuno','bolon','tigrillo','humita','tamal']}
         ];
-        // Devuelve términos extra para expandir la búsqueda según los sinónimos tocados.
+        // Expande SOLO si la búsqueda toca un DISPARADOR de categoría (no un plato específico).
         function expandSynonyms(q){
             var qn=removeAccents((q||'').toLowerCase()).trim();
             if(qn.length<3) return [];
             var extra={};
-            FOOD_SYNONYMS.forEach(function(group){
-                var hit=group.some(function(term){
+            FOOD_SYNONYMS.forEach(function(g){
+                var hit=g.t.some(function(term){
                     var tn=removeAccents(term.toLowerCase());
                     return qn===tn||qn.indexOf(tn)!==-1||(qn.length>=4&&tn.indexOf(qn)!==-1);
                 });
-                if(hit) group.forEach(function(term){extra[removeAccents(term.toLowerCase())]=true});
+                if(hit) g.all.forEach(function(term){extra[removeAccents(term.toLowerCase())]=true});
             });
             return Object.keys(extra);
         }
@@ -1263,7 +1266,7 @@
                 kw:['almuerzo','almuerzos','menú del día','menu del dia','menú del dia','menu del día','ejecutivo','ejecutivos']},
             desayunos:{icon:'🥐',label:'Desayunos',canonica:null,
                 core:['desayuno','desayunos','brunch'],
-                kw:['desayuno','desayunos','brunch','pan tostado','tostada francesa','tostadas francesas','huevos revueltos','huevos pericos','huevo frito','huevos fritos','panqueque','panqueques','waffle','waffles','bolón','bolon','bolones','tigrillo','humita','humitas','empanada de viento','jugo de naranja','café con leche']},
+                kw:['desayuno','desayunos','brunch','pan tostado','tostada francesa','tostadas francesas','huevos revueltos','huevos pericos','panqueque','panqueques','waffle','waffles','bolón','bolon','bolones','tigrillo','humita','humitas','empanada de viento','jugo de naranja','café con leche']},
             fastfood:{icon:'🍔',label:'Hamburguesas',canonica:'Hamburguesas / Fast food',
                 core:['hamburgues','burger','salchipapa','comida rapida','comida rápida','fast food','americano'],
                 kw:['hambur','burger','salchipapa','salchipapas','papipollo']},
