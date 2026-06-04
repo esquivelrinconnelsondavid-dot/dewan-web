@@ -2031,8 +2031,9 @@
                         var wIdx=window._wingsMenuData.length;
                         window._wingsMenuData.push({desc:p.descripcion});
                         var wQty=countWingsCart(r.nombre,p.nombre);
-                        var wHasSauce=!!(wingsData.salsas&&wingsData.salsas.length&&(wingsData.sabores||0)>0);
-                        var wPrecio=applyTierPricing(Number(wingsData.precio||0),r,p.categoria||'Alitas');
+                        var wPorUnidad=!!wingsData.porUnidad;
+                        var wHasSauce=!!(wingsData.salsas&&wingsData.salsas.length&&((wingsData.sabores||0)>0||wPorUnidad));
+                        var wPrecio=applyTierPricing(Number(wPorUnidad?(wingsData.precioUnidad||0):(wingsData.precio||0)),r,p.categoria||'Alitas');
                         var wClick=wHasSauce
                             ?'openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')'
                             :'addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)';
@@ -2120,10 +2121,12 @@
                         var wIdx=window._wingsMenuData.length;
                         window._wingsMenuData.push({desc:p.descripcion});
                         var wQty=countWingsCart(r.nombre,p.nombre);
-                        var wHasSauce=!!(wingsData.salsas&&wingsData.salsas.length&&(wingsData.sabores||0)>0);
+                        var wPorUnidad=!!wingsData.porUnidad;
+                        var wHasSauce=!!(wingsData.salsas&&wingsData.salsas.length&&((wingsData.sabores||0)>0||wPorUnidad));
                         var wSab=(wingsData.sabores||0)+' '+((wingsData.sabores||0)===1?'salsa':'salsas');
-                        var wPrecio=applyTierPricing(Number(wingsData.precio||0),r,p.categoria||'Alitas');
-                        var wDescTxt=wingsData.desc?(esc(wingsData.desc)+(wHasSauce?' · 🌶️ Elige '+wSab:'')):('🌶️ Elige '+wSab+' (puedes repetir)');
+                        var wBase=wPorUnidad?(wingsData.precioUnidad||0):(wingsData.precio||0);
+                        var wPrecio=applyTierPricing(Number(wBase),r,p.categoria||'Alitas');
+                        var wDescTxt=wPorUnidad?'🌶️ Elige cantidad y salsas':(wingsData.desc?(esc(wingsData.desc)+(wHasSauce?' · 🌶️ Elige '+wSab:'')):('🌶️ Elige '+wSab+' (puedes repetir)'));
                         var wBtn=wHasSauce
                             ?'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')">+</button>'
                             :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)">+</button>';
@@ -2136,7 +2139,7 @@
                                     '<div class="prod-desc">'+wDescTxt+'</div>'+
                                     (wingsData.envase>0?'<div class="prod-envase">+ envase $'+Number(wingsData.envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
-                                        '<span class="prod-price">$'+wPrecio.toFixed(2)+'</span>'+
+                                        '<span class="prod-price">$'+wPrecio.toFixed(2)+(wPorUnidad?' c/u':'')+'</span>'+
                                         wBtn+
                                     '</div>'+
                                 '</div>'+
@@ -3470,18 +3473,30 @@
         window.openWingsModal=function(rest,nombre,wIdx,delivery,precioFinal){
             var data=parseWings(window._wingsMenuData[wIdx].desc);
             if(!data)return;
-            var precio=(precioFinal!=null)?Number(precioFinal):(data.precio||0);
-            var sabores=data.sabores||1;
             var salsas=data.salsas||[];
-            window._wingsPending={rest:rest,nombre:nombre,precio:precio,delivery:delivery,envase:data.envase||0,sabores:sabores,salsas:salsas,counts:salsas.map(function(){return 0})};
+            var porUnidad=!!data.porUnidad;
+            var p={rest:rest,nombre:nombre,delivery:delivery,envase:data.envase||0,salsas:salsas,counts:salsas.map(function(){return 0}),porUnidad:porUnidad};
+            if(porUnidad){
+                p.precioUnidad=(precioFinal!=null)?Number(precioFinal):(data.precioUnidad||0);
+                p.salsasCada=data.salsasCada||5;
+                p.min=data.min||p.salsasCada;
+                p.qty=p.min;
+                p.sabores=Math.floor(p.qty/p.salsasCada);
+            } else {
+                p.precio=(precioFinal!=null)?Number(precioFinal):(data.precio||0);
+                p.sabores=data.sabores||1;
+            }
+            window._wingsPending=p;
+            var precioShow=porUnidad?(p.qty*p.precioUnidad):p.precio;
             var h='<div class="almuerzo-modal">'+
                 '<div class="almuerzo-header">'+
                     '<div class="almuerzo-header-icon">🍗</div>'+
                     '<div class="almuerzo-header-title">'+esc(nombre)+'</div>'+
                     '<div class="almuerzo-header-rest">'+esc(rest)+'</div>'+
-                    '<div class="almuerzo-header-price">$'+Number(precio).toFixed(2)+(data.envase>0?' <span style="font-size:0.7rem;color:var(--gris);font-weight:700">+ envase $'+Number(data.envase).toFixed(2)+'</span>':'')+'</div>'+
+                    '<div class="almuerzo-header-price">$<span id="wings-price">'+precioShow.toFixed(2)+'</span>'+(p.envase>0?' <span style="font-size:0.7rem;color:var(--gris);font-weight:700">+ envase $'+Number(p.envase).toFixed(2)+'</span>':'')+'</div>'+
                 '</div>'+
-                '<div class="wings-counter">🌶️ Elige <b>'+sabores+'</b> '+(sabores===1?'salsa':'salsas')+' · puedes repetir · faltan <span id="wings-left">'+sabores+'</span></div>'+
+                (porUnidad?'<div class="wings-row" style="margin-bottom:10px"><span class="wings-salsa-name">🍗 Cantidad de alas</span><div class="wings-stepper"><button class="btn-qty btn-qty-minus" onclick="changeWingQty(-1)">−</button><span class="wings-salsa-count" id="wings-qty">'+p.qty+'</span><button class="btn-qty btn-qty-plus" onclick="changeWingQty(1)">+</button></div></div>':'')+
+                '<div class="wings-counter">🌶️ Elige <b id="wings-sabores">'+p.sabores+'</b> salsa(s) · puedes repetir · faltan <span id="wings-left">'+p.sabores+'</span></div>'+
                 '<div class="wings-list">';
             salsas.forEach(function(s,i){
                 h+='<div class="wings-row">'+
@@ -3500,6 +3515,22 @@
             document.getElementById('modal-content').innerHTML=h;
             document.getElementById('modal-overlay').classList.add('visible');
         };
+        // Alitas por unidad (Cherokee): cambia la cantidad → recalcula sabores = ⌊cant/salsasCada⌋
+        window.changeWingQty=function(delta){
+            var p=window._wingsPending; if(!p||!p.porUnidad)return;
+            var nq=p.qty+delta; if(nq<p.min)nq=p.min;
+            p.qty=nq;
+            p.sabores=Math.floor(p.qty/p.salsasCada);
+            var total=p.counts.reduce(function(a,b){return a+b},0);
+            while(total>p.sabores){ for(var i=0;i<p.counts.length&&total>p.sabores;i++){ if(p.counts[i]>0){p.counts[i]--;total--;} } }
+            var qEl=document.getElementById('wings-qty'); if(qEl)qEl.textContent=p.qty;
+            var prEl=document.getElementById('wings-price'); if(prEl)prEl.textContent=(p.qty*p.precioUnidad).toFixed(2);
+            var sEl=document.getElementById('wings-sabores'); if(sEl)sEl.textContent=p.sabores;
+            p.counts.forEach(function(c,i){var el=document.getElementById('wcount-'+i);if(el)el.textContent=c;});
+            var nt=p.counts.reduce(function(a,b){return a+b},0);
+            var lEl=document.getElementById('wings-left'); if(lEl)lEl.textContent=(p.sabores-nt);
+            var btn=document.getElementById('btn-wings-add'); if(btn)btn.disabled=(nt!==p.sabores);
+        };
         window.changeWingSalsa=function(i,delta){
             var p=window._wingsPending; if(!p)return;
             var total=p.counts.reduce(function(a,b){return a+b},0);
@@ -3517,7 +3548,9 @@
             if(total!==p.sabores)return;
             var choices=[];
             p.salsas.forEach(function(s,i){ if(p.counts[i]>0) choices.push({salsa:s,n:p.counts[i]}); });
-            window._cart.push({restaurante:p.rest,nombre:p.nombre,precio:p.precio,delivery:p.delivery,qty:1,cargo_envase:p.envase,wingsChoices:choices});
+            var precio=p.porUnidad?(Math.round(p.qty*p.precioUnidad*100)/100):p.precio;
+            var nombre=p.porUnidad?(p.qty+' Alitas'):p.nombre;
+            window._cart.push({restaurante:p.rest,nombre:nombre,precio:precio,delivery:p.delivery,qty:1,cargo_envase:p.envase,wingsChoices:choices});
             saveCart();
             window._wingsPending=null;
             closeModal();
