@@ -1,0 +1,18 @@
+# Dependencias y artefactos pesados / secretos — NO subir al repo.
+node_modules/
+dist/
+dist_electron/
+android/
+android.broken*/
+ios/
+build/
+.gradle/
+*.log
+.DS_Store
+
+# Secretos
+.env
+.env.*
+
+# La build WEB (web/) SÍ se versiona: es lo que EasyPanel sirve en /restaurante/web/.
+!web/
