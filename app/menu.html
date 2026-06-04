@@ -3479,7 +3479,9 @@
             // solo ese día, y 'desc' con el texto). Ambas pueden traer salsas (abren el modal).
             var pfx = desc.indexOf('WINGS_OPTS:')===0 ? 'WINGS_OPTS:' : (desc.indexOf('PROMO_OPTS:')===0 ? 'PROMO_OPTS:' : null);
             if(!pfx) return null;
-            try{ return JSON.parse(desc.slice(pfx.length)); }catch(_){ return null; }
+            // Tolerar saltos de línea metidos al copiar/pegar el SQL (ej. "BBQ\n Picante"),
+            // que romperían el JSON. Colapsamos cualquier salto + espacios a un solo espacio.
+            try{ return JSON.parse(desc.slice(pfx.length).replace(/[\r\n]+\s*/g,' ')); }catch(_){ return null; }
         }
         function countWingsCart(rest,nombre){
             var n=0; window._cart.forEach(function(c){if(c.restaurante===rest&&c.nombre===nombre&&c.wingsChoices)n++}); return n;
