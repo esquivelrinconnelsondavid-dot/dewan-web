@@ -574,6 +574,13 @@
         .rest-pill-envio1{background:var(--cta-soft)!important;border-color:rgba(217,58,11,0.30)!important;color:var(--cta-hover)!important;font-weight:800}
         /* Gancho de retorno en la pantalla de éxito */
         .success-return{margin:14px auto 0;max-width:320px;padding:10px 14px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.25);border-radius:12px;font-size:0.82rem;font-weight:700;color:#22c55e;line-height:1.35}
+        /* Modal de alas con salsas */
+        .wings-counter{margin:4px 0 12px;padding:9px 12px;background:var(--cta-soft);border:1px solid rgba(217,58,11,0.30);border-radius:10px;font-size:0.82rem;font-weight:800;color:var(--cta-hover);text-align:center}
+        .wings-list{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto}
+        .wings-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+        .wings-salsa-name{font-weight:800;font-size:0.9rem;color:var(--texto)}
+        .wings-stepper{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:2px;flex-shrink:0}
+        .wings-salsa-count{min-width:18px;text-align:center;font-weight:900;font-size:0.95rem;color:var(--acc)}
         /* "Precio del local" — claim verde discreto bajo el nombre del aliado */
         .grid3-precio-local{font-size:0.62rem;color:#22c55e;font-weight:800;margin-top:3px;letter-spacing:0.01em;display:flex;align-items:center;gap:2px}
         /* Sección destacada de aliados en home */
@@ -1968,6 +1975,7 @@
             '</div>';
 
             window._almMenuData=[];
+            window._wingsMenuData=[];
 
             var catMap={};
             prods.forEach(function(p){var c=p.categoria||'General';if(!catMap[c])catMap[c]=[];catMap[c].push(p)});
@@ -1997,6 +2005,7 @@
                     '<div class="destacados-scroll">';
                 destacados.forEach(function(p){
                     var almData=parseAlmuerzo(p.descripcion);
+                    var wingsData=almData?null:parseWings(p.descripcion);
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
                         window._almMenuData.push({desc:p.descripcion});
@@ -2008,6 +2017,18 @@
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">'+precioDisp+'</span>'+
                                 (almQty?'<span class="dest-qty-mini">×'+almQty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
+                            '</div>'+
+                        '</div>';
+                    } else if(wingsData){
+                        var wIdx=window._wingsMenuData.length;
+                        window._wingsMenuData.push({desc:p.descripcion});
+                        var wQty=countWingsCart(r.nombre,p.nombre);
+                        h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+')">'+
+                            '<div class="dest-emoji">🍗</div>'+
+                            '<div class="dest-name">'+esc(p.nombre)+'</div>'+
+                            '<div class="dest-footer">'+
+                                '<span class="dest-price">$'+Number(wingsData.precio||0).toFixed(2)+'</span>'+
+                                (wQty?'<span class="dest-qty-mini">×'+wQty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
                             '</div>'+
                         '</div>';
                     } else {
@@ -2057,6 +2078,7 @@
                 catMap[cat].forEach(function(p,idxInCat){
                     var isFirstInCat=idxInCat===0&&showCat;
                     var almData=parseAlmuerzo(p.descripcion);
+                    var wingsData=almData?null:parseWings(p.descripcion);
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
                         window._almMenuData.push({desc:p.descripcion});
@@ -2076,6 +2098,26 @@
                                     '<div class="prod-bottom">'+
                                         '<span class="prod-price">'+precioDisplay+'</span>'+
                                         '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">+</button>'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'+
+                        '</div>';
+                    } else if(wingsData){
+                        var wIdx=window._wingsMenuData.length;
+                        window._wingsMenuData.push({desc:p.descripcion});
+                        var wQty=countWingsCart(r.nombre,p.nombre);
+                        var wSab=wingsData.sabores+' '+(wingsData.sabores===1?'salsa':'salsas');
+                        h+='<div class="prod-card'+(wQty?' in-cart':'')+'">'+
+                            '<div class="prod-top">'+
+                                '<div class="prod-emoji">🍗</div>'+
+                                '<div class="prod-info">'+
+                                    (wQty?'<div class="prod-badges"><span class="badge badge-cart">×'+wQty+' en carrito</span></div>':'')+
+                                    '<div class="prod-name">'+esc(p.nombre)+'</div>'+
+                                    '<div class="prod-desc">🌶️ Elige '+wSab+' (puedes repetir)</div>'+
+                                    (wingsData.envase>0?'<div class="prod-envase">+ envase $'+Number(wingsData.envase).toFixed(2)+'</div>':'')+
+                                    '<div class="prod-bottom">'+
+                                        '<span class="prod-price">$'+Number(wingsData.precio||0).toFixed(2)+'</span>'+
+                                        '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+')">+</button>'+
                                     '</div>'+
                                 '</div>'+
                             '</div>'+
@@ -2680,7 +2722,18 @@
                 h+='<div class="cart-rest-label">'+esc(rest)+'</div>';
                 byRest[rest].forEach(function(c,ci){
                     var cartIdx=window._cart.indexOf(c);
-                    if(c.almuerzoChoices){
+                    if(c.wingsChoices){
+                        var totalConEnvase=(parsePrice(c.precio)+parsePrice(c.cargo_envase));
+                        h+='<div class="cart-item" style="flex-wrap:wrap">'+
+                            '<div class="cart-item-emoji">🍗</div>'+
+                            '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
+                                '<div class="almuerzo-choices">🌶️ '+esc(wingsChoicesStr(c.wingsChoices))+'</div>'+
+                                (parsePrice(c.cargo_envase)>0?'<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+parsePrice(c.precio).toFixed(2)+' + envase $'+parsePrice(c.cargo_envase).toFixed(2)+'</div>':'')+
+                                '<div style="color:var(--acc);font-weight:900;font-size:1rem;margin-top:2px">$'+totalConEnvase.toFixed(2)+'</div>'+
+                            '</div>'+
+                            '<button class="almuerzo-remove" onclick="removeWingsCart('+cartIdx+')">✕</button>'+
+                        '</div>';
+                    } else if(c.almuerzoChoices){
                         var choicesH='';
                         var catIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',postre:'🍰'};
                         var catOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
@@ -2883,7 +2936,7 @@
             saveCart(); // CAMBIO 2
         };
         function findCart(rest,nombre){
-            for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices)return window._cart[i]}return null;
+            for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices&&!window._cart[i].wingsChoices)return window._cart[i]}return null;
         }
         // ── Promo "Envío $1 · Lun-Mié · pedidos de $8+" ──
         // dias: 1=Lun,2=Mar,3=Mié (Date.getDay, hora local del dispositivo).
@@ -3087,6 +3140,10 @@
                         catOrder.forEach(function(cat){
                             if(c.almuerzoChoices[cat]) msg+='    ▸ '+(catLabels[cat]||cat)+': '+c.almuerzoChoices[cat]+'\n';
                         });
+                    }
+                    if(c.wingsChoices){
+                        msg+='    🌶️ Salsas: '+wingsChoicesStr(c.wingsChoices)+'\n';
+                        if(parsePrice(c.cargo_envase)>0) msg+='    📦 Envase: $'+parsePrice(c.cargo_envase).toFixed(2)+'\n';
                     }
                     if(c.nota)msg+='    📝 '+c.nota+'\n';
                 });
@@ -3363,6 +3420,81 @@
             });
             saveCart(); // CAMBIO 2
             window._almPending=null;
+            closeModal();
+            refreshView();
+        };
+
+        // ── ALAS CON SALSAS (configurable: elige N salsas según el tamaño) ──
+        // El ítem trae en descripcion: WINGS_OPTS:{precio,alas,sabores,salsas:[...],envase}
+        // Se permite repetir salsa (ej. 2× BBQ). Las reglas (cuántos sabores por tamaño)
+        // viven en los datos: cada tamaño es su propio ítem con su 'sabores'.
+        window._wingsMenuData=window._wingsMenuData||[];
+        function parseWings(desc){
+            if(!desc||desc.indexOf('WINGS_OPTS:')!==0) return null;
+            try{ return JSON.parse(desc.slice('WINGS_OPTS:'.length)); }catch(_){ return null; }
+        }
+        function countWingsCart(rest,nombre){
+            var n=0; window._cart.forEach(function(c){if(c.restaurante===rest&&c.nombre===nombre&&c.wingsChoices)n++}); return n;
+        }
+        function wingsChoicesStr(choices){
+            return (choices||[]).map(function(c){return c.n+'× '+c.salsa}).join(' · ');
+        }
+        window.removeWingsCart=function(idx){
+            if(idx>=0&&idx<window._cart.length) window._cart.splice(idx,1);
+            saveCart(); refreshView();
+        };
+        window.openWingsModal=function(rest,nombre,wIdx,delivery){
+            var data=parseWings(window._wingsMenuData[wIdx].desc);
+            if(!data)return;
+            var sabores=data.sabores||1;
+            var salsas=data.salsas||[];
+            window._wingsPending={rest:rest,nombre:nombre,precio:data.precio||0,delivery:delivery,envase:data.envase||0,sabores:sabores,salsas:salsas,counts:salsas.map(function(){return 0})};
+            var h='<div class="almuerzo-modal">'+
+                '<div class="almuerzo-header">'+
+                    '<div class="almuerzo-header-icon">🍗</div>'+
+                    '<div class="almuerzo-header-title">'+esc(nombre)+'</div>'+
+                    '<div class="almuerzo-header-rest">'+esc(rest)+'</div>'+
+                    '<div class="almuerzo-header-price">$'+Number(data.precio||0).toFixed(2)+(data.envase>0?' <span style="font-size:0.7rem;color:var(--gris);font-weight:700">+ envase $'+Number(data.envase).toFixed(2)+'</span>':'')+'</div>'+
+                '</div>'+
+                '<div class="wings-counter">🌶️ Elige <b>'+sabores+'</b> '+(sabores===1?'salsa':'salsas')+' · puedes repetir · faltan <span id="wings-left">'+sabores+'</span></div>'+
+                '<div class="wings-list">';
+            salsas.forEach(function(s,i){
+                h+='<div class="wings-row">'+
+                    '<span class="wings-salsa-name">'+esc(s)+'</span>'+
+                    '<div class="wings-stepper">'+
+                        '<button class="btn-qty btn-qty-minus" onclick="changeWingSalsa('+i+',-1)">−</button>'+
+                        '<span class="wings-salsa-count" id="wcount-'+i+'">0</span>'+
+                        '<button class="btn-qty btn-qty-plus" onclick="changeWingSalsa('+i+',1)">+</button>'+
+                    '</div>'+
+                '</div>';
+            });
+            h+='</div>'+
+                '<button class="btn-almuerzo-add" id="btn-wings-add" onclick="confirmWings()" disabled>🍗 Agregar al pedido</button>'+
+                '<button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancelar</button>'+
+            '</div>';
+            document.getElementById('modal-content').innerHTML=h;
+            document.getElementById('modal-overlay').classList.add('visible');
+        };
+        window.changeWingSalsa=function(i,delta){
+            var p=window._wingsPending; if(!p)return;
+            var total=p.counts.reduce(function(a,b){return a+b},0);
+            if(delta>0&&total>=p.sabores) return; // no exceder el máximo
+            var nv=p.counts[i]+delta; if(nv<0)nv=0;
+            p.counts[i]=nv;
+            var cEl=document.getElementById('wcount-'+i); if(cEl)cEl.textContent=nv;
+            var newTotal=p.counts.reduce(function(a,b){return a+b},0);
+            var leftEl=document.getElementById('wings-left'); if(leftEl)leftEl.textContent=(p.sabores-newTotal);
+            var btn=document.getElementById('btn-wings-add'); if(btn)btn.disabled=(newTotal!==p.sabores);
+        };
+        window.confirmWings=function(){
+            var p=window._wingsPending; if(!p)return;
+            var total=p.counts.reduce(function(a,b){return a+b},0);
+            if(total!==p.sabores)return;
+            var choices=[];
+            p.salsas.forEach(function(s,i){ if(p.counts[i]>0) choices.push({salsa:s,n:p.counts[i]}); });
+            window._cart.push({restaurante:p.rest,nombre:p.nombre,precio:p.precio,delivery:p.delivery,qty:1,cargo_envase:p.envase,wingsChoices:choices});
+            saveCart();
+            window._wingsPending=null;
             closeModal();
             refreshView();
         };
