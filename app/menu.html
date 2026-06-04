@@ -2023,11 +2023,12 @@
                         var wIdx=window._wingsMenuData.length;
                         window._wingsMenuData.push({desc:p.descripcion});
                         var wQty=countWingsCart(r.nombre,p.nombre);
-                        h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+')">'+
+                        var wPrecio=applyTierPricing(Number(wingsData.precio||0),r,p.categoria||'Alitas');
+                        h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')">'+
                             '<div class="dest-emoji">🍗</div>'+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
-                                '<span class="dest-price">$'+Number(wingsData.precio||0).toFixed(2)+'</span>'+
+                                '<span class="dest-price">$'+wPrecio.toFixed(2)+'</span>'+
                                 (wQty?'<span class="dest-qty-mini">×'+wQty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
                             '</div>'+
                         '</div>';
@@ -2107,6 +2108,7 @@
                         window._wingsMenuData.push({desc:p.descripcion});
                         var wQty=countWingsCart(r.nombre,p.nombre);
                         var wSab=wingsData.sabores+' '+(wingsData.sabores===1?'salsa':'salsas');
+                        var wPrecio=applyTierPricing(Number(wingsData.precio||0),r,p.categoria||'Alitas');
                         h+='<div class="prod-card'+(wQty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
                                 '<div class="prod-emoji">🍗</div>'+
@@ -2116,8 +2118,8 @@
                                     '<div class="prod-desc">🌶️ Elige '+wSab+' (puedes repetir)</div>'+
                                     (wingsData.envase>0?'<div class="prod-envase">+ envase $'+Number(wingsData.envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
-                                        '<span class="prod-price">$'+Number(wingsData.precio||0).toFixed(2)+'</span>'+
-                                        '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+')">+</button>'+
+                                        '<span class="prod-price">$'+wPrecio.toFixed(2)+'</span>'+
+                                        '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')">+</button>'+
                                     '</div>'+
                                 '</div>'+
                             '</div>'+
@@ -3443,18 +3445,19 @@
             if(idx>=0&&idx<window._cart.length) window._cart.splice(idx,1);
             saveCart(); refreshView();
         };
-        window.openWingsModal=function(rest,nombre,wIdx,delivery){
+        window.openWingsModal=function(rest,nombre,wIdx,delivery,precioFinal){
             var data=parseWings(window._wingsMenuData[wIdx].desc);
             if(!data)return;
+            var precio=(precioFinal!=null)?Number(precioFinal):(data.precio||0);
             var sabores=data.sabores||1;
             var salsas=data.salsas||[];
-            window._wingsPending={rest:rest,nombre:nombre,precio:data.precio||0,delivery:delivery,envase:data.envase||0,sabores:sabores,salsas:salsas,counts:salsas.map(function(){return 0})};
+            window._wingsPending={rest:rest,nombre:nombre,precio:precio,delivery:delivery,envase:data.envase||0,sabores:sabores,salsas:salsas,counts:salsas.map(function(){return 0})};
             var h='<div class="almuerzo-modal">'+
                 '<div class="almuerzo-header">'+
                     '<div class="almuerzo-header-icon">🍗</div>'+
                     '<div class="almuerzo-header-title">'+esc(nombre)+'</div>'+
                     '<div class="almuerzo-header-rest">'+esc(rest)+'</div>'+
-                    '<div class="almuerzo-header-price">$'+Number(data.precio||0).toFixed(2)+(data.envase>0?' <span style="font-size:0.7rem;color:var(--gris);font-weight:700">+ envase $'+Number(data.envase).toFixed(2)+'</span>':'')+'</div>'+
+                    '<div class="almuerzo-header-price">$'+Number(precio).toFixed(2)+(data.envase>0?' <span style="font-size:0.7rem;color:var(--gris);font-weight:700">+ envase $'+Number(data.envase).toFixed(2)+'</span>':'')+'</div>'+
                 '</div>'+
                 '<div class="wings-counter">🌶️ Elige <b>'+sabores+'</b> '+(sabores===1?'salsa':'salsas')+' · puedes repetir · faltan <span id="wings-left">'+sabores+'</span></div>'+
                 '<div class="wings-list">';
