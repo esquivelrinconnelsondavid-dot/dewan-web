@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Menú</title>
+  <link rel="stylesheet" href="base.css" />
+</head>
+<body>
+  <!-- Configs de cada local -->
+  <script src="restaurantes/papazota.js"></script>
+  <script src="restaurantes/srmoro.js"></script>
+
+  <!-- Plantillas de diseño (cada una un layout distinto) -->
+  <script src="templates/pz-street.js"></script>
+  <script src="templates/pz-delivery.js"></script>
+  <script src="templates/pz-pizarra.js"></script>
+  <script src="templates/sm-vino.js"></script>
+  <script src="templates/sm-mosaico.js"></script>
+  <script src="templates/sm-carta.js"></script>
+  <script src="templates/sm-luxe.js"></script>
+  <script src="templates/sm-delivery.js"></script>
+  <script src="templates/sm-circular.js"></script>
+
+  <!-- Aquí pinta la plantilla (header + menú) -->
+  <main id="app"></main>
+
+  <!-- Botón flotante (compartido) -->
+  <button id="cart-fab" class="oculto">
+    <span class="fab-l">🛒 <span id="fab-cant">0</span> · ver pedido</span>
+    <span id="fab-total">$0.00</span>
+  </button>
+
+  <!-- Panel del carrito (compartido) -->
+  <div id="overlay" class="oculto"></div>
+  <aside id="cart" class="oculto">
+    <div class="cart-head"><h2>Tu pedido</h2><button id="cart-cerrar">✕</button></div>
+    <div id="cart-items"></div>
+    <div id="cart-vacio">Tu carrito está vacío 🍽️</div>
+    <div class="cart-foot">
+      <label class="campo">Tu nombre
+        <input id="cli-nombre" type="text" placeholder="Ej: Juan Pérez" /></label>
+      <label class="campo">Tipo de entrega
+        <select id="cli-entrega">
+          <option value="Delivery">Delivery</option>
+          <option value="Retiro en local">Retiro en local</option>
+        </select></label>
+      <label class="campo" id="campo-dir">Dirección
+        <input id="cli-dir" type="text" placeholder="Calle, número, referencia" /></label>
+      <label class="campo">Nota (opcional)
+        <input id="cli-nota" type="text" placeholder="Ej: sin cebolla, tocar timbre..." /></label>
+      <div class="cart-total"><span>Total</span><strong id="cart-total">$0.00</strong></div>
+      <button id="enviar" disabled>Enviar pedido por WhatsApp</button>
+    </div>
+  </aside>
+
+  <script src="engine.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Papazota Cheese · elegí tu diseño</title>
+  <style>
+    :root { --car:#3b3a38; --queso:#ecd44a; --crema:#fdf6d8; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system,"Segoe UI",Roboto,system-ui,sans-serif; background: var(--car); color: var(--crema); padding: 28px 16px 60px; }
+    .top { max-width: 980px; margin: 0 auto 22px; text-align: center; }
+    .top img { width: 84px; height: 84px; border-radius: 18px; object-fit: cover; border: 3px solid var(--queso); }
+    .top h1 { font-size: 26px; margin: 12px 0 4px; }
+    .top p { color: #cbbf99; font-size: 15px; }
+    .top .hint { margin-top: 14px; display: inline-block; background: var(--queso); color: var(--car); font-weight: 800; padding: 8px 16px; border-radius: 999px; font-size: 14px; }
+    .fila { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; max-width: 1180px; margin: 0 auto 36px; }
+    .card { width: 320px; }
+    .card .t { font-weight: 800; font-size: 16px; }
+    .card .d { color: #cbbf99; font-size: 12px; margin: 2px 0 10px; height: 30px; }
+    .tel { width: 320px; height: 640px; background: #000; border-radius: 36px; padding: 11px; box-shadow: 0 16px 36px rgba(0,0,0,.5); }
+    .tel iframe { width: 100%; height: 100%; border: none; border-radius: 27px; background: #fff; }
+    .abrir { display: block; text-align: center; margin-top: 10px; text-decoration: none; background: var(--queso); color: var(--car); padding: 11px; border-radius: 11px; font-size: 14px; font-weight: 800; }
+    .qr { max-width: 520px; margin: 10px auto 0; background: #2f2e2c; border: 1px solid #4a4844; border-radius: 18px; padding: 22px; text-align: center; }
+    .qr h2 { font-size: 18px; margin-bottom: 6px; }
+    .qr p { color: #cbbf99; font-size: 13px; margin-bottom: 14px; }
+    .qr img { background: #fff; border-radius: 12px; padding: 8px; width: 220px; height: 220px; }
+    .qr .link { margin-top: 14px; display: flex; gap: 8px; }
+    .qr .link input { flex: 1; padding: 11px; border-radius: 10px; border: 1px solid #4a4844; background: #1f1e1d; color: var(--crema); font-size: 13px; }
+    .qr .link button { background: var(--queso); color: var(--car); border: none; border-radius: 10px; padding: 0 16px; font-weight: 800; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <img src="assets/papazota.jpeg" alt="Papazota Cheese" />
+    <h1>Papazota Cheese</h1>
+    <p>Te preparamos 3 diseños de tu menú online.</p>
+    <span class="hint">👇 Mirá los 3 y decinos cuál te gusta</span>
+  </div>
+
+  <div class="fila" id="fila"></div>
+
+  <div class="qr">
+    <h2>📲 Abrilo en tu celular</h2>
+    <p>Escaneá este código con la cámara para verlo en tu teléfono.</p>
+    <img id="qr" alt="QR" />
+    <div class="link">
+      <input id="url" readonly />
+      <button onclick="copiar()">Copiar</button>
+    </div>
+  </div>
+
+  <script>
+    const modelos = [
+      { tpl: "pz-street",   t: "1 · Street Neón",        d: "Tipografía grande, estilo urbano, fondo carbón" },
+      { tpl: "pz-delivery", t: "2 · Combo Delivery",     d: "Carrusel de destacados, tipo app de pedidos" },
+      { tpl: "pz-pizarra",  t: "3 · Pizarra Food-Truck", d: "Menú escrito a mano, estilo carta" },
+    ];
+    document.getElementById("fila").innerHTML = modelos.map(m => {
+      const url = `index.html?r=papazota&tpl=${m.tpl}`;
+      return `<div class="card">
+          <div class="t">${m.t}</div><div class="d">${m.d}</div>
+          <div class="tel"><iframe src="${url}" loading="lazy"></iframe></div>
+          <a class="abrir" href="${url}" target="_blank">Abrir a pantalla completa ↗</a>
+        </div>`;
+    }).join("");
+
+    // QR y link que apuntan SOLOS a donde esté publicada esta página
+    const here = location.href.split("#")[0];
+    document.getElementById("url").value = here;
+    document.getElementById("qr").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=6&data=" + encodeURIComponent(here);
+    function copiar(){ navigator.clipboard.writeText(here).then(()=>alert("Link copiado ✅")); }
+  </script>
+</body>
+</html>

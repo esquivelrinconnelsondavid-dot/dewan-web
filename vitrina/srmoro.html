@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sr. moro · elegí tu diseño</title>
+  <style>
+    :root { --nar:#FCBD43; --vino:#6A1B37; --crema:#FDF8DA; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system,"Segoe UI",Roboto,system-ui,sans-serif; background: var(--crema); color: var(--vino); padding: 28px 16px 60px; }
+    .top { max-width: 980px; margin: 0 auto 22px; text-align: center; }
+    .top img { width: 84px; height: 84px; border-radius: 18px; object-fit: cover; border: 3px solid var(--nar); background:#fff; }
+    .top h1 { font-size: 26px; margin: 12px 0 4px; }
+    .top p { color: #9a7d52; font-size: 15px; }
+    .top .hint { margin-top: 14px; display: inline-block; background: var(--vino); color: var(--crema); font-weight: 800; padding: 8px 16px; border-radius: 999px; font-size: 14px; }
+    .fila { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; max-width: 1180px; margin: 0 auto 36px; }
+    .card { width: 320px; }
+    .card .t { font-weight: 800; font-size: 16px; }
+    .card .d { color: #9a7d52; font-size: 12px; margin: 2px 0 10px; height: 30px; }
+    .tel { width: 320px; height: 640px; background: #2a2a2a; border-radius: 36px; padding: 11px; box-shadow: 0 16px 36px rgba(0,0,0,.22); }
+    .tel iframe { width: 100%; height: 100%; border: none; border-radius: 27px; background: #fff; }
+    .abrir { display: block; text-align: center; margin-top: 10px; text-decoration: none; background: var(--vino); color: var(--crema); padding: 11px; border-radius: 11px; font-size: 14px; font-weight: 800; }
+    .qr { max-width: 520px; margin: 10px auto 0; background: #fff; border: 1px solid #ecdfc3; border-radius: 18px; padding: 22px; text-align: center; }
+    .qr h2 { font-size: 18px; margin-bottom: 6px; }
+    .qr p { color: #9a7d52; font-size: 13px; margin-bottom: 14px; }
+    .qr img { background: #fff; border-radius: 12px; padding: 8px; width: 220px; height: 220px; border: 1px solid #ecdfc3; }
+    .qr .link { margin-top: 14px; display: flex; gap: 8px; }
+    .qr .link input { flex: 1; padding: 11px; border-radius: 10px; border: 1px solid #ecdfc3; background: var(--crema); color: var(--vino); font-size: 13px; }
+    .qr .link button { background: var(--nar); color: var(--vino); border: none; border-radius: 10px; padding: 0 16px; font-weight: 800; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <img src="assets/srmoro.jpeg" alt="Sr. moro" />
+    <h1>Sr. moro</h1>
+    <p>Te preparamos 3 diseños de tu menú online.</p>
+    <span class="hint">👇 Mirá los 3 y decinos cuál te gusta</span>
+  </div>
+
+  <div class="fila" id="fila"></div>
+
+  <div class="qr">
+    <h2>📲 Abrilo en tu celular</h2>
+    <p>Escaneá este código con la cámara para verlo en tu teléfono.</p>
+    <img id="qr" alt="QR" />
+    <div class="link">
+      <input id="url" readonly />
+      <button onclick="copiar()">Copiar</button>
+    </div>
+  </div>
+
+  <script>
+    const modelos = [
+      { tpl: "sm-vino",     t: "1 · Vino Elegante",    d: "Inmersivo, una columna, plato destacado" },
+      { tpl: "sm-mosaico",  t: "2 · Mosaico Quesoso",  d: "Grilla cálida de tarjetas, muy visual" },
+      { tpl: "sm-carta",    t: "3 · Carta Quesosa",    d: "Carta refinada con divisores de queso" },
+      { tpl: "sm-luxe",     t: "4 · Premium Dorado",   d: "Lujo minimal, dorado, mucho aire" },
+      { tpl: "sm-delivery", t: "5 · Delivery Premium", d: "Estilo app de delivery, carrusel + tarjetas" },
+      { tpl: "sm-circular", t: "6 · Queso Redondo",    d: "Círculos y medallones de queso" },
+    ];
+    document.getElementById("fila").innerHTML = modelos.map(m => {
+      const url = `index.html?r=srmoro&tpl=${m.tpl}`;
+      return `<div class="card">
+          <div class="t">${m.t}</div><div class="d">${m.d}</div>
+          <div class="tel"><iframe src="${url}" loading="lazy"></iframe></div>
+          <a class="abrir" href="${url}" target="_blank">Abrir a pantalla completa ↗</a>
+        </div>`;
+    }).join("");
+
+    const here = location.href.split("#")[0];
+    document.getElementById("url").value = here;
+    document.getElementById("qr").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=6&data=" + encodeURIComponent(here);
+    function copiar(){ navigator.clipboard.writeText(here).then(()=>alert("Link copiado ✅")); }
+  </script>
+</body>
+</html>

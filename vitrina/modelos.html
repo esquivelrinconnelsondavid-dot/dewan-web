@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modelos · Papazota & Sr. moro</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif; background: #e9e7e2; color: #2a2a2a; padding: 30px 16px 70px; }
+    h1 { text-align: center; font-size: 27px; }
+    .sub { text-align: center; color: #888; margin: 6px 0 30px; font-size: 14px; }
+    .local { margin: 0 auto 48px; max-width: 1180px; }
+    .local h2 { font-size: 21px; margin: 0 6px 4px; }
+    .local .nota { font-size: 13px; color: #999; margin: 0 6px 16px; padding-bottom: 12px; border-bottom: 2px solid #d6d3cd; }
+    .fila { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+    .card { width: 320px; }
+    .card .titulo { font-weight: 800; margin-bottom: 2px; font-size: 15px; }
+    .card .desc { color: #8a8a8a; font-size: 12px; margin-bottom: 9px; height: 30px; }
+    .telefono { width: 320px; height: 640px; background: #111; border-radius: 36px; padding: 11px; box-shadow: 0 14px 34px rgba(0,0,0,.2); }
+    .telefono iframe { width: 100%; height: 100%; border: none; border-radius: 27px; background: #fff; }
+    .abrir { display: block; text-align: center; margin-top: 10px; text-decoration: none; background: #2a2a2a; color: #fff; padding: 9px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Modelos de la app</h1>
+  <p class="sub">3 diseños distintos por local. Tocá un mockup para usarlo · "Abrir" lo lleva a pantalla completa.</p>
+
+  <div class="local" id="papazota"></div>
+  <div class="local" id="srmoro"></div>
+
+  <script>
+    const data = {
+      papazota: {
+        nombre: "Papazota Cheese", nota: "Carbón + queso amarillo · vibra street",
+        modelos: [
+          { tpl: "pz-street",   titulo: "Modelo 1 · Street Neón",      desc: "Tipografía gigante, estilo sticker, fondo carbón" },
+          { tpl: "pz-delivery", titulo: "Modelo 2 · Combo Delivery",   desc: "Carrusel de destacados + tarjetas tipo app" },
+          { tpl: "pz-pizarra",  titulo: "Modelo 3 · Pizarra Food-Truck", desc: "Menú escrito a mano, nombre ···· precio" },
+        ],
+      },
+      srmoro: {
+        nombre: "Sr. moro", nota: "Fondo vino + letras beige · colores exactos del logo · Fredoka",
+        modelos: [
+          { tpl: "sm-vino",     titulo: "Modelo 1 · Vino Elegante",   desc: "Inmersivo vino, beige, Fredoka, drip de queso" },
+          { tpl: "sm-mosaico",  titulo: "Modelo 2 · Mosaico Quesoso", desc: "Grilla cálida de tarjetas, muy visual" },
+          { tpl: "sm-carta",    titulo: "Modelo 3 · Carta Quesosa",   desc: "Carta refinada con divisores de queso" },
+          { tpl: "sm-luxe",     titulo: "Modelo 4 · Premium Dorado",  desc: "Lujo minimal, dorado, mucho aire" },
+          { tpl: "sm-delivery", titulo: "Modelo 5 · Delivery Premium", desc: "Estilo app de delivery, carrusel + tarjetas" },
+          { tpl: "sm-circular", titulo: "Modelo 6 · Queso Redondo",   desc: "Círculos y medallones de queso" },
+        ],
+      },
+    };
+    Object.entries(data).forEach(([id, l]) => {
+      const cards = l.modelos.map((m) => {
+        const url = `index.html?r=${id}&tpl=${m.tpl}`;
+        return `<div class="card">
+            <div class="titulo">${m.titulo}</div>
+            <div class="desc">${m.desc}</div>
+            <div class="telefono"><iframe src="${url}" loading="lazy"></iframe></div>
+            <a class="abrir" href="${url}" target="_blank">Abrir a pantalla completa ↗</a>
+          </div>`;
+      }).join("");
+      document.getElementById(id).innerHTML =
+        `<h2>${l.nombre}</h2><p class="nota">${l.nota}</p><div class="fila">${cards}</div>`;
+    });
+  </script>
+</body>
+</html>
