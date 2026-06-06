@@ -7,6 +7,32 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>DEWAN Delivery</title>
+    <!-- Meta Pixel (DEWAN - dewansas 866717009224088) -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '866717009224088');
+    fbq('track', 'PageView');
+    window._purchasedTokens=window._purchasedTokens||{};
+    window.dewanTrackPurchase=function(r){
+      try{
+        if(!r||typeof fbq!=='function')return;
+        var tk=r.token||'';
+        if(tk&&window._purchasedTokens[tk])return;
+        if(tk)window._purchasedTokens[tk]=1;
+        fbq('track','Purchase',{value:Number(r.total)||0,currency:'USD',num_items:r.items||1});
+      }catch(e){}
+    };
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=866717009224088&ev=PageView&noscript=1"/></noscript>
+    <!-- End Meta Pixel -->
     <meta name="theme-color" content="#0E0E10">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23FFB627'/><text x='50' y='70' font-family='Arial' font-size='55' font-weight='bold' fill='%23111' text-anchor='middle'>D</text></svg>">
     <link rel="apple-touch-icon" href="data:image/png;base64,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">
@@ -373,7 +399,7 @@
         .checkout-nota{font-size:0.72rem;color:var(--gris);padding:2px 0 0 16px}
 
         /* Location section in cart — V4 */
-        .loc-section{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px 18px;margin:12px 0 16px;box-shadow:0 4px 18px rgba(0,0,0,0.22)}
+        .loc-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px 16px;margin:10px 0 14px}
         .loc-title{font-weight:900;font-size:1rem;margin-bottom:14px;display:flex;align-items:center;gap:8px;letter-spacing:-0.01em}
         .btn-gps-main{background:var(--acc);color:#111;border:none;border-radius:14px;padding:16px 20px;font-weight:900;font-size:1rem;cursor:pointer;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 6px 22px rgba(255,182,39,0.28),inset 0 1px 0 rgba(255,255,255,0.25);letter-spacing:-0.01em}
         .btn-gps-main:active{transform:scale(0.97)}
@@ -522,7 +548,7 @@
         .loc-section.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
 
         /* V4.6: Selector de método de pago — Efectivo / Transferencia */
-        .pay-section{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;margin:12px 0 16px;box-shadow:0 4px 18px rgba(0,0,0,0.22)}
+        .pay-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;margin:10px 0 14px}
         .pay-title{font-weight:900;font-size:1rem;margin-bottom:14px;display:flex;align-items:center;gap:8px;letter-spacing:-0.01em}
         .pay-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
         .pay-btn{background:var(--card2);border:1.5px solid var(--border);border-radius:14px;padding:14px 12px;font-family:inherit;font-weight:800;font-size:0.88rem;cursor:pointer;color:var(--gris-2);display:flex;flex-direction:column;align-items:center;gap:6px;transition:all 0.2s;letter-spacing:-0.01em}
@@ -538,7 +564,7 @@
         .pay-transfer-note-text strong{color:var(--acc);font-weight:900}
 
         /* CTA "agrega tu ubicacion" — V4.2 premium (deshabilitado pero invitando) */
-        .btn-wa-need-loc{background:linear-gradient(180deg,#1f1f24 0%,#17171b 100%)!important;color:var(--gris-2)!important;border:1.5px solid var(--border)!important;box-shadow:0 2px 10px rgba(0,0,0,0.25)!important;cursor:not-allowed;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column;padding:14px 18px!important;font-size:0.82rem!important;line-height:1.35;font-weight:700!important;letter-spacing:-0.01em;text-transform:none}
+        .btn-wa-need-loc{background:linear-gradient(180deg,var(--cta) 0%,#B5320A 100%)!important;color:#fff!important;border:none!important;box-shadow:0 6px 22px rgba(217,58,11,0.32)!important;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;flex-direction:column;padding:15px 18px!important;font-size:0.82rem!important;line-height:1.35;font-weight:700!important;letter-spacing:-0.01em;text-transform:none}
         .btn-wa-need-loc-primary{font-size:0.95rem;font-weight:900;color:var(--texto);display:flex;align-items:center;gap:8px;letter-spacing:-0.02em}
         .btn-wa-need-loc-primary span:first-child{font-size:1.05rem;animation:loc-icon-pulse 2.4s ease-in-out infinite}
         .btn-wa-need-loc-hint{font-size:0.7rem;color:var(--gris-2);font-weight:600;letter-spacing:0.02em}
@@ -612,21 +638,24 @@
         .cupon-banner-x{position:absolute;top:7px;right:7px;width:24px;height:24px;background:rgba(0,0,0,0.30);border:none;border-radius:50%;color:#fff;font-size:0.85rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit}
         .cupon-banner-x:active{background:rgba(0,0,0,0.50)}
         /* Líneas de cupón dentro del carrito */
-        .cart-row-cupon{display:flex;justify-content:space-between;padding:10px 12px;background:rgba(34,197,94,0.10);border-radius:10px;margin-top:8px;color:#15803d;font-weight:800}
+        .cart-row-cupon{display:flex;justify-content:space-between;padding:10px 12px;background:rgba(34,197,94,0.10);border-radius:10px;margin-top:8px;color:#22c55e;font-weight:800}
         .cart-row-cupon .lab{display:flex;align-items:center;gap:6px;font-size:0.92rem}
         .cart-row-cupon .val{font-variant-numeric:tabular-nums;font-size:1rem}
         .precio-tachado{text-decoration:line-through;color:var(--gris);opacity:0.7;font-weight:600;margin-right:4px}
-        .cart-row-ahorro{color:#15803d;font-weight:900;background:rgba(34,197,94,0.10);border-radius:8px;padding:8px 10px;margin-top:2px}
-        .cart-row-ahorro .cart-row-val{color:#15803d;font-size:1.05rem}
-        .cart-row-final{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px;margin-top:6px;background:linear-gradient(90deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08));border:2px solid #16a34a;border-radius:12px;color:#15803d;font-weight:900;font-size:1.35rem}
+        .cart-row-ahorro{color:#22c55e;font-weight:900;background:rgba(34,197,94,0.10);border-radius:8px;padding:8px 10px;margin-top:2px}
+        .cart-row-ahorro .cart-row-val{color:#22c55e;font-size:1.05rem}
+        .cart-row-final{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px;margin-top:6px;background:linear-gradient(90deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08));border:2px solid #16a34a;border-radius:12px;color:#22c55e;font-weight:900;font-size:1.35rem}
         .cart-row-final span:first-child{font-size:0.95rem;text-transform:uppercase;letter-spacing:0.04em}
-        .cart-row-final-hint{font-size:0.72rem;color:#16a34a;font-weight:700;margin-top:4px;text-align:right;padding-right:4px}
+        .cart-row-final-hint{font-size:0.72rem;color:#22c55e;font-weight:700;margin-top:4px;text-align:right;padding-right:4px}
+        .cart-total-sub{font-size:0.74rem;color:var(--gris);text-align:right;margin-top:3px;font-weight:600}
+        .btn-whatsapp{background:linear-gradient(180deg,#25D366 0%,#1da851 100%);color:#fff;font-size:1.08rem;font-weight:900;padding:18px 22px;border-radius:18px;box-shadow:0 8px 28px rgba(37,211,102,0.4);border:none;font-family:inherit;cursor:pointer;width:100%;display:block;text-align:center;text-decoration:none;letter-spacing:-0.01em}
+        .btn-whatsapp:active{transform:scale(0.98)}
         /* Banner VUELVE para clientes recurrentes (identificados por UUID) */
         .vuelve-banner{position:relative;margin:0 14px 12px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#f97316 0%,#fb923c 50%,#fbbf24 100%);padding:14px 44px 14px 16px;color:#fff;box-shadow:0 4px 14px rgba(249,115,22,0.35)}
         .vuelve-banner-title{font-size:0.95rem;font-weight:900;line-height:1.2}
         .vuelve-banner-sub{font-size:0.74rem;font-weight:700;color:#fff;margin-top:3px;opacity:0.95}
         .price-tachado{text-decoration:line-through;color:#94a3b8;font-weight:600;font-size:0.78rem;margin-right:4px}
-        .price-cupon{color:#15803d;font-weight:800}
+        .price-cupon{color:#22c55e;font-weight:800}
         @keyframes mundialPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
         .mundial-flag{display:inline-block;animation:mundialPulse 2s ease-in-out infinite;margin-right:4px}
         .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -1858,6 +1887,7 @@
             var r=null;var ridx=0;
             for(var i=0;i<rests.length;i++){if(rests[i].nombre===nombre){r=rests[i];ridx=i;break;}}
             if(!r)return;
+            try{if(typeof fbq==='function')fbq('track','ViewContent',{content_name:nombre,content_type:'product_group'});}catch(e){}
 
             // V2: Si no tenemos los platos cargados, mostrar loading y cargarlos
             if((!r.productos||r.productos.length===0)&&r.id&&!r._loadAttempted){
@@ -2629,7 +2659,7 @@
             if(document.getElementById('service-fee-modal')) return;
             var html='<div id="service-fee-modal" class="sf-modal-overlay" style="display:none">'+
                 '<div class="sf-modal-card">'+
-                    '<div class="sf-modal-header"><span>ℹ️ Tarifa de servicio</span><button class="sf-modal-close" type="button">×</button></div>'+
+                    '<div class="sf-modal-header"><span>ℹ️ Servicio DEWAN</span><button class="sf-modal-close" type="button">×</button></div>'+
                     '<div class="sf-modal-body">'+
                         '<p>Este restaurante aún no es <strong>⭐ Aliado DEWAN</strong>.</p>'+
                         '<p>Agregamos una <strong>tarifa de servicio fija de $0.10</strong> que nos permite mantener la logística, la app y el delivery funcionando para ti.</p>'+
@@ -2821,19 +2851,17 @@
             var cupEst=estimarCuponCarrito(t.subtotal);
             var totalConCupon=Math.max(0,(window._clientGPS?t.total:totalSinDelivery)-cupEst.monto);
             h+='<div class="cart-summary-box">'+
-                '<div class="cart-summary-title">Resumen</div>'+
+                '<div class="cart-summary-title">🧾 Tu pedido</div>'+
                 '<div class="cart-row"><span class="cart-row-label">Subtotal</span><span class="cart-row-val">'+(t.subtotalRegular>t.subtotal?'<span class="precio-tachado">$'+t.subtotalRegular.toFixed(2)+'</span> ':'')+'$'+t.subtotal.toFixed(2)+'</span></div>'+
                 (t.subtotalRegular>t.subtotal?'<div class="cart-row cart-row-ahorro"><span class="cart-row-label">🎉 Ahorras</span><span class="cart-row-val">-$'+(t.subtotalRegular-t.subtotal).toFixed(2)+'</span></div>':'')+
                 (t.envases>0?'<div class="cart-row"><span class="cart-row-label">Envases</span><span class="cart-row-val">$'+t.envases.toFixed(2)+'</span></div>':'')+
-                (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Tarifa de servicio <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
-                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
+                (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Servicio DEWAN <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
+                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Envío'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
-                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío')+'</span></div>'+
-                (cupEst.monto>0?
-                    '<div class="cart-row-cupon"><span class="lab">🎁 Cupón '+cupEst.codigo+'</span><span class="val">-$'+cupEst.monto.toFixed(2)+'</span></div>'+
-                    '<div class="cart-row-final"><span>Pagas</span><span>'+(window._clientGPS?'$'+totalConCupon.toFixed(2):'$'+totalConCupon.toFixed(2)+' + envío')+'</span></div>'+
-                    '<div class="cart-row-final-hint">✓ Se aplica al confirmar por WhatsApp</div>'
-                :'')+
+                (cupEst.monto>0?'<div class="cart-row-cupon"><span class="lab">🎁 Cupón '+cupEst.codigo+'</span><span class="val">−$'+cupEst.monto.toFixed(2)+'</span></div>':'')+
+                '<div class="cart-total-row"><span class="cart-total-label">Pagas</span><span class="cart-total-val">$'+totalConCupon.toFixed(2)+'</span></div>'+
+                (window._clientGPS?'':'<div class="cart-total-sub">+ envío · se confirma con tu ubicación 🛵</div>')+
+                (cupEst.monto>0?'<div class="cart-row-final-hint">✓ Cupón aplicado al confirmar</div>':'')+
             '</div>';
 
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
@@ -2886,14 +2914,14 @@
                 '</div>';
                 // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
                 h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
-                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2))+'</span></span>'+
+                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · $'+totalConCupon.toFixed(2)+'</span></span>'+
                     '<span class="btn-wa-need-loc-hint">Agrega tu ubicación arriba para activar</span>'+
                 '</button>';
             } else {
-                h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido. Sin registro · pagas al recibir 🛵</div>';
+                h+='<div class="cta-helper">Confirmas por WhatsApp · sin registro · pagas al recibir 🛵</div>';
                 h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
-                    '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
-                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+' + envío')+'</span>'+
+                    '<span style="display:flex;align-items:center;gap:8px"><span>Confirmar pedido</span></span>'+
+                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+totalConCupon.toFixed(2):'$'+totalConCupon.toFixed(2)+' + envío')+'</span>'+
                 '</button>';
             }
             h+='</div>';
@@ -2971,6 +2999,7 @@
             saveCart(); // CAMBIO 2
             try{if(navigator.vibrate)navigator.vibrate(12)}catch(e){}
             markEtapa('agrego_carrito');
+            try{if(typeof fbq==='function')fbq('track','AddToCart',{content_name:nombre,value:p,currency:'USD'});}catch(e){}
             refreshView();
             if(pt)requestAnimationFrame(function(){flyFromPoint(pt.x,pt.y,pickEmojiForFly(nombre))});
         };
@@ -3239,7 +3268,9 @@
             var waUrl='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
             // Capturar si ERA primer pedido ANTES de marcar (para el gancho de retorno)
             var eraPrimerPedido=!yaPidio();
-            var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases),conGPS:!!window._clientGPS,primerPedido:eraPrimerPedido};
+            var cupRes=estimarCuponCarrito(t.subtotal);
+            var totalBaseRes=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
+            var resumen={items:t.items,total:Math.max(0,totalBaseRes-cupRes.monto),conGPS:!!window._clientGPS,primerPedido:eraPrimerPedido,token:token};
             markEtapa('confirmo');
             var waWin=window.open(waUrl,'_blank');
             if(!waWin){
@@ -3253,16 +3284,18 @@
             // Solo si WhatsApp REALMENTE abrió: marcar enviado + invalidar cache de cupón.
             marcarYaPidio();
             window._cuponActivoCache=null;
+            window._enviando=false;
             closeModal();
             showSuccessScreen(resumen);
         };
 
         // FIX #4: pantalla de éxito con resumen + CTA para nuevo pedido
         function showSuccessScreen(resumen){
+            try{dewanTrackPurchase(resumen);}catch(e){}
             var h='<div class="success-screen">'+
                 '<div class="success-icon-wrap"><div class="success-icon">📲</div></div>'+
-                '<div class="success-title">Último paso: presiona ENVIAR</div>'+
-                '<div class="success-text">Abrimos WhatsApp con tu pedido. <strong>Presiona el botón ENVIAR dentro de WhatsApp</strong> para que tu pedido llegue. Sin registro ni tarjeta · pagas al recibir 🛵</div>'+
+                '<div class="success-title">¡Casi listo! 🎉</div>'+
+                '<div class="success-text">Te llevamos a WhatsApp con tu pedido ya escrito — solo dale <strong>ENVIAR 💬</strong> y el local empieza a cocinar. Sin registro · pagas al recibir 🛵</div>'+
                 '<div class="success-box">'+
                     '<div class="success-row"><span>Productos</span><span>'+resumen.items+'</span></div>'+
                     '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío')+'</span></div>'+
@@ -3270,8 +3303,8 @@
                 '<div class="success-return">'+(resumen.primerPedido
                     ? '💚 Cuando confirmes por WhatsApp, te espera un descuento por volver la próxima.'
                     : '💚 Gracias por preferir el precio del local · te avisamos por WhatsApp cuando tengas un descuento listo.')+'</div>'+
-                '<div class="success-hint">¿No se abrió WhatsApp?</div>'+
-                '<button class="btn btn-wa" onclick="sendWA()">📲 Reintentar envío</button>'+
+                '<a class="btn-whatsapp" onclick="sendWA();return false" style="cursor:pointer">📲 Abrir WhatsApp y enviar</a>'+
+                '<div class="success-hint" style="margin-top:10px">¿No se abrió? <span onclick="sendWA()" style="color:var(--acc);font-weight:800;cursor:pointer">Reintentar</span></div>'+
                 '<button class="btn-ghost" onclick="resetAfterOrder()">Hacer otro pedido</button>'+
             '</div>';
             app.innerHTML=h;
