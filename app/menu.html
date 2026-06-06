@@ -2566,8 +2566,9 @@
             // Badges según tipo de acuerdo
             var isAliado=r.tipo_acuerdo==='aliado';
             var aliadoBadge=isAliado?'<span class="aliado-badge">⭐ Aliado</span>':'';
-            // El badge de servicio sólo si no es aliado Y el local está abierto (para no chocar con CERRADO)
-            var feeBadge=(!isAliado&&isOpen!==false)?'<span class="service-fee-badge" data-service-fee="1">ⓘ +servicio</span>':'';
+            // El badge de servicio SOLO en silenciosos (los únicos que pagan la tarifa) y si el local está abierto.
+            // Aliados y cliente_paga ya llevan el markup en el precio -> ni se cobra ni se muestra el badge.
+            var feeBadge=(r.tipo_acuerdo==='silencioso'&&isOpen!==false)?'<span class="service-fee-badge" data-service-fee="1">ⓘ +servicio</span>':'';
             var topBadge=r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'';
             // Aliados resaltan con borde verde (vitrina "Precio del local"); el resto, color por índice.
             var borderCol=isAliado?'rgba(34,197,94,0.40)':color+'25';
