@@ -2874,11 +2874,7 @@
             } else {
                 h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
                 h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
-                h+='<div class="loc-or">o escribe tu dirección</div>';
-                h+='<div class="loc-addr-wrap" id="loc-addr-wrap">';
-                h+='<div class="loc-addr-label">Dirección exacta</div>';
-                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. Daniel León Borja y Carabobo" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
-                h+='</div>';
+                h+='<div style="font-size:0.78rem;color:var(--gris-2);margin-top:10px;line-height:1.45;text-align:center;font-weight:600">Necesitamos tu ubicación para calcular el envío exacto y que el motorizado te encuentre 🛵</div>';
             }
             h+='</div>';
 
@@ -2901,21 +2897,21 @@
             '</div>';
 
             // V2.3: Detectar si falta ubicación (sin GPS y sin dirección escrita)
-            var hasAddr=window._clientAddr&&window._clientAddr.trim().length>=6;
-            var needsLoc=!window._clientGPS&&!hasAddr;
+            // GPS obligatorio (2026-06-06): la dirección escrita causaba envíos mal calculados (sin coordenadas).
+            var needsLoc=!window._clientGPS;
 
             if(needsLoc){
                 h+='<div class="loc-missing-banner">'+
                     '<div class="loc-missing-icon">⚠️</div>'+
                     '<div class="loc-missing-content">'+
                         '<div class="loc-missing-title">Falta tu ubicación</div>'+
-                        '<div class="loc-missing-text">Toca arriba 📍 <strong>Usar mi ubicación GPS</strong> o escribe tu dirección en el campo para poder enviar tu pedido.</div>'+
+                        '<div class="loc-missing-text">Toca 📍 <strong>Usar mi ubicación GPS</strong> arriba para calcular tu envío y poder confirmar el pedido.</div>'+
                     '</div>'+
                 '</div>';
                 // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
                 h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
                     '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · $'+totalConCupon.toFixed(2)+'</span></span>'+
-                    '<span class="btn-wa-need-loc-hint">Agrega tu ubicación arriba para activar</span>'+
+                    '<span class="btn-wa-need-loc-hint">Activa tu ubicación GPS arriba para confirmar</span>'+
                 '</button>';
             } else {
                 h+='<div class="cta-helper">Confirmas por WhatsApp · sin registro · pagas al recibir 🛵</div>';
@@ -3184,7 +3180,7 @@
             // V2.3: Enforce GPS o dirección manual antes de enviar
             var addrInputCheck=document.getElementById('loc-addr');
             var addrVal=addrInputCheck?addrInputCheck.value.trim():(window._clientAddr||'').trim();
-            if(!window._clientGPS&&(!addrVal||addrVal.length<6)){
+            if(!window._clientGPS){
                 // Scroll + pulso visual hacia la sección de ubicación
                 var locSection=document.getElementById('loc-section');
                 if(locSection){
