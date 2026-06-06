@@ -747,6 +747,10 @@
         window._cart=[];
         window._clientGPS=null;
         window._clientAddr=''; // CAMBIO 3: dirección de texto
+        // Persistir ubicación: la dirección siempre; el GPS solo si es fresco (<2h) para no mandar a una ubicación vieja.
+        function guardarUbic(){try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:Date.now()}))}catch(e){}}
+        function restaurarUbic(){try{var d=JSON.parse(localStorage.getItem('dewan_ubic')||'null');if(!d)return;if(d.addr)window._clientAddr=d.addr;if(d.gps&&d.ts&&(Date.now()-d.ts)<2*60*60*1000)window._clientGPS=d.gps;}catch(e){}}
+        restaurarUbic();
         // V4.6: método de pago — 'efectivo' (default) | 'transferencia'. Persiste en localStorage.
         try{window._payMethod=localStorage.getItem('dewan_pay_method')||'efectivo'}catch(e){window._payMethod='efectivo'}
         window.setPayMethod=function(m){
@@ -776,7 +780,7 @@
             if(btn){btn.disabled=true;btn.textContent='🔎 Buscando...';}
             if(!navigator.geolocation){if(st){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Ver restaurantes cerca de ti';}return}
             navigator.geolocation.getCurrentPosition(function(pos){
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};guardarUbic();
                 markEtapa('eligio_gps');
                 if(st){st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';}
                 // Si viene del banner, actualizar la vista
@@ -801,7 +805,7 @@
             if(!navigator.geolocation){banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">Tu navegador no soporta GPS</span>';return}
             banner.innerHTML='<span style="font-size:0.78rem;color:var(--acc)">🔎 Buscando tu ubicación...</span>';
             navigator.geolocation.getCurrentPosition(function(pos){
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};guardarUbic();
                 currentSort='distancia';
                 renderHome();
             },function(){
@@ -2838,14 +2842,14 @@
             if(window._clientGPS){
                 h+='<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>';
                 h+='<div class="loc-ref-label">Agregar referencia (opcional)</div>';
-                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
+                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
             } else {
                 h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
                 h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
                 h+='<div class="loc-or">o escribe tu dirección</div>';
                 h+='<div class="loc-addr-wrap" id="loc-addr-wrap">';
                 h+='<div class="loc-addr-label">Dirección exacta</div>';
-                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. Daniel León Borja y Carabobo" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value">';
+                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. Daniel León Borja y Carabobo" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
                 h+='</div>';
             }
             h+='</div>';
@@ -2886,7 +2890,7 @@
                     '<span class="btn-wa-need-loc-hint">Agrega tu ubicación arriba para activar</span>'+
                 '</button>';
             } else {
-                h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
+                h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido. Sin registro · pagas al recibir 🛵</div>';
                 h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
                     '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
                     '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+' + envío')+'</span>'+
@@ -3117,7 +3121,7 @@
             if(st){st.className='gps-status checkout-gps-searching';st.textContent='🔍 Buscando tu ubicación...';}
             if(btn){btn.disabled=true;btn.textContent='🔍 Buscando...';}
             navigator.geolocation.getCurrentPosition(function(pos){
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};guardarUbic();
                 // Recalcular delivery en el carrito con nueva ubicación
                 var rests=getFilteredRestaurantes();
                 var deliveryByRest={};
@@ -3168,6 +3172,10 @@
                 }
                 return;
             }
+            // Anti doble-tap: evita dos window.open / pedido duplicado.
+            if(window._enviando) return;
+            window._enviando=true;
+            setTimeout(function(){window._enviando=false},4000);
             var byRest={};window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
             var t=cartTotals();
             var msg='Hola! Quiero pedir:\n\n';
@@ -3223,19 +3231,28 @@
             } else {
                 msg+='💳 *Pago: Efectivo* 💵\n\n';
             }
+            // Cierre humano (el bot sigue parseando Token:/Cliente: como últimas líneas).
+            msg+='_Solo presiona ENVIAR 👆 y confirmamos tu pedido en minutos._\n\n';
             msg+='Token: '+token+'\n';
             // UUID anónimo del dispositivo - el bot lo vincula al teléfono real al recibir pedido
             msg+='Cliente: '+obtenerUuidCliente();
-            window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
-            // Capturar si ERA primer pedido ANTES de marcar (para el gancho de retorno en la pantalla de éxito)
+            var waUrl='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
+            // Capturar si ERA primer pedido ANTES de marcar (para el gancho de retorno)
             var eraPrimerPedido=!yaPidio();
-            // Marcar que ya intentó enviar 1er pedido — visitas siguientes consultan cupón en BD por uuid
-            marcarYaPidio();
-            // Invalidar cache de cupones para que próxima visita consulte BD fresca
-            window._cuponActivoCache=null;
-            // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
             var resumen={items:t.items,total:window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases),conGPS:!!window._clientGPS,primerPedido:eraPrimerPedido};
             markEtapa('confirmo');
+            var waWin=window.open(waUrl,'_blank');
+            if(!waWin){
+                // FIX: popup bloqueado o webview sin soporte. NO marcar enviado ni quemar el cupón;
+                // mostrar un link directo que el cliente toca (un <a> esquiva el bloqueo de popups).
+                window._enviando=false;
+                closeModal();
+                mostrarAbrirWA(waUrl,resumen);
+                return;
+            }
+            // Solo si WhatsApp REALMENTE abrió: marcar enviado + invalidar cache de cupón.
+            marcarYaPidio();
+            window._cuponActivoCache=null;
             closeModal();
             showSuccessScreen(resumen);
         };
@@ -3260,6 +3277,24 @@
             app.innerHTML=h;
             document.getElementById('cart-float').style.display='none';
         }
+        // Fallback cuando el navegador bloquea window.open: link directo (un <a> esquiva el bloqueo de popups).
+        function mostrarAbrirWA(url,resumen){
+            window._resumenPendiente=resumen;
+            var h='<div class="success-screen">'+
+                '<div class="success-icon-wrap"><div class="success-icon">📲</div></div>'+
+                '<div class="success-title">Abre WhatsApp para enviar</div>'+
+                '<div class="success-text">Tu navegador no abrió WhatsApp solo. Toca el botón para enviar tu pedido. Sin registro · pagas al recibir 🛵</div>'+
+                '<a class="btn btn-wa" href="'+url+'" target="_blank" rel="noopener" onclick="confirmarEnvioManual()" style="display:block;text-align:center;text-decoration:none">📲 Abrir WhatsApp y enviar</a>'+
+                '<button class="btn-ghost" onclick="resetAfterOrder()">Cancelar</button>'+
+            '</div>';
+            app.innerHTML=h;
+            var cf=document.getElementById('cart-float'); if(cf) cf.style.display='none';
+        }
+        window.confirmarEnvioManual=function(){
+            var r=window._resumenPendiente; window._resumenPendiente=null;
+            marcarYaPidio(); window._cuponActivoCache=null;
+            if(r) showSuccessScreen(r);
+        };
         window.resetAfterOrder=function(){
             window._cart=[];
             window._clientAddr='';
