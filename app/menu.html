@@ -2823,10 +2823,10 @@
                 (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Tarifa de servicio <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Delivery'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
-                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío desde $2')+'</span></div>'+
+                '<div class="cart-total-row"><span class="cart-total-label">Total a pagar</span><span class="cart-total-val">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+totalSinDelivery.toFixed(2)+' + envío')+'</span></div>'+
                 (cupEst.monto>0?
                     '<div class="cart-row-cupon"><span class="lab">🎁 Cupón '+cupEst.codigo+'</span><span class="val">-$'+cupEst.monto.toFixed(2)+'</span></div>'+
-                    '<div class="cart-row-final"><span>Pagas</span><span>'+(window._clientGPS?'$'+totalConCupon.toFixed(2):'$'+totalConCupon.toFixed(2)+' + envío desde $2')+'</span></div>'+
+                    '<div class="cart-row-final"><span>Pagas</span><span>'+(window._clientGPS?'$'+totalConCupon.toFixed(2):'$'+totalConCupon.toFixed(2)+' + envío')+'</span></div>'+
                     '<div class="cart-row-final-hint">✓ Se aplica al confirmar por WhatsApp</div>'
                 :'')+
             '</div>';
@@ -2888,7 +2888,7 @@
                 h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
                 h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
                     '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
-                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+' + envío desde $2')+'</span>'+
+                    '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+t.total.toFixed(2):'$'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+' + envío')+'</span>'+
                 '</button>';
             }
             h+='</div>';
@@ -3098,7 +3098,7 @@
                     subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'')+envioNudge+cup;
                 }
                 var toVal=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
-                var suffix=window._clientGPS?'':' + envío desde $2';
+                var suffix=window._clientGPS?'':' + envío';
                 animateMoney(totalEl,window._cartFloatPrevTotal,toVal,wasVisible?420:0,suffix);
                 window._cartFloatPrevTotal=toVal;
                 document.body.classList.add('has-cart');
@@ -3247,7 +3247,7 @@
                 '<div class="success-text">Abrimos WhatsApp con tu pedido. <strong>Presiona el botón ENVIAR dentro de WhatsApp</strong> para que tu pedido llegue. Sin registro ni tarjeta · pagas al recibir 🛵</div>'+
                 '<div class="success-box">'+
                     '<div class="success-row"><span>Productos</span><span>'+resumen.items+'</span></div>'+
-                    '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío desde $2')+'</span></div>'+
+                    '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío')+'</span></div>'+
                 '</div>'+
                 '<div class="success-return">'+(resumen.primerPedido
                     ? '💚 Cuando confirmes por WhatsApp, te espera un descuento por volver la próxima.'
