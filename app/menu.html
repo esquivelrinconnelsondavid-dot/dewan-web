@@ -3259,8 +3259,7 @@
             }
             // Cierre humano (el bot sigue parseando Token:/Cliente: como últimas líneas).
             msg+='_Solo presiona ENVIAR 👆 y confirmamos tu pedido en minutos._\n\n';
-            msg+='Token: '+token+'\n';
-            if(t.subtotalBase>0) msg+='Base local: $'+t.subtotalBase.toFixed(2)+'\n'; // tecnico: lo lee el bot, el cliente no lo nota
+            msg+='Token: '+token+(t.subtotalBase>0?'#'+Math.round(t.subtotalBase*100):'')+'\n'; // el #NNNN es la base local en centavos: lo lee el bot, el cliente NO lo nota (sin $ ni la palabra base)
             // UUID anónimo del dispositivo - el bot lo vincula al teléfono real al recibir pedido
             msg+='Cliente: '+obtenerUuidCliente();
             var waUrl='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
