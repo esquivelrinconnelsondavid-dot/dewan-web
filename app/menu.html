@@ -1009,6 +1009,7 @@
                 var rawBusq=sessionData.busqueda_texto?removeAccents(sessionData.busqueda_texto.toLowerCase().trim()):'';
                 if(rawBusq){
                     for(var ck in CAT_MAP_V2){
+                        if(ck==='partido') continue; // Mundial NO debe secuestrar deep-links de platos: hamburguesa/pizza/alitas → su categoría/búsqueda real, no "Antojos partido"
                         var coreKws=CAT_MAP_V2[ck].core||CAT_MAP_V2[ck].kw;
                         for(var i=0;i<coreKws.length;i++){
                             // Match exacto de palabra (no substring) — evita que "alitas" matchee con "polleria"
