@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEWAN Restaurante</title>
+<style>
+  html,body{height:100%;margin:0;background:#0f0f0f;color:#fff;
+    font-family:system-ui,'Segoe UI',Roboto,sans-serif;}
+  .wrap{height:100%;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;padding:24px;}
+  .logo{font-weight:900;font-size:36px;color:#FFB627;letter-spacing:1px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:#FFB627;
+    display:inline-block;margin-right:8px;animation:p 1s infinite;}
+  @keyframes p{0%,100%{opacity:.3}50%{opacity:1}}
+  h1{font-size:20px;margin:18px 0 6px;font-weight:700;}
+  p{color:#9aa0a6;max-width:440px;font-size:14px;line-height:1.6;}
+  .hint{margin-top:24px;font-size:12px;color:#6b7178;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">DEWAN</div>
+    <h1><span class="dot"></span> Conectando…</h1>
+    <p>Reconectando con el servidor. Se arregla solo en cuanto vuelva el internet
+       — no hace falta cerrar la app.</p>
+    <div class="hint">Reintentando automáticamente…</div>
+  </div>
+  <script>
+    var URL_PANEL = 'https://dewansas.com/restaurante/web/';
+    function probar(){
+      fetch(URL_PANEL, { mode:'no-cors', cache:'no-store' })
+        .then(function(){ location.replace(URL_PANEL); })  // hay red → al panel
+        .catch(function(){ /* sigue sin red, reintenta */ });
+    }
+    setTimeout(probar, 800);
+    setInterval(probar, 4000);
+    // Latir aunque estemos en modo offline: el renderer está VIVO (solo sin red),
+    // así el watchdog del proceso principal NO relanza en bucle mientras no hay internet.
+    try {
+      if (window.electronAPI && window.electronAPI.latido) {
+        window.electronAPI.latido();
+        setInterval(function(){ try { window.electronAPI.latido(); } catch(e){} }, 5000);
+      }
+    } catch(e){}
+  </script>
+</body>
+</html>
