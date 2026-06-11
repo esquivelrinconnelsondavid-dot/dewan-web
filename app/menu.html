@@ -769,6 +769,11 @@
         var WA='593986777146';
         var app=document.getElementById('app');
         var token=new URLSearchParams(window.location.search).get('t');
+        // MODO CENTRALISTA (2026-06-11): ?op=1 — la operadora arma el pedido por el cliente.
+        var OP_MODE=new URLSearchParams(window.location.search).get('op')==='1';
+        window._opTel='';      // WhatsApp del cliente (solo OP_MODE, NO persiste)
+        window._opGpsRaw='';   // texto crudo del pin pegado (solo OP_MODE)
+        window._opGpsApplied=null; // 'lat,lng' ya aplicado (evita re-render redundante)
         var currentSort='precio'; // CAMBIO 1: default "precio" en vez de "distancia"
         var sessionData=null;
         var currentView='home'; // home | rest | cart
@@ -777,9 +782,11 @@
         window._clientGPS=null;
         window._clientAddr=''; // CAMBIO 3: dirección de texto
         // Persistir ubicación: la dirección siempre; el GPS solo si es fresco (<2h) para no mandar a una ubicación vieja.
-        function guardarUbic(){try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:Date.now()}))}catch(e){}}
+        function guardarUbic(){if(OP_MODE)return;try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:Date.now()}))}catch(e){}}
         function restaurarUbic(){try{var d=JSON.parse(localStorage.getItem('dewan_ubic')||'null');if(!d)return;if(d.addr)window._clientAddr=d.addr;if(d.gps&&d.ts&&(Date.now()-d.ts)<2*60*60*1000)window._clientGPS=d.gps;}catch(e){}}
         restaurarUbic();
+        // OP_MODE: jamás arrancar con un GPS restaurado (sería la ubicación de OTRO cliente o de la central)
+        if(OP_MODE) window._clientGPS=null;
         // V4.6: método de pago — 'efectivo' (default) | 'transferencia'. Persiste en localStorage.
         try{window._payMethod=localStorage.getItem('dewan_pay_method')||'efectivo'}catch(e){window._payMethod='efectivo'}
         window.setPayMethod=function(m){
@@ -1514,6 +1521,7 @@
         // - Cliente recurrente con cupón VUELVE en BD: el cupón real
         // - Cliente recurrente sin cupón activo: nada
         function estimarCuponCarrito(subtotal){
+            if(OP_MODE) return {codigo:null,monto:0}; // centralista: los cupones los aplica el sistema según el cliente real
             if(!yaPidio()){
                 if(subtotal<4) return {codigo:null,monto:0};
                 return {codigo:'BIENVENIDA',monto:0.50,vence_en:null};
@@ -2799,6 +2807,7 @@
 
             var h='<div class="cart-header"><button class="btn-back" onclick="'+(currentRestIdx!==null?"openRest('"+jsEsc(currentRestIdx)+"')":'renderHome()')+'">←</button><span class="cart-header-title">Mi pedido</span><span class="cart-header-count">'+t.items+' '+(t.items===1?'item':'items')+'</span></div>';
             h+='<div style="padding:16px;padding-bottom:40px">';
+            if(OP_MODE) h+='<div style="background:#1d1d1f;color:#FFB627;font-weight:700;padding:9px 14px;border-radius:10px;margin-bottom:14px;font-size:0.88rem">🎧 Modo centralista</div>';
 
             Object.keys(byRest).forEach(function(rest){
                 h+='<div class="cart-rest-label">'+esc(rest)+'</div>';
@@ -2862,6 +2871,7 @@
                 (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Envío'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
                 (cupEst.monto>0?'<div class="cart-row-cupon"><span class="lab">🎁 Cupón '+cupEst.codigo+'</span><span class="val">−$'+cupEst.monto.toFixed(2)+'</span></div>':'')+
+                (OP_MODE?'<div style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:6px;text-align:right;padding-right:4px">🎁 Cupones: los aplica el sistema según el cliente</div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Pagas</span><span class="cart-total-val">$'+totalConCupon.toFixed(2)+'</span></div>'+
                 (window._clientGPS?'':'<div class="cart-total-sub">+ envío · se confirma con tu ubicación 🛵</div>')+
                 (cupEst.monto>0?'<div class="cart-row-final-hint">✓ Cupón aplicado al confirmar</div>':'')+
@@ -2878,6 +2888,15 @@
                 h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
                 h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
                 h+='<div style="font-size:0.78rem;color:var(--gris-2);margin-top:10px;line-height:1.45;text-align:center;font-weight:600">Necesitamos tu ubicación para calcular el envío exacto y que el motorizado te encuentre 🛵</div>';
+            }
+            if(OP_MODE){
+                var opGpsOk=!!(window._clientGPS&&window._opGpsApplied);
+                h+='<div class="loc-ref-label" style="margin-top:14px">📞 WhatsApp del cliente</div>';
+                h+='<input type="tel" class="loc-addr-input" id="op-tel" placeholder="09XXXXXXXX" value="'+esc(window._opTel||'')+'" oninput="window._opTel=this.value;this.style.borderColor=\'\';var oh=document.getElementById(\'op-tel-hint\');if(oh)oh.textContent=\'\'">';
+                h+='<div id="op-tel-hint" style="font-size:0.78rem;color:#ff5a5a;margin-top:5px;font-weight:700"></div>';
+                h+='<div class="loc-ref-label" style="margin-top:12px">📍 Pin del cliente</div>';
+                h+='<input type="text" class="loc-addr-input" id="op-gps" placeholder="Pega link de Maps o lat,lng" value="'+esc(window._opGpsRaw||'')+'" oninput="opParseGPS(this.value,false)" onblur="opParseGPS(this.value,true)">';
+                h+='<div id="op-gps-hint" style="font-size:0.78rem;margin-top:5px;font-weight:700;color:'+(opGpsOk?'#22c55e':'#ff5a5a')+'">'+(opGpsOk?'✓ ubicación del cliente cargada':'')+'</div>';
             }
             h+='</div>';
 
@@ -3172,6 +3191,54 @@
                 if(wrap) wrap.classList.add('visible');
             },{enableHighAccuracy:true,timeout:15000});
         };
+        // OP_MODE: parsear el pin que pega la centralista (link de Maps o "lat,lng").
+        // fromBlur=true → re-render inmediato; oninput → re-render diferido para no cortar el tipeo.
+        window._opGpsTimer=null;
+        window.opParseGPS=function(v,fromBlur){
+            if(!OP_MODE) return;
+            window._opGpsRaw=v;
+            var hint=document.getElementById('op-gps-hint');
+            var v2=String(v||'').trim();
+            if(!v2){if(hint)hint.textContent='';return;}
+            if(/maps\.app\.goo\.gl|goo\.gl\//i.test(v2)){
+                if(hint){hint.style.color='#FFB627';hint.textContent='Link corto: pega las coordenadas o el link largo';}
+                return;
+            }
+            var coords=null;
+            // 1º: coords ancladas a @ o = (links largos de Maps: /@lat,lng o ?q=lat,lng); 2º: par suelto "lat,lng"
+            var m=v2.match(/[@=](-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/)||v2.match(/(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/);
+            if(m){
+                var la=parseFloat(m[1]),lo=parseFloat(m[2]);
+                if(isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180) coords={lat:m[1],lng:m[2]};
+            }
+            if(!coords){
+                if(hint){hint.style.color='#ff5a5a';hint.textContent='No la reconozco: pega "lat,lng" o el link largo de Maps';}
+                return;
+            }
+            if(hint){hint.style.color='#22c55e';hint.textContent='✓ ubicación del cliente cargada';}
+            var key=coords.lat+','+coords.lng;
+            if(window._opGpsApplied===key) return; // ya aplicado, no re-renderizar de nuevo
+            window._opGpsApplied=key;
+            window._clientGPS={lat:coords.lat,lng:coords.lng}; // strings: el mensaje WA los concatena tal cual y haversine los coerce
+            // Recalcular delivery del carrito con la nueva ubicación (mismo patrón que requestGPSCart)
+            var rests=getFilteredRestaurantes();
+            var deliveryByRest={};
+            rests.forEach(function(r){deliveryByRest[r.nombre]=r.precio_delivery||0});
+            window._cart.forEach(function(c){
+                if(deliveryByRest[c.restaurante]!=null) c.delivery=deliveryByRest[c.restaurante];
+            });
+            saveCart();
+            var addrInput=document.getElementById('loc-addr');
+            if(addrInput) window._clientAddr=addrInput.value;
+            var telInput=document.getElementById('op-tel');
+            if(telInput) window._opTel=telInput.value;
+            // Re-render para actualizar totales y desbloquear el gate de GPS
+            if(window._opGpsTimer) clearTimeout(window._opGpsTimer);
+            window._opGpsTimer=setTimeout(function(){
+                window._opGpsTimer=null;
+                if(currentView==='cart') showCart();
+            },fromBlur?0:700);
+        };
         window.toggleAddrField=function(){
             var wrap=document.getElementById('loc-addr-wrap');
             if(wrap) wrap.classList.toggle('visible');
@@ -3200,6 +3267,23 @@
                     openGPSStrict();
                 }
                 return;
+            }
+            // OP_MODE: exigir el WhatsApp del cliente antes de enviar
+            if(OP_MODE){
+                var opTelEl=document.getElementById('op-tel');
+                if(opTelEl) window._opTel=opTelEl.value;
+                var opTelDig=String(window._opTel||'').replace(/\D/g,'');
+                if(opTelDig.length<9){
+                    var opTelHint=document.getElementById('op-tel-hint');
+                    if(opTelHint) opTelHint.textContent='Falta el WhatsApp del cliente';
+                    if(opTelEl){
+                        opTelEl.style.borderColor='#ff5a5a';
+                        opTelEl.scrollIntoView({behavior:'smooth',block:'center'});
+                        pulseHint(opTelEl);
+                        setTimeout(function(){try{opTelEl.focus()}catch(e){}},250);
+                    }
+                    return;
+                }
             }
             // Anti doble-tap: evita dos window.open / pedido duplicado.
             if(window._enviando) return;
@@ -3270,6 +3354,12 @@
             msg+='Token: '+token+(t.subtotalBase>0?'#'+Math.round(t.subtotalBase*100):'')+'\n'; // el #NNNN es la base local en centavos: lo lee el bot, el cliente NO lo nota (sin $ ni la palabra base)
             // UUID anónimo del dispositivo - el bot lo vincula al teléfono real al recibir pedido
             msg+='Cliente: '+obtenerUuidCliente();
+            // OP_MODE: teléfono real del cliente (normalizado: solo dígitos, 09… → 593…)
+            if(OP_MODE){
+                var opTelMsg=String(window._opTel||'').replace(/\D/g,'');
+                if(opTelMsg.charAt(0)==='0') opTelMsg='593'+opTelMsg.slice(1);
+                msg+='\nTel: '+opTelMsg;
+            }
             var waUrl='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
             // Capturar si ERA primer pedido ANTES de marcar (para el gancho de retorno)
             var eraPrimerPedido=!yaPidio();
@@ -3287,7 +3377,7 @@
                 return;
             }
             // Solo si WhatsApp REALMENTE abrió: marcar enviado + invalidar cache de cupón.
-            marcarYaPidio();
+            if(!OP_MODE) marcarYaPidio(); // OP_MODE: no quemar el localStorage de la operadora
             window._cuponActivoCache=null;
             window._enviando=false;
             closeModal();
@@ -3330,12 +3420,18 @@
         }
         window.confirmarEnvioManual=function(){
             var r=window._resumenPendiente; window._resumenPendiente=null;
-            marcarYaPidio(); window._cuponActivoCache=null;
+            if(!OP_MODE) marcarYaPidio(); window._cuponActivoCache=null;
             if(r) showSuccessScreen(r);
         };
         window.resetAfterOrder=function(){
             window._cart=[];
             window._clientAddr='';
+            if(OP_MODE){ // siguiente pedido = OTRO cliente: limpiar tel y pin
+                window._opTel='';
+                window._opGpsRaw='';
+                window._opGpsApplied=null;
+                window._clientGPS=null;
+            }
             clearCartStorage();
             renderHome();
         };
