@@ -2896,7 +2896,11 @@
                 h+='<div id="op-tel-hint" style="font-size:0.78rem;color:#ff5a5a;margin-top:5px;font-weight:700"></div>';
                 h+='<div class="loc-ref-label" style="margin-top:12px">📍 Pin del cliente</div>';
                 h+='<input type="text" class="loc-addr-input" id="op-gps" placeholder="Pega link de Maps o lat,lng" value="'+esc(window._opGpsRaw||'')+'" oninput="opParseGPS(this.value,false)" onblur="opParseGPS(this.value,true)">';
-                h+='<div id="op-gps-hint" style="font-size:0.78rem;margin-top:5px;font-weight:700;color:'+(opGpsOk?'#22c55e':'#ff5a5a')+'">'+(opGpsOk?'✓ ubicación del cliente cargada':'')+'</div>';
+                h+='<div id="op-gps-hint" style="font-size:0.78rem;margin-top:5px;font-weight:700;color:'+(opGpsOk?'#22c55e':'#ff5a5a')+'">'+(opGpsOk?(window._opGpsApplied==='map'?'✓ ubicación marcada en el mapa':'✓ ubicación del cliente cargada'):'')+'</div>';
+                // Mini-mapa clickeable (Leaflet+OSM): la centralista marca el pin a mano (se sabe Riobamba de memoria).
+                // OJO: innerHTML lo destruye en cada render → opInitMap lo recrea (con marker desde _clientGPS).
+                h+='<div id="op-map" style="height:230px;border-radius:12px;margin-top:10px;overflow:hidden"></div>';
+                h+='<div style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 o toca el punto en el mapa</div>';
             }
             h+='</div>';
 
@@ -2944,6 +2948,7 @@
             }
             h+='</div>';
             app.innerHTML=h;
+            if(OP_MODE) setTimeout(opInitMap,60); // el innerHTML destruyó el mapa anterior: recrearlo (restaura marker desde _clientGPS)
             document.getElementById('cart-float').style.display='none';
         };
 
@@ -3239,6 +3244,83 @@
                 if(currentView==='cart') showCart();
             },fromBlur?0:700);
         };
+        // ── OP_MODE: mini-mapa clickeable (Leaflet + OSM, sin API key) ──
+        // Carga perezosa: Leaflet SOLO se inyecta en modo centralista — cero impacto en el flujo normal.
+        var _opLeafletReq=false;
+        function opLoadLeaflet(cb){
+            if(window.L){cb();return;}
+            window._opLeafletCbs=window._opLeafletCbs||[];
+            window._opLeafletCbs.push(cb);
+            if(_opLeafletReq) return; // ya se está inyectando: solo encolar el cb
+            _opLeafletReq=true;
+            var css=document.createElement('link');
+            css.rel='stylesheet';
+            css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(css);
+            var js=document.createElement('script');
+            js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            js.onload=function(){
+                var cbs=window._opLeafletCbs||[];window._opLeafletCbs=[];
+                cbs.forEach(function(f){try{f()}catch(e){}});
+            };
+            document.head.appendChild(js);
+        }
+        // Se llama tras cada render del carrito (showCart → setTimeout): el innerHTML destruye el mapa,
+        // así que SIEMPRE se crea uno nuevo y se restaura el marker desde _clientGPS (venga del mapa o del pin pegado).
+        function opInitMap(){
+            if(!OP_MODE) return;
+            if(!document.getElementById('op-map')) return; // no estamos en el carrito (o carrito vacío)
+            opLoadLeaflet(function(){
+                var el=document.getElementById('op-map');
+                if(!el) return; // el carrito se re-renderizó/cerró mientras cargaba Leaflet
+                if(window._opMap){try{window._opMap.remove()}catch(e){} window._opMap=null;}
+                window._opMapMarker=null;
+                var map=L.map(el,{dragging:true,scrollWheelZoom:true}).setView([-1.6635,-78.6547],14);
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+                if(window._clientGPS){
+                    var la=parseFloat(window._clientGPS.lat),lo=parseFloat(window._clientGPS.lng);
+                    if(isFinite(la)&&isFinite(lo)){
+                        window._opMapMarker=L.marker([la,lo]).addTo(map);
+                        map.setView([la,lo],16);
+                    }
+                }
+                map.on('click',function(ev){opMapPick(ev.latlng.lat,ev.latlng.lng)});
+                window._opMap=map;
+                setTimeout(function(){try{map.invalidateSize()}catch(e){}},120); // por si el contenedor se midió tarde
+            });
+        }
+        // Click/tap en el mapa: mismo flujo post-ubicación que opParseGPS (envíos + saveCart) + re-render diferido.
+        // El re-render destruye el mapa, pero opInitMap lo recrea con el marker puesto y centrado (sin loops: render no dispara clicks).
+        function opMapPick(lat,lng){
+            var la=lat.toFixed(6),lo=lng.toFixed(6);
+            if(window._opMap){ // feedback inmediato al toque (el re-render lo restaura igual desde _clientGPS)
+                if(window._opMapMarker) window._opMapMarker.setLatLng([lat,lng]);
+                else window._opMapMarker=L.marker([lat,lng]).addTo(window._opMap);
+            }
+            window._clientGPS={lat:la,lng:lo}; // strings: el mensaje WA los concatena tal cual y haversine los coerce
+            window._opGpsApplied='map';
+            window._opGpsRaw=''; // el pin pegado (si había) ya no manda: al re-render el input queda limpio
+            // Recalcular delivery del carrito con la nueva ubicación (mismo patrón que opParseGPS/requestGPSCart)
+            var rests=getFilteredRestaurantes();
+            var deliveryByRest={};
+            rests.forEach(function(r){deliveryByRest[r.nombre]=r.precio_delivery||0});
+            window._cart.forEach(function(c){
+                if(deliveryByRest[c.restaurante]!=null) c.delivery=deliveryByRest[c.restaurante];
+            });
+            saveCart();
+            var addrInput=document.getElementById('loc-addr');
+            if(addrInput) window._clientAddr=addrInput.value;
+            var telInput=document.getElementById('op-tel');
+            if(telInput) window._opTel=telInput.value;
+            var hint=document.getElementById('op-gps-hint');
+            if(hint){hint.style.color='#22c55e';hint.textContent='✓ ubicación marcada en el mapa';}
+            // Re-render diferido (debounce compartido con opParseGPS: nunca encadena renders)
+            if(window._opGpsTimer) clearTimeout(window._opGpsTimer);
+            window._opGpsTimer=setTimeout(function(){
+                window._opGpsTimer=null;
+                if(currentView==='cart') showCart();
+            },150);
+        }
         window.toggleAddrField=function(){
             var wrap=document.getElementById('loc-addr-wrap');
             if(wrap) wrap.classList.toggle('visible');
