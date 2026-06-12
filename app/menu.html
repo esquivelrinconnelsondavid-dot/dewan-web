@@ -959,9 +959,13 @@
             return found;
         }
         // ¿El restaurante tiene "menú del día" hoy? (registro en almuerzos_hoy).
-        // Estos van de primero en el home y NO pagan tarifa de servicio.
         function tieneMenuDelDia(r){
             return !!(r && r.id && window._almuerzosHoy && window._almuerzosHoy[r.id]);
+        }
+        // Exento de tarifa de servicio: tiene menú del día Y es horario de almuerzo (12-15h).
+        // Fuera de ese horario es un restaurante normal y paga servicio como cualquier silencioso.
+        function exentoServicioAlmuerzo(r){
+            return tieneMenuDelDia(r) && isAlmuerzoHour();
         }
 
         // V2: Cargar TODOS los restaurantes activos + (si hay token) la session para tracking/prefill
@@ -1372,9 +1376,10 @@
             return {g:'Buenas noches',s:'¿Qué cenamos?'};
         }
 
-        // Almuerzos del día disponibles a cualquier hora
+        // Almuerzos del día: solo de 12:00 a 15:00 (hora local del cliente, Ecuador UTC-5)
         function isAlmuerzoHour(){
-            return true;
+            var h=new Date().getHours();
+            return h>=12&&h<15;
         }
 
         // Mundial 2026: del 11 jun al 19 jul. Pre-hype desde 20 mayo, margen
@@ -1637,6 +1642,8 @@
         window.renderHome=function(){
             currentView='home';
             window._restFilter=null; // V2.1: limpiar filtro de menú al volver al home
+            // Almuerzos solo 12-15h: si el filtro quedó activo fuera de horario, volver al home normal
+            if(window._activeCat==='almuerzo'&&!isAlmuerzoHour()) window._activeCat=null;
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
             var busqTexto=(sessionData.busqueda_texto||'').toLowerCase();
             if(busqTexto&&busqTexto!=='comida'){
@@ -1701,6 +1708,7 @@
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
             CAT_KEYS_V2.forEach(function(k){
                 if(k==='partido'&&!isMundial()) return;
+                if(k==='almuerzo'&&!isAlmuerzoHour()) return; // chip Almuerzo solo 12-15h
                 var c=CAT_MAP_V2[k];
                 var active=window._activeCat===k;
                 h+='<button class="cat-chip'+(active?' active':'')+'" onclick="toggleCategoryV2(\''+k+'\')">'+
@@ -1778,6 +1786,32 @@
                     var socios=aliados.concat(clientePaga); // aliados primero, luego cliente_paga
                     var gIdx=0;
                     function catCmd(name){return 'openRestCatFiltered(\''+jsEsc(name)+'\',\''+window._activeCat+'\')'}
+                    // 🍱 Categoría Almuerzo: los que tienen menú del día hoy van DE PRIMERO,
+                    // en su propia sección y sin tarifa de servicio. Se sacan del split de abajo.
+                    if(window._activeCat==='almuerzo'){
+                        var conMenu=rests.filter(function(r){return tieneMenuDelDia(r)});
+                        if(conMenu.length){
+                            conMenu.sort(function(a,b){
+                                var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
+                                var va=sa===true?0:sa===null?1:2,vb=sb===true?0:sb===null?1:2;
+                                if(va!==vb) return va-vb;
+                                var ta={aliado:0,cliente_paga:1,silencioso:2}[a.tipo_acuerdo]||2;
+                                var tb={aliado:0,cliente_paga:1,silencioso:2}[b.tipo_acuerdo]||2;
+                                if(ta!==tb) return ta-tb;
+                                return (a.distancia_km||999)-(b.distancia_km||999);
+                            });
+                            h+='<div class="list-section-title">🍱 Menú del día · '+conMenu.length+'</div>';
+                            h+='<div class="almuerzo-day-banner">🍱 Almuerzo del día listo · sin tarifa de servicio</div>';
+                            h+='<div class="grid3-wrap">';
+                            conMenu.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
+                            h+='</div>';
+                            // quitar del split de abajo para no duplicar
+                            aliados=aliados.filter(function(r){return !tieneMenuDelDia(r)});
+                            clientePaga=clientePaga.filter(function(r){return !tieneMenuDelDia(r)});
+                            silenc=silenc.filter(function(r){return !tieneMenuDelDia(r)});
+                            socios=aliados.concat(clientePaga);
+                        }
+                    }
                     if(socios.length){
                         h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
                         if(aliados.length) h+='<div class="aliados-banner">⭐ Precio del local · sin recargos'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
@@ -1796,31 +1830,8 @@
                         }
                     }
                 } else {
-                    // 🍱 Almuerzos del día PRIMERO: restaurantes con menú del día hoy.
-                    // Se sacan del flujo normal (no se duplican abajo). Se omite si hay búsqueda activa.
-                    var busqActivaHome=busqTexto&&busqTexto!=='comida';
-                    var almRests=busqActivaHome?[]:rests.filter(function(r){return tieneMenuDelDia(r)});
-                    var restoRests=busqActivaHome?rests:rests.filter(function(r){return !tieneMenuDelDia(r)});
-                    if(almRests.length){
-                        almRests.sort(function(a,b){
-                            var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
-                            var va=sa===true?0:sa===null?1:2,vb=sb===true?0:sb===null?1:2;
-                            if(va!==vb) return va-vb;
-                            var ta={aliado:0,cliente_paga:1,silencioso:2}[a.tipo_acuerdo]||2;
-                            var tb={aliado:0,cliente_paga:1,silencioso:2}[b.tipo_acuerdo]||2;
-                            if(ta!==tb) return ta-tb;
-                            return (a.distancia_km||999)-(b.distancia_km||999);
-                        });
-                        h+='<div class="list-section-title">🍱 Almuerzos del día · '+almRests.length+'</div>';
-                        h+='<div class="almuerzo-day-banner">🍱 Menú del día listo · sin tarifa de servicio</div>';
-                        h+='<div class="grid3-wrap">';
-                        almRests.forEach(function(r,idx){
-                            h+=renderRestCardGrid(r,idx,'openRest(\''+jsEsc(r.nombre)+'\')');
-                        });
-                        h+='</div>';
-                    }
                     // Home sin filtro: socios primero, silenciosos detrás de botón
-                    var homeBy=partitionBySocio(restoRests);
+                    var homeBy=partitionBySocio(rests);
                     // Sección destacada: carousel horizontal con aliados (solo si hay aliados)
                     var aliadosDestacados=dailyShuffle(homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'}));
                     if(aliadosDestacados.length){
@@ -2642,8 +2653,8 @@
             var aliadoBadge=isAliado?'<span class="aliado-badge">⭐ Aliado</span>':'';
             // El badge de servicio SOLO en silenciosos (los únicos que pagan la tarifa) y si el local está abierto.
             // Aliados y cliente_paga ya llevan el markup en el precio -> ni se cobra ni se muestra el badge.
-            // Restaurantes con menú del día: exonerados de la tarifa -> tampoco se muestra el badge.
-            var feeBadge=(r.tipo_acuerdo==='silencioso'&&isOpen!==false&&!tieneMenuDelDia(r))?'<span class="service-fee-badge" data-service-fee="1">ⓘ +servicio</span>':'';
+            // Menú del día EN horario de almuerzo (12-15h): exonerados -> tampoco se muestra el badge.
+            var feeBadge=(r.tipo_acuerdo==='silencioso'&&isOpen!==false&&!exentoServicioAlmuerzo(r))?'<span class="service-fee-badge" data-service-fee="1">ⓘ +servicio</span>':'';
             var topBadge=r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'';
             // Aliados resaltan con borde verde (vitrina "Precio del local"); el resto, color por índice.
             var borderCol=isAliado?'rgba(34,197,94,0.40)':color+'25';
@@ -3131,8 +3142,8 @@
             // Aliados y cliente_paga ya tienen markup en el precio, no se les cobra extra.
             var serviceFee=0;
             Object.keys(subsByRest).forEach(function(rest){
-                // Silenciosos pagan tarifa, EXCEPTO los que tienen menú del día (exonerados).
-                if(isSilenciosoRest(rest)&&!tieneMenuDelDia(getRestByName(rest))){
+                // Silenciosos pagan tarifa, EXCEPTO los que tienen menú del día en horario de almuerzo.
+                if(isSilenciosoRest(rest)&&!exentoServicioAlmuerzo(getRestByName(rest))){
                     serviceFee+=calcServiceFee(subsByRest[rest]);
                 }
             });
