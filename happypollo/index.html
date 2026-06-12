@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es-EC">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Happy Pollo — Elige el diseño de tu app de menú</title>
+<meta name="description" content="12 modelos premium de la app de menú de Happy Pollo. Toca cualquiera para verlo completo." />
+<meta name="theme-color" content="#E41B17" />
+<meta property="og:title" content="Happy Pollo — 12 diseños de tu app de menú" />
+<meta property="og:description" content="Toca para abrir y elegir tu favorito." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --amarillo:#F2CB08; --naranja:#F39F07; --rojo:#E41B17;
+    --vino:#AD1826; --vino-prof:#6E0F18; --negro:#020202;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Rubik',system-ui,sans-serif; color:#fff;
+    background:
+      radial-gradient(circle, rgba(255,255,255,.04) 1.5px, transparent 1.7px),
+      linear-gradient(160deg, var(--rojo) 0%, var(--vino) 55%, var(--vino-prof) 100%);
+    background-size:22px 22px, 100% 100%;
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 18px 70px;}
+  header{text-align:center;margin-bottom:30px;}
+  .eyebrow{
+    display:inline-block;background:var(--amarillo);color:var(--negro);
+    font-weight:800;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+    padding:7px 16px;border-radius:999px;margin-bottom:16px;
+  }
+  h1{
+    font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+    font-size:clamp(1.8rem,6vw,3.2rem);line-height:.98;margin:0 0 12px;letter-spacing:-.01em;
+  }
+  h1 b{color:var(--amarillo);font-weight:400;}
+  .sub{color:rgba(255,255,255,.85);font-size:1rem;max-width:540px;margin:0 auto;line-height:1.5;}
+  .palette{display:flex;gap:8px;justify-content:center;margin:18px 0 2px;flex-wrap:wrap;}
+  .sw{width:28px;height:28px;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.25);}
+  .grid{
+    display:grid;gap:20px;margin-top:30px;
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  }
+  .card{
+    background:#fff;border-radius:20px;overflow:hidden;text-decoration:none;color:var(--negro);
+    box-shadow:0 12px 34px rgba(74,10,16,.42);
+    display:flex;flex-direction:column;
+    transition:transform .18s ease, box-shadow .18s ease;
+    border:3px solid transparent;
+  }
+  .card:hover{transform:translateY(-6px);box-shadow:0 20px 46px rgba(0,0,0,.5);border-color:var(--amarillo);}
+  .card:active{transform:translateY(-2px);}
+  .thumb{
+    position:relative;background:var(--vino-prof);
+    aspect-ratio:390/620;overflow:hidden;border-bottom:4px solid var(--amarillo);
+  }
+  .thumb img{width:100%;height:100%;display:block;object-fit:cover;object-position:top center;}
+  .num{
+    position:absolute;top:12px;left:12px;z-index:2;
+    background:var(--negro);color:var(--amarillo);
+    font-family:'Anton',sans-serif;font-size:1.05rem;
+    width:40px;height:40px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 12px rgba(0,0,0,.4);
+  }
+  .meta{padding:14px 16px 17px;}
+  .meta h2{
+    font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+    font-size:1.12rem;margin:0 0 8px;letter-spacing:-.005em;color:var(--vino);
+  }
+  .cta{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:.88rem;color:var(--rojo);}
+  .cta svg{width:16px;height:16px;}
+  footer{text-align:center;margin-top:44px;color:rgba(255,255,255,.72);font-size:.85rem;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Happy Pollo · Riobamba</span>
+    <h1>Elige el diseño de<br><b>tu app de menú</b></h1>
+    <p class="sub">Toca cualquier modelo para verlo completo, con su menú, fotos y botón de pedido. Cuando elijas tu favorito, lo dejamos funcionando con tu WhatsApp.</p>
+    <div class="palette" title="Colores oficiales de Happy Pollo">
+      <span class="sw" style="background:#F2CB08"></span>
+      <span class="sw" style="background:#F39F07"></span>
+      <span class="sw" style="background:#E41B17"></span>
+      <span class="sw" style="background:#AD1826"></span>
+      <span class="sw" style="background:#020202"></span>
+    </div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Todos los diseños usan los colores y el logo oficial de Happy Pollo.<br>
+    Hecho por DEWAN para Happy Pollo.
+  </footer>
+</div>
+
+<script>
+  var MODELOS = [
+    ["01","Brasa Negra","01-brasa-negra"],
+    ["02","Vino de Noche","02-vino-de-noche"],
+    ["03","Carbon y Oro","03-carbon-y-oro"],
+    ["04","Brasa Glass","04-brasa-glass"],
+    ["05","Rojo Apetito","05-rojo-apetito"],
+    ["06","Amarillo Total","06-amarillo-total"],
+    ["07","Sol de Mediodia","07-sol-de-mediodia"],
+    ["08","Kraft Sello","08-kraft-sello"],
+    ["09","Crema Horneada","09-crema-horneada"],
+    ["10","Gallo Pop","10-gallo-pop"],
+    ["11","Neon de Barrio","11-neon-de-barrio"],
+    ["12","Fuego Retro","12-fuego-retro"]
+  ];
+  var arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  var grid = document.getElementById("grid");
+  MODELOS.forEach(function(m){
+    var num=m[0], name=m[1], slug=m[2];
+    var a = document.createElement("a");
+    a.className="card"; a.href=slug+".html";
+    a.innerHTML =
+      '<div class="thumb"><div class="num">'+num+'</div>'+
+      '<img loading="lazy" src="thumbs/'+slug+'.png" alt="Vista previa de '+name+'" /></div>'+
+      '<div class="meta"><h2>'+name+'</h2>'+
+      '<span class="cta">Abrir '+arrow+'</span></div>';
+    grid.appendChild(a);
+  });
+</script>
+</body>
+</html>
