@@ -1215,30 +1215,30 @@
                             logo:(rest.logo_url||rest.imagen_url||rest.foto_url||null)
                         });
                     });
-                    // dedupe (mismo plato o misma foto) + máx 3 por restaurante, mezclado por día
-                    var seen={},seenFoto={},porRest={},pick=[];
-                    dailyShuffle(out).forEach(function(p){
+                    // Cada local aporta sus platos con foto MÁS ECONÓMICOS (máx 3), sin repetir plato/foto.
+                    // El orden de locales se MEZCLA en CADA carga (rota siempre, ya no fijo por día) y el 1er
+                    // plato de cada local es el más barato → la comida económica abre el carril.
+                    function _rand(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+                    var seen={},seenFoto={},groups={},order=[];
+                    out.forEach(function(p){
                         var k=p.rest+'|'+p.nombre;
-                        if(seen[k]||seenFoto[p.foto_url]) return;       // no repetir platos
-                        if((porRest[p.rest]||0)>=3) return;            // máx 3 por restaurante (carril mezclado = variedad de locales)
-                        seen[k]=1;seenFoto[p.foto_url]=1;porRest[p.rest]=(porRest[p.rest]||0)+1;
-                        pick.push(p);
+                        if(seen[k]||seenFoto[p.foto_url]) return;       // no repetir plato ni foto
+                        seen[k]=1;seenFoto[p.foto_url]=1;
+                        if(!groups[p.rest]){groups[p.rest]=[];order.push(p.rest);}
+                        groups[p.rest].push(p);
                     });
+                    Object.keys(groups).forEach(function(r){
+                        groups[r].sort(function(a,b){return (Number(a.precio_base)||0)-(Number(b.precio_base)||0);}); // más barato primero
+                        groups[r]=groups[r].slice(0,3);                                                               // máx 3 por local
+                    });
+                    var localOrder=_rand(order);            // qué local abre el carril cambia en cada carga
+                    var g={};localOrder.forEach(function(r){g[r]=groups[r].slice();});
+                    var pick=[],added=true;
+                    while(added){ added=false; localOrder.forEach(function(r){ if(g[r].length){pick.push(g[r].shift());added=true;} }); }
                     // ABIERTOS primero, CERRADOS al final (grisados, para variedad de noche).
-                    // Round-robin por local: el carril alterna locales (1 de cada uno por vuelta) en vez de
-                    // agrupar por precio, que dejaba siempre al mismo local de primero. Las primeras tarjetas
-                    // son locales DISTINTOS y qué local abre el carril rota cada día.
-                    function _interleave(arr){
-                        var groups={},order=[];
-                        arr.forEach(function(p){ if(!groups[p.rest]){groups[p.rest]=[];order.push(p.rest);} groups[p.rest].push(p); });
-                        order=dailyShuffle(order);
-                        var res=[],added=true;
-                        while(added){ added=false; order.forEach(function(r){ if(groups[r].length){res.push(groups[r].shift());added=true;} }); }
-                        return res;
-                    }
-                    var _ab=_interleave(pick.filter(function(p){return p.abierto!==false}));
+                    var _ab=pick.filter(function(p){return p.abierto!==false});
                     var _ce=pick.filter(function(p){return p.abierto===false});
-                    // No inundar de cerrados: si hay >=6 abiertos, solo abiertos; si hay algunos, +máx 2 cerrados; si NO hay abiertos, mostrar cerrados (a color) con subtítulo positivo.
+                    // No inundar de cerrados: si hay >=6 abiertos, solo abiertos; si hay algunos, +máx 2 cerrados; si NO hay abiertos, mostrar cerrados (a color).
                     if(_ab.length>=6) window._destHome=_ab.slice(0,16);
                     else if(_ab.length>=1) window._destHome=_ab.concat(_ce.slice(0,2));
                     else window._destHome=_ce.slice(0,8);
