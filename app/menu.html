@@ -44,7 +44,7 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{
-            --bg:#0E0E10;--card:#1A1A1E;--card2:#222226;--border:#2A2A30;
+            --bg:#0B0B0D;--card:#1C1C22;--card2:#26262E;--border:#33333C;
             --acc:#FFB627;--acc-soft:rgba(255,182,39,0.12);
             --cta:#D93A0B;--cta-hover:#F2542D;--cta-soft:rgba(217,58,11,0.14);
             --texto:#F0EFE9;--gris:#8A8A94;--gris-2:#9A9AA6;
@@ -248,7 +248,10 @@
         .destacados-sub{font-size:0.7rem;color:var(--gris);font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
         .destacados-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 14px 4px;scroll-snap-type:x mandatory}
         .destacados-scroll::-webkit-scrollbar{display:none}
-        .dest-card{flex-shrink:0;width:160px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 12px 12px;scroll-snap-align:start;position:relative;transition:border-color 0.2s,transform 0.15s;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.25)}
+        .dest-card{flex-shrink:0;width:160px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 12px 12px;scroll-snap-align:start;position:relative;transition:border-color 0.2s,transform 0.15s;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.04)}
+        .dest-photo{position:relative}
+        .dest-logo-chip{position:absolute;top:8px;left:8px;width:34px;height:34px;border-radius:50%;background:#fff;overflow:hidden;box-shadow:0 2px 7px rgba(0,0,0,0.5);z-index:2;border:1.5px solid rgba(255,255,255,0.85)}
+        .dest-logo-chip img{width:100%;height:100%;object-fit:cover}
         .dest-card:active{transform:scale(0.98)}
         .dest-card.in-cart{border-color:rgba(255,182,39,0.4);background:rgba(255,182,39,0.025)}
         .dest-emoji{width:140px;height:140px;border-radius:16px;background:linear-gradient(135deg,rgba(255,182,39,0.16),rgba(217,58,11,0.07)),var(--card2);display:flex;align-items:center;justify-content:center;font-size:3.2rem;margin-bottom:12px;border:1px solid var(--border);overflow:hidden}
@@ -261,8 +264,8 @@
         .dest-qty-mini{background:var(--acc);color:#111;border-radius:100px;padding:4px 10px;font-weight:900;font-size:0.74rem;display:inline-flex;align-items:center;gap:4px}
         .dest-rest-tag{font-size:0.68rem;color:var(--gris);font-weight:700;margin:7px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         /* Tarjeta de local CERRADO en el carril: foto en gris + cinta de apertura (variedad de noche, honesta) */
-        .dest-card-cerrada .dest-emoji{filter:grayscale(100%);opacity:0.5}
-        .dest-cerrada-cinta{position:absolute;top:22px;left:22px;background:rgba(0,0,0,0.72);color:#FFCE5C;font-size:0.64rem;font-weight:800;padding:4px 9px;border-radius:8px;z-index:2;letter-spacing:0.01em}
+        .dest-card-cerrada .dest-emoji{filter:grayscale(45%) brightness(0.82);opacity:0.92}
+        .dest-cerrada-cinta{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.78);color:#FFD98A;font-size:0.68rem;font-weight:800;padding:4px 9px;border-radius:8px;z-index:2;letter-spacing:0.01em}
         /* Cinta fina de confianza (reemplaza el banner grande de precio del local, sin el peso) */
         .trust-strip{text-align:center;font-size:0.72rem;color:var(--gris);font-weight:700;padding:2px 14px 10px;letter-spacing:0.01em}
         /* Encabezado de mini-carril por restaurante (opción agrupada) */
@@ -1149,7 +1152,8 @@
                             especial:especial,
                             porUnidad:!!(win&&win.porUnidad),
                             abierto:_abierto,
-                            apertura:(_abierto===false?proximaApertura(rest.horario):null)
+                            apertura:(_abierto===false?proximaApertura(rest.horario):null),
+                            logo:(rest.logo_url||rest.imagen_url||rest.foto_url||null)
                         });
                     });
                     // dedupe (mismo plato o misma foto) + máx 3 por restaurante, mezclado por día
@@ -1157,7 +1161,7 @@
                     dailyShuffle(out).forEach(function(p){
                         var k=p.rest+'|'+p.nombre;
                         if(seen[k]||seenFoto[p.foto_url]) return;       // no repetir platos
-                        if((porRest[p.rest]||0)>=6) return;            // máx 6 por restaurante (cada local tiene su propia sección)
+                        if((porRest[p.rest]||0)>=3) return;            // máx 3 por restaurante (carril mezclado = variedad de locales)
                         seen[k]=1;seenFoto[p.foto_url]=1;porRest[p.rest]=(porRest[p.rest]||0)+1;
                         pick.push(p);
                     });
@@ -1166,7 +1170,10 @@
                     function _buckets(arr){var a=[],b=[],c=[];arr.forEach(function(p){var v=Number(p.precio_base)||0;if(v<8)a.push(p);else if(v<12)b.push(p);else c.push(p);});return a.concat(b,c);}
                     var _ab=_buckets(pick.filter(function(p){return p.abierto!==false}));
                     var _ce=pick.filter(function(p){return p.abierto===false});
-                    window._destHome=_ab.concat(_ce).slice(0,24);
+                    // No inundar de cerrados: si hay >=6 abiertos, solo abiertos; si hay algunos, +máx 2 cerrados; si NO hay abiertos, mostrar cerrados (a color) con subtítulo positivo.
+                    if(_ab.length>=6) window._destHome=_ab.slice(0,16);
+                    else if(_ab.length>=1) window._destHome=_ab.concat(_ce.slice(0,2));
+                    else window._destHome=_ce.slice(0,8);
                     window._destHomeLoading=false;
                     try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}catch(e){}
                 })
@@ -1181,21 +1188,11 @@
                 return sk+'</div>';
             }
             if(!window._destHome.length) return '';
-            // AGRUPADO POR RESTAURANTE: un mini-carril por local (abiertos primero). Se ve más ordenado que todo mezclado.
-            var groups=[],gmap={};
-            window._destHome.forEach(function(p,idx){
-                if(!gmap[p.rest]){gmap[p.rest]={rest:p.rest,abierto:p.abierto,apertura:p.apertura,items:[]};groups.push(gmap[p.rest]);}
-                gmap[p.rest].items.push({p:p,idx:idx});
-            });
-            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div>';
-            groups.forEach(function(g){
-                var estado=g.abierto===false?'<span class="rail-rest-estado">'+(g.apertura?'Abre '+esc(g.apertura):'Cerrado')+'</span>':'';
-                h+='<div class="rail-rest-head"><span class="rail-rest-name">'+esc(g.rest)+'</span>'+estado+'</div>';
-                h+='<div class="destacados-scroll">';
-                g.items.forEach(function(o){h+=_railCard(o.p,o.idx);});
-                h+='</div>';
-            });
-            return h;
+            // Carril MEZCLADO (un solo scroll): variedad en un swipe. Cada tarjeta = foto del plato + logo del local.
+            if(window._destHome.every(function(p){return p.abierto===false})) _sub='🌙 Abren temprano · agenda tu antojo';
+            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
+            window._destHome.forEach(function(p,idx){h+=_railCard(p,idx);});
+            return h+'</div>';
         }
         function _railCard(p,idx){
             var ci=findCart(p.rest,p.nombre);
@@ -1205,9 +1202,13 @@
                 ?'openRest(\''+jsEsc(p.rest)+'\')'
                 :'addCart(\''+jsEsc(p.rest)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+p.delivery+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+','+(p.precio_regular||0)+','+(p.precio_base||0)+')';
             return '<div class="dest-card'+(qty?' in-cart':'')+(cerrado?' dest-card-cerrada':'')+'" onclick="event.stopPropagation();'+click+'">'+
-                (cerrado?'<div class="dest-cerrada-cinta">'+(p.apertura?'Abre '+esc(p.apertura):'Cerrado ahora')+'</div>':'')+
-                '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
+                '<div class="dest-photo">'+
+                    '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
+                    (p.logo?'<span class="dest-logo-chip"><img src="'+esc(p.logo)+'" alt="'+esc(p.rest)+'" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></span>':'')+
+                    (cerrado?'<div class="dest-cerrada-cinta">'+(p.apertura?'Abre '+esc(p.apertura):'Cerrado ahora')+'</div>':'')+
+                '</div>'+
                 '<div class="dest-name">'+esc(p.nombre)+'</div>'+
+                '<div class="dest-rest-tag">'+esc(p.rest)+'</div>'+
                 '<div class="dest-footer">'+
                     (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
                     '<span class="dest-price">'+(p.porUnidad?'$'+Number(p.precio).toFixed(2)+'/u':'$'+Number(p.precio).toFixed(2))+'</span>'+
