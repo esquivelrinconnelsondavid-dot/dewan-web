@@ -459,12 +459,12 @@
         /* ═══════════════════════════════════════════════
            V2: HOME PREMIUM (saludo + search hero + chips)
            ═══════════════════════════════════════════════ */
-        .home-v2-brand{display:flex;align-items:center;margin-bottom:12px}
-        .app-logo{display:block;height:26px;aspect-ratio:380 / 213;background:var(--logo) left center/contain no-repeat}
-        .home-v2-top{padding:18px 16px 12px;background:linear-gradient(180deg,rgba(255,182,39,0.05) 0%,transparent 90%)}
-        .home-v2-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+        .home-v2-brand{display:flex;align-items:center;margin-bottom:7px}
+        .app-logo{display:block;height:22px;aspect-ratio:380 / 213;background:var(--logo) left center/contain no-repeat}
+        .home-v2-top{padding:12px 16px 8px;background:linear-gradient(180deg,rgba(255,182,39,0.05) 0%,transparent 90%)}
+        .home-v2-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
         .home-v2-loc{font-size:0.72rem;color:var(--gris);font-weight:700;display:flex;align-items:center;gap:4px;margin-bottom:3px;letter-spacing:0.01em}
-        .home-v2-greeting{font-size:1.35rem;font-weight:900;letter-spacing:-0.03em;line-height:1.2;color:var(--texto)}
+        .home-v2-greeting{font-size:1.12rem;font-weight:900;letter-spacing:-0.03em;line-height:1.2;color:var(--texto)}
         .home-v2-greeting-sub{font-size:0.78rem;color:var(--gris-2);font-weight:600;margin-top:3px;letter-spacing:-0.01em}
 
         /* Search hero (tap-through) */
@@ -1832,7 +1832,6 @@
                     '<div style="flex:1;min-width:0">'+
                         '<div class="home-v2-loc">📍 Riobamba, Ecuador</div>'+
                         '<div class="home-v2-greeting">'+gr.g+'</div>'+
-                        '<div class="home-v2-greeting-sub">'+gr.s+'</div>'+
                     '</div>'+
                     '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">🛒 '+(window._cart.length?cartTotals().items+' items':'Vacio')+'</button>'+
                 '</div>'+
@@ -3080,9 +3079,9 @@
                 h+='<div class="loc-ref-label">Agregar referencia (opcional)</div>';
                 h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
             } else {
-                h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
+                h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Toca aquí para poner tu ubicación</button>';
                 h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
-                h+='<div style="font-size:0.78rem;color:var(--gris-2);margin-top:10px;line-height:1.45;text-align:center;font-weight:600">Necesitamos tu ubicación para calcular el envío exacto y que el motorizado te encuentre 🛵</div>';
+                h+='<div style="font-size:0.78rem;color:var(--gris-2);margin-top:10px;line-height:1.45;text-align:center;font-weight:600">👆 Toca el botón y acepta el permiso. Así calculamos tu envío exacto y el motorizado te encuentra 🛵</div>';
             }
             if(OP_MODE){
                 var opGpsOk=!!(window._clientGPS&&window._opGpsApplied);
@@ -3126,13 +3125,13 @@
                     '<div class="loc-missing-icon">⚠️</div>'+
                     '<div class="loc-missing-content">'+
                         '<div class="loc-missing-title">Falta tu ubicación</div>'+
-                        '<div class="loc-missing-text">Toca 📍 <strong>Usar mi ubicación GPS</strong> arriba para calcular tu envío y poder confirmar el pedido.</div>'+
+                        '<div class="loc-missing-text">Toca el botón 📍 <strong>"Toca aquí para poner tu ubicación"</strong> de arriba 👆 para calcular tu envío y poder confirmar el pedido.</div>'+
                     '</div>'+
                 '</div>';
                 // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
                 h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
                     '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · $'+totalConCupon.toFixed(2)+'</span></span>'+
-                    '<span class="btn-wa-need-loc-hint">Activa tu ubicación GPS arriba para confirmar</span>'+
+                    '<span class="btn-wa-need-loc-hint">👆 Toca arriba para poner tu ubicación y confirmar</span>'+
                 '</button>';
             } else {
                 h+='<div class="cta-helper">Confirmas por WhatsApp · sin registro · pagas al recibir 🛵</div>';
@@ -3386,7 +3385,7 @@
                 showCart();
             },function(){
                 if(st){st.className='gps-status';st.textContent='No se pudo obtener GPS';}
-                if(btn){btn.disabled=false;btn.textContent='📍 Usar mi ubicación GPS';}
+                if(btn){btn.disabled=false;btn.textContent='📍 Toca aquí para poner tu ubicación';}
                 // Mostrar campo de texto automáticamente si falla GPS
                 var wrap=document.getElementById('loc-addr-wrap');
                 if(wrap) wrap.classList.add('visible');
