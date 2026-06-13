@@ -265,6 +265,10 @@
         .dest-cerrada-cinta{position:absolute;top:22px;left:22px;background:rgba(0,0,0,0.72);color:#FFCE5C;font-size:0.64rem;font-weight:800;padding:4px 9px;border-radius:8px;z-index:2;letter-spacing:0.01em}
         /* Cinta fina de confianza (reemplaza el banner grande de precio del local, sin el peso) */
         .trust-strip{text-align:center;font-size:0.72rem;color:var(--gris);font-weight:700;padding:2px 14px 10px;letter-spacing:0.01em}
+        /* Encabezado de mini-carril por restaurante (opción agrupada) */
+        .rail-rest-head{display:flex;align-items:baseline;gap:8px;padding:12px 14px 7px}
+        .rail-rest-name{font-size:0.86rem;font-weight:800;color:var(--texto);letter-spacing:-0.01em}
+        .rail-rest-estado{font-size:0.7rem;font-weight:700;color:var(--gris)}
         /* Lightbox de foto (tap para ampliar) */
         .foto-zoom{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.84);display:flex;align-items:center;justify-content:center;padding:18px}
         .foto-zoom-box{position:relative;width:100%;max-width:430px;background:var(--card);border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,0.65)}
@@ -1153,7 +1157,7 @@
                     dailyShuffle(out).forEach(function(p){
                         var k=p.rest+'|'+p.nombre;
                         if(seen[k]||seenFoto[p.foto_url]) return;       // no repetir platos
-                        if((porRest[p.rest]||0)>=3) return;            // máx 3 por restaurante
+                        if((porRest[p.rest]||0)>=6) return;            // máx 6 por restaurante (cada local tiene su propia sección)
                         seen[k]=1;seenFoto[p.foto_url]=1;porRest[p.rest]=(porRest[p.rest]||0)+1;
                         pick.push(p);
                     });
@@ -1162,7 +1166,7 @@
                     function _buckets(arr){var a=[],b=[],c=[];arr.forEach(function(p){var v=Number(p.precio_base)||0;if(v<8)a.push(p);else if(v<12)b.push(p);else c.push(p);});return a.concat(b,c);}
                     var _ab=_buckets(pick.filter(function(p){return p.abierto!==false}));
                     var _ce=pick.filter(function(p){return p.abierto===false});
-                    window._destHome=_ab.concat(_ce).slice(0,16);
+                    window._destHome=_ab.concat(_ce).slice(0,24);
                     window._destHomeLoading=false;
                     try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}catch(e){}
                 })
@@ -1177,27 +1181,39 @@
                 return sk+'</div>';
             }
             if(!window._destHome.length) return '';
-            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
+            // AGRUPADO POR RESTAURANTE: un mini-carril por local (abiertos primero). Se ve más ordenado que todo mezclado.
+            var groups=[],gmap={};
             window._destHome.forEach(function(p,idx){
-                var ci=findCart(p.rest,p.nombre);
-                var qty=ci?ci.qty:0;
-                var cerrado=p.abierto===false;
-                var click=(cerrado||p.especial)
-                    ?'openRest(\''+jsEsc(p.rest)+'\')'
-                    :'addCart(\''+jsEsc(p.rest)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+p.delivery+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+','+(p.precio_regular||0)+','+(p.precio_base||0)+')';
-                h+='<div class="dest-card'+(qty?' in-cart':'')+(cerrado?' dest-card-cerrada':'')+'" onclick="event.stopPropagation();'+click+'">'+
-                    (cerrado?'<div class="dest-cerrada-cinta">'+(p.apertura?'Abre '+esc(p.apertura):'Cerrado ahora')+'</div>':'')+
-                    '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
-                    '<div class="dest-name">'+esc(p.nombre)+'</div>'+
-                    '<div class="dest-rest-tag">'+esc(p.rest)+'</div>'+
-                    '<div class="dest-footer">'+
-                        (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
-                        '<span class="dest-price">'+(p.porUnidad?'$'+Number(p.precio).toFixed(2)+'/u':'$'+Number(p.precio).toFixed(2))+'</span>'+
-                        (cerrado?'<span class="dest-plus" aria-label="Ver carta">›</span>':(qty?'<span class="dest-qty-mini">×'+qty+'</span>':(p.especial?'<span class="dest-plus" aria-label="Ver">›</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')))+
-                    '</div>'+
-                '</div>';
+                if(!gmap[p.rest]){gmap[p.rest]={rest:p.rest,abierto:p.abierto,apertura:p.apertura,items:[]};groups.push(gmap[p.rest]);}
+                gmap[p.rest].items.push({p:p,idx:idx});
             });
-            return h+'</div>';
+            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div>';
+            groups.forEach(function(g){
+                var estado=g.abierto===false?'<span class="rail-rest-estado">'+(g.apertura?'Abre '+esc(g.apertura):'Cerrado')+'</span>':'';
+                h+='<div class="rail-rest-head"><span class="rail-rest-name">'+esc(g.rest)+'</span>'+estado+'</div>';
+                h+='<div class="destacados-scroll">';
+                g.items.forEach(function(o){h+=_railCard(o.p,o.idx);});
+                h+='</div>';
+            });
+            return h;
+        }
+        function _railCard(p,idx){
+            var ci=findCart(p.rest,p.nombre);
+            var qty=ci?ci.qty:0;
+            var cerrado=p.abierto===false;
+            var click=(cerrado||p.especial)
+                ?'openRest(\''+jsEsc(p.rest)+'\')'
+                :'addCart(\''+jsEsc(p.rest)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+p.delivery+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+','+(p.precio_regular||0)+','+(p.precio_base||0)+')';
+            return '<div class="dest-card'+(qty?' in-cart':'')+(cerrado?' dest-card-cerrada':'')+'" onclick="event.stopPropagation();'+click+'">'+
+                (cerrado?'<div class="dest-cerrada-cinta">'+(p.apertura?'Abre '+esc(p.apertura):'Cerrado ahora')+'</div>':'')+
+                '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
+                '<div class="dest-name">'+esc(p.nombre)+'</div>'+
+                '<div class="dest-footer">'+
+                    (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
+                    '<span class="dest-price">'+(p.porUnidad?'$'+Number(p.precio).toFixed(2)+'/u':'$'+Number(p.precio).toFixed(2))+'</span>'+
+                    (cerrado?'<span class="dest-plus" aria-label="Ver carta">›</span>':(qty?'<span class="dest-qty-mini">×'+qty+'</span>':(p.especial?'<span class="dest-plus" aria-label="Ver">›</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')))+
+                '</div>'+
+            '</div>';
         }
         function renderHomeFoodRail(){
             if(window._destHome===undefined) loadDestacadosHome();
