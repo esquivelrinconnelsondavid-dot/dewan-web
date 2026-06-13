@@ -260,6 +260,11 @@
         .dest-plus:active{transform:scale(0.88)}
         .dest-qty-mini{background:var(--acc);color:#111;border-radius:100px;padding:4px 10px;font-weight:900;font-size:0.74rem;display:inline-flex;align-items:center;gap:4px}
         .dest-rest-tag{font-size:0.68rem;color:var(--gris);font-weight:700;margin:7px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        /* Tarjeta de local CERRADO en el carril: foto en gris + cinta de apertura (variedad de noche, honesta) */
+        .dest-card-cerrada .dest-emoji{filter:grayscale(100%);opacity:0.5}
+        .dest-cerrada-cinta{position:absolute;top:22px;left:22px;background:rgba(0,0,0,0.72);color:#FFCE5C;font-size:0.64rem;font-weight:800;padding:4px 9px;border-radius:8px;z-index:2;letter-spacing:0.01em}
+        /* Cinta fina de confianza (reemplaza el banner grande de precio del local, sin el peso) */
+        .trust-strip{text-align:center;font-size:0.72rem;color:var(--gris);font-weight:700;padding:2px 14px 10px;letter-spacing:0.01em}
         /* Lightbox de foto (tap para ampliar) */
         .foto-zoom{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.84);display:flex;align-items:center;justify-content:center;padding:18px}
         .foto-zoom-box{position:relative;width:100%;max-width:430px;background:var(--card);border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,0.65)}
@@ -675,7 +680,7 @@
         .price-cupon{color:#22c55e;font-weight:800}
         @keyframes mundialPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
         .mundial-flag{display:inline-block;animation:mundialPulse 2s ease-in-out infinite;margin-right:4px}
-        .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#FF5C4D;font-size:0.52rem;font-weight:900;padding:2px 6px;border-radius:20px;letter-spacing:0.05em;z-index:3;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+        .grid3-closed{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#d9d2c9;font-size:0.52rem;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:0.02em;z-index:3;white-space:nowrap;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
         /* Badge Aliado: visible, dorado, esquina sup-izq */
         .aliado-badge{position:absolute;top:6px;left:6px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#1a1a1a;font-size:0.55rem;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:0.04em;box-shadow:0 2px 6px rgba(0,0,0,0.3);z-index:3;display:flex;align-items:center;gap:2px}
         /* Tarifa servicio: discreto, neutro, esquina sup-der (sólo si no hay CERRADO) */
@@ -1117,7 +1122,7 @@
                         var rest=getRestById(it.restaurante_id);
                         if(!rest) return;                              // rest no está en la sesión
                         if(rest.tipo_acuerdo!=='aliado'&&rest.tipo_acuerdo!=='cliente_paga') return; // aliados + cliente_paga (excluye silenciosos como Rodri Pollos)
-                        if(isRestOpen(rest.horario)===false) return;   // no ofrecer comida de locales cerrados
+                        var _abierto=isRestOpen(rest.horario); // true / false / null(sin horario). Los CERRADOS sí se muestran (grisados), para variedad de noche.
                         var alm=parseAlmuerzo(it.descripcion);
                         var win=alm?null:parseWings(it.descripcion);
                         if(win&&win.dia!=null&&new Date().getDay()!==win.dia) return; // promo de otro día: ocultar
@@ -1138,7 +1143,9 @@
                             foto_url:it.foto_url,
                             cargo_envase:Number(it.cargo_envase)||0,
                             especial:especial,
-                            porUnidad:!!(win&&win.porUnidad)
+                            porUnidad:!!(win&&win.porUnidad),
+                            abierto:_abierto,
+                            apertura:(_abierto===false?proximaApertura(rest.horario):null)
                         });
                     });
                     // dedupe (mismo plato o misma foto) + máx 3 por restaurante, mezclado por día
@@ -1150,38 +1157,43 @@
                         seen[k]=1;seenFoto[p.foto_url]=1;porRest[p.rest]=(porRest[p.rest]||0)+1;
                         pick.push(p);
                     });
+                    // ABIERTOS primero (agregables, baratos primero), CERRADOS al final (grisados, para variedad de noche).
                     // Baratos primero: el primer precio que ve el cliente FRÍO fija el ancla de "qué tan cara es la app".
-                    // Buckets por precio base; dentro de cada uno se conserva la rotación diaria (dailyShuffle previo).
-                    var bA=[],bB=[],bC=[];
-                    pick.forEach(function(p){var b=Number(p.precio_base)||0;if(b<8)bA.push(p);else if(b<12)bB.push(p);else bC.push(p);});
-                    window._destHome=bA.concat(bB,bC).slice(0,12);
+                    function _buckets(arr){var a=[],b=[],c=[];arr.forEach(function(p){var v=Number(p.precio_base)||0;if(v<8)a.push(p);else if(v<12)b.push(p);else c.push(p);});return a.concat(b,c);}
+                    var _ab=_buckets(pick.filter(function(p){return p.abierto!==false}));
+                    var _ce=pick.filter(function(p){return p.abierto===false});
+                    window._destHome=_ab.concat(_ce).slice(0,16);
                     window._destHomeLoading=false;
                     try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}catch(e){}
                 })
                 .catch(function(){window._destHomeLoading=false;window._destHome=[];try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML='';}catch(e){}}); // []=colapsa, no reintenta ni deja skeleton
         }
         function homeFoodRailInner(){
+            var _hr=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'})).getHours();
+            var _sub=_hr<11?'🥐 Para el desayuno':(_hr<15?'🍽 Para el almuerzo':(_hr<19?'😋 Antojo de la tarde':'🌙 Para la cena'));
             if(window._destHome===undefined){
-                var sk='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">Antojos con foto</span></div><div class="destacados-scroll">';
+                var sk='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
                 for(var i=0;i<4;i++) sk+='<div class="dest-card" style="border:none;height:210px;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:skel-shimmer 1.6s ease-in-out infinite"></div>';
                 return sk+'</div>';
             }
             if(!window._destHome.length) return '';
-            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">Recién hechos · listos en minutos 🛵</span></div><div class="destacados-scroll">';
+            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
             window._destHome.forEach(function(p,idx){
                 var ci=findCart(p.rest,p.nombre);
                 var qty=ci?ci.qty:0;
-                var click=p.especial
+                var cerrado=p.abierto===false;
+                var click=(cerrado||p.especial)
                     ?'openRest(\''+jsEsc(p.rest)+'\')'
                     :'addCart(\''+jsEsc(p.rest)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+p.delivery+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+','+(p.precio_regular||0)+','+(p.precio_base||0)+')';
-                h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();'+click+'">'+
+                h+='<div class="dest-card'+(qty?' in-cart':'')+(cerrado?' dest-card-cerrada':'')+'" onclick="event.stopPropagation();'+click+'">'+
+                    (cerrado?'<div class="dest-cerrada-cinta">'+(p.apertura?'Abre '+esc(p.apertura):'Cerrado ahora')+'</div>':'')+
                     '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
                     '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                     '<div class="dest-rest-tag">'+esc(p.rest)+'</div>'+
                     '<div class="dest-footer">'+
                         (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
                         '<span class="dest-price">'+(p.porUnidad?'$'+Number(p.precio).toFixed(2)+'/u':'$'+Number(p.precio).toFixed(2))+'</span>'+
-                        (qty?'<span class="dest-qty-mini">×'+qty+'</span>':(p.especial?'<span class="dest-plus" aria-label="Ver">›</span>':'<span class="dest-plus" aria-label="Agregar">+</span>'))+
+                        (cerrado?'<span class="dest-plus" aria-label="Ver carta">›</span>':(qty?'<span class="dest-qty-mini">×'+qty+'</span>':(p.especial?'<span class="dest-plus" aria-label="Ver">›</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')))+
                     '</div>'+
                 '</div>';
             });
@@ -1586,7 +1598,8 @@
             var b=renderVuelveBanner(); if(b) return b;
             b=renderCuponBanner(); if(b) return b;
             b=renderMundialBanner(); if(b) return b;
-            return ''; // sin banner "Paga el PRECIO DEL LOCAL" (a David no le gustó); mensaje de marca irá en otro lado
+            // Confianza sutil (cinta de 1 línea, no banner): resuelve las 3 dudas del cliente frío sin el peso del banner que David quitó.
+            return '<div class="trust-strip">Precio del local · pagas al recibir · sin registro</div>';
         }
         function renderMundialBanner(){
             if(!isMundial()||mundialBannerDismissed()) return '';
@@ -1985,6 +1998,8 @@
                     var homeBy=partitionBySocio(rests);
                     // Sección destacada: carousel horizontal con aliados (solo si hay aliados)
                     var aliadosDestacados=dailyShuffle(homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'}));
+                    // Empujar los CERRADOS al final del carrusel (de noche era un mar de "CERRADO" rojo arriba)
+                    aliadosDestacados.sort(function(a,b){var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);var va=sa===true?0:sa===null?1:2,vb=sb===true?0:sb===null?1:2;return va-vb;});
                     if(aliadosDestacados.length){
                         h+='<div class="destacados-section">';
                         h+='<div class="destacados-title">⭐ <span class="destacados-title-acc">Aliados de hoy · Precio del local'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</span></div>';
@@ -2000,7 +2015,7 @@
                                     (r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'')+
                                     '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
                                     (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
-                                    (isOpen===false?'<span class="grid3-closed">CERRADO</span>':'')+
+                                    (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
                                 '</div>'+
                                 '<div class="grid3-body">'+
                                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
@@ -2824,7 +2839,7 @@
                     topBadge+
                     '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
                     (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
-                    (isOpen===false?'<span class="grid3-closed">CERRADO</span>':'')+
+                    (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
                 '</div>'+
                 '<div class="grid3-body">'+
                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
@@ -3762,6 +3777,20 @@
             var st=isRestOpen(horario);
             if(st===null) return '';
             return st?'<span class="badge-open">🟢 Abierto</span>':'<span class="badge-closed">🔴 Cerrado</span>';
+        }
+        // Hora de apertura legible (am/pm) reutilizando el mismo parseo que isRestOpen. null si no hay horario válido (no inventar).
+        function proximaApertura(horario){
+            if(!horario||!horario.trim()) return null;
+            var clean=horario.replace(/\s*(am|pm)\s*/gi,function(m,p){return ' '+p.toLowerCase()+' '}).trim();
+            var parts=clean.split(/\s*[-–]\s*/);
+            if(parts.length<2) return null;
+            var m=parts[0].trim().match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+            if(!m) return null;
+            var h=parseInt(m[1],10),min=parseInt(m[2],10),ampm=m[3]?m[3].toLowerCase():null;
+            if(ampm==='pm'&&h<12) h+=12;
+            if(ampm==='am'&&h===12) h=0;
+            var ap=h<12?'am':'pm',h12=h%12;if(h12===0)h12=12;
+            return h12+':'+(min<10?'0'+min:min)+' '+ap;
         }
         function getColor(i){var c=['#FF6B35','#FF3B5C','#8B5CF6','#00C2D1','#00D26A','#FFB800'];return c[i%c.length]}
         function getEmoji(name){
