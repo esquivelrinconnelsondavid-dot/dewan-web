@@ -607,6 +607,9 @@
         .grid3-card:active{transform:scale(0.95)}
         .grid3-top{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden}
         .grid3-emoji{position:relative;z-index:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
+        /* Monograma de marca para locales SIN foto (inicial grande + emoji de categoría chico) — reemplaza el emoji plano */
+        .grid3-mono{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:2.6rem;color:rgba(255,255,255,0.94);z-index:1;letter-spacing:-0.02em;text-shadow:0 2px 8px rgba(0,0,0,0.35)}
+        .grid3-mono-cat{position:absolute;bottom:6px;right:8px;font-size:1.05rem;opacity:0.55;z-index:1}
         .grid3-sello{position:absolute;top:8px;right:8px;z-index:3;background:#ff3b30;color:#fff;font-size:0.72rem;font-weight:900;padding:4px 9px;border-radius:999px;box-shadow:0 3px 9px rgba(255,59,48,0.5);letter-spacing:-0.02em}
         .grid3-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;background:var(--card2)}
         .grid3-body{padding:7px 9px 9px;min-height:44px}
@@ -2024,14 +2027,14 @@
                         aliadosDestacados.forEach(function(r,idx){
                             var hasImg=r.imagen_url||r.logo_url||r.foto_url;
                             var isOpen=isRestOpen(r.horario);
-                            var color=getColor(idx);
+                            var color=monoColor(r.nombre);
                             h+='<div class="destacados-card grid3-card" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:rgba(34,197,94,0.35)">'+
                                 '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
                                     (descuentoPctRest(r)>0?'<span class="grid3-sello">-'+descuentoPctRest(r)+'%</span>':'')+
                                     '<span class="aliado-badge">⭐ Aliado</span>'+
                                     (r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'')+
-                                    '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
-                                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                                    '<span class="grid3-mono">'+esc(inicialLocal(r.nombre))+'</span>'+
+                                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'<span class="grid3-mono-cat">'+getEmoji(r.nombre)+'</span>')+
                                     (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
                                 '</div>'+
                                 '<div class="grid3-body">'+
@@ -2045,11 +2048,17 @@
                     }
                     h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+homeBy.socios.length+'</div>';
                     if(homeBy.socios.length){
+                        var _socVis=window._showSocios?homeBy.socios:homeBy.socios.slice(0,8); // home corto: preview de 8
                         h+='<div class="grid3-wrap">';
-                        homeBy.socios.forEach(function(r,idx){
+                        _socVis.forEach(function(r,idx){
                             h+=renderRestCardGrid(r,idx,'openRest(\''+jsEsc(r.nombre)+'\')');
                         });
                         h+='</div>';
+                        if(homeBy.socios.length>8){
+                            h+=window._showSocios
+                                ?'<button class="ocultar-otros-btn" onclick="toggleSocios()">↑ Ver menos</button>'
+                                :'<button class="ver-otros-btn" onclick="toggleSocios()"><span class="ver-otros-title">Ver todos los locales <span class="ver-otros-count">'+homeBy.socios.length+'</span></span></button>';
+                        }
                     }
                     // "Más opciones": no-aliados (silenciosos). Visibles para dar variedad,
                     // sin badges ni promo, separados de los socios. Preview + expandir el resto.
@@ -2677,6 +2686,9 @@
         // Estado global: el cliente toca "Ver otros" → revela silenciosos en la vista actual.
         // Se resetea al cambiar de categoría / al volver al home / al buscar.
         window._showSilenciosos=false;
+        // Colapsar la grilla "Descubre" del home a un preview (acortar el home); botón "Ver todos".
+        window._showSocios=false;
+        window.toggleSocios=function(){window._showSocios=!window._showSocios;refreshView();};
         window.toggleSilenciosos=function(){
             window._showSilenciosos=!window._showSilenciosos;
             // currentView puede ser 'search' — refreshView no lo maneja, hay que
@@ -2828,7 +2840,7 @@
 
         // V3.0: Tarjeta tipo grilla 3 columnas (home default). Muestra foto si existe, sino emoji.
         function renderRestCardGrid(r,idx,openCmd){
-            var color=getColor(idx);
+            var color=monoColor(r.nombre);
             var isOpen=isRestOpen(r.horario);
             var hasImg=r.imagen_url||r.logo_url||r.foto_url;
             var cat=esc(r.categoria_canonica||r.categoria||'');
@@ -2854,8 +2866,8 @@
                     aliadoBadge+
                     feeBadge+
                     topBadge+
-                    '<span class="grid3-emoji">'+getEmoji(r.nombre)+'</span>'+
-                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+
+                    '<span class="grid3-mono">'+esc(inicialLocal(r.nombre))+'</span>'+
+                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'<span class="grid3-mono-cat">'+getEmoji(r.nombre)+'</span>')+
                     (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
                 '</div>'+
                 '<div class="grid3-body">'+
@@ -3809,7 +3821,10 @@
             var ap=h<12?'am':'pm',h12=h%12;if(h12===0)h12=12;
             return h12+':'+(min<10?'0'+min:min)+' '+ap;
         }
-        function getColor(i){var c=['#FF6B35','#FF3B5C','#8B5CF6','#00C2D1','#00D26A','#FFB800'];return c[i%c.length]}
+        function getColor(i){var c=['#D93A0B','#E0951A','#B45309','#166534','#7C2D12','#A16207'];return c[i%c.length]}
+        // Color de marca ESTABLE por nombre (mismo local = mismo color siempre), para el monograma sin foto.
+        function monoColor(nombre){var s=String(nombre||''),n=0;for(var i=0;i<s.length;i++)n+=s.charCodeAt(i);return getColor(n);}
+        function inicialLocal(nombre){var s=String(nombre||'?').replace(/^\s*(la|el|los|las)\s+/i,'').trim();return (s.charAt(0)||'?').toUpperCase();}
         function getEmoji(name){
             var n=(name||'').toLowerCase();
             if(n.indexOf('pollo')!==-1||n.indexOf('broster')!==-1)return'🍗';
