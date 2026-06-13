@@ -943,6 +943,13 @@
             if(!categoria) return false;
             return /bebida|jugo|frapp|michelada|mojito|milk based|batido|gaseosa|cerveza|c[oó]ctel|\bsoda\b|booble|refresco/i.test(categoria);
         }
+        // Adicionales / porciones / proteínas sueltas: son complementos, NO platos. No van en el carril de comida.
+        function esAdicional(categoria,nombre){
+            var c=categoria||'', n=nombre||'';
+            if(/adicional|porci[oó]n|prote[ií]nas? suelta|t[oó]pping|aderezo|acompa[ñn]/i.test(c)) return true;
+            if(/\(adicional\)|sin prote[ií]na/i.test(n)) return true;
+            return false;
+        }
         // Precio que el cliente PAGA. Aliados y silenciosos tienen markup_pct=0 -> precio del local.
         // cliente_paga tiene markup_pct=5 -> el cliente asume ese recargo. Bebidas: siempre precio del local.
         // Fin de semana en Ecuador (UTC-5): Vie, Sáb, Dom.
@@ -1129,6 +1136,7 @@
                     (items||[]).forEach(function(it){
                         if(!it.foto_url||!String(it.foto_url).trim()) return;
                         if(esBebida(it.categoria_menu)) return;        // bebidas NO van en el carril de comida
+                        if(esAdicional(it.categoria_menu,it.nombre_item)) return; // adicionales/porciones/proteínas sueltas tampoco
                         var rest=getRestById(it.restaurante_id);
                         if(!rest) return;                              // rest no está en la sesión
                         if(rest.tipo_acuerdo!=='aliado'&&rest.tipo_acuerdo!=='cliente_paga') return; // aliados + cliente_paga (excluye silenciosos como Rodri Pollos)
@@ -1168,10 +1176,19 @@
                         seen[k]=1;seenFoto[p.foto_url]=1;porRest[p.rest]=(porRest[p.rest]||0)+1;
                         pick.push(p);
                     });
-                    // ABIERTOS primero (agregables, baratos primero), CERRADOS al final (grisados, para variedad de noche).
-                    // Baratos primero: el primer precio que ve el cliente FRÍO fija el ancla de "qué tan cara es la app".
-                    function _buckets(arr){var a=[],b=[],c=[];arr.forEach(function(p){var v=Number(p.precio_base)||0;if(v<8)a.push(p);else if(v<12)b.push(p);else c.push(p);});return a.concat(b,c);}
-                    var _ab=_buckets(pick.filter(function(p){return p.abierto!==false}));
+                    // ABIERTOS primero, CERRADOS al final (grisados, para variedad de noche).
+                    // Round-robin por local: el carril alterna locales (1 de cada uno por vuelta) en vez de
+                    // agrupar por precio, que dejaba siempre al mismo local de primero. Las primeras tarjetas
+                    // son locales DISTINTOS y qué local abre el carril rota cada día.
+                    function _interleave(arr){
+                        var groups={},order=[];
+                        arr.forEach(function(p){ if(!groups[p.rest]){groups[p.rest]=[];order.push(p.rest);} groups[p.rest].push(p); });
+                        order=dailyShuffle(order);
+                        var res=[],added=true;
+                        while(added){ added=false; order.forEach(function(r){ if(groups[r].length){res.push(groups[r].shift());added=true;} }); }
+                        return res;
+                    }
+                    var _ab=_interleave(pick.filter(function(p){return p.abierto!==false}));
                     var _ce=pick.filter(function(p){return p.abierto===false});
                     // No inundar de cerrados: si hay >=6 abiertos, solo abiertos; si hay algunos, +máx 2 cerrados; si NO hay abiertos, mostrar cerrados (a color) con subtítulo positivo.
                     if(_ab.length>=6) window._destHome=_ab.slice(0,16);
