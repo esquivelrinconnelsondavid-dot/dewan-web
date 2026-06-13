@@ -657,7 +657,13 @@
     {"categoria_menu":"Bebidas","nombre_item":"Cola Mediana","descripcion":"","precio":1.0},
     {"categoria_menu":"Bebidas","nombre_item":"Cola 1.35 Litros","descripcion":"","precio":1.75},
     {"categoria_menu":"Bebidas","nombre_item":"Te 1 Litro","descripcion":"","precio":1.75},
-    {"categoria_menu":"Bebidas","nombre_item":"Te / Fresno 1.5 Litros","descripcion":"","precio":2.0}
+    {"categoria_menu":"Bebidas","nombre_item":"Te / Fresno 1.5 Litros","descripcion":"","precio":2.0},
+    {"categoria_menu":"Cajita Feliz","nombre_item":"Cajita Feliz 1","descripcion":"Nuggets + papas + jugo + huevo Kinder","precio":5.3},
+    {"categoria_menu":"Cajita Feliz","nombre_item":"Cajita Feliz 2","descripcion":"Presa + papas + jugo + huevo Kinder","precio":5.3},
+    {"categoria_menu":"Cajita Feliz","nombre_item":"Cajita Feliz 3","descripcion":"Presa + papas + salchicha + jugo + huevo Kinder","precio":5.8},
+    {"categoria_menu":"Combos","nombre_item":"Combo Especial","descripcion":"4 presas + papas + gaseosa de litro","precio":11.05},
+    {"categoria_menu":"Porciones","nombre_item":"Consomé","descripcion":"","precio":2.0},
+    {"categoria_menu":"Promos","nombre_item":"Promo Jueves","descripcion":"Solo jueves: presa individual de piernita","precio":2.25}
   ];
 
   // Fotos reales de platos (archivos en fotos-happypollo/, las mismas que en DEWAN)
@@ -674,12 +680,17 @@
     "Combo 2":"fotos-happypollo/combo-2.jpg",
     "Ideal":"fotos-happypollo/combo-ideal.jpg",
     "Mega Familiar":"fotos-happypollo/mega-familiar.jpg",
-    "Porcion de Ensalada":"fotos-happypollo/ensalada.jpg"
+    "Porcion de Ensalada":"fotos-happypollo/ensalada.jpg",
+    "Cajita Feliz 1":"fotos-happypollo/cajita-1.jpg",
+    "Cajita Feliz 2":"fotos-happypollo/cajita-2.jpg",
+    "Cajita Feliz 3":"fotos-happypollo/cajita-3.jpg",
+    "Combo Especial":"fotos-happypollo/combo-especial.jpg",
+    "Consomé":"fotos-happypollo/consome.jpg"
   };
   MENU.forEach(function(it){ if(FOTOS[it.nombre_item]) it.foto = FOTOS[it.nombre_item]; });
 
-  var CAT_ORDER = ["Combos","Promos","Menu de Presas","Salchipapas","Happy Burger","Porciones","Bebidas"];
-  var CAT_EMOJI = {"Combos":"🍗","Promos":"🔥","Menu de Presas":"🍖","Salchipapas":"🌭","Happy Burger":"🍔","Porciones":"🍟","Bebidas":"🥤"};
+  var CAT_ORDER = ["Combos","Promos","Cajita Feliz","Menu de Presas","Salchipapas","Happy Burger","Porciones","Bebidas"];
+  var CAT_EMOJI = {"Combos":"🍗","Promos":"🔥","Cajita Feliz":"🎁","Menu de Presas":"🍖","Salchipapas":"🌭","Happy Burger":"🍔","Porciones":"🍟","Bebidas":"🥤"};
   var FEAT_CATS = {"Combos":true,"Promos":true};
   var PRECIO_ANTES = {"Promo Martes":8.4}; // referencia visual: 3 x (presa individual + papas)
 
@@ -747,6 +758,7 @@
       card.className = "card";
       var star = "";
       if(it.nombre_item==="Promo Martes") star='<span class="star">¡Solo martes!</span>';
+      else if(it.nombre_item==="Promo Jueves") star='<span class="star">¡Solo jueves!</span>';
       else if(it.nombre_item==="Mega Familiar") star='<span class="star">Para compartir</span>';
       else if(it.nombre_item==="Super Happy") star='<span class="star">⭐ Favorito</span>';
 
