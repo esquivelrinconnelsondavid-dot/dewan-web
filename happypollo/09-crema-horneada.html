@@ -163,30 +163,30 @@
 
   /* ===== MONTÓN sobre círculo VINO ===== */
   .hero-food{
-    position:relative;max-width:620px;margin:14px auto 0;
-    padding:44px 16px 22px;text-align:center;
+    position:relative;max-width:620px;margin:64px auto 0;
+    padding:24px 16px 18px;text-align:center;
   }
   .hero-food::before{
     content:"";position:absolute;left:50%;top:50%;
-    transform:translate(-50%,-54%);
-    width:min(74vw,380px);aspect-ratio:1/1;border-radius:50%;
+    transform:translate(-50%,-44%);
+    width:min(62vw,300px);aspect-ratio:1/1;border-radius:50%;
     background:var(--vino);
     box-shadow:0 30px 64px rgba(173,24,38,.32), inset 0 -20px 48px rgba(2,2,2,.22);
   }
   .hero-food::after{
     content:"";position:absolute;left:50%;top:50%;
-    transform:translate(-50%,-54%) rotate(0deg);
-    width:min(84vw,428px);aspect-ratio:1/1;border-radius:50%;
+    transform:translate(-50%,-44%) rotate(0deg);
+    width:min(70vw,340px);aspect-ratio:1/1;border-radius:50%;
     border:2px dashed rgba(173,24,38,.42);
     animation:girar 70s linear infinite;
   }
   @keyframes girar{
-    from{transform:translate(-50%,-54%) rotate(0deg);}
-    to{transform:translate(-50%,-54%) rotate(360deg);}
+    from{transform:translate(-50%,-44%) rotate(0deg);}
+    to{transform:translate(-50%,-44%) rotate(360deg);}
   }
   .hero-food img{
-    position:relative;z-index:1;width:100%;max-width:540px;margin:0 auto;
-    filter:drop-shadow(0 26px 24px rgba(2,2,2,.32));
+    position:relative;z-index:1;width:100%;max-width:280px;margin:0 auto;
+    filter:drop-shadow(0 20px 20px rgba(2,2,2,.32));
   }
   .hero-food__shadow{
     position:relative;z-index:1;width:58%;max-width:320px;height:18px;margin:-6px auto 0;
@@ -279,6 +279,10 @@
   .co-totals{background:var(--crema-card);border:2px solid var(--amarillo);border-radius:12px;padding:10px 13px;margin-bottom:12px;}
   .co-trow{display:flex;justify-content:space-between;font-size:.9rem;color:var(--tinta);margin-bottom:3px;font-weight:700;}
   .co-trow.co-ttotal{font-weight:900;font-size:1.05rem;color:var(--vino);border-top:1.5px dashed #E2D3B6;padding-top:6px;margin-top:4px;margin-bottom:0;}
+  .co-pay{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .co-payopt{padding:10px 8px;border:2px solid var(--amarillo);border-radius:12px;background:var(--crema-card);font-weight:800;font-family:inherit;cursor:pointer;color:var(--tinta);font-size:.84rem;}
+  .co-payopt.active{background:var(--vino);color:var(--crema-suave,#FFF8E6);border-color:var(--vino);}
+  .co-transfer{display:none;margin-top:7px;background:#fff6e0;border:1.5px solid var(--amarillo);border-radius:11px;padding:9px 11px;font-size:.78rem;font-weight:700;color:var(--pardo);line-height:1.35;}
 
   /* Tarjetas: crema cálida, sombra VINO (nunca gris), borde dorado */
   .card{
@@ -294,11 +298,11 @@
   .card.in{opacity:1;transform:none;}
   .card.in:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(173,24,38,.16);border-color:var(--naranja);}
   .card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
-  .card__name{font-weight:700;font-size:.9rem;color:var(--tinta);line-height:1.16;margin:0;}
+  .card__name{font-weight:700;font-size:.8rem;color:var(--tinta);line-height:1.14;margin:0;}
   .card__pricecol{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none;}
   .px{
     font-family:'Yeseva One',serif;color:var(--vino);
-    font-size:1.1rem;line-height:1;white-space:nowrap;
+    font-size:.96rem;line-height:1;white-space:nowrap;
   }
   .px .px__s{font-size:.66em;}
   .px sup{font-size:.58em;position:relative;top:-.5em;margin-left:1px;}
@@ -307,9 +311,9 @@
     text-decoration:line-through;text-decoration-thickness:2px;
     white-space:nowrap;
   }
-  .card__desc{color:var(--pardo);font-size:.73rem;font-weight:600;line-height:1.38;margin:5px 0 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .card__desc{color:var(--pardo);font-size:.66rem;font-weight:600;line-height:1.34;margin:4px 0 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .card__foot{margin-top:auto;padding-top:14px;}
-  .card__photo{margin:-12px -11px 10px;border-radius:16px 16px 0 0;overflow:hidden;aspect-ratio:4/3;background:rgba(173,24,38,.06);}
+  .card__photo{margin:-12px -11px 9px;border-radius:16px 16px 0 0;overflow:hidden;aspect-ratio:1/1;background:rgba(173,24,38,.06);}
   .card__photo img{width:100%;height:100%;object-fit:cover;display:block;}
 
   .star{
@@ -640,6 +644,11 @@
         <input class="co-input" id="coRuc" placeholder="RUC / Cedula" inputmode="numeric">
         <input class="co-input" id="coRazon" placeholder="Nombre / Razon social">
       </div>
+      <div class="co-pay">
+        <button type="button" class="co-payopt active" data-pay="efectivo">💵 Efectivo</button>
+        <button type="button" class="co-payopt" data-pay="transfer">📲 Transferencia</button>
+      </div>
+      <div class="co-transfer" id="coTransfer">📲 Te enviamos los datos de transferencia por WhatsApp al confirmar tu pedido.</div>
     </div>
     <div class="co-totals">
       <div class="co-trow"><span>Subtotal</span><span id="coSub">$0.00</span></div>
@@ -942,6 +951,12 @@
   }
   document.querySelectorAll(".co-mode").forEach(function(b){ b.addEventListener("click",function(){setMode(b.dataset.mode);}); });
   (function(){var f=$("#coFact"); if(f) f.addEventListener("change",function(){$("#coFactFields").classList.toggle("show",this.checked);});})();
+  var payMethod="efectivo";
+  document.querySelectorAll(".co-payopt").forEach(function(b){ b.addEventListener("click",function(){
+    payMethod=b.dataset.pay;
+    document.querySelectorAll(".co-payopt").forEach(function(x){x.classList.toggle("active",x===b);});
+    var ti=$("#coTransfer"); if(ti) ti.style.display = payMethod==="transfer" ? "block" : "none";
+  });});
   function renderShip(){
     var el=$("#coShip"); if(!el) return;
     if(shipState==="idle"){ el.classList.remove("show"); el.innerHTML=""; return; }
@@ -1008,6 +1023,7 @@
     }
     lines.push("TOTAL: "+fmt(sub+ship));
     var nom=($("#coNombre").value||"").trim(); if(nom) lines.push("Cliente: "+nom);
+    lines.push(payMethod==="transfer" ? "📲 Pago: Transferencia" : "💵 Pago: Efectivo");
     if($("#coFact").checked){ var ruc=($("#coRuc").value||"").trim(), raz=($("#coRazon").value||"").trim(); lines.push("🧾 Factura: "+[ruc,raz].filter(Boolean).join(" - ")); }
     return lines.join("\n");
   }
