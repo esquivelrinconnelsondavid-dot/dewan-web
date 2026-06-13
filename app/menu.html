@@ -1181,8 +1181,8 @@
                     '<div class="dest-footer">'+
                         (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
                         '<span class="dest-price">'+(p.porUnidad?'$'+Number(p.precio).toFixed(2)+'/u':'$'+Number(p.precio).toFixed(2))+'</span>'+
+                        (qty?'<span class="dest-qty-mini">×'+qty+'</span>':(p.especial?'<span class="dest-plus" aria-label="Ver">›</span>':'<span class="dest-plus" aria-label="Agregar">+</span>'))+
                     '</div>'+
-                    '<div class="dest-cta-full'+(qty?' in-cart':'')+'">'+(qty?'✓ '+qty+' en el carrito':(p.especial?'Elegir →':'Agregar +'))+'</div>'+
                 '</div>';
             });
             return h+'</div>';
@@ -1205,15 +1205,11 @@
                     '<div class="foto-zoom-name">'+esc(p.nombre)+'</div>'+
                     '<div class="foto-zoom-sub">'+esc(p.rest)+' · $'+Number(p.precio).toFixed(2)+(p.porUnidad?'/u':'')+'</div>'+
                 '</div>'+
-                '<button class="foto-zoom-cta" id="foto-zoom-cta">'+(p.especial?'Armar mi pedido →':'Agregar — $'+Number(p.precio).toFixed(2)+(p.porUnidad?'/u':'')+' 🛒')+'</button>'+
-                '<div class="foto-zoom-note">Sin recargos · pagas el precio del local</div>'+
+                '<button class="foto-zoom-cta" id="foto-zoom-cta">🏪 Visitar restaurante</button>'+
             '</div>';
             document.body.appendChild(ov);
             var cta=document.getElementById('foto-zoom-cta');
-            cta.onclick=function(){
-                if(p.especial){cerrarZoom();openRest(p.rest);}
-                else{addCart(p.rest,p.nombre,p.precio,p.delivery,p.foto_url||'',p.cargo_envase||0,p.precio_regular||0,p.precio_base||0);cerrarZoom();}
-            };
+            cta.onclick=function(){cerrarZoom();openRest(p.rest);}; // ver foto en grande -> ir al restaurante
         };
         window.cerrarZoom=function(){var ov=document.querySelector('.foto-zoom');if(ov)ov.parentNode.removeChild(ov);};
         // Lightbox solo-ver (para fotos dentro del restaurante: destacados + menú). El "+" está en la tarjeta.
@@ -1590,7 +1586,7 @@
             var b=renderVuelveBanner(); if(b) return b;
             b=renderCuponBanner(); if(b) return b;
             b=renderMundialBanner(); if(b) return b;
-            return renderPromoBanner();
+            return ''; // sin banner "Paga el PRECIO DEL LOCAL" (a David no le gustó); mensaje de marca irá en otro lado
         }
         function renderMundialBanner(){
             if(!isMundial()||mundialBannerDismissed()) return '';
