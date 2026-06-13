@@ -825,6 +825,39 @@
         var sessionData=null;
         var currentView='home'; // home | rest | cart
         var currentRestIdx=null;
+
+        // ── Botón ATRÁS del teléfono: navegar entre vistas internas (home/rest/cart/search)
+        //    en vez de salir de la app. SPA + History API. ──
+        var _popping=false;
+        function syncHistory(){
+            if(_popping) return;
+            var cur=history.state;
+            if(!cur||cur.v!==currentView||cur.r!==currentRestIdx){
+                try{history.pushState({v:currentView,r:currentRestIdx},'');}catch(e){}
+            }
+        }
+        function _isVisible(el){ if(!el) return false; var s=getComputedStyle(el); return s.display!=='none'&&s.visibility!=='hidden'; }
+        function closeAnyOverlay(){
+            var fz=document.querySelector('.foto-zoom'); if(_isVisible(fz)){fz.parentNode.removeChild(fz);return true;}
+            var sf=document.getElementById('service-fee-modal'); if(_isVisible(sf)){ if(window.closeServiceFeeInfo){closeServiceFeeInfo();}else{sf.style.display='none';} return true;}
+            var mo=document.getElementById('modal-overlay'); if(mo&&mo.classList.contains('visible')){ if(window.closeModal){closeModal();}else{mo.classList.remove('visible');} return true;}
+            return false;
+        }
+        try{ if(!history.state) history.replaceState({v:'home',r:null},''); }catch(e){}
+        window.addEventListener('popstate',function(e){
+            // 1) Si hay un overlay/modal abierto, el back lo CIERRA y no navega (re-apila la vista actual).
+            if(closeAnyOverlay()){ try{history.pushState({v:currentView,r:currentRestIdx},'');}catch(e2){} return; }
+            // 2) Renderizar la vista del estado destino sin volver a apilar.
+            _popping=true;
+            var st=e.state||{v:'home',r:null};
+            try{
+                if(st.v==='rest'&&st.r!=null&&window.openRest){ openRest(st.r); }
+                else if(st.v==='cart'&&window.showCart){ showCart(); }
+                else if(st.v==='search'&&window.showSearch){ showSearch(''); }
+                else { renderHome(); }
+            }catch(err){ try{renderHome();}catch(e3){} }
+            _popping=false;
+        });
         window._cart=[];
         window._clientGPS=null;
         window._clientAddr=''; // CAMBIO 3: dirección de texto
@@ -1272,6 +1305,7 @@
                 '<button class="foto-zoom-cta" id="foto-zoom-cta">🏪 Visitar restaurante</button>'+
             '</div>';
             document.body.appendChild(ov);
+            try{history.pushState({v:currentView,r:currentRestIdx,ov:'foto'},'');}catch(e){}
             var cta=document.getElementById('foto-zoom-cta');
             cta.onclick=function(){cerrarZoom();openRest(p.rest);}; // ver foto en grande -> ir al restaurante
         };
@@ -1292,6 +1326,7 @@
                 '<button class="foto-zoom-cta" onclick="cerrarZoom()">Cerrar</button>'+
             '</div>';
             document.body.appendChild(ov);
+            try{history.pushState({v:currentView,r:currentRestIdx,ov:'foto'},'');}catch(e){}
         };
 
         // ── CAMBIO 2: localStorage para carrito ──
@@ -1853,6 +1888,8 @@
 
         window.renderHome=function(){
             currentView='home';
+            currentRestIdx=null;
+            syncHistory();
             window._restFilter=null; // V2.1: limpiar filtro de menú al volver al home
             // Almuerzos solo 12-15h: si el filtro quedó activo fuera de horario, volver al home normal
             if(window._activeCat==='almuerzo'&&!isAlmuerzoHour()) window._activeCat=null;
@@ -2164,6 +2201,7 @@
         window.openRest=function(nombre){
             currentView='rest';
             currentRestIdx=nombre;
+            syncHistory();
             var rests=sortRests(getFilteredRestaurantes(),currentSort);
             var r=null;var ridx=0;
             for(var i=0;i<rests.length;i++){if(rests[i].nombre===nombre){r=rests[i];ridx=i;break;}}
@@ -2181,7 +2219,7 @@
                         (hasImgLoad?'':'<span class="rest-detail-photo-fallback">'+getEmoji(r.nombre)+'</span>')+
                     '</div>'+
                     '<div class="rest-detail-nav">'+
-                        '<button class="btn-back" onclick="renderHome()">←</button>'+
+                        '<button class="btn-back" onclick="history.back()">←</button>'+
                         '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒</button>'+
                     '</div>'+
                     '<div class="rest-detail-card">'+
@@ -2285,7 +2323,7 @@
                     (hasImg?'':'<span class="rest-detail-photo-fallback">'+getEmoji(r.nombre)+'</span>')+
                 '</div>'+
                 '<div class="rest-detail-nav">'+
-                    '<button class="btn-back" onclick="renderHome()">←</button>'+
+                    '<button class="btn-back" onclick="history.back()">←</button>'+
                     '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()">🛒'+(window._cart.length?' '+cartTotals().items:'')+'</button>'+
                 '</div>'+
                 '<div class="rest-detail-card">'+
@@ -2399,7 +2437,7 @@
             // ── Barra sticky: back + tabs de categoría (scroll-spy) ──
             var hasMultipleCats=showCat&&cats.length>=2;
             h+='<div class="cat-tabs-wrap">'+
-                '<button class="cat-tabs-back" onclick="renderHome()" aria-label="Volver">←</button>';
+                '<button class="cat-tabs-back" onclick="history.back()" aria-label="Volver">←</button>';
             if(hasMultipleCats){
                 h+='<div class="cat-tabs" id="cat-tabs">';
                 cats.forEach(function(cat,i){
@@ -2545,9 +2583,10 @@
 
         window.showSearch=function(prefill){
             currentView='search';
+            syncHistory();
             var q=(prefill!=null?prefill:(sessionData.busqueda_texto||'')).trim();
             var h='<div class="search-header-v2">'+
-                '<button class="btn-back" onclick="renderHome()" aria-label="Volver">←</button>'+
+                '<button class="btn-back" onclick="history.back()" aria-label="Volver">←</button>'+
                 '<div class="search-input-wrap">'+
                     '<span class="search-input-wrap-icon">🔍</span>'+
                     '<input class="search-input" id="search-input" type="search" placeholder="Platos o restaurantes…" autocomplete="off" />'+
@@ -3079,10 +3118,11 @@
         // ── CART + CHECKOUT UNIFICADO ──
         window.showCart=function(){
             currentView='cart';
+            syncHistory();
             if(window._cart.length) markEtapa('abrio_carrito');
             var t=cartTotals();
             if(!window._cart.length){
-                app.innerHTML='<div class="cart-header"><button class="btn-back" onclick="renderHome()">←</button><span class="cart-header-title">Mi pedido</span></div>'+
+                app.innerHTML='<div class="cart-header"><button class="btn-back" onclick="history.back()">←</button><span class="cart-header-title">Mi pedido</span></div>'+
                     '<div class="state-container"><div class="empty-icon">🛒</div><div class="state-title">Tu carrito esta vacio</div><button class="btn btn-accent" style="margin-top:20px;width:auto;padding:12px 28px" onclick="renderHome()">Ver restaurantes</button></div>';
                 document.getElementById('cart-float').style.display='none';
                 return;
@@ -3090,7 +3130,7 @@
             var byRest={};
             window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
 
-            var h='<div class="cart-header"><button class="btn-back" onclick="'+(currentRestIdx!==null?"openRest('"+jsEsc(currentRestIdx)+"')":'renderHome()')+'">←</button><span class="cart-header-title">Mi pedido</span><span class="cart-header-count">'+t.items+' '+(t.items===1?'item':'items')+'</span></div>';
+            var h='<div class="cart-header"><button class="btn-back" onclick="history.back()">←</button><span class="cart-header-title">Mi pedido</span><span class="cart-header-count">'+t.items+' '+(t.items===1?'item':'items')+'</span></div>';
             h+='<div style="padding:16px;padding-bottom:40px">';
             if(OP_MODE) h+='<div style="background:#1d1d1f;color:#FFB627;font-weight:700;padding:9px 14px;border-radius:10px;margin-bottom:14px;font-size:0.88rem">🎧 Modo centralista</div>';
 
