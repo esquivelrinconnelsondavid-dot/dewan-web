@@ -241,7 +241,8 @@
         .cat-tabs-restname{flex:1;font-weight:800;font-size:0.9rem;color:var(--texto);padding:0 14px 0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.01em}
 
         /* Destacados horizontal carousel */
-        .destacados{padding:18px 0 10px}
+        .destacados{padding:10px 0 8px}
+        #home-food-rail:empty{display:none}
         .destacados-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 14px 12px}
         .destacados-title{font-size:0.98rem;font-weight:900;letter-spacing:-0.02em;display:flex;align-items:center;gap:6px}
         .destacados-sub{font-size:0.7rem;color:var(--gris);font-weight:700;letter-spacing:0.04em;text-transform:uppercase}
@@ -475,8 +476,8 @@
 
         /* Category chips row */
         .cat-chips-wrap{padding:14px 0 6px}
-        /* 2 filas con scroll horizontal en cada una — más compacto que multi-wrap */
-        .cat-chips-scroll{display:grid;grid-auto-flow:column;grid-template-rows:auto auto;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0 14px 4px;-webkit-overflow-scrolling:touch;grid-auto-columns:max-content}
+        /* 1 sola fila con scroll horizontal — más bajo, deja ver la comida arriba */
+        .cat-chips-scroll{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0 14px 4px;-webkit-overflow-scrolling:touch}
         .cat-chips-scroll::-webkit-scrollbar{display:none}
         .cat-chip{padding:8px 11px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--texto);font-size:0.78rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;letter-spacing:-0.01em}
         .cat-chip:active{transform:scale(0.96)}
@@ -1842,6 +1843,10 @@
                 '</button>'+
             '</div>';
 
+            // 🔥 Carril de COMIDA arriba del todo (solo home sin filtro): la comida es lo que vende,
+            // debe verse en la primera pantalla, antes del banner/chips/GPS/sort.
+            if(!window._activeCat) h+=renderHomeFoodRail();
+
             // Home liviano: UN solo banner por prioridad (cupón > promo envío > Mundial > precio del local)
             h+=renderHomeBanner();
 
@@ -1972,7 +1977,7 @@
                     }
                 } else {
                     // Home sin filtro: socios primero, silenciosos detrás de botón
-                    h+=renderHomeFoodRail();   // 🔥 carril de COMIDA con foto (aliados) arriba
+                    // (el carril "Para ti" ya se renderizó arriba, antes del banner)
                     var homeBy=partitionBySocio(rests);
                     // Sección destacada: carousel horizontal con aliados (solo si hay aliados)
                     var aliadosDestacados=dailyShuffle(homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'}));
