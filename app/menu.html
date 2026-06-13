@@ -719,6 +719,14 @@
         @keyframes sfModalFadeIn{from{opacity:0}to{opacity:1}}
         /* Botón "Ver otros restaurantes" — separa visualmente a los no-socios */
         .ver-otros-btn{display:block;width:calc(100% - 28px);margin:18px 14px 6px;padding:14px 18px;background:var(--card);border:1.5px dashed var(--border);border-radius:16px;color:var(--texto);font-family:inherit;cursor:pointer;text-align:center;transition:all 0.2s;letter-spacing:-0.01em}
+        /* Tarjeta por sección (híbrida: superficie cálida para que la comida resalte + sombra suave sin borde). El carril "Para ti" (.destacados) queda full-bleed a propósito. */
+        .home-card,.destacados-section,#silenciosos-section{background:var(--card2);border-radius:18px;margin:0 var(--pad-x) var(--gap-section);padding:10px 6px 8px;box-shadow:0 2px 10px rgba(33,27,21,0.06)}
+        .home-card>.list-section-title,#silenciosos-section>.list-section-title{padding:6px 8px 8px}
+        .home-card>.grid3-wrap,#silenciosos-section>.grid3-wrap{padding:0 4px 2px}
+        .home-card .ver-otros-btn,.home-card .ocultar-otros-btn,#silenciosos-section .ver-otros-btn,#silenciosos-section .ocultar-otros-btn{width:calc(100% - 8px);margin:12px 4px 2px}
+        .home-card>.aliados-banner,#silenciosos-section>.aliados-banner{margin-left:6px;margin-right:6px}
+        .destacados-section .destacados-scroll{padding-left:8px;padding-right:8px}
+        .destacados-section .destacados-title{padding-left:6px}
         .ver-otros-btn:active{transform:scale(0.985);border-color:var(--acc)}
         .ver-otros-title{display:block;font-size:0.92rem;font-weight:900;margin-bottom:3px}
         .ver-otros-count{display:inline-block;background:var(--acc);color:#111;font-size:0.72rem;font-weight:900;padding:1px 8px;border-radius:20px;margin-left:5px;vertical-align:middle}
@@ -2007,11 +2015,13 @@
                                 if(ta!==tb) return ta-tb;
                                 return (a.distancia_km||999)-(b.distancia_km||999);
                             });
+                            h+='<section class="home-card">';
                             h+='<div class="list-section-title">🍱 Menú del día · '+conMenu.length+'</div>';
                             h+='<div class="almuerzo-day-banner">🍱 Almuerzo del día listo · sin tarifa de servicio</div>';
                             h+='<div class="grid3-wrap">';
                             conMenu.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                             h+='</div>';
+                            h+='</section>';
                             // quitar del split de abajo para no duplicar
                             aliados=aliados.filter(function(r){return !tieneMenuDelDia(r)});
                             clientePaga=clientePaga.filter(function(r){return !tieneMenuDelDia(r)});
@@ -2020,18 +2030,22 @@
                         }
                     }
                     if(socios.length){
+                        h+='<section class="home-card">';
                         h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
                         if(aliados.length) h+='<div class="aliados-banner">⭐ Precio del local · sin recargos'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
                         h+='<div class="grid3-wrap'+(socios.length<=2?' solo':'')+'">';
                         socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
+                        h+='</section>';
                     }
                     if(silenc.length){
                         if(!socios.length){
+                            h+='<section class="home-card">';
                             h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
                             h+='<div class="grid3-wrap'+(silenc.length<=2?' solo':'')+'">';
                             silenc.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                             h+='</div>';
+                            h+='</section>';
                         } else {
                             h+=renderMasOpciones(silenc,gIdx,function(r){return catCmd(r.nombre)});
                         }
@@ -2070,6 +2084,7 @@
                         });
                         h+='</div></div>';
                     }
+                    h+='<section class="home-card">';
                     h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+homeBy.socios.length+'</div>';
                     if(homeBy.socios.length){
                         var _socVis=window._showSocios?homeBy.socios:homeBy.socios.slice(0,8); // home corto: preview de 8
@@ -2084,6 +2099,7 @@
                                 :'<button class="ver-otros-btn" onclick="toggleSocios()"><span class="ver-otros-title">Ver todos los locales <span class="ver-otros-count">'+homeBy.socios.length+'</span></span></button>';
                         }
                     }
+                    h+='</section>';
                     // "Más opciones": no-aliados (silenciosos). Visibles para dar variedad,
                     // sin badges ni promo, separados de los socios. Preview + expandir el resto.
                     h+=renderMasOpciones(homeBy.silenciosos,homeBy.socios.length,function(r){return 'openRest(\''+jsEsc(r.nombre)+'\')'});
