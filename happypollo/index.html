@@ -288,10 +288,10 @@
   .card{
     position:relative;
     display:flex;flex-direction:column;
-    background:var(--crema-card);
+    background:#FFFFFF;
     border:2px solid var(--amarillo);
     border-radius:20px;padding:12px 11px 12px;
-    box-shadow:var(--sombra-calida);
+    box-shadow:0 10px 26px rgba(173,24,38,.14);
     opacity:0;transform:translateY(16px);
     transition:transform var(--t), box-shadow var(--t), border-color var(--t), opacity var(--t);
   }
@@ -740,7 +740,7 @@
   };
   MENU.forEach(function(it){ if(FOTOS[it.nombre_item]) it.foto = FOTOS[it.nombre_item]; });
 
-  var CAT_ORDER = ["Combos","Promos","Cajita Feliz","Menu de Presas","Salchipapas","Happy Burger","Porciones","Bebidas"];
+  var CAT_ORDER = ["Menu de Presas","Combos","Promos","Cajita Feliz","Salchipapas","Happy Burger","Porciones","Bebidas"];
   var CAT_EMOJI = {"Combos":"🍗","Promos":"🔥","Cajita Feliz":"🎁","Menu de Presas":"🍖","Salchipapas":"🌭","Happy Burger":"🍔","Porciones":"🍟","Bebidas":"🥤"};
   var FEAT_CATS = {"Combos":true,"Promos":true};
   var PRECIO_ANTES = {"Promo Martes":8.4}; // referencia visual: 3 x (presa individual + papas)
