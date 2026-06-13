@@ -270,6 +270,10 @@
         .foto-zoom-sub{font-size:0.86rem;color:var(--gris);font-weight:700;margin-top:4px}
         .foto-zoom-cta{display:block;width:calc(100% - 36px);margin:14px 18px 18px;padding:15px;border:none;border-radius:14px;background:var(--acc);color:#111;font-weight:900;font-size:1rem;font-family:inherit;cursor:pointer}
         .foto-zoom-cta:active{transform:scale(0.98)}
+        .foto-zoom-note{text-align:center;font-size:0.74rem;color:var(--gris);font-weight:600;padding:0 18px 16px;margin-top:-6px}
+        /* CTA con verbo en la tarjeta del carril (mejor que un "+" mudo) */
+        .dest-cta-full{margin-top:9px;padding:9px 0;border-radius:11px;background:var(--acc);color:#111;font-weight:800;font-size:0.82rem;text-align:center;letter-spacing:-0.01em}
+        .dest-cta-full.in-cart{background:rgba(34,197,94,0.16);color:#16A34A;border:1px solid rgba(34,197,94,0.4)}
 
         /* Cart floating — V4: Premium two-section bar (dark + orange CTA) */
         .cart-float{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:94%;max-width:402px;z-index:60;animation:cart-rise 0.35s cubic-bezier(0.34,1.3,0.64,1)}
@@ -1146,7 +1150,11 @@
                         seen[k]=1;seenFoto[p.foto_url]=1;porRest[p.rest]=(porRest[p.rest]||0)+1;
                         pick.push(p);
                     });
-                    window._destHome=pick.slice(0,12);
+                    // Baratos primero: el primer precio que ve el cliente FRÍO fija el ancla de "qué tan cara es la app".
+                    // Buckets por precio base; dentro de cada uno se conserva la rotación diaria (dailyShuffle previo).
+                    var bA=[],bB=[],bC=[];
+                    pick.forEach(function(p){var b=Number(p.precio_base)||0;if(b<8)bA.push(p);else if(b<12)bB.push(p);else bC.push(p);});
+                    window._destHome=bA.concat(bB,bC).slice(0,12);
                     window._destHomeLoading=false;
                     try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}catch(e){}
                 })
@@ -1159,7 +1167,7 @@
                 return sk+'</div>';
             }
             if(!window._destHome.length) return '';
-            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">Toca la foto para verla 🔍</span></div><div class="destacados-scroll">';
+            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">Recién hechos · listos en minutos 🛵</span></div><div class="destacados-scroll">';
             window._destHome.forEach(function(p,idx){
                 var ci=findCart(p.rest,p.nombre);
                 var qty=ci?ci.qty:0;
@@ -1173,8 +1181,8 @@
                     '<div class="dest-footer">'+
                         (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
                         '<span class="dest-price">'+(p.porUnidad?'$'+Number(p.precio).toFixed(2)+'/u':'$'+Number(p.precio).toFixed(2))+'</span>'+
-                        (qty?'<span class="dest-qty-mini">×'+qty+'</span>':(p.especial?'<span class="dest-plus" aria-label="Ver">›</span>':'<span class="dest-plus" aria-label="Agregar">+</span>'))+
                     '</div>'+
+                    '<div class="dest-cta-full'+(qty?' in-cart':'')+'">'+(qty?'✓ '+qty+' en el carrito':(p.especial?'Elegir →':'Agregar +'))+'</div>'+
                 '</div>';
             });
             return h+'</div>';
@@ -1197,7 +1205,8 @@
                     '<div class="foto-zoom-name">'+esc(p.nombre)+'</div>'+
                     '<div class="foto-zoom-sub">'+esc(p.rest)+' · $'+Number(p.precio).toFixed(2)+(p.porUnidad?'/u':'')+'</div>'+
                 '</div>'+
-                '<button class="foto-zoom-cta" id="foto-zoom-cta">'+(p.especial?'Ver en el restaurante →':'Agregar al carrito 🛒')+'</button>'+
+                '<button class="foto-zoom-cta" id="foto-zoom-cta">'+(p.especial?'Armar mi pedido →':'Agregar — $'+Number(p.precio).toFixed(2)+(p.porUnidad?'/u':'')+' 🛒')+'</button>'+
+                '<div class="foto-zoom-note">Sin recargos · pagas el precio del local</div>'+
             '</div>';
             document.body.appendChild(ov);
             var cta=document.getElementById('foto-zoom-cta');
@@ -1833,7 +1842,7 @@
                         '<div class="home-v2-loc">📍 Riobamba, Ecuador</div>'+
                         '<div class="home-v2-greeting">'+gr.g+'</div>'+
                     '</div>'+
-                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">🛒 '+(window._cart.length?cartTotals().items+' items':'Vacio')+'</button>'+
+                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">'+(window._cart.length?'🛒 '+cartTotals().items+' items':'🛒')+'</button>'+
                 '</div>'+
                 '<button class="search-hero" onclick="showSearch()">'+
                     '<span class="search-hero-icon">🔍</span>'+
