@@ -1081,7 +1081,15 @@
     document.querySelectorAll(".chip").forEach(function(ch){ch.classList.toggle("active",ch.dataset.cat===c);});
     var act=chipMap[c];
     if(act){$("#chips").scrollTo({left:act.offsetLeft-16,behavior:"smooth"});}
-    if(window.scrollY>0) window.scrollTo({top:0,behavior:"smooth"});
+    // NO saltar al inicio (hero): si estás dentro de la lista, baja apenas a donde
+    // empieza la categoría, bajo las pestañas fijas → se siente como pestañas, no recarga
+    var menuEl=document.getElementById("menu");
+    if(menuEl){
+      var hdrH=(parseInt(getComputedStyle(document.documentElement).getPropertyValue("--header-h"))||72)
+              +(parseInt(getComputedStyle(document.documentElement).getPropertyValue("--nav-h"))||58);
+      var menuTop=menuEl.getBoundingClientRect().top+window.scrollY-hdrH-8;
+      if(window.scrollY>menuTop+2) window.scrollTo({top:menuTop,behavior:"auto"});
+    }
   }
   chipsEl.addEventListener("click",function(e){
     var a=e.target.closest("a.chip"); if(!a)return;
