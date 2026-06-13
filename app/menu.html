@@ -258,6 +258,17 @@
         .dest-plus{width:30px;height:30px;border-radius:50%;background:var(--acc);color:#111;border:none;font-weight:900;font-size:1.15rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s;box-shadow:0 2px 8px rgba(255,182,39,0.2);flex-shrink:0}
         .dest-plus:active{transform:scale(0.88)}
         .dest-qty-mini{background:var(--acc);color:#111;border-radius:100px;padding:4px 10px;font-weight:900;font-size:0.74rem;display:inline-flex;align-items:center;gap:4px}
+        .dest-rest-tag{font-size:0.68rem;color:var(--gris);font-weight:700;margin:7px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        /* Lightbox de foto (tap para ampliar) */
+        .foto-zoom{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.84);display:flex;align-items:center;justify-content:center;padding:18px}
+        .foto-zoom-box{position:relative;width:100%;max-width:430px;background:var(--card);border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,0.65)}
+        .foto-zoom-img{width:100%;max-height:62vh;object-fit:cover;display:block;background:#000}
+        .foto-zoom-x{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;font-size:1.15rem;font-weight:800;cursor:pointer;z-index:2;line-height:1}
+        .foto-zoom-info{padding:14px 18px 4px}
+        .foto-zoom-name{font-weight:800;font-size:1.12rem;letter-spacing:-0.01em;line-height:1.2}
+        .foto-zoom-sub{font-size:0.86rem;color:var(--gris);font-weight:700;margin-top:4px}
+        .foto-zoom-cta{display:block;width:calc(100% - 36px);margin:14px 18px 18px;padding:15px;border:none;border-radius:14px;background:var(--acc);color:#111;font-weight:900;font-size:1rem;font-family:inherit;cursor:pointer}
+        .foto-zoom-cta:active{transform:scale(0.98)}
 
         /* Cart floating — V4: Premium two-section bar (dark + orange CTA) */
         .cart-float{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:94%;max-width:402px;z-index:60;animation:cart-rise 0.35s cubic-bezier(0.34,1.3,0.64,1)}
@@ -1083,6 +1094,109 @@
                 });
         }
 
+        // ── Home food rail: platos con FOTO de aliados (cross-restaurant) ──
+        // Muestra COMIDA real apenas entra el cliente (no solo logos). window._destHome:
+        // undefined=no cargado · []=cargó vacío/falló · [..]=platos. Se inyecta por id sin re-render global.
+        function loadDestacadosHome(){
+            if(window._destHome!==undefined||window._destHomeLoading) return;
+            if(!(sessionData&&sessionData.resultados&&sessionData.resultados.length)) return; // catálogo aún no listo
+            window._destHomeLoading=true;
+            var url=SB_URL+'/rest/v1/menu_items?select=id,nombre_item,precio,categoria_menu,descripcion,foto_url,cargo_envase,restaurante_id&disponible=eq.true&foto_url=not.is.null&limit=80';
+            fetch(url,{headers:supaHeaders()})
+                .then(function(r){return r.json()})
+                .then(function(items){
+                    var out=[];
+                    (items||[]).forEach(function(it){
+                        if(!it.foto_url||!String(it.foto_url).trim()) return;
+                        var rest=getRestById(it.restaurante_id);
+                        if(!rest) return;                              // rest no está en la sesión
+                        if(rest.tipo_acuerdo!=='aliado') return;       // solo aliados (excluye Rodri Pollos silencioso)
+                        if(isRestOpen(rest.horario)===false) return;   // no ofrecer comida de locales cerrados
+                        var alm=parseAlmuerzo(it.descripcion);
+                        var win=alm?null:parseWings(it.descripcion);
+                        if(win&&win.dia!=null&&new Date().getDay()!==win.dia) return; // promo de otro día: ocultar
+                        var especial=!!(alm||win);
+                        var cat=it.categoria_menu||'General';
+                        // Configurables (almuerzo/wings): el precio REAL vive en el JSON, no en la columna.
+                        var base=especial
+                            ? (Number(alm?alm.precio:(win.porUnidad?win.precioUnidad:win.precio))||Number(it.precio)||0)
+                            : (Number(it.precio)||0);
+                        if(base<=0) return;
+                        out.push({
+                            rest:rest.nombre,
+                            nombre:it.nombre_item,
+                            precio:applyTierPricing(base,rest,cat),
+                            precio_regular:especial?null:precioRegular(base,rest,cat),
+                            precio_base:base,
+                            delivery:Number(rest.precio_delivery)||0,
+                            foto_url:it.foto_url,
+                            cargo_envase:Number(it.cargo_envase)||0,
+                            especial:especial,
+                            porUnidad:!!(win&&win.porUnidad)
+                        });
+                    });
+                    window._destHome=dailyShuffle(out).slice(0,12);
+                    window._destHomeLoading=false;
+                    try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}catch(e){}
+                })
+                .catch(function(){window._destHomeLoading=false;window._destHome=[];try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML='';}catch(e){}}); // []=colapsa, no reintenta ni deja skeleton
+        }
+        function homeFoodRailInner(){
+            if(window._destHome===undefined){
+                var sk='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">Antojos con foto</span></div><div class="destacados-scroll">';
+                for(var i=0;i<4;i++) sk+='<div class="dest-card" style="border:none;height:210px;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:skel-shimmer 1.6s ease-in-out infinite"></div>';
+                return sk+'</div>';
+            }
+            if(!window._destHome.length) return '';
+            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">Toca la foto para verla 🔍</span></div><div class="destacados-scroll">';
+            window._destHome.forEach(function(p,idx){
+                var ci=findCart(p.rest,p.nombre);
+                var qty=ci?ci.qty:0;
+                var click=p.especial
+                    ?'openRest(\''+jsEsc(p.rest)+'\')'
+                    :'addCart(\''+jsEsc(p.rest)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+p.delivery+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+','+(p.precio_regular||0)+','+(p.precio_base||0)+')';
+                h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();'+click+'">'+
+                    '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
+                    '<div class="dest-name">'+esc(p.nombre)+'</div>'+
+                    '<div class="dest-rest-tag">'+esc(p.rest)+'</div>'+
+                    '<div class="dest-footer">'+
+                        (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
+                        '<span class="dest-price">'+(p.porUnidad?'$'+Number(p.precio).toFixed(2)+'/u':'$'+Number(p.precio).toFixed(2))+'</span>'+
+                        (qty?'<span class="dest-qty-mini">×'+qty+'</span>':(p.especial?'<span class="dest-plus" aria-label="Ver">›</span>':'<span class="dest-plus" aria-label="Agregar">+</span>'))+
+                    '</div>'+
+                '</div>';
+            });
+            return h+'</div>';
+        }
+        function renderHomeFoodRail(){
+            if(window._destHome===undefined) loadDestacadosHome();
+            return '<section class="destacados" id="home-food-rail">'+homeFoodRailInner()+'</section>';
+        }
+        // Lightbox: tocar la foto la abre en grande + botón agregar (idx = posición en _destHome).
+        window.zoomFoto=function(idx){
+            var p=(window._destHome||[])[idx];
+            if(!p) return;
+            var ov=document.createElement('div');
+            ov.className='foto-zoom';
+            ov.onclick=function(e){if(e.target===ov) cerrarZoom();};
+            ov.innerHTML='<div class="foto-zoom-box">'+
+                '<button class="foto-zoom-x" aria-label="Cerrar" onclick="cerrarZoom()">✕</button>'+
+                '<img class="foto-zoom-img" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'">'+
+                '<div class="foto-zoom-info">'+
+                    '<div class="foto-zoom-name">'+esc(p.nombre)+'</div>'+
+                    '<div class="foto-zoom-sub">'+esc(p.rest)+' · $'+Number(p.precio).toFixed(2)+(p.porUnidad?'/u':'')+'</div>'+
+                '</div>'+
+                '<button class="foto-zoom-cta" id="foto-zoom-cta">'+(p.especial?'Ver en el restaurante →':'Agregar al carrito 🛒')+'</button>'+
+            '</div>';
+            document.body.appendChild(ov);
+            var cta=document.getElementById('foto-zoom-cta');
+            cta.onclick=function(){
+                if(p.especial){cerrarZoom();openRest(p.rest);}
+                else{addCart(p.rest,p.nombre,p.precio,p.delivery,p.foto_url||'',p.cargo_envase||0,p.precio_regular||0,p.precio_base||0);cerrarZoom();}
+            };
+        };
+        window.cerrarZoom=function(){var ov=document.querySelector('.foto-zoom');if(ov)ov.parentNode.removeChild(ov);};
+
         // ── CAMBIO 2: localStorage para carrito ──
         function getCartKey(){return 'dewan_cart_'+(token||'anon_v2')}
         function saveCart(){
@@ -1831,6 +1945,7 @@
                     }
                 } else {
                     // Home sin filtro: socios primero, silenciosos detrás de botón
+                    h+=renderHomeFoodRail();   // 🔥 carril de COMIDA con foto (aliados) arriba
                     var homeBy=partitionBySocio(rests);
                     // Sección destacada: carousel horizontal con aliados (solo si hay aliados)
                     var aliadosDestacados=dailyShuffle(homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'}));
@@ -2096,9 +2211,15 @@
             cats.sort(function(a,b){var ra=_catRank(a),rb=_catRank(b);if(ra!==rb)return ra-rb;return a.localeCompare(b)});
             var showCat=cats.length>1||(cats.length===1&&cats[0]!=='General');
 
-            // ── Destacados carousel (curatorial: primeros platos del menú) ──
-            if(prods.length>=3){
-                var destacados=prods.slice(0,Math.min(6,prods.length));
+            // ── Destacados carousel (SOLO platos con foto real; sin foto no se muestra) ──
+            var _destConFoto=prods.filter(function(p){
+                if(!(p.foto_url&&String(p.foto_url).trim())) return false;
+                var _w=parseAlmuerzo(p.descripcion)?null:parseWings(p.descripcion);
+                if(_w&&_w.dia!=null&&new Date().getDay()!==_w.dia) return false; // promo de otro día: no contar
+                return true;
+            });
+            if(_destConFoto.length>=2){
+                var destacados=_destConFoto.slice(0,8);
                 h+='<section class="destacados">'+
                     '<div class="destacados-head">'+
                         '<span class="destacados-title">✨ Destacados</span>'+
