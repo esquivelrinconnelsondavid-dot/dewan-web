@@ -1108,9 +1108,10 @@
                     var out=[];
                     (items||[]).forEach(function(it){
                         if(!it.foto_url||!String(it.foto_url).trim()) return;
+                        if(esBebida(it.categoria_menu)) return;        // bebidas NO van en el carril de comida
                         var rest=getRestById(it.restaurante_id);
                         if(!rest) return;                              // rest no está en la sesión
-                        if(rest.tipo_acuerdo!=='aliado') return;       // solo aliados (excluye Rodri Pollos silencioso)
+                        if(rest.tipo_acuerdo!=='aliado'&&rest.tipo_acuerdo!=='cliente_paga') return; // aliados + cliente_paga (excluye silenciosos como Rodri Pollos)
                         if(isRestOpen(rest.horario)===false) return;   // no ofrecer comida de locales cerrados
                         var alm=parseAlmuerzo(it.descripcion);
                         var win=alm?null:parseWings(it.descripcion);
@@ -1135,7 +1136,16 @@
                             porUnidad:!!(win&&win.porUnidad)
                         });
                     });
-                    window._destHome=dailyShuffle(out).slice(0,12);
+                    // dedupe (mismo plato o misma foto) + máx 3 por restaurante, mezclado por día
+                    var seen={},seenFoto={},porRest={},pick=[];
+                    dailyShuffle(out).forEach(function(p){
+                        var k=p.rest+'|'+p.nombre;
+                        if(seen[k]||seenFoto[p.foto_url]) return;       // no repetir platos
+                        if((porRest[p.rest]||0)>=3) return;            // máx 3 por restaurante
+                        seen[k]=1;seenFoto[p.foto_url]=1;porRest[p.rest]=(porRest[p.rest]||0)+1;
+                        pick.push(p);
+                    });
+                    window._destHome=pick.slice(0,12);
                     window._destHomeLoading=false;
                     try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}catch(e){}
                 })
@@ -1196,6 +1206,23 @@
             };
         };
         window.cerrarZoom=function(){var ov=document.querySelector('.foto-zoom');if(ov)ov.parentNode.removeChild(ov);};
+        // Lightbox solo-ver (para fotos dentro del restaurante: destacados + menú). El "+" está en la tarjeta.
+        window.zoomFotoRaw=function(foto,nombre,sub){
+            if(!foto) return;
+            var ov=document.createElement('div');
+            ov.className='foto-zoom';
+            ov.onclick=function(e){if(e.target===ov) cerrarZoom();};
+            ov.innerHTML='<div class="foto-zoom-box">'+
+                '<button class="foto-zoom-x" aria-label="Cerrar" onclick="cerrarZoom()">✕</button>'+
+                '<img class="foto-zoom-img" src="'+esc(foto)+'" alt="'+esc(nombre||'')+'">'+
+                '<div class="foto-zoom-info">'+
+                    '<div class="foto-zoom-name">'+esc(nombre||'')+'</div>'+
+                    (sub?'<div class="foto-zoom-sub">'+esc(sub)+'</div>':'')+
+                '</div>'+
+                '<button class="foto-zoom-cta" onclick="cerrarZoom()">Cerrar</button>'+
+            '</div>';
+            document.body.appendChild(ov);
+        };
 
         // ── CAMBIO 2: localStorage para carrito ──
         function getCartKey(){return 'dewan_cart_'+(token||'anon_v2')}
@@ -2214,6 +2241,7 @@
             // ── Destacados carousel (SOLO platos con foto real; sin foto no se muestra) ──
             var _destConFoto=prods.filter(function(p){
                 if(!(p.foto_url&&String(p.foto_url).trim())) return false;
+                if(esBebida(p.categoria)) return false; // bebidas NO van en destacados
                 var _w=parseAlmuerzo(p.descripcion)?null:parseWings(p.descripcion);
                 if(_w&&_w.dia!=null&&new Date().getDay()!==_w.dia) return false; // promo de otro día: no contar
                 return true;
@@ -2236,7 +2264,7 @@
                         var almQty=countAlmuerzoCart(r.nombre,p.nombre);
                         var precioDisp=almData.precio?'$'+Number(almData.precio).toFixed(2):'—';
                         h+='<div class="dest-card'+(almQty?' in-cart':'')+'" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">'+
-                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>🍱</div>\'">':'<div class="dest-emoji">🍱</div>')+
+                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>🍱</div>\'">':'<div class="dest-emoji">🍱</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">'+precioDisp+'</span>'+
@@ -2254,7 +2282,7 @@
                             ?'openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')'
                             :'addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)';
                         h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();'+wClick+'">'+
-                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="dest-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
+                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="dest-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">$'+wPrecio.toFixed(2)+'</span>'+
@@ -2265,7 +2293,7 @@
                         var ci=findCart(r.nombre,p.nombre);
                         var qty=ci?ci.qty:0;
                         h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+','+(p.precio_regular||0)+','+(p.precio_base||0)+')">'+
-                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
+                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
                                 (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
@@ -2318,7 +2346,7 @@
                         var precioDisplay=almData.precio?'$'+Number(almData.precio).toFixed(2):'Consultar';
                         h+='<div class="prod-card'+(almQty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
-                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>🍱</div>\'">':'<div class="prod-emoji">🍱</div>')+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>🍱</div>\'">':'<div class="prod-emoji">🍱</div>')+
                                 '<div class="prod-info">'+
                                     ((almQty)?'<div class="prod-badges">'+
                                         
@@ -2350,7 +2378,7 @@
                             :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)">+</button>';
                         h+='<div class="prod-card'+(wQty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
-                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="prod-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="prod-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
                                 '<div class="prod-info">'+
                                     (wQty?'<div class="prod-badges"><span class="badge badge-cart">×'+wQty+' en carrito</span></div>':'')+
                                     '<div class="prod-name">'+esc(p.nombre)+'</div>'+
@@ -2369,7 +2397,7 @@
                         h+='<div class="prod-card'+(qty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
                                 (p.precio_regular&&p.precio_regular>p.precio?'<span class="prod-sello">-'+Math.round((p.precio_regular-p.precio)/p.precio_regular*100)+'%</span>':'')+
-                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                                 '<div class="prod-info">'+
                                     ((qty)?'<div class="prod-badges">'+
                                         
