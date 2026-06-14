@@ -3206,7 +3206,20 @@
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
             h+='<div class="loc-section" id="loc-section">';
             h+='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>';
-            if(window._clientGPS){
+            if(!OP_MODE){
+                // CLIENTE: GPS rápido (un toque) O marcar/arrastrar el pin en el mapa (sin forzar GPS).
+                // Cualquiera de los dos fija _clientGPS → habilita el pedido y calcula el envío.
+                if(window._clientGPS){
+                    h+='<div class="loc-gps-ok"><span>✅ Tu ubicación está marcada — puedes ajustar el pin abajo</span></div>';
+                }
+                h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación (GPS)</button>';
+                h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px;text-align:center"></div>';
+                h+='<div style="text-align:center;font-size:0.82rem;color:var(--gris-2);font-weight:800;margin:12px 0 8px">— o marca tu casa en el mapa —</div>';
+                h+='<div id="op-map" style="height:240px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>';
+                h+='<div style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:6px;text-align:center">👆 Toca o arrastra el pin hasta tu casa</div>';
+                h+='<div class="loc-ref-label" style="margin-top:14px">Referencia para el motorizado (opcional)</div>';
+                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: casa azul, portón negro, 2do piso, junto a..." value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
+            } else if(window._clientGPS){
                 h+='<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>';
                 h+='<div class="loc-ref-label">Agregar referencia (opcional)</div>';
                 h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
@@ -3257,7 +3270,7 @@
                     '<div class="loc-missing-icon">⚠️</div>'+
                     '<div class="loc-missing-content">'+
                         '<div class="loc-missing-title">Falta tu ubicación</div>'+
-                        '<div class="loc-missing-text">Toca el botón 📍 <strong>"Toca aquí para poner tu ubicación"</strong> de arriba 👆 para calcular tu envío y poder confirmar el pedido.</div>'+
+                        '<div class="loc-missing-text">Usa <strong>📍 mi ubicación (GPS)</strong> o <strong>marca tu casa en el mapa</strong> 👆 para calcular tu envío y confirmar el pedido.</div>'+
                     '</div>'+
                 '</div>';
                 // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
@@ -3274,7 +3287,7 @@
             }
             h+='</div>';
             app.innerHTML=h;
-            if(OP_MODE) setTimeout(opInitMap,60); // el innerHTML destruyó el mapa anterior: recrearlo (restaura marker desde _clientGPS)
+            setTimeout(opInitMap,60); // recrear el mapa tras el re-render (cliente o centralista); restaura el marker desde _clientGPS
             document.getElementById('cart-float').style.display='none';
         };
 
@@ -3595,7 +3608,7 @@
         // Se llama tras cada render del carrito (showCart → setTimeout): el innerHTML destruye el mapa,
         // así que SIEMPRE se crea uno nuevo y se restaura el marker desde _clientGPS (venga del mapa o del pin pegado).
         function opInitMap(){
-            if(!OP_MODE) return;
+            // Sirve para CLIENTE y centralista: basta con que exista el div del mapa en el carrito.
             if(!document.getElementById('op-map')) return; // no estamos en el carrito (o carrito vacío)
             opLoadLeaflet(function(){
                 var el=document.getElementById('op-map');
