@@ -864,6 +864,16 @@
         // Persistir ubicación: la dirección siempre; el GPS solo si es fresco (<2h) para no mandar a una ubicación vieja.
         function guardarUbic(){if(OP_MODE)return;try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:Date.now()}))}catch(e){}}
         function restaurarUbic(){try{var d=JSON.parse(localStorage.getItem('dewan_ubic')||'null');if(!d)return;if(d.addr)window._clientAddr=d.addr;if(d.gps&&d.ts&&(Date.now()-d.ts)<2*60*60*1000)window._clientGPS=d.gps;}catch(e){}}
+        // Pixel Meta: avisar cuando el cliente FIJA su ubicación (GPS o pin) = paso fuerte de intención, casi-pedido.
+        // Una sola vez por sesión y solo para el cliente real (no la centralista).
+        window._ubicPixelFired=false;
+        function trackUbicacionPixel(){
+          try{
+            if(OP_MODE||window._ubicPixelFired)return;
+            window._ubicPixelFired=true;
+            if(typeof fbq==='function') fbq('track','InitiateCheckout');
+          }catch(e){}
+        }
         restaurarUbic();
         // OP_MODE: jamás arrancar con un GPS restaurado (sería la ubicación de OTRO cliente o de la central)
         if(OP_MODE) window._clientGPS=null;
@@ -3519,6 +3529,7 @@
             if(btn){btn.disabled=true;btn.textContent='🔍 Buscando...';}
             navigator.geolocation.getCurrentPosition(function(pos){
                 window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};guardarUbic();
+                trackUbicacionPixel();
                 // Recalcular delivery en el carrito con nueva ubicación
                 var rests=getFilteredRestaurantes();
                 var deliveryByRest={};
@@ -3643,6 +3654,7 @@
             }
             window._clientGPS={lat:la,lng:lo}; // strings: el mensaje WA los concatena tal cual y haversine los coerce
             window._opGpsApplied='map';
+            trackUbicacionPixel();
             window._opGpsRaw=''; // el pin pegado (si había) ya no manda: al re-render el input queda limpio
             // Recalcular delivery del carrito con la nueva ubicación (mismo patrón que opParseGPS/requestGPSCart)
             var rests=getFilteredRestaurantes();
