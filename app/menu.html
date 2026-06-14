@@ -1024,15 +1024,18 @@
         //  - Aliado: entre semana = precio del local; fin de semana = +markup_pct (sin charm,
         //    para que el bot reconstruya la base exacta). Comisión 10% va aparte (la absorbe el local).
         //  - cliente_paga: +markup_pct con charm .49/.99 SIEMPRE (el cliente asume).
+        // [14-jun] Redondeo cash-friendly: sube al multiplo de $0.05 (termina en 0 o 5).
+        // El cliente paga este precio; la base local va aparte (Token #centavos), el reparto NO se toca.
+        function redondear5(x){ var c=Math.round(x*100); return (Math.ceil(c/5)*5)/100; }
         function applyTierPricing(precioBase,rest,categoria){
             if(!rest||esBebida(categoria)||!precioBase||precioBase<=0) return precioBase;
             var ta=rest.tipo_acuerdo, mk=Number(rest.markup_pct)||0;
             if(ta==='aliado'){
-                if(mk<=0) return precioBase;                         // aliado sin markup = precio del local exacto
-                return Math.round(precioBase*(100+mk))/100;          // aliado con markup = +mk% TODOS los dias (sin charm, el bot reconstruye base)
+                if(mk<=0) return precioBase;                         // aliado sin markup = precio del local EXACTO (no redondear)
+                return redondear5(precioBase*(1+mk/100));            // aliado con markup = +mk% redondeado a $0.05 (todos los dias)
             }
             if(mk<=0) return precioBase;
-            return aplicarCharmPricing(precioBase*(1+mk/100));       // cliente_paga: +mk% .49/.99
+            return redondear5(precioBase*(1+mk/100));                // cliente_paga: +mk% redondeado a $0.05
         }
         // Precio "regular" tachado (SOLO aliados, no bebidas): el .49/.99. Siempre arriba del
         // precio cobrado para que el cliente vea el descuento. NUNCA se cobra. null = no mostrar.
