@@ -2250,6 +2250,7 @@
                     '<div class="skel-row" style="margin:10px 0"></div>'+
                     '<div class="skel-row" style="margin:10px 0"></div>'+
                 '</div>';
+                try{window.scrollTo(0,0);}catch(e){} // que el skeleton tambien arranque arriba
                 loadMenuItemsForRest(r.id).then(function(items){
                     r.productos=items||[];
                     if(currentView==='rest'&&currentRestIdx===nombre) openRest(nombre);
@@ -2568,6 +2569,7 @@
             });
             h+='</div>';
             app.innerHTML=h;
+            try{window.scrollTo(0,0);}catch(e){} // abrir restaurante SIEMPRE arranca arriba (Destacados primero)
             setupCatScrollSpy();
             updateCartFloat();
         };
