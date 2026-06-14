@@ -1028,21 +1028,19 @@
             if(!rest||esBebida(categoria)||!precioBase||precioBase<=0) return precioBase;
             var ta=rest.tipo_acuerdo, mk=Number(rest.markup_pct)||0;
             if(ta==='aliado'){
-                if(!esFinde()||mk<=0) return precioBase;            // entre semana = precio del local
-                return Math.round(precioBase*(100+mk))/100;          // finde = +mk% (sin charm)
+                if(mk<=0) return precioBase;                         // aliado sin markup = precio del local exacto
+                return Math.round(precioBase*(100+mk))/100;          // aliado con markup = +mk% TODOS los dias (sin charm, el bot reconstruye base)
             }
             if(mk<=0) return precioBase;
             return aplicarCharmPricing(precioBase*(1+mk/100));       // cliente_paga: +mk% .49/.99
         }
         // Precio "regular" tachado (SOLO aliados, no bebidas): el .49/.99. Siempre arriba del
         // precio cobrado para que el cliente vea el descuento. NUNCA se cobra. null = no mostrar.
-        var REGULAR_PCT=5;
+        var REGULAR_PCT=0; // [honestidad] sin tachado fabricado; el sello -X% (descuentoPctRest) queda en 0
         function precioRegular(precioBase,rest,categoria){
-            if(!rest||rest.tipo_acuerdo!=='aliado'||esBebida(categoria)||!precioBase||precioBase<=0) return null;
-            var reg=aplicarCharmPricing(precioBase*(1+REGULAR_PCT/100));
-            // Honesto/sutil: si el redondeo .99 infla demasiado (platos baratos), NO mostrar tachado.
-            if(reg/precioBase>1.12) return null;
-            return reg; // se compara contra el precio cobrado en el render/checkout
+            // [honestidad 14-jun] tachado "antes $X" DESACTIVADO: era un ancla falsa (+5% que nunca se cobro,
+            // ilegal en EC + riesgo reputacional en ciudad chica). Solo reactivar si se carga un descuento REAL en BD.
+            return null;
         }
         // % de descuento que se muestra en la tarjeta del restaurante (solo aliados).
         function descuentoPctRest(rest){
@@ -1660,7 +1658,7 @@
         // Banner de promo en el home (gancho principal arriba): "Hasta 10% de descuento".
         function renderPromoBanner(){
             var sub=esFinde()
-                ? 'En aliados pagas lo mismo que en el local · sin recargos escondidos'
+                ? 'En aliados pagas el mismo precio del local · y pagas al recibir'
                 : 'Sin recargos escondidos · hoy con descuento en aliados 🔥';
             return '<div class="promo-home-banner">'+
                 '<div class="promo-home-banner-emoji">🛵</div>'+
@@ -2082,7 +2080,7 @@
                     if(socios.length){
                         h+='<section class="home-card">';
                         h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
-                        if(aliados.length) h+='<div class="aliados-banner">⭐ Precio del local · sin recargos'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
+                        if(aliados.length) h+='<div class="aliados-banner">⭐ Aliados de hoy'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
                         h+='<div class="grid3-wrap'+(socios.length<=2?' solo':'')+'">';
                         socios.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
                         h+='</div>';
@@ -2110,7 +2108,7 @@
                     aliadosDestacados.sort(function(a,b){var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);var va=sa===true?0:sa===null?1:2,vb=sb===true?0:sb===null?1:2;return va-vb;});
                     if(aliadosDestacados.length){
                         h+='<div class="destacados-section">';
-                        h+='<div class="destacados-title">⭐ <span class="destacados-title-acc">Aliados de hoy · Precio del local'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</span></div>';
+                        h+='<div class="destacados-title">⭐ <span class="destacados-title-acc">Aliados de hoy'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</span></div>';
                         h+='<div class="destacados-scroll">';
                         aliadosDestacados.forEach(function(r,idx){
                             var hasImg=r.imagen_url||r.logo_url||r.foto_url;
@@ -2127,7 +2125,7 @@
                                 '</div>'+
                                 '<div class="grid3-body">'+
                                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
-                                    '<div class="grid3-precio-local">✓ Precio del local</div>'+
+                                    ((Number(r.markup_pct)||0)===0?'<div class="grid3-precio-local">✓ Mismo precio que en el local</div>':'')+
                                     (promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005?'<div style="margin-top:3px"><span class="grid3-envio1">🛵 Hoy envío $1</span></div>':'')+
                                 '</div>'+
                             '</div>';
@@ -2328,7 +2326,7 @@
                 :'<span class="rest-pill is-neutral"><span>🛵</span> Envío al ubicar</span>';
             var distPill=r.distancia_km?'<span class="rest-pill is-neutral"><span>📍</span> '+r.distancia_km+' km</span>':'';
             // GUARDA: "Precio del local" SOLO aliado real (nunca cliente_paga, que lleva markup oculto).
-            var precioLocalPill=(r.tipo_acuerdo==='aliado')?'<span class="rest-pill rest-pill-aliado">✓ Precio del local</span>':'';
+            var precioLocalPill=(r.tipo_acuerdo==='aliado'&&(Number(r.markup_pct)||0)===0)?'<span class="rest-pill rest-pill-aliado">✓ Mismo precio que en el local</span>':'';
             // Envío $1 (socios cercanos, día de promo, con GPS para verificar cercanía).
             var _esSocio=(r.tipo_acuerdo==='aliado'||r.tipo_acuerdo==='cliente_paga');
             var envio1Pill=(promoEnvioDiaActivo()&&_esSocio&&window._clientGPS&&deliveryPrice>0&&deliveryPrice<=2.005)?'<span class="rest-pill rest-pill-envio1">🛵 Envío $1 (desde $8)</span>':'';
@@ -2657,7 +2655,7 @@
             // Gancho de valor en la pantalla de búsqueda vacía (antes no tenía nada)
             html+='<div class="aliados-banner">'+(promoEnvioDiaActivo()
                 ? '🛵 Hoy es '+nombreDiaPromo()+' de envío a $1 — en aliados cercanos, pedidos desde $8 (Lun-Mié)'
-                : '⭐ En aliados pagas el precio del local, sin recargos escondidos')+'</div>';
+                : '⭐ En aliados pagas el mismo precio del local')+'</div>';
             if(recent.length){
                 html+='<div class="search-section-title-v2">🕒 Recientes</div>';
                 html+='<div class="chip-row">';
@@ -2824,6 +2822,9 @@
         // titleCls=clase del título según la vista.
         function renderMasOpciones(sil,baseIdx,cmdFn,titleCls){
             if(!sil||!sil.length) return '';
+            // [14-jun] Logo-primero: locales con foto/logo arriba; los de bloque-letra al final.
+            // Sort ESTABLE (respeta el orden previo dentro de cada grupo).
+            sil=sil.slice().sort(function(a,b){var la=(a.logo_url||a.imagen_url||a.foto_url)?0:1;var lb=(b.logo_url||b.imagen_url||b.foto_url)?0:1;return la-lb;});
             var showAll=window._showSilenciosos;
             var vis=showAll?sil:sil.slice(0,SILENCIOSOS_PREVIEW);
             var h='<div id="silenciosos-section">';
@@ -2842,7 +2843,7 @@
         function renderAliadosSection(aliados,baseIdx,cmdFn,titleCls){
             if(!aliados||!aliados.length) return '';
             var h='<div class="'+(titleCls||'list-section-title')+'">⭐ Aliados</div>';
-            h+='<div class="aliados-banner">⭐ Precio del local · sin recargos'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
+            h+='<div class="aliados-banner">⭐ Aliados de hoy'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
             h+='<div class="grid3-wrap">';
             aliados.forEach(function(r,i){h+=renderRestCardGrid(r,baseIdx+i,cmdFn(r))});
             h+='</div>';
@@ -2970,7 +2971,7 @@
                 '<div class="grid3-body">'+
                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
                     (cat?'<div class="grid3-cat"><span class="grid3-cat-name">'+cat+'</span></div>':'')+
-                    (isAliado?'<div class="grid3-aliado-perks"><span class="grid3-pl">✓ Precio local</span>'+((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'')+
+                    (isAliado?'<div class="grid3-aliado-perks">'+((Number(r.markup_pct)||0)===0?'<span class="grid3-pl">✓ Mismo precio en el local</span>':'')+((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'')+
                     '<div class="grid3-meta">'+metaBits.join(' · ')+'</div>'+
                 '</div>'+
             '</div>';
@@ -3078,7 +3079,7 @@
                 var socios=aliados.concat(clientePaga); // aliados primero, luego cliente_paga
                 if(socios.length){
                     html+='<div class="search-section-title-v2">🏪 Restaurantes que venden "'+esc(query)+'"<span class="search-section-count">'+socios.length+'</span></div>';
-                    if(aliados.length) html+='<div class="aliados-banner">⭐ Precio del local · sin recargos'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
+                    if(aliados.length) html+='<div class="aliados-banner">⭐ Aliados de hoy'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</div>';
                     html+='<div class="grid3-wrap">';
                     socios.forEach(function(r){html+=renderRestCardGrid(r,globalIdx++,clickCmd(r))});
                     html+='</div>';
