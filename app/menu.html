@@ -1202,7 +1202,7 @@
                         out.push({
                             rest:rest.nombre,
                             nombre:it.nombre_item,
-                            precio:applyTierPricing(base,rest,cat),
+                            precio:(win&&win._promo)?base:applyTierPricing(base,rest,cat), // promo: precio del flyer es FINAL (sin recargo de finde)
                             precio_regular:especial?null:precioRegular(base,rest,cat),
                             precio_base:base,
                             delivery:Number(rest.precio_delivery)||0,
@@ -2405,7 +2405,8 @@
                         var wQty=countWingsCart(r.nombre,p.nombre);
                         var wPorUnidad=!!wingsData.porUnidad;
                         var wHasSauce=!!((wingsData.grupos&&wingsData.grupos.length)||(wingsData.salsas&&wingsData.salsas.length&&((wingsData.sabores||0)>0||wPorUnidad)));
-                        var wPrecio=applyTierPricing(Number(wPorUnidad?(wingsData.precioUnidad||0):(wingsData.precio||0)),r,p.categoria||'Alitas');
+                        var _wBaseD=Number(wPorUnidad?(wingsData.precioUnidad||0):(wingsData.precio||0));
+                        var wPrecio=wingsData._promo?_wBaseD:applyTierPricing(_wBaseD,r,p.categoria||'Alitas');
                         var wClick=wHasSauce
                             ?'openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')'
                             :'addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)';
@@ -2497,7 +2498,7 @@
                         var wHasSauce=!!((wingsData.grupos&&wingsData.grupos.length)||(wingsData.salsas&&wingsData.salsas.length&&((wingsData.sabores||0)>0||wPorUnidad)));
                         var wSab=(wingsData.sabores||0)+' '+((wingsData.sabores||0)===1?'salsa':'salsas');
                         var wBase=wPorUnidad?(wingsData.precioUnidad||0):(wingsData.precio||0);
-                        var wPrecio=applyTierPricing(Number(wBase),r,p.categoria||'Alitas');
+                        var wPrecio=wingsData._promo?Number(wBase):applyTierPricing(Number(wBase),r,p.categoria||'Alitas');
                         var wDescTxt=(wingsData.grupos&&wingsData.grupos.length)
                             ?((wingsData.desc?esc(wingsData.desc)+' · ':'')+wingsData.grupos.map(function(g){return (g.emoji||'🌶️')+' Elige '+(g.elige||1)+' '+esc((g.label||'').toLowerCase());}).join(' · '))
                             :(wPorUnidad?'🌶️ Elige cantidad y salsas':(wingsData.desc?(esc(wingsData.desc)+(wHasSauce?' · 🌶️ Elige '+wSab:'')):('🌶️ Elige '+wSab+' (puedes repetir)')));
@@ -4100,7 +4101,7 @@
             if(!pfx) return null;
             // Tolerar saltos de línea metidos al copiar/pegar el SQL (ej. "BBQ\n Picante"),
             // que romperían el JSON. Colapsamos cualquier salto + espacios a un solo espacio.
-            try{ return JSON.parse(desc.slice(pfx.length).replace(/[\r\n]+\s*/g,' ')); }catch(_){ return null; }
+            try{ var _o=JSON.parse(desc.slice(pfx.length).replace(/[\r\n]+\s*/g,' ')); if(_o&&pfx==='PROMO_OPTS:') _o._promo=true; return _o; }catch(_){ return null; }
         }
         function countWingsCart(rest,nombre){
             var n=0; window._cart.forEach(function(c){if(c.restaurante===rest&&c.nombre===nombre&&c.wingsChoices)n++}); return n;
