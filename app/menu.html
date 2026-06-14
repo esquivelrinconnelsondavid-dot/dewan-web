@@ -3207,18 +3207,22 @@
             h+='<div class="loc-section" id="loc-section">';
             h+='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>';
             if(!OP_MODE){
-                // CLIENTE: GPS rápido (un toque) O marcar/arrastrar el pin en el mapa (sin forzar GPS).
-                // Cualquiera de los dos fija _clientGPS → habilita el pedido y calcula el envío.
+                // CLIENTE: el GPS es la opción HÉROE (un toque). El mapa = confirmación visual
+                // (ver tus calles) + ajuste del pin; y respaldo si el GPS no agarra.
                 if(window._clientGPS){
-                    h+='<div class="loc-gps-ok"><span>✅ Tu ubicación está marcada — puedes ajustar el pin abajo</span></div>';
+                    h+='<div class="loc-gps-ok"><span>✅ ¡Te ubicamos! Mira el mapa: ¿el pin está en tu casa?</span></div>';
+                    h+='<div id="op-map" style="height:240px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:8px"></div>';
+                    h+='<div style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:6px;text-align:center">👆 Si no está exacto, arrastra el pin a tu casa</div>';
+                    h+='<div class="loc-ref-label" style="margin-top:14px">Referencia para el motorizado (opcional)</div>';
+                    h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: casa azul, portón negro, 2do piso, junto a..." value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
+                } else {
+                    h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación</button>';
+                    h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px;text-align:center"></div>';
+                    h+='<div style="font-size:0.82rem;color:var(--gris-2);font-weight:700;margin-top:8px;text-align:center;line-height:1.4">👆 Un toque y verás tu casa en el mapa para confirmar 🛵</div>';
+                    h+='<div style="font-size:0.78rem;color:var(--gris-2);font-weight:700;margin:14px 0 6px;text-align:center">¿el GPS no agarra? marca tu casa en el mapa 👇</div>';
+                    h+='<div id="op-map" style="height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>';
+                    h+='<div style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 Toca tu casa en el mapa</div>';
                 }
-                h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación (GPS)</button>';
-                h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px;text-align:center"></div>';
-                h+='<div style="text-align:center;font-size:0.82rem;color:var(--gris-2);font-weight:800;margin:12px 0 8px">— o marca tu casa en el mapa —</div>';
-                h+='<div id="op-map" style="height:240px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>';
-                h+='<div style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:6px;text-align:center">👆 Toca o arrastra el pin hasta tu casa</div>';
-                h+='<div class="loc-ref-label" style="margin-top:14px">Referencia para el motorizado (opcional)</div>';
-                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: casa azul, portón negro, 2do piso, junto a..." value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
             } else if(window._clientGPS){
                 h+='<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>';
                 h+='<div class="loc-ref-label">Agregar referencia (opcional)</div>';
