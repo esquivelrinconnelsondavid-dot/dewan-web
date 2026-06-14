@@ -121,6 +121,8 @@
         .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
         .header-loc{display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--gris);font-weight:700}
         .header-title{font-size:1.35rem;font-weight:900;letter-spacing:-0.03em;margin-top:4px}
+        .home-trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px;margin-top:11px;font-size:0.72rem;font-weight:700;color:var(--gris-2);background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:9px 10px;line-height:1}
+        .home-trust .trust-dot{color:var(--border);font-weight:900}
         .btn-cart{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:9px 16px;cursor:pointer;color:var(--gris);font-weight:800;font-size:0.82rem;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.2s}
         .btn-cart.has-items{background:var(--acc);color:#111;border-color:var(--acc)}
 
@@ -1957,6 +1959,7 @@
                     '<span class="search-hero-text">'+(searchPrefill?esc(searchPrefill):'¿Qué se te antoja?')+'</span>'+
                     '<span class="search-hero-tag">BUSCAR</span>'+
                 '</button>'+
+                '<div class="home-trust"><span>🛵 Entregas en todo Riobamba</span><span class="trust-dot">·</span><span>💵 Pagas al recibir</span><span class="trust-dot">·</span><span>✓ Sin registro</span></div>'+
             '</div>';
 
             // 🔥 Carril de COMIDA arriba del todo (solo home sin filtro): la comida es lo que vende,
