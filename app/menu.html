@@ -1694,12 +1694,20 @@
         // Home: UN banner GANADOR. Lun-Mié gana el envío $1 (ritual del día) + cupón a chip;
         // el resto de días, prioridad VUELVE > cupón > Mundial > Precio del local.
         function renderHomeBanner(){
+            if(promoPartidoActiva()) return renderPartidoEnvioBanner();
             if(promoEnvioDiaActivo()) return renderEnvioPromoBanner()+renderCuponChip();
             var b=renderVuelveBanner(); if(b) return b;
             b=renderCuponBanner(); if(b) return b;
             b=renderMundialBanner(); if(b) return b;
             // Confianza sutil (cinta de 1 línea, no banner): resuelve las 3 dudas del cliente frío sin el peso del banner que David quitó.
             return '<div class="trust-strip">Precio del local · pagas al recibir · sin registro</div>';
+        }
+        // Banner GANADOR durante la ventana del partido: envío GRATIS. Lleva a "Antojos del Partido".
+        function renderPartidoEnvioBanner(){
+            return '<div class="mundial-banner" id="partido-envio-banner" onclick="toggleCategoryV2(\'partido\')">'+
+                '<div class="mundial-banner-title"><span class="mundial-flag">⚽</span> ¡Envío GRATIS durante el partido!</div>'+
+                '<div class="mundial-banner-sub">En pedidos desde $10 · toca para ver los Antojos del Partido 🇪🇨</div>'+
+            '</div>';
         }
         function renderMundialBanner(){
             if(!isMundial()||mundialBannerDismissed()) return '';
@@ -3213,8 +3221,9 @@
                 (t.subtotalRegular>t.subtotal?'<div class="cart-row cart-row-ahorro"><span class="cart-row-label">🎉 Ahorras</span><span class="cart-row-val">-$'+(t.subtotalRegular-t.subtotal).toFixed(2)+'</span></div>':'')+
                 (t.envases>0?'<div class="cart-row"><span class="cart-row-label">Envases</span><span class="cart-row-val">$'+t.envases.toFixed(2)+'</span></div>':'')+
                 (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Servicio DEWAN <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
-                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Envío'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
-                (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
+                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Envío'+(t.promoEnvio?(t.promoPartido?' <span class="promo-envio-badge">⚽ GRATIS partido</span>':' <span class="promo-envio-badge">🔥 Lun-Mié</span>'):'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+(t.promoPartido&&t.promoEnvio&&t.delivery<=0?'<span style="color:#22c55e;font-weight:900">GRATIS</span>':'$'+t.delivery.toFixed(2))+'</span></div>':'')+
+                (window._clientGPS&&t.promoPartido&&t.tieneLocalCercano&&t.subtotal<PROMO_PARTIDO.minSubtotal?'<div class="promo-nudge">⚽ Te '+((PROMO_PARTIDO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_PARTIDO.minSubtotal-t.subtotal).toFixed(2)+' para envío GRATIS (partido)</div>':'')+
+                (window._clientGPS&&!t.promoPartido&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
                 (cupEst.monto>0?'<div class="cart-row-cupon"><span class="lab">🎁 Cupón '+cupEst.codigo+'</span><span class="val">−$'+cupEst.monto.toFixed(2)+'</span></div>':'')+
                 (OP_MODE?'<div style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:6px;text-align:right;padding-right:4px">🎁 Cupones: los aplica el sistema según el cliente</div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Pagas</span><span class="cart-total-val">$'+totalConCupon.toFixed(2)+'</span></div>'+
@@ -3408,6 +3417,12 @@
         // cobra su tarifa completa; DEWAN absorbe la diferencia (cubierta por el markup de la comida).
         var PROMO_ENVIO={dias:[1,2,3],minSubtotal:8,precio:1.00,baseMax:2.00};
         function promoEnvioDiaActivo(){return PROMO_ENVIO.dias.indexOf(new Date().getDay())!==-1}
+        // ── Promo "Envío GRATIS durante el partido" (Mundial 2026) ──
+        // Ventana puntual fijada en UTC (NO depende de la zona del celular del cliente).
+        // 14-jun-2026 17:30–20:30 Ecuador (UTC-5) = 22:30–01:30 UTC. Para apagarla: poner end en el pasado.
+        // Solo socios, locales cercanos (base ≤ $2), pedidos ≥ $10. El moto cobra completo; DEWAN/socio absorbe.
+        var PROMO_PARTIDO={start:new Date('2026-06-14T22:30:00Z'),end:new Date('2026-06-15T01:30:00Z'),minSubtotal:10,precio:0.00,baseMax:2.00};
+        function promoPartidoActiva(){var n=new Date();return n>=PROMO_PARTIDO.start&&n<=PROMO_PARTIDO.end}
         // La promo de envío es un beneficio de socios: aliados y cliente_paga. Silenciosos NO.
         function esSocioPromo(restName){
             var r=getRestByName(restName);
@@ -3415,6 +3430,7 @@
         }
         // Delivery de UN local con la promo aplicada. baseDel=envío base del local; sub=subtotal de comida de TODO el pedido.
         function deliveryConPromo(baseDel,sub,restName){
+            if(promoPartidoActiva()&&sub>=PROMO_PARTIDO.minSubtotal&&baseDel>0&&baseDel<=PROMO_PARTIDO.baseMax+0.005&&esSocioPromo(restName)) return PROMO_PARTIDO.precio;
             if(promoEnvioDiaActivo()&&sub>=PROMO_ENVIO.minSubtotal&&baseDel>0&&baseDel<=PROMO_ENVIO.baseMax+0.005&&PROMO_ENVIO.precio<baseDel&&esSocioPromo(restName)) return PROMO_ENVIO.precio;
             return baseDel;
         }
@@ -3469,7 +3485,7 @@
                 }
             });
             serviceFee=Math.round(serviceFee*100)/100;
-            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,deliveryFull:delFull,promoEnvio:promoSavings>0,promoEnvioSavings:promoSavings,promoDiaActivo:promoEnvioDiaActivo(),tieneLocalCercano:tieneLocalCercano,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,total:sub+del+serviceFee+envases};
+            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,deliveryFull:delFull,promoEnvio:promoSavings>0,promoEnvioSavings:promoSavings,promoDiaActivo:promoEnvioDiaActivo(),promoPartido:promoPartidoActiva(),tieneLocalCercano:tieneLocalCercano,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,total:sub+del+serviceFee+envases};
         }
         // Animated count-up del total: anima de `from` a `to` con easeOutCubic
         function animateMoney(el,from,to,duration,suffix){
@@ -3510,7 +3526,11 @@
                     var pieces=t.items+' '+(t.items===1?'plato':'platos');
                     // Nudge de envío $1 viajando en el sticky (gradiente de meta). Prioridad sobre el cupón.
                     var envioNudge='';
-                    if(window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano){
+                    if(window._clientGPS&&t.promoPartido&&t.tieneLocalCercano){
+                        envioNudge=t.subtotal<PROMO_PARTIDO.minSubtotal
+                            ? ' · ⚽ suma $'+(PROMO_PARTIDO.minSubtotal-t.subtotal).toFixed(2)+' y tu envío es GRATIS'
+                            : ' · ✅ envío GRATIS por el partido ⚽';
+                    } else if(window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano){
                         envioNudge=t.subtotal<PROMO_ENVIO.minSubtotal
                             ? ' · 🛵 suma $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' y tu envío baja a $1'
                             : ' · ✅ hoy tu envío es $1';
