@@ -628,6 +628,7 @@
         /* Línea "qué vende" (categoría) + claim de aliado */
         .grid3-cat{display:flex;align-items:center;gap:5px;margin-top:2px;min-width:0}
         .grid3-cat-name{font-size:0.66rem;color:var(--acc);font-weight:800;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+        .grid3-suc{font-size:0.61rem;color:#6b7280;font-weight:800;margin-top:1px;line-height:1.18;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
         .grid3-pl{font-size:0.6rem;color:var(--green);font-weight:800;white-space:nowrap;flex:0 0 auto;display:flex;align-items:center;gap:2px}
         .grid3-aliado-perks{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:2px}
         .grid3-envio1{font-size:0.58rem;color:var(--cta-hover);font-weight:900;background:var(--cta-soft);border:1px solid rgba(217,58,11,0.30);border-radius:6px;padding:1px 5px;white-space:nowrap}
@@ -988,6 +989,11 @@
                 markup_pct:Number(r.markup_pct)||0
             };
         }
+
+        // Sucursal a mostrar en la tarjeta (cuando un local tiene varias sucursales y solo UNA trabaja con DEWAN).
+        // Clave = id del restaurante (estable). Para sumar más, agregar 'id-del-restaurante':'Nombre sucursal'.
+        var SUCURSALES={'465810e8-6cbc-4287-936d-582d6b9a58e6':'Parque Infantil'};
+        function sucursalHTML(r){var s=r&&(SUCURSALES[r.id]||r.sucursal);return s?'<div class="grid3-suc">📍 '+esc(s)+'</div>':'';}
 
         // === DEWAN Pricing v2 (2026-05-28) ===
         // Aplica markup + charm pricing (.49/.99) a un precio base de plato
@@ -2153,6 +2159,7 @@
                                 '</div>'+
                                 '<div class="grid3-body">'+
                                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
+                                    sucursalHTML(r)+
                                     ((Number(r.markup_pct)||0)===0?'<div class="grid3-precio-local">✓ Mismo precio que en el local</div>':'')+
                                     (promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005?'<div style="margin-top:3px"><span class="grid3-envio1">🛵 Hoy envío $1</span></div>':'')+
                                 '</div>'+
@@ -2998,6 +3005,7 @@
                 '</div>'+
                 '<div class="grid3-body">'+
                     '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
+                    sucursalHTML(r)+
                     (cat?'<div class="grid3-cat"><span class="grid3-cat-name">'+cat+'</span></div>':'')+
                     (isAliado?'<div class="grid3-aliado-perks">'+((Number(r.markup_pct)||0)===0?'<span class="grid3-pl">✓ Mismo precio en el local</span>':'')+((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'')+
                     '<div class="grid3-meta">'+metaBits.join(' · ')+'</div>'+
