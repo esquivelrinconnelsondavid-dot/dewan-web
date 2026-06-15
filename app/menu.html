@@ -820,6 +820,9 @@
         var token=new URLSearchParams(window.location.search).get('t');
         // MODO CENTRALISTA (2026-06-11): ?op=1 — la operadora arma el pedido por el cliente.
         var OP_MODE=new URLSearchParams(window.location.search).get('op')==='1';
+        // Deep-link de PAUTA (Meta): ?r=<slug-del-local> aterriza directo en ese local (con sus fotos),
+        // para que el anuncio NO caiga en la home sin fotos. Ej: pedir.dewansas.com?r=happy-pollo
+        var AD_REST=new URLSearchParams(window.location.search).get('r')||'';
         window._opTel='';      // WhatsApp del cliente (solo OP_MODE, NO persiste)
         window._opGpsRaw='';   // texto crudo del pin pegado (solo OP_MODE)
         window._opGpsApplied=null; // 'lat,lng' ya aplicado (evita re-render redundante)
@@ -1111,6 +1114,20 @@
                     console.log('%c[Aliados ('+aliados.length+')]','color:#FFD700;font-weight:bold',aliados);
                 }catch(e){console.warn('Diagnóstico tipo_acuerdo falló:',e)}
                 restoreCart();
+
+                // === Deep-link de PAUTA (Meta): ?r=<slug> abre ese local con sus fotos ===
+                // Prioridad sobre el deep-link de WhatsApp. Evita aterrizar en la home sin fotos.
+                if(AD_REST){
+                    var _adSlug=function(s){return removeAccents(String(s||'').toLowerCase()).replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');};
+                    var _adTarget=_adSlug(AD_REST);
+                    var _adMatch=(sessionData.resultados||[]).find(function(x){return _adSlug(x.nombre)===_adTarget;});
+                    if(_adMatch){
+                        try{console.log('%cDeep link PAUTA → '+_adMatch.nombre,'color:#1F9D55;font-weight:bold')}catch(e){}
+                        openRest(_adMatch.nombre);
+                        return;
+                    }
+                    try{console.warn('Deep link PAUTA: sin match para ?r='+AD_REST)}catch(e){}
+                }
 
                 // V4.4: Deep link inteligente desde WhatsApp
                 // Tres caminos según la palabra que envía el bot:
