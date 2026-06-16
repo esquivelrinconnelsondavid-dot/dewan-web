@@ -1012,6 +1012,15 @@
             if(!categoria) return false;
             return /bebida|jugo|frapp|michelada|mojito|milk based|batido|gaseosa|cerveza|c[oó]ctel|\bsoda\b|booble|refresco/i.test(categoria);
         }
+        // Local "de bebidas" (frappería / cafetería / juguería / bubble tea): su producto estrella ES la bebida,
+        // así que SÍ mostramos sus frapps/jugos con foto en el carril "Para ti" (ej. Buuba Té). NO aplica a una
+        // parrilla/pizzería que solo lista una gaseosa (esos siguen excluidos por esBebida en el carril).
+        function esLocalBebidas(rest){
+            if(!rest) return false;
+            if((rest.categoria_canonica||'').toLowerCase().indexOf('cafeter')!==-1) return true; // "Cafetería / Desayunos"
+            var n=removeAccents(((rest.nombre||'')+' '+(rest.categoria||'')+' '+(rest.tipo_restaurante||'')).toLowerCase());
+            return /frapp|bubble|boba|jugueri|smoothie|batido|heladeri|\bte\b|\btea\b|cafeteri|\bcafe\b/.test(n);
+        }
         // Adicionales / porciones / proteínas sueltas: son complementos, NO platos. No van en el carril de comida.
         function esAdicional(categoria,nombre){
             var c=categoria||'', n=nombre||'';
@@ -1219,11 +1228,13 @@
                     var out=[];
                     (items||[]).forEach(function(it){
                         if(!it.foto_url||!String(it.foto_url).trim()) return;
-                        if(esBebida(it.categoria_menu)) return;        // bebidas NO van en el carril de comida
                         if(esAdicional(it.categoria_menu,it.nombre_item)) return; // adicionales/porciones/proteínas sueltas tampoco
                         var rest=getRestById(it.restaurante_id);
                         if(!rest) return;                              // rest no está en la sesión
                         if(rest.tipo_acuerdo!=='aliado'&&rest.tipo_acuerdo!=='cliente_paga') return; // aliados + cliente_paga (excluye silenciosos como Rodri Pollos)
+                        // Bebidas NO van en el carril de comida... EXCEPTO en locales de bebidas (frappería/cafetería/
+                        // juguería) donde el frappé/jugo ES el producto estrella, ej. Buuba Té (sus fotos son frapps).
+                        if(esBebida(it.categoria_menu)&&!esLocalBebidas(rest)) return;
                         var _abierto=isRestOpen(rest.horario); // true / false / null(sin horario). Los CERRADOS sí se muestran (grisados), para variedad de noche.
                         var alm=parseAlmuerzo(it.descripcion);
                         var win=alm?null:parseWings(it.descripcion);
