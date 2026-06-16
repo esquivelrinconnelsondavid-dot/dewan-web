@@ -579,7 +579,7 @@
   </div>
 
   <div class="hero-food" id="heroFood">
-    <img src="fotos-happypollo/monton.png" alt="Montón de pollo frito crujiente"
+    <img src="https://dewansas.com/happypollo/fotos-happypollo/monton.png" alt="Montón de pollo frito crujiente"
       onerror="var c=this.closest('.hero-food');c.classList.add('is-broken');this.style.display='none';var s=c.querySelector('.hero-food__shadow');if(s)s.style.display='none';" />
     <div class="hero-food__shadow"></div>
   </div>
@@ -587,7 +587,7 @@
   <div class="badges">
     <span class="badge"><span>🔥</span> Recién hechito</span>
     <span class="badge"><span>🐔</span> Broaster doradito</span>
-    <span class="badge"><span>📍</span> Riobamba · San Alfonso</span>
+    <span class="badge" id="sucBadge"><span>📍</span> Riobamba</span>
   </div>
 </section>
 
@@ -668,7 +668,7 @@
     onerror="this.outerHTML='<div class=&quot;footer__fallback&quot;>Happy Pollo</div>';" />
   <p class="footer__slo">Exquisito y Crujiente</p>
   <p>Pollería en Riobamba, Ecuador</p>
-  <p>Atención todos los días · Local San Alfonso y más</p>
+  <p id="sucFoot">Atención todos los días</p>
   <a class="footer__wa" id="footWa" href="#">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 0 1 8.413 3.488 11.82 11.82 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.82 9.82 0 0 0 1.51 5.26l-.999 3.648 3.978-1.043zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.612-.916-2.207-.241-.579-.486-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
     Escríbenos por WhatsApp
@@ -677,9 +677,10 @@
 </footer>
 
 <script>
-(function(){
+function __HP_APP(){
   "use strict";
-  var WAPP = "593990000000";
+  var WAPP = (window.__HP_WAPP||"593990000000");
+  if(window.__HP_SUC){ var _sb=document.getElementById("sucBadge"); if(_sb){_sb.innerHTML='<span>📍</span> Riobamba · '+window.__HP_SUC;} var _ft=document.getElementById("sucFoot"); if(_ft){_ft.textContent='Local '+window.__HP_SUC+' · Atención todos los días';} }
 
   var MENU = [
     {"categoria_menu":"Combos","nombre_item":"Combo 1","descripcion":"1 presa individual + 1 porcion de papas + 1 cola personal","precio":3.5},
@@ -738,10 +739,11 @@
     "Combo Especial":"fotos-happypollo/combo-especial.jpg",
     "Consomé":"fotos-happypollo/consome.jpg"
   };
-  MENU.forEach(function(it){ if(FOTOS[it.nombre_item]) it.foto = FOTOS[it.nombre_item]; });
+  if(window.__HP_MENU){ MENU = window.__HP_MENU; }
+  MENU.forEach(function(it){ if(!it.foto && FOTOS[it.nombre_item]) it.foto = FOTOS[it.nombre_item]; });
 
-  var CAT_ORDER = ["Menu de Presas","Combos","Promos","Cajita Feliz","Salchipapas","Happy Burger","Porciones","Bebidas"];
-  var CAT_EMOJI = {"Combos":"🍗","Promos":"🔥","Cajita Feliz":"🎁","Menu de Presas":"🍖","Salchipapas":"🌭","Happy Burger":"🍔","Porciones":"🍟","Bebidas":"🥤"};
+  var CAT_ORDER = ["Promos","Combos","Menú de Presas","Alitas","Happy Burger","Combo Hot-Dog","Cajita Feliz","Salchipapas","Porciones","Bebidas"];
+  var CAT_EMOJI = {"Combos":"🍗","Promos":"🔥","Cajita Feliz":"🎁","Menú de Presas":"🍖","Alitas":"🍗","Happy Burger":"🍔","Combo Hot-Dog":"🌭","Salchipapas":"🍟","Porciones":"🍟","Bebidas":"🥤"};
   var FEAT_CATS = {"Combos":true,"Promos":true};
   var PRECIO_ANTES = {"Promo Martes":8.4}; // referencia visual: 3 x (presa individual + papas)
 
@@ -858,8 +860,92 @@
 
   // ---- CART OPS ----
   function getItem(id){for(var i=0;i<MENU.length;i++){if(MENU[i]._id===id)return MENU[i];}return null;}
-  function add(id){cart[id]=(cart[id]||0)+1; renderFoot(getItem(id)); sync(true); flashCount();}
-  function dec(id){if(!cart[id])return; cart[id]--; if(cart[id]<=0)delete cart[id]; renderFoot(getItem(id)); sync(true);}
+  var wings = {}; // _id -> [salsasStr por unidad]
+  var SALSAS = ["BBQ","Miel y Mostaza","BBQ Picante"];
+  // Combinaciones válidas de presas — tal cual Super Happy (misma regla)
+  var PRESA_COMBINATIONS = {
+    1:["Pechuga","Ala","Pierna","Pospierna","Rabo"],
+    2:["1 Ala, 1 Pierna","1 Ala, 1 Pospierna","1 Pechuga, 1 Pierna","1 Pechuga, 1 Pospierna","2 Piernas","Pierna + Pospierna","2 Pospiernas"],
+    3:["1 Ala, 1 Pechuga, 1 Pierna","1 Ala, 1 Pechuga, 1 Pospierna","1 Ala, 1 Pierna, 1 Pospierna","1 Pechuga, 1 Pierna, 1 Pospierna","2 Alas, 1 Pierna","2 Pechugas, 1 Pierna","2 Alas, 1 Pospierna","2 Pechugas, 1 Pospierna","2 Pospiernas, 1 Pierna","2 Piernas, 1 Pospierna","3 Piernas","3 Pospiernas"],
+    4:["1 Ala, 1 Pechuga, 1 Pierna, 1 Pospierna","2 Alas, 1 Pierna, 1 Pospierna","2 Pechugas, 1 Pierna, 1 Pospierna","1 Ala, 1 Pechuga, 2 Piernas","1 Ala, 1 Pechuga, 2 Pospiernas","2 Pospiernas, 2 Piernas","1 Pechuga, 3 Pospiernas","1 Pechuga, 3 Piernas","1 Ala, 3 Pospiernas","1 Ala, 3 Piernas","4 Pospiernas","4 Piernas"],
+    5:["2 Alas, 1 Pechuga, 1 Pierna, 1 Pospierna","1 Ala, 2 Pechugas, 1 Pierna, 1 Pospierna","1 Ala, 1 Pechuga, 2 Piernas, 1 Pospierna","1 Ala, 1 Pechuga, 1 Pierna, 2 Pospiernas","3 Alas, 1 Pierna, 1 Pospierna","2 Pechugas, 2 Piernas, 1 Pospierna","2 Pechugas, 1 Pierna, 2 Pospiernas","2 Alas, 2 Piernas, 1 Pospierna","2 Alas, 1 Pierna, 2 Pospiernas","3 Pospiernas, 1 Ala, 1 Pechuga","3 Piernas, 1 Ala, 1 Pospierna","3 Pospiernas, 2 Alas","3 Pospiernas, 2 Pechugas","3 Piernas, 2 Alas","3 Piernas, 2 Pechugas","4 Pospiernas, 1 Ala","4 Piernas, 1 Ala","4 Pospiernas, 1 Pechuga","4 Piernas, 2 Alas","5 Piernas","5 Pospiernas"],
+    6:["2 Alas, 1 Pechuga, 2 Piernas, 1 Pospierna","1 Ala, 2 Pechugas, 1 Pierna, 2 Pospiernas","3 Alas, 1 Pierna, 2 Pospiernas","3 Alas, 2 Piernas, 1 Pospierna","2 Pechugas, 2 Piernas, 2 Pospiernas","3 Alas, 3 Piernas","3 Alas, 3 Pospiernas","3 Pechugas, 3 Piernas","2 Pechugas, 4 Piernas","2 Pechugas, 4 Pospiernas","2 Alas, 4 Piernas","2 Alas, 4 Pospiernas","5 Pospiernas, 1 Pierna","5 Pospiernas, 1 Pechuga","5 Pospiernas, 1 Ala","5 Piernas, 1 Ala","5 Piernas, 1 Pospierna","5 Piernas, 1 Pechuga","6 Pospiernas","6 Piernas"],
+    7:["2 Alas, 2 Pechugas, 2 Piernas, 1 Pospierna","2 Alas, 2 Pechugas, 1 Pierna, 2 Pospiernas","2 Alas, 2 Pechugas, 3 Piernas","2 Alas, 2 Pechugas, 3 Pospiernas","1 Ala, 1 Pechuga, 3 Pospiernas, 2 Piernas","1 Ala, 1 Pechuga, 2 Pospiernas, 3 Piernas","7 Piernas","7 Pospiernas"],
+    8:["2 Alas, 2 Pechugas, 2 Piernas, 2 Pospiernas","3 Alas, 1 Pechuga, 2 Piernas, 2 Pospiernas","1 Ala, 3 Pechugas, 2 Piernas, 2 Pospiernas","2 Alas, 2 Pechugas, 4 Piernas","2 Alas, 2 Pechugas, 4 Pospiernas","4 Pospiernas, 4 Piernas","8 Pospiernas","8 Piernas"]
+  };
+  function presaCount(it){
+    if(["Menú de Presas","Combos","Cajita Feliz"].indexOf(it.categoria_menu)<0) return 0;
+    var s=(it.nombre_item+" "+(it.descripcion||"")).toLowerCase();
+    if(/nugget/.test(s) && !/presa/.test(s)) return 0;
+    var m=s.match(/(\d+)\s*presa/);
+    if(m){ var n=parseInt(m[1],10); return n>=1&&n<=8?n:0; }
+    if(/presa/.test(s)) return 1;
+    return 0;
+  }
+  var DRINKS = ["Coca Cola","Fiora","Fanta","Inka Cola","Sprite","Agua","Fuze Tea","Jugo del Valle","Frezno","Sunny Mora","Sunny Durazno","Agua Splendor"];
+  function hasDrink(it){ if(it.categoria_menu==="Bebidas") return false; var s=(it.nombre_item+" "+(it.descripcion||"")).toLowerCase(); return /gaseosa|cola|jugo/.test(s); }
+  function labelRow(txt){ var d=document.createElement("div"); d.style.cssText="font-weight:700;margin:10px 0 2px;font-size:.92rem;color:#444"; d.textContent=txt; return d; }
+  // Límite de presas grandes (Pechuga/Ala) para INDIVIDUALES, tal cual Super Happy
+  function individualDisabled(it){
+    if(!(presaCount(it)===1 && /individual/i.test(it.nombre_item))) return [];
+    var w = wings[it._id]||[];
+    var grandes = w.filter(function(l){ return l==="Pechuga"||l==="Ala"; }).length;
+    var total = w.length + 1;
+    var maxG = total<=2?1:(total<=4?2:(total<=6?3:4));
+    return grandes>=maxG ? ["Pechuga","Ala"] : [];
+  }
+  function openOptions(id){
+    var it=getItem(id); if(!it){return;} _salsaId=id;
+    var rows=document.getElementById("salsaRows"); rows.innerHTML="";
+    var pc=presaCount(it);
+    if(pc>0){
+      var combos=PRESA_COMBINATIONS[pc]||[]; var dis=individualDisabled(it);
+      rows.appendChild(labelRow(pc===1?"🍗 Elige tu presa":"🍗 Elige tu combinación de "+pc+" presas"));
+      var ps=document.createElement("select"); ps.className="presa-sel";
+      combos.forEach(function(c){ var lab=Array.isArray(c)?c[0]:c; var off=dis.indexOf(lab)>=0; var o=document.createElement("option"); o.value=lab; o.textContent=lab+(off?" (no disponible)":""); o.disabled=off; ps.appendChild(o); });
+      rows.appendChild(ps);
+    }
+    if(hasDrink(it)){
+      rows.appendChild(labelRow("🥤 Elige el sabor de tu bebida"));
+      var ds=document.createElement("select"); ds.className="drink-sel";
+      DRINKS.forEach(function(d){ var o=document.createElement("option"); o.value=d; o.textContent=d; ds.appendChild(o); });
+      rows.appendChild(ds);
+    }
+    var t=document.getElementById("salsaTitle"); if(t){t.textContent="Personaliza — "+it.nombre_item;}
+    document.getElementById("salsaOverlay").classList.add("open");
+    document.getElementById("salsaModal").classList.add("open");
+  }
+  function salsaCount(it){ var n=parseInt((String(it.nombre_item).match(/\d+/)||[6])[0],10); return n<=6?1:(n<=12?2:3); }
+  var _salsaId=null;
+  function openSalsa(id){
+    var it=getItem(id); if(!it){return;} _salsaId=id;
+    var n=salsaCount(it);
+    var t=document.getElementById("salsaTitle"); if(t){t.textContent="Elige "+n+" salsa"+(n>1?"s":"")+" — "+it.nombre_item;}
+    var rows=document.getElementById("salsaRows"); rows.innerHTML="";
+    for(var k=0;k<n;k++){
+      var sel=document.createElement("select"); sel.className="salsa-sel";
+      SALSAS.forEach(function(s){ var o=document.createElement("option"); o.value=s; o.textContent=s; sel.appendChild(o); });
+      rows.appendChild(sel);
+    }
+    document.getElementById("salsaOverlay").classList.add("open");
+    document.getElementById("salsaModal").classList.add("open");
+  }
+  function closeSalsa(){ var o=document.getElementById("salsaOverlay"),m=document.getElementById("salsaModal"); if(o)o.classList.remove("open"); if(m)m.classList.remove("open"); _salsaId=null; }
+  function confirmSalsa(){
+    if(!_salsaId){ closeSalsa(); return; }
+    var parts=[];
+    var ps=document.querySelector("#salsaRows .presa-sel"); if(ps && ps.value) parts.push(ps.value);
+    var salsas=[]; document.querySelectorAll("#salsaRows .salsa-sel").forEach(function(s){ salsas.push(s.value); }); if(salsas.length) parts.push(salsas.join(", "));
+    var ds=document.querySelector("#salsaRows .drink-sel"); if(ds && ds.value) parts.push(ds.value);
+    addWings(_salsaId, parts.join(" + ")); closeSalsa();
+  }
+  function add(id){ var it=getItem(id);
+    if(it && it.categoria_menu==="Alitas"){ openSalsa(id); return; }
+    if(it && (presaCount(it)>0 || hasDrink(it))){ openOptions(id); return; }
+    cart[id]=(cart[id]||0)+1; renderFoot(it); sync(true); flashCount(); }
+  function addWings(id, salsasStr){ wings[id]=wings[id]||[]; wings[id].push(salsasStr); cart[id]=(cart[id]||0)+1; renderFoot(getItem(id)); sync(true); flashCount(); }
+  function dec(id){if(!cart[id])return; cart[id]--; if(wings[id])wings[id].pop(); if(cart[id]<=0){delete cart[id]; if(wings[id])delete wings[id];} renderFoot(getItem(id)); sync(true);}
+  (function(){ var ok=document.getElementById("salsaOk"),cc=document.getElementById("salsaCancel"),ov=document.getElementById("salsaOverlay"); if(ok)ok.addEventListener("click",confirmSalsa); if(cc)cc.addEventListener("click",closeSalsa); if(ov)ov.addEventListener("click",closeSalsa); })();
 
   menuEl.addEventListener("click",function(e){
     var t = e.target.closest("button"); if(!t) return;
@@ -941,7 +1027,7 @@
 
   // ---- CHECKOUT / WHATSAPP ----
   // ---- entrega: modo + GPS + envio (webhook) + factura ----
-  var SHIPPING_URL = "https://happypollo-n8n.example/webhook/calculo-envio"; // TODO: URL real del webhook de Happy Pollo (lo crea David)
+  var SHIPPING_URL = "https://superhappy-n8n.bqspdc.easypanel.host/webhook/calculo-envio-hp";
   var orderMode="delivery", shipState="idle", shipCost=0, shipMsg="", shipOrigin="", gpsCoords="";
   function setMode(m){
     orderMode=m;
@@ -1010,13 +1096,18 @@
     });
   })();
   function buildMsg(){
-    var lines=["Hola Happy Pollo, quiero pedir:",""];
+    var suc = window.__HP_SUC || "";
+    var lines=["⭐ *NUEVO PEDIDO - Happy Pollo"+(suc?" "+suc:"")+"!* ⭐",""];
     var sub=0;
-    MENU.forEach(function(it){ var q=cart[it._id]; if(!q)return; var l=it.precio*q; sub+=l; lines.push("• "+q+"x "+it.nombre_item+" — "+fmt(l)); });
+    MENU.forEach(function(it){ var q=cart[it._id]; if(!q)return; var l=it.precio*q; sub+=l;
+      if(wings[it._id] && wings[it._id].length){
+        wings[it._id].forEach(function(s){ lines.push("• 1x "+it.nombre_item+" ["+s+"] — "+fmt(it.precio)); });
+      } else { lines.push("• "+q+"x "+it.nombre_item+" — "+fmt(l)); }
+    });
     var ship = (orderMode==="delivery"&&shipState==="ok") ? shipCost : 0;
     lines.push("");
     lines.push("Subtotal: "+fmt(sub));
-    lines.push(orderMode==="delivery" ? "🚗 Entrega: Delivery" : "🏪 Entrega: Retiro en local");
+    lines.push(orderMode==="delivery" ? "🚗 Entrega: Delivery" : "🏪 Entrega: Retiro en local"+(suc?" - "+suc:""));
     if(orderMode==="delivery"){
       if(shipState==="ok") lines.push("Envio: "+fmt(ship)+(shipOrigin?" (desde "+shipOrigin+")":""));
       if(gpsCoords) lines.push("📍 Ubicacion: https://www.google.com/maps?q="+gpsCoords.replace(", ",","));
@@ -1025,6 +1116,8 @@
     var nom=($("#coNombre").value||"").trim(); if(nom) lines.push("Cliente: "+nom);
     lines.push(payMethod==="transfer" ? "📲 Pago: Transferencia" : "💵 Pago: Efectivo");
     if($("#coFact").checked){ var ruc=($("#coRuc").value||"").trim(), raz=($("#coRazon").value||"").trim(); lines.push("🧾 Factura: "+[ruc,raz].filter(Boolean).join(" - ")); }
+    lines.push("");
+    lines.push("✅ Pedido desde la app");
     return lines.join("\n");
   }
   function checkout(){
@@ -1113,10 +1206,68 @@
   })();
 
   sync(false);
-  showPage(cats[0]);
-})();
+  var _tab=new URLSearchParams(location.search).get("tab");
+  showPage(_tab && cats.indexOf(_tab)>=0 ? _tab : cats[0]);
+}
 
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+</script>
+<style>
+.salsa-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:none}
+.salsa-overlay.open{display:block}
+.salsa-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:16px;padding:20px;z-index:9999;width:min(90vw,360px);display:none;box-shadow:0 12px 44px rgba(0,0,0,.35)}
+.salsa-modal.open{display:block}
+.salsa-modal h3{margin:0 0 12px;font-size:1.05rem;color:#222}
+.salsa-sel,.presa-sel,.drink-sel{display:block;width:100%;padding:11px;margin:7px 0;border:1px solid #ddd;border-radius:10px;font-size:1rem;background:#fff}
+.salsa-actions{display:flex;gap:10px;margin-top:16px}
+.salsa-actions button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:800;cursor:pointer}
+#salsaCancel{background:#eee;color:#333}
+#salsaOk{background:#E41B17;color:#fff}
+.hp-pick{position:fixed;inset:0;background:#fff;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;font-family:inherit}
+.hp-pick h2{margin:0 0 6px;font-size:1.25rem;color:#222}
+.hp-pick button{width:min(90vw,330px);padding:18px;border:0;border-radius:14px;font-size:1.1rem;font-weight:800;color:#fff;background:#E41B17;cursor:pointer;line-height:1.3}
+.hp-pick .sub{font-size:.8rem;font-weight:600;opacity:.85}
+</style>
+<div class="salsa-overlay" id="salsaOverlay"></div>
+<div class="salsa-modal" id="salsaModal" aria-hidden="true">
+  <h3 id="salsaTitle">Elige tus salsas</h3>
+  <div id="salsaRows"></div>
+  <div class="salsa-actions"><button id="salsaCancel" type="button">Cancelar</button><button id="salsaOk" type="button">Agregar</button></div>
+</div>
+<script>
+(function(){
+  var SB="https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1";
+  var ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s";
+  var MAP={
+    sanalfonso:{rid:"98c52c60-c83e-41f3-af89-6d1c9de23acd",wapp:"593999437662",nombre:"San Alfonso"},
+    lamerced:{rid:"ed941e0d-f67b-4d84-bd99-6632a505306e",wapp:"593963515516",nombre:"La Merced"}
+  };
+  var local=(new URLSearchParams(location.search).get("local")||"").toLowerCase();
+  if(!MAP[local]){ showPicker(); return; }
+  var cfg=MAP[local];
+  window.__HP_WAPP=cfg.wapp; window.__HP_LOCAL=local; window.__HP_SUC=cfg.nombre;
+  var url=SB+"/menu_items?restaurante_id=eq."+cfg.rid+"&disponible=eq.true&select=categoria_menu,nombre_item,descripcion,precio,foto_url&order=categoria_menu,precio";
+  fetch(url,{headers:{apikey:ANON,Authorization:"Bearer "+ANON}})
+    .then(function(r){return r.json();})
+    .then(function(rows){
+      if(!Array.isArray(rows)||!rows.length){ throw new Error("sin items"); }
+      window.__HP_MENU=rows.map(function(x){return {categoria_menu:x.categoria_menu,nombre_item:x.nombre_item,descripcion:x.descripcion||"",precio:Number(x.precio),foto:x.foto_url||null};});
+      if(typeof __HP_APP==="function"){ __HP_APP(); }
+    })
+    .catch(function(e){
+      var d=document.createElement("div"); d.className="hp-pick";
+      d.innerHTML='<h2>No pudimos cargar el menú 😕</h2><div class="sub" style="color:#666">Revisá tu conexión.</div><button onclick="location.reload()">Reintentar</button>';
+      document.body.appendChild(d);
+    });
+  function showPicker(){
+    var d=document.createElement("div"); d.className="hp-pick";
+    d.innerHTML='<h2>¿De qué local de Happy Pollo querés pedir? 🍗</h2>'+
+      '<button data-l="sanalfonso">🏪 San Alfonso<br><span class="sub">Junín y Tarqui</span></button>'+
+      '<button data-l="lamerced">🏪 La Merced<br><span class="sub">Guayaquil y Larrea</span></button>';
+    document.body.appendChild(d);
+    d.addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; location.href=location.pathname+"?local="+b.dataset.l; });
+  }
+})();
 </script>
 </body>
 </html>
