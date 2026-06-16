@@ -1573,9 +1573,14 @@
 
         function sortRests(list,key){
             var s=list.slice();
-            if(key==='distancia') s.sort(function(a,b){return(a.distancia_km||999)-(b.distancia_km||999)});
-            else if(key==='precio') s.sort(function(a,b){var pa=a.productos&&a.productos[0]?a.productos[0].precio:999;var pb=b.productos&&b.productos[0]?b.productos[0].precio:999;return pa-pb});
-            else if(key==='delivery') s.sort(function(a,b){return(a.precio_delivery||999)-(b.precio_delivery||999)});
+            // Abiertos primero SIEMPRE, luego sin-horario, cerrados al final; dentro de cada grupo, el criterio elegido.
+            // (Antes el home interleaveaba los cerrados -ej. Papazota, abre 3pm- entre los abiertos por precio.)
+            function ab(r){var o=isRestOpen(r.horario);return o===true?0:o===null?1:2;}
+            var cmp;
+            if(key==='distancia') cmp=function(a,b){return(a.distancia_km||999)-(b.distancia_km||999)};
+            else if(key==='delivery') cmp=function(a,b){return(a.precio_delivery||999)-(b.precio_delivery||999)};
+            else cmp=function(a,b){var pa=a.productos&&a.productos[0]?a.productos[0].precio:999;var pb=b.productos&&b.productos[0]?b.productos[0].precio:999;return pa-pb};
+            s.sort(function(a,b){var d=ab(a)-ab(b);return d!==0?d:cmp(a,b);});
             return s;
         }
 
