@@ -742,7 +742,7 @@ function __HP_APP(){
   if(window.__HP_MENU){ MENU = window.__HP_MENU; }
   MENU.forEach(function(it){ if(!it.foto && FOTOS[it.nombre_item]) it.foto = FOTOS[it.nombre_item]; });
 
-  var CAT_ORDER = ["Promos","Combos","Menú de Presas","Alitas","Happy Burger","Combo Hot-Dog","Cajita Feliz","Salchipapas","Porciones","Bebidas"];
+  var CAT_ORDER = ["Menú de Presas","Combos","Promos","Happy Burger","Alitas","Combo Hot-Dog","Cajita Feliz","Salchipapas","Porciones","Bebidas"];
   var CAT_EMOJI = {"Combos":"🍗","Promos":"🔥","Cajita Feliz":"🎁","Menú de Presas":"🍖","Alitas":"🍗","Happy Burger":"🍔","Combo Hot-Dog":"🌭","Salchipapas":"🍟","Porciones":"🍟","Bebidas":"🥤"};
   var FEAT_CATS = {"Combos":true,"Promos":true};
   var PRECIO_ANTES = {"Promo Martes":8.4}; // referencia visual: 3 x (presa individual + papas)
@@ -1063,7 +1063,7 @@ function __HP_APP(){
   function calcShip(){
     if(orderMode!=="delivery"||!gpsCoords){ return; }
     shipState="loading"; renderShip(); updateCoTotals();
-    fetch(SHIPPING_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:gpsCoords})})
+    fetch(SHIPPING_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:gpsCoords, local: window.__HP_LOCAL})})
       .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error("HTTP "+r.status)); })
       .then(function(data){
         var res=Array.isArray(data)?data[0]:data;
@@ -1097,27 +1097,28 @@ function __HP_APP(){
   })();
   function buildMsg(){
     var suc = window.__HP_SUC || "";
-    var lines=["⭐ *NUEVO PEDIDO - Happy Pollo"+(suc?" "+suc:"")+"!* ⭐",""];
+    var lines=["🐔🍗 ¡Nuevo pedido de Happy Pollo"+(suc?" — "+suc:"")+"! 🛵","PEDIDO COMPLETO DESDE LA APP",""];
     var sub=0;
     MENU.forEach(function(it){ var q=cart[it._id]; if(!q)return; var l=it.precio*q; sub+=l;
       if(wings[it._id] && wings[it._id].length){
-        wings[it._id].forEach(function(s){ lines.push("• 1x "+it.nombre_item+" ["+s+"] — "+fmt(it.precio)); });
-      } else { lines.push("• "+q+"x "+it.nombre_item+" — "+fmt(l)); }
+        wings[it._id].forEach(function(s){ lines.push("🔸 1x "+it.nombre_item+" ["+s+"] — "+fmt(it.precio)); });
+      } else { lines.push("🔸 "+q+"x "+it.nombre_item+" — "+fmt(l)); }
     });
     var ship = (orderMode==="delivery"&&shipState==="ok") ? shipCost : 0;
     lines.push("");
-    lines.push("Subtotal: "+fmt(sub));
-    lines.push(orderMode==="delivery" ? "🚗 Entrega: Delivery" : "🏪 Entrega: Retiro en local"+(suc?" - "+suc:""));
+    lines.push("🧮 Productos: "+fmt(sub));
     if(orderMode==="delivery"){
-      if(shipState==="ok") lines.push("Envio: "+fmt(ship)+(shipOrigin?" (desde "+shipOrigin+")":""));
-      if(gpsCoords) lines.push("📍 Ubicacion: https://www.google.com/maps?q="+gpsCoords.replace(", ",","));
+      if(shipState==="ok") lines.push("🛵 Envío: "+fmt(ship)+(shipOrigin?" (desde "+shipOrigin+")":""));
+      if(gpsCoords) lines.push("🗺️ Mapa: https://www.google.com/maps?q="+gpsCoords.replace(", ",","));
+    } else {
+      lines.push("🏬 Retiro en el local"+(suc?": "+suc:""));
     }
-    lines.push("TOTAL: "+fmt(sub+ship));
-    var nom=($("#coNombre").value||"").trim(); if(nom) lines.push("Cliente: "+nom);
-    lines.push(payMethod==="transfer" ? "📲 Pago: Transferencia" : "💵 Pago: Efectivo");
+    lines.push("💵 Total: "+fmt(sub+ship));
+    var nom=($("#coNombre").value||"").trim(); if(nom) lines.push("🙋 A nombre de: "+nom);
+    lines.push(payMethod==="transfer" ? "🏦 Pago: Transferencia" : "💵 Pago: Efectivo");
     if($("#coFact").checked){ var ruc=($("#coRuc").value||"").trim(), raz=($("#coRazon").value||"").trim(); lines.push("🧾 Factura: "+[ruc,raz].filter(Boolean).join(" - ")); }
     lines.push("");
-    lines.push("✅ Pedido desde la app");
+    lines.push("🐔 ¡Gracias por tu pedido! 💛");
     return lines.join("\n");
   }
   function checkout(){
