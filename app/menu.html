@@ -1921,6 +1921,17 @@
                             if(window._almuerzosHoy[r.id]) r._hasAlmuerzoHoy=true;
                         });
                     }
+                    // Desayunos: además de los que matchean por keyword, sumar las CAFETERÍAS
+                    // (categoria_canonica "Cafetería / Desayunos", ej. Buuba Té) — sirven desayuno.
+                    if(key==='desayunos'){
+                        var yaDes={};
+                        rests.forEach(function(r){if(r.id) yaDes[r.id]=true});
+                        (sessionData.resultados||[]).forEach(function(rFull){
+                            if(!rFull.id||yaDes[rFull.id]) return;
+                            if((rFull.categoria_canonica||'').toLowerCase().indexOf('cafeter')===-1) return;
+                            rests.push(Object.assign({},rFull,{_matchCount:1,_matchItems:[]}));
+                        });
+                    }
                     rankRestsByKeywords(rests,cm.kw);
                     // Boost aliados al top: primero aliado, luego cliente_paga, luego silencioso
                     rests.sort(function(a,b){
