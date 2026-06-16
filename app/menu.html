@@ -1271,13 +1271,11 @@
                     var g={};localOrder.forEach(function(r){g[r]=groups[r].slice();});
                     var pick=[],added=true;
                     while(added){ added=false; localOrder.forEach(function(r){ if(g[r].length){pick.push(g[r].shift());added=true;} }); }
-                    // ABIERTOS primero, CERRADOS al final (grisados, para variedad de noche).
+                    // ABIERTOS primero SIEMPRE; los CERRADOS van estrictamente al FINAL (relleno, nunca encabezan).
+                    // Ej.: Papazota (abre 3pm) al mediodía nunca lidera el carril; aparece al final solo si queda lugar.
                     var _ab=pick.filter(function(p){return p.abierto!==false});
                     var _ce=pick.filter(function(p){return p.abierto===false});
-                    // No inundar de cerrados: si hay >=6 abiertos, solo abiertos; si hay algunos, +máx 2 cerrados; si NO hay abiertos, mostrar cerrados (a color).
-                    if(_ab.length>=6) window._destHome=_ab.slice(0,16);
-                    else if(_ab.length>=1) window._destHome=_ab.concat(_ce.slice(0,2));
-                    else window._destHome=_ce.slice(0,8);
+                    window._destHome=_ab.concat(_ce).slice(0,16);
                     window._destHomeLoading=false;
                     try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}catch(e){}
                 })
@@ -2002,8 +2000,10 @@
             h+=renderHomeBanner();
 
             // Chips de categoría. Mundial: 'partido' solo aparece en período.
+            // En horario de almuerzo (12-15h) el chip 🍱 Almuerzo va PRIMERO (al mediodía la gente busca almuerzo, no promos).
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
-            CAT_KEYS_V2.forEach(function(k){
+            var _catKeysHome=isAlmuerzoHour()?['almuerzo'].concat(CAT_KEYS_V2.filter(function(k){return k!=='almuerzo';})):CAT_KEYS_V2;
+            _catKeysHome.forEach(function(k){
                 if(k==='partido'&&!isMundial()) return;
                 if(k==='almuerzo'&&!isAlmuerzoHour()) return; // chip Almuerzo solo 12-15h
                 var c=CAT_MAP_V2[k];
