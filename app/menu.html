@@ -753,6 +753,10 @@
         .cart-sheet-handle{flex-shrink:0;display:flex;justify-content:center;align-items:center;padding:9px 0 5px;cursor:pointer}
         .cart-sheet-handle::before{content:'';width:42px;height:5px;border-radius:999px;background:var(--border)}
         .cart-sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        .cart-sheet-foot{flex-shrink:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--border);box-shadow:0 -7px 22px rgba(0,0,0,0.07)}
+        .cart-sheet-foot:empty{display:none}
+        .cart-sheet-foot .cta-helper{margin:0 0 8px}
+        .cart-sheet-foot .btn{margin:0}
         body.sheet-locked{overflow:hidden}
     </style>
 </head>
@@ -822,6 +826,7 @@
     <section class="cart-sheet" id="cart-sheet" aria-hidden="true" aria-label="Tu pedido">
         <div class="cart-sheet-handle" onclick="history.back()" aria-label="Cerrar"></div>
         <div class="cart-sheet-body" id="cart-sheet-body"></div>
+        <div class="cart-sheet-foot" id="cart-sheet-foot"></div>
     </section>
 
     <div class="modal-overlay" id="modal-overlay">
@@ -3253,6 +3258,7 @@
             if(!window._cart.length){
                 _sheetBody.innerHTML='<div class="cart-header"><button class="btn-back" onclick="history.back()">←</button><span class="cart-header-title">Mi pedido</span></div>'+
                     '<div class="state-container"><div class="empty-icon">🛒</div><div class="state-title">Tu carrito esta vacio</div><button class="btn btn-accent" style="margin-top:20px;width:auto;padding:12px 28px" onclick="closeCart();renderHome()">Ver restaurantes</button></div>';
+                var _f0=document.getElementById('cart-sheet-foot'); if(_f0) _f0.innerHTML=''; // sin pie en carrito vacío
                 _openCartSheet();
                 return;
             }
@@ -3398,7 +3404,10 @@
             // GPS obligatorio (2026-06-06): la dirección escrita causaba envíos mal calculados (sin coordenadas).
             var needsLoc=!window._clientGPS;
 
+            // El BOTÓN va al pie FIJO del panel (no al cuerpo que scrollea) → siempre visible sin scroll.
+            var foot='';
             if(needsLoc){
+                // En el cuerpo queda solo la explicación; el botón "premium deshabilitado" va al pie.
                 h+='<div class="loc-missing-banner">'+
                     '<div class="loc-missing-icon">⚠️</div>'+
                     '<div class="loc-missing-content">'+
@@ -3406,20 +3415,20 @@
                         '<div class="loc-missing-text">Usa <strong>📍 mi ubicación (GPS)</strong> o <strong>marca tu casa en el mapa</strong> 👆 para calcular tu envío y confirmar el pedido.</div>'+
                     '</div>'+
                 '</div>';
-                // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
-                h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
+                foot+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
                     '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · $'+totalConCupon.toFixed(2)+'</span></span>'+
                     '<span class="btn-wa-need-loc-hint">👆 Toca arriba para poner tu ubicación y confirmar</span>'+
                 '</button>';
             } else {
-                h+='<div class="cta-helper">Confirmas por WhatsApp · sin registro · pagas al recibir 🛵</div>';
-                h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
+                foot+='<div class="cta-helper">Confirmas por WhatsApp · sin registro · pagas al recibir 🛵</div>';
+                foot+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
                     '<span style="display:flex;align-items:center;gap:8px"><span>Confirmar pedido</span></span>'+
                     '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?'$'+totalConCupon.toFixed(2):'$'+totalConCupon.toFixed(2)+' + envío')+'</span>'+
                 '</button>';
             }
             h+='</div>';
             _sheetBody.innerHTML=h;
+            var _foot=document.getElementById('cart-sheet-foot'); if(_foot) _foot.innerHTML=foot;
             _openCartSheet();
             setTimeout(opInitMap,60); // recrear el mapa tras el re-render (cliente o centralista); restaura el marker desde _clientGPS
         };
