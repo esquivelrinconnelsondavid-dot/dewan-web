@@ -1,7 +1,7 @@
 // Impresión de comanda por Electron directo (sin PrintNode).
 // Configurable por local: impresora + ancho (80/76/58mm o normal) + auto al aceptar.
 import { calcularPagoAlRestaurante, formatDinero } from './formato';
-import { MARCA } from './config';
+import { MARCA, MODO_HP } from './config';
 
 // Nombre que va arriba del ticket: el pasado por el panel, o el del pedido, o el
 // de la sesión guardada (sucursal logueada), y como último recurso la marca
@@ -149,9 +149,27 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
   // Precios (mismo cálculo que las tarjetas de la app). Se omite si no hay
   // monto. Compacto: el TOTAL va a fs+3 para no competir con el nº de pedido.
   const pago = calcularPagoAlRestaurante(pedido);
-  const bloquePrecios = pago.base > 0 ? `
+  const montoTotal = Number(pedido.monto_total) || 0;
+  // En Happy Pollo el TOTAL es lo que cobra el local (sin comisión DEWAN).
+  const bloquePrecios = MODO_HP
+    ? (montoTotal > 0
+        ? `<div class="row"><span class="tot">TOTAL</span><span class="tot">${formatDinero(montoTotal)}</span></div>`
+        : '')
+    : (pago.base > 0 ? `
     ${pago.laPagaRestaurante ? `<div class="lbl">Venta ${formatDinero(pago.base)} - Comision ${formatDinero(pago.comision)}</div>` : ''}
-    <div class="row"><span class="tot">TOTAL</span><span class="tot">${formatDinero(pago.recibe)}</span></div>` : '';
+    <div class="row"><span class="tot">TOTAL</span><span class="tot">${formatDinero(pago.recibe)}</span></div>` : '');
+
+  // Método de pago y factura (como Super Happy). Solo se imprimen si vienen en el pedido.
+  const metodoPago = pedido.metodo_pago ? String(pedido.metodo_pago).trim() : '';
+  const esTransfer = /transfer/i.test(metodoPago);
+  const bloquePago = metodoPago ? `
+    <div class="row"><span class="lbl">Pago</span><span class="b">${esc(limp(esTransfer ? 'TRANSFERENCIA' : metodoPago.toUpperCase()))}</span></div>
+    ${esTransfer ? `<div class="lbl">** Verificar comprobante **</div>` : ''}` : '';
+  const facturaDatos = pedido.factura_datos ? String(pedido.factura_datos).trim() : '';
+  const bloqueFactura = facturaDatos ? `
+    ${sep}
+    <div class="b">FACTURA</div>
+    <div class="sub">${esc(limp(facturaDatos)).replace(/\n/g, '<br>')}</div>` : '';
 
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -183,7 +201,9 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
     ${sep}
     <div class="row"><span class="lbl">Cliente:</span><span class="b">${esc(limp(pedido.cliente_nombre || '-'))}</span></div>
     ${tiempo ? `<div class="row"><span class="lbl">Tiempo:</span><span class="b">${esc(tiempo)}</span></div>` : ''}
+    ${bloquePago}
     ${bloquePrecios}
+    ${bloqueFactura}
     <div class="c fin">--- FIN ---</div>
   </body></html>`;
 }
