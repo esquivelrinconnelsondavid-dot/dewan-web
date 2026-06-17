@@ -1,6 +1,22 @@
 // Impresión de comanda por Electron directo (sin PrintNode).
 // Configurable por local: impresora + ancho (80/76/58mm o normal) + auto al aceptar.
 import { calcularPagoAlRestaurante, formatDinero } from './formato';
+import { MARCA } from './config';
+
+// Nombre que va arriba del ticket: el pasado por el panel, o el del pedido, o el
+// de la sesión guardada (sucursal logueada), y como último recurso la marca
+// (Happy Pollo / DEWAN). Antes caía a 'DEWAN' fijo → en HP salía "DEWAN".
+function nombreLocal(pedido, pasado) {
+  if (pasado) return pasado;
+  if (pedido && (pedido.restaurante || pedido.restaurante_nombre)) {
+    return pedido.restaurante || pedido.restaurante_nombre;
+  }
+  try {
+    const r = JSON.parse(localStorage.getItem('dewan_rest_data') || '{}');
+    if (r && r.nombre) return r.nombre;
+  } catch (e) { /* ignorar */ }
+  return MARCA;
+}
 
 const LS_IMPRESORA = 'dewan_impresora';     // deviceName del SO
 const LS_ANCHO = 'dewan_impresora_ancho';   // '80' | '76' | '58' | 'a4' | 'auto'
@@ -159,7 +175,7 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
     .tot { font-size:${fs + 3}px; font-weight:${wBig}; }
     .fin { margin-top:3px; }
   </style></head><body>
-    <div class="c rest">${esc(limp(restauranteNombre || pedido.restaurante || pedido.restaurante_nombre || 'DEWAN'))}</div>
+    <div class="c rest">${esc(limp(nombreLocal(pedido, restauranteNombre)))}</div>
     <div class="c">COMANDA - ${ahoraTexto()}</div>
     <div class="row idrow"><span class="big">#${esc(pedido.id)}</span><span class="b">${esc(entrega)}</span></div>
     ${sep}
