@@ -23,12 +23,13 @@ import {
 import { registrarPushRestaurante, olvidarRestaurantePush } from './lib/push';
 import { tiempoSinDatos } from './lib/conexion';
 import { resucitarSocket } from './lib/supabase';
-import { MARCA } from './lib/config';
+import { MARCA, MODO_HP } from './lib/config';
 
 function buildTabs(enProcesoCount) {
   return [
     { id: 'pedidos', label: 'Pedidos' },
-    { id: 'entregando', label: 'Entregando', badge: enProcesoCount },
+    // Happy Pollo usa delivery propio (sin motos DEWAN) → no hay pestaña "Entregando".
+    ...(MODO_HP ? [] : [{ id: 'entregando', label: 'Entregando', badge: enProcesoCount }]),
     { id: 'ventas', label: 'Ventas' },
   ];
 }
@@ -38,6 +39,7 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
   const [tab, setTab] = useState('pedidos');
   const [ajustesAbierto, setAjustesAbierto] = useState(false);
   const [verTutorial, setVerTutorial] = useState(() => {
+    if (MODO_HP) return false; // Happy Pollo no usa el tutorial/intro de DEWAN
     try {
       return !localStorage.getItem('dewan_onboarding_visto_v1');
     } catch {

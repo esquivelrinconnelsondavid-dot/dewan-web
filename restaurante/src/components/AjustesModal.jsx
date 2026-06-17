@@ -4,6 +4,7 @@ import MiLocal from './MiLocal';
 import ConfigImpresora from './ConfigImpresora';
 import CrecerConDewan from './CrecerConDewan';
 import { hayImpresion } from '../lib/comanda';
+import { MODO_HP } from '../lib/config';
 
 const OPCIONES = [
   { id: 'menu', label: 'Menú', icono: '🍔', descripcion: 'Editar productos, precios y disponibilidad' },
@@ -94,19 +95,21 @@ export default function AjustesModal({ restaurante, onCerrar, onActualizarRestau
           </button>
         ))}
 
-        <button
-          onClick={() => setSeccion('crecer')}
-          className="w-full bg-dewan/10 border border-dewan/40 rounded-xl p-4 flex items-center gap-3 text-left active:bg-dewan/20 transition-colors"
-        >
-          <span className="text-3xl shrink-0">⭐</span>
-          <div className="flex-1 min-w-0">
-            <p className="text-dewan font-bold">Crece con DEWAN</p>
-            <p className="text-[12px] text-gray-400 leading-snug">Aparecé destacado y vendé más</p>
-          </div>
-          <span className="text-dewan text-xl">›</span>
-        </button>
+        {!MODO_HP && (
+          <button
+            onClick={() => setSeccion('crecer')}
+            className="w-full bg-dewan/10 border border-dewan/40 rounded-xl p-4 flex items-center gap-3 text-left active:bg-dewan/20 transition-colors"
+          >
+            <span className="text-3xl shrink-0">⭐</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-dewan font-bold">Crece con DEWAN</p>
+              <p className="text-[12px] text-gray-400 leading-snug">Aparecé destacado y vendé más</p>
+            </div>
+            <span className="text-dewan text-xl">›</span>
+          </button>
+        )}
 
-        {onVerTutorial && (
+        {!MODO_HP && onVerTutorial && (
           <button
             onClick={onVerTutorial}
             className="w-full bg-tarjeta border border-borde rounded-xl p-4 flex items-center gap-3 text-left active:bg-bg3 transition-colors"

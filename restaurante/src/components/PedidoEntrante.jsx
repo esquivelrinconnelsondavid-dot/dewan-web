@@ -3,8 +3,38 @@ import { aceptarPedido, rechazarPedido } from '../lib/pedidos';
 import { stopAlertLoop } from '../lib/notifications';
 import { calcularPagoAlRestaurante, formatDinero } from '../lib/formato';
 import { hayImpresion, getConfigImpresora, imprimirComanda } from '../lib/comanda';
+import { MODO_HP } from '../lib/config';
 
 const TIEMPOS_PRESET = [10, 15, 20, 30, 45];
+
+// Convierte el detalle (texto multilínea del pedido) en líneas con la cantidad
+// resaltada, igual que la comanda. Para la tarjeta HP.
+function renderItemsHP(detalle) {
+  const lineas = String(detalle == null ? '' : detalle)
+    .split('\n')
+    .map((l) => l.replace(/\s+$/, ''))
+    .filter((l) => l.trim());
+  if (!lineas.length) return null;
+  const hayPlatos = lineas.some((l) => /^\s*\d+\s*x\b/i.test(l));
+  return lineas.map((raw, i) => {
+    const t = raw.trim();
+    const esPlato = hayPlatos ? /^\s*\d+\s*x\b/i.test(t) : true;
+    if (esPlato) {
+      const m = t.match(/^\s*(\d+)\s*x\s*(.+)$/i);
+      return (
+        <div key={i} className="flex gap-2 py-1 items-baseline">
+          <span className="marca-title text-preparando text-base shrink-0">{m ? `${m[1]}x` : '•'}</span>
+          <span className="font-semibold text-white">{m ? m[2] : t}</span>
+        </div>
+      );
+    }
+    return (
+      <div key={i} className="pl-7 -mt-0.5 text-sm text-gray-400">
+        {t.replace(/^[-•▸*\s]+/, '— ')}
+      </div>
+    );
+  });
+}
 
 function tiempoSinAtender(fechaCreacion) {
   const diff = Date.now() - new Date(fechaCreacion).getTime();
@@ -16,6 +46,7 @@ function tiempoSinAtender(fechaCreacion) {
 export default function PedidoEntrante({ pedido }) {
   const [cargando, setCargando] = useState(false);
   const [tiempoTexto, setTiempoTexto] = useState(tiempoSinAtender(pedido.fecha_creacion));
+  const [min, setMin] = useState(20); // tiempo elegido (tarjeta HP)
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -61,6 +92,84 @@ export default function PedidoEntrante({ pedido }) {
     }
     setCargando(false);
   };
+
+  // ── Tarjeta Happy Pollo (sin bloque de comisión/motorizado DEWAN) ──
+  if (MODO_HP) {
+    const esDelivery = !!pedido.direccion_entrega;
+    const monto = Number(pedido.monto_total) || 0;
+    return (
+      <div
+        className={`bg-tarjeta rounded-2xl border-2 border-nuevo p-4 animate-pulso shadow-lg ${
+          cargando ? 'opacity-60 pointer-events-none' : ''
+        }`}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-baseline gap-2.5">
+            <span className="marca-title text-dewan text-3xl leading-none">#{pedido.id}</span>
+            <span className="bg-nuevo text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full tracking-wider">NUEVO</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="bg-dewan text-white text-[11px] font-extrabold px-3 py-1.5 rounded-full">
+              {esDelivery ? '🛵 DELIVERY' : '🏠 RETIRO'}
+            </span>
+            <span className="text-[11px] text-gray-400">{tiempoTexto}</span>
+          </div>
+        </div>
+
+        <div className="border-y border-borde py-2 my-2">
+          {renderItemsHP(pedido.detalle_pedido)}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm mb-2">
+          <span className="text-gray-400">Cliente:</span>
+          <span className="text-white font-bold">{pedido.cliente_nombre || '—'}</span>
+          {esDelivery && <span className="text-gray-400">📍 {pedido.direccion_entrega}</span>}
+        </div>
+
+        {monto > 0 && (
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-gray-400 font-semibold">Total del pedido</span>
+            <span className="marca-title text-dewan text-2xl">{formatDinero(monto)}</span>
+          </div>
+        )}
+
+        <div className="text-xs text-gray-400 mb-1.5 font-bold uppercase tracking-wider">Tiempo de preparación</div>
+        <div className="grid grid-cols-5 gap-1.5 mb-3">
+          {TIEMPOS_PRESET.map((m) => (
+            <button
+              key={m}
+              onClick={() => setMin(m)}
+              disabled={cargando}
+              className={`text-sm font-extrabold py-2.5 rounded-xl border transition-colors ${
+                min === m
+                  ? 'bg-dewan text-white border-dewan'
+                  : 'bg-bg2 text-dewan border-borde'
+              }`}
+            >
+              {m}′
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={rechazar}
+            disabled={cargando}
+            className="bg-tarjeta text-dewan font-bold px-4 py-3.5 rounded-xl border-2 border-borde active:scale-95"
+          >
+            Rechazar
+          </button>
+          <button
+            onClick={() => aceptar(min)}
+            disabled={cargando}
+            className="flex-1 bg-gradient-to-b from-[#F2CB08] to-[#F39F07] text-[#3F2310] font-extrabold py-3.5 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+          >
+            🖨️ Aceptar e imprimir
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

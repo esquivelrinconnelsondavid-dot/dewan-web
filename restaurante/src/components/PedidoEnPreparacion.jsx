@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { calcularPagoAlRestaurante, formatDinero } from '../lib/formato';
 import { hayImpresion, imprimirComanda } from '../lib/comanda';
+import { MODO_HP } from '../lib/config';
+import { marcarEntregado } from '../lib/pedidos';
 
 function calcularRestante(timerLanzamiento) {
   if (!timerLanzamiento) return null;
@@ -20,6 +22,18 @@ function formatear(ms) {
 
 export default function PedidoEnPreparacion({ pedido }) {
   const [restante, setRestante] = useState(calcularRestante(pedido.timer_lanzamiento));
+  const [cargando, setCargando] = useState(false);
+
+  const marcarListo = async () => {
+    setCargando(true);
+    try {
+      await marcarEntregado(pedido.id);
+    } catch (e) {
+      console.error('Error al marcar listo:', e);
+      alert('No se pudo marcar como listo. Intenta de nuevo.');
+      setCargando(false);
+    }
+  };
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -30,6 +44,55 @@ export default function PedidoEnPreparacion({ pedido }) {
 
   const vencido = restante !== null && restante < 0;
   const color = vencido ? 'text-nuevo' : 'text-preparando';
+
+  // ── Tarjeta Happy Pollo (con botón "Marcar listo", sin bloque DEWAN) ──
+  if (MODO_HP) {
+    return (
+      <div className={`bg-tarjeta rounded-2xl border-l-4 border-preparando p-4 shadow-lg ${cargando ? 'opacity-60 pointer-events-none' : ''}`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-baseline gap-2.5">
+            <span className="marca-title text-preparando text-2xl leading-none">#{pedido.id}</span>
+            <span className="bg-preparando text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full tracking-wider">PREPARANDO</span>
+          </div>
+          <div className={`marca-title text-2xl tabular-nums ${color}`}>{formatear(restante)}</div>
+        </div>
+
+        <p className="text-sm text-white whitespace-pre-line border-y border-borde py-2 my-2">
+          {pedido.detalle_pedido}
+        </p>
+
+        <div className="flex items-center gap-2 text-sm mb-3">
+          <span className="text-gray-400">Cliente:</span>
+          <span className="text-white font-bold">{pedido.cliente_nombre || '—'}</span>
+          {pedido.tiempo_preparacion && (
+            <span className="ml-auto text-gray-400">⏱ {pedido.tiempo_preparacion} min</span>
+          )}
+        </div>
+
+        {vencido && (
+          <div className="mb-2 text-xs text-nuevo font-bold animate-pulse">⚠️ Tiempo de preparación cumplido</div>
+        )}
+
+        <div className="flex gap-2">
+          {hayImpresion() && (
+            <button
+              onClick={() => imprimirComanda(pedido, { restauranteNombre: pedido.restaurante || pedido.restaurante_nombre })}
+              className="bg-bg2 text-dewan font-bold px-4 py-3 rounded-xl border border-borde active:scale-95 flex items-center gap-2"
+            >
+              🖨️ Reimprimir
+            </button>
+          )}
+          <button
+            onClick={marcarListo}
+            disabled={cargando}
+            className="flex-1 bg-dewan text-white font-extrabold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+          >
+            ✓ Marcar listo
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-tarjeta rounded-xl border-l-4 border-preparando p-4">

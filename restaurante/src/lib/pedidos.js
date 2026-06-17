@@ -77,6 +77,24 @@ export async function aceptarPedido(pedidoIdOrPedido, minutos) {
   }
 }
 
+// Happy Pollo (delivery propio, sin motos DEWAN): la cocina cierra el pedido a
+// mano. Pasa a 'entregado' → sale de la vista de cocina y cuenta como venta.
+export async function marcarEntregado(pedidoId) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  let error;
+  try {
+    ({ error } = await supabase
+      .from(PEDIDOS_TABLE)
+      .update({ estado_pedido: 'entregado' })
+      .eq('id', pedidoId)
+      .abortSignal(ctrl.signal));
+  } finally {
+    clearTimeout(timer);
+  }
+  if (error) throw error;
+}
+
 export async function rechazarPedido(pedidoId, motivo) {
   const ahora = new Date().toISOString();
   // Timeout 12s: igual que aceptarPedido. Sin esto, con la red zombi el update
