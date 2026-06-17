@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { PEDIDOS_TABLE } from './config';
 
 const WEBHOOK_BASE = import.meta.env.VITE_N8N_WEBHOOK_BASE;
 
@@ -46,7 +47,7 @@ export async function aceptarPedido(pedidoIdOrPedido, minutos) {
   let error;
   try {
     ({ error } = await supabase
-      .from('pedidos_delivery')
+      .from(PEDIDOS_TABLE)
       .update({
         estado_pedido: 'preparando',
         tiempo_preparacion: minutos,
@@ -68,7 +69,7 @@ export async function aceptarPedido(pedidoIdOrPedido, minutos) {
     avisarClienteTiempo(pedido, minutos);
   } else {
     const { data } = await supabase
-      .from('pedidos_delivery')
+      .from(PEDIDOS_TABLE)
       .select('id, conversation_id, cliente_nombre, restaurante, detalle_pedido')
       .eq('id', pedidoId)
       .maybeSingle();
@@ -85,7 +86,7 @@ export async function rechazarPedido(pedidoId, motivo) {
   let error;
   try {
     ({ error } = await supabase
-      .from('pedidos_delivery')
+      .from(PEDIDOS_TABLE)
       .update({
         estado_pedido: 'cancelado',
         restaurante_rechazado: true,

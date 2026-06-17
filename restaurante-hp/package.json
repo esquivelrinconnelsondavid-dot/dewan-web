@@ -1,0 +1,37 @@
+{
+  "name": "happy-pollo-caja",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Cascarón Electron del panel de cocina Happy Pollo (carga dewansas.com/restaurante-hp/web/ e imprime local, sin PrintNode).",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "electron": "electron .",
+    "electron:build": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.happypollo.caja",
+    "productName": "Happy Pollo Caja",
+    "files": [
+      "electron/**/*"
+    ],
+    "directories": {
+      "output": "dist_electron"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Happy Pollo Caja",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    }
+  }
+}

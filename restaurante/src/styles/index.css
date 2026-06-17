@@ -2,10 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Paleta por marca via variables CSS (formato "R G B" para usar alpha de Tailwind) ── */
+:root {
+  /* DEWAN (default) — valores actuales, NO cambian el panel actual */
+  --c-fondo: 5 8 14;
+  --c-bg2: 11 17 32;
+  --c-bg3: 17 24 39;
+  --c-bg4: 30 41 59;
+  --c-borde: 31 41 55;
+  --c-tarjeta: 15 22 35;
+  --c-dewan: 16 185 129;
+  --c-nuevo: 239 68 68;
+  --c-preparando: 245 158 11;
+  --c-buscando: 59 130 246;
+  --c-encamino: 139 92 246;
+  --c-alerta: 220 38 38;
+  --c-text: 255 255 255;
+  --scrollbar: 51 51 51;
+}
+
+/* Happy Pollo — tema crema cálido, idéntico a la identidad del menú en vivo */
+[data-marca="hp"] {
+  --c-fondo: 251 239 211;   /* crema mantequilla #FBEFD3 */
+  --c-bg2: 255 243 214;     /* crema suave */
+  --c-bg3: 255 248 230;     /* crema card */
+  --c-bg4: 247 231 196;
+  --c-borde: 231 211 174;   /* línea tan cálida */
+  --c-tarjeta: 255 248 230; /* crema card #FFF8E6 */
+  --c-dewan: 173 24 38;     /* VINO #AD1826 (acento principal) */
+  --c-nuevo: 228 27 23;     /* rojo #E41B17 */
+  --c-preparando: 243 159 7;/* naranja #F39F07 */
+  --c-buscando: 243 159 7;  /* naranja */
+  --c-encamino: 31 157 85;  /* verde */
+  --c-alerta: 228 27 23;    /* rojo */
+  --c-text: 63 35 16;       /* tinta café #3F2310 */
+  --scrollbar: 213 184 138;
+}
+
 html, body, #root {
   height: 100%;
-  background-color: #05080e;
-  color: #fff;
+  background-color: rgb(var(--c-fondo));
+  color: rgb(var(--c-text));
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -13,4 +50,24 @@ html, body, #root {
 /* Scrollbar sutil */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgb(var(--scrollbar)); border-radius: 2px; }
+
+/* ── Happy Pollo: tipografía + textos claros → tinta cálida (solo bajo data-marca="hp") ── */
+[data-marca="hp"], [data-marca="hp"] body { font-family: 'Quicksand', system-ui, sans-serif; }
+[data-marca="hp"] .marca-title, [data-marca="hp"] .font-display { font-family: 'Yeseva One', Georgia, serif; font-weight: 400; }
+
+[data-marca="hp"] .text-white   { color: #3F2310; }
+[data-marca="hp"] .text-gray-200 { color: #4A2C16; }
+[data-marca="hp"] .text-gray-300 { color: #6B4A2C; }
+[data-marca="hp"] .text-gray-400 { color: #7A5232; }
+[data-marca="hp"] .text-gray-500 { color: #9A7551; }
+
+/* Texto sobre fondos de acento sólidos → crema (contraste correcto, gana por orden) */
+[data-marca="hp"] .bg-dewan,
+[data-marca="hp"] .bg-nuevo,
+[data-marca="hp"] .bg-encamino,
+[data-marca="hp"] .bg-preparando,
+[data-marca="hp"] .bg-alerta { color: #FFF8E6; }
+
+/* Sombras cálidas en las tarjetas HP (en vez de los bordes secos del tema oscuro) */
+[data-marca="hp"] .bg-tarjeta { box-shadow: 0 6px 18px rgba(173,24,38,.08); }

@@ -1,26 +1,31 @@
 /** @type {import('tailwindcss').Config} */
+// Los colores apuntan a variables CSS (definidas en styles/index.css). Así una sola
+// base de código sirve para DEWAN (default) y Happy Pollo (data-marca="hp") sin
+// duplicar componentes: cambian los valores de las variables, no las clases.
+const c = (v) => `rgb(var(--c-${v}) / <alpha-value>)`;
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        bg: '#05080e',
-        fondo: '#05080e',
-        bg2: '#0b1120',
-        bg3: '#111827',
-        bg4: '#1e293b',
-        borde: '#1f2937',
-        tarjeta: '#0f1623',
-        dewan: '#10b981',
-        nuevo: '#ef4444',
-        preparando: '#f59e0b',
-        buscando: '#3b82f6',
-        encamino: '#8b5cf6',
-        alerta: '#dc2626',
+        bg: c('fondo'),
+        fondo: c('fondo'),
+        bg2: c('bg2'),
+        bg3: c('bg3'),
+        bg4: c('bg4'),
+        borde: c('borde'),
+        tarjeta: c('tarjeta'),
+        dewan: c('dewan'),
+        nuevo: c('nuevo'),
+        preparando: c('preparando'),
+        buscando: c('buscando'),
+        encamino: c('encamino'),
+        alerta: c('alerta'),
       },
       fontFamily: {
         sans: ['DM Sans', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+        display: ['Yeseva One', 'Georgia', 'serif'],
       },
       keyframes: {
         pulso: {

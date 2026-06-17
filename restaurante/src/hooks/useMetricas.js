@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
+import { PEDIDOS_TABLE } from '../lib/config';
 import { marcarDatosOk } from '../lib/conexion';
 import { inicioDelDiaECisoUtc, fechaIsoEC } from '../lib/formato';
 
@@ -92,7 +93,7 @@ export function useMetricas(restaurante, rango = 'hoy') {
     }
 
     let query = supabase
-      .from('pedidos_delivery')
+      .from(PEDIDOS_TABLE)
       .select('*')
       .eq('intencion', 'pedido_comida')
       .gte('fecha_creacion', desde);
@@ -163,7 +164,7 @@ export function useMetricas(restaurante, rango = 'hoy') {
         .channel(`metricas-${rango}-${restauranteId || restauranteNombre}-${Date.now()}`)
         .on(
           'postgres_changes',
-          { event: '*', schema: 'public', table: 'pedidos_delivery', filter: 'intencion=eq.pedido_comida' },
+          { event: '*', schema: 'public', table: PEDIDOS_TABLE, filter: 'intencion=eq.pedido_comida' },
           aplicarCambio
         )
         .subscribe((status) => {

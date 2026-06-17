@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
+import { PEDIDOS_TABLE } from '../lib/config';
 import { marcarDatosOk } from '../lib/conexion';
 import { startAlertLoop, stopAlertLoop, showPushNotification } from '../lib/notifications';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
@@ -74,7 +75,7 @@ export function usePedidosRestaurante(restaurante) {
     }
 
     let query = supabase
-      .from('pedidos_delivery')
+      .from(PEDIDOS_TABLE)
       .select('*')
       .eq('intencion', 'pedido_comida')
       .gte('fecha_creacion', HOY())
@@ -139,7 +140,7 @@ export function usePedidosRestaurante(restaurante) {
         {
           event: '*',
           schema: 'public',
-          table: 'pedidos_delivery',
+          table: PEDIDOS_TABLE,
           filter: 'intencion=eq.pedido_comida',
         },
         (payload) => {

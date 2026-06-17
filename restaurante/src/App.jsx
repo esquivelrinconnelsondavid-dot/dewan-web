@@ -23,6 +23,7 @@ import {
 import { registrarPushRestaurante, olvidarRestaurantePush } from './lib/push';
 import { tiempoSinDatos } from './lib/conexion';
 import { resucitarSocket } from './lib/supabase';
+import { MARCA } from './lib/config';
 
 function buildTabs(enProcesoCount) {
   return [
@@ -136,7 +137,7 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
         <Header restaurante={restaurante} onLogout={onLogout} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <span className="text-dewan font-black text-2xl">DEWAN</span>
+            <span className="marca-title text-dewan font-black text-2xl">{MARCA}</span>
             <div className="mt-4 w-6 h-6 border-2 border-dewan border-t-transparent rounded-full animate-spin mx-auto" />
           </div>
         </div>
@@ -279,7 +280,7 @@ export default function App() {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <span className="text-dewan font-black text-2xl">DEWAN</span>
+          <span className="marca-title text-dewan font-black text-2xl">{MARCA}</span>
           <div className="mt-4 w-6 h-6 border-2 border-dewan border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
       </div>

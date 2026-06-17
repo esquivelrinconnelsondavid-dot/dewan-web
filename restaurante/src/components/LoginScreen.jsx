@@ -1,4 +1,9 @@
 import { useState } from 'react';
+import { MARCA } from '../lib/config';
+import { HP_LOGO } from '../lib/hpLogo';
+
+const ES_HP = MARCA.toLowerCase().includes('happy');
+const LOGO_HP = HP_LOGO;
 
 export default function LoginScreen({ onLogin }) {
   const [dispositivo, setDispositivo] = useState('');
@@ -31,9 +36,20 @@ export default function LoginScreen({ onLogin }) {
 
   return (
     <div className="h-full flex flex-col items-center justify-center gap-6 p-8">
-      <div className="text-center">
-        <h1 className="text-dewan font-black text-3xl tracking-wide">DEWAN</h1>
-        <p className="text-gray-400 text-sm mt-1">Panel Restaurante</p>
+      <div className="text-center flex flex-col items-center">
+        {ES_HP ? (
+          <>
+            <img src={LOGO_HP} alt="Happy Pollo" className="w-24 h-24 object-contain mb-2"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <h1 className="marca-title text-dewan text-4xl tracking-wide">Happy Pollo</h1>
+            <p className="text-gray-400 text-sm mt-1">Panel de Cocina</p>
+          </>
+        ) : (
+          <>
+            <h1 className="text-dewan font-black text-3xl tracking-wide">DEWAN</h1>
+            <p className="text-gray-400 text-sm mt-1">Panel Restaurante</p>
+          </>
+        )}
       </div>
 
       <div className="w-full max-w-[320px] space-y-3">
@@ -71,7 +87,7 @@ export default function LoginScreen({ onLogin }) {
         <button
           onClick={verificar}
           disabled={!puedeEnviar}
-          className="w-full bg-dewan text-black font-bold py-3 rounded-xl active:scale-95 transition-transform disabled:opacity-50 disabled:active:scale-100"
+          className="w-full bg-dewan text-fondo font-bold py-3 rounded-xl active:scale-95 transition-transform disabled:opacity-50 disabled:active:scale-100"
         >
           {enviando ? 'Verificando…' : 'Entrar'}
         </button>
