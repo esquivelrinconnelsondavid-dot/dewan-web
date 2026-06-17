@@ -97,6 +97,7 @@ export default function PedidoEntrante({ pedido }) {
   if (MODO_HP) {
     const esDelivery = !!pedido.direccion_entrega;
     const monto = Number(pedido.monto_total) || 0;
+    const esTransfer = /transfer/i.test(pedido.metodo_pago || '');
     return (
       <div
         className={`bg-tarjeta rounded-2xl border-2 border-nuevo p-4 animate-pulso shadow-lg ${
@@ -125,6 +126,24 @@ export default function PedidoEntrante({ pedido }) {
           <span className="text-white font-bold">{pedido.cliente_nombre || '—'}</span>
           {esDelivery && <span className="text-gray-400">📍 {pedido.direccion_entrega}</span>}
         </div>
+
+        {(pedido.metodo_pago || pedido.factura_datos) && (
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            {pedido.metodo_pago && (
+              <span className={`text-[11px] font-extrabold px-2.5 py-1 rounded-full ${esTransfer ? 'bg-nuevo text-white' : 'bg-bg2 text-dewan border border-borde'}`}>
+                {esTransfer ? '💳 TRANSFERENCIA' : '💵 Efectivo'}
+              </span>
+            )}
+            {pedido.factura_datos && (
+              <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-preparando text-white">🧾 FACTURA</span>
+            )}
+          </div>
+        )}
+        {pedido.factura_datos && (
+          <div className="bg-bg2 border border-borde rounded-lg px-3 py-2 mb-2 text-xs text-gray-400 whitespace-pre-line">
+            {pedido.factura_datos}
+          </div>
+        )}
 
         {monto > 0 && (
           <div className="flex items-center justify-between mb-3">

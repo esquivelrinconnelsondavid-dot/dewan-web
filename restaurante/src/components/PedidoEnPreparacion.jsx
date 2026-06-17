@@ -61,13 +61,26 @@ export default function PedidoEnPreparacion({ pedido }) {
           {pedido.detalle_pedido}
         </p>
 
-        <div className="flex items-center gap-2 text-sm mb-3">
+        <div className="flex items-center gap-2 text-sm mb-2">
           <span className="text-gray-400">Cliente:</span>
           <span className="text-white font-bold">{pedido.cliente_nombre || '—'}</span>
           {pedido.tiempo_preparacion && (
             <span className="ml-auto text-gray-400">⏱ {pedido.tiempo_preparacion} min</span>
           )}
         </div>
+
+        {(pedido.metodo_pago || pedido.factura_datos) && (
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            {pedido.metodo_pago && (
+              <span className={`text-[11px] font-extrabold px-2.5 py-1 rounded-full ${/transfer/i.test(pedido.metodo_pago) ? 'bg-nuevo text-white' : 'bg-bg2 text-dewan border border-borde'}`}>
+                {/transfer/i.test(pedido.metodo_pago) ? '💳 TRANSFERENCIA' : '💵 Efectivo'}
+              </span>
+            )}
+            {pedido.factura_datos && (
+              <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-preparando text-white">🧾 FACTURA</span>
+            )}
+          </div>
+        )}
 
         {vencido && (
           <div className="mb-2 text-xs text-nuevo font-bold animate-pulse">⚠️ Tiempo de preparación cumplido</div>
