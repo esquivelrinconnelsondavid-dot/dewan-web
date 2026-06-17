@@ -134,10 +134,14 @@
         .pill.disabled{opacity:0.4;cursor:not-allowed;pointer-events:none}
 
         /* GPS Banner */
-        .gps-banner{background:rgba(255,182,39,0.08);border:1px solid rgba(255,182,39,0.15);border-radius:12px;margin:0 14px 10px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:0.78rem;color:var(--gris);cursor:pointer;transition:all 0.2s}
-        .gps-banner:hover{background:rgba(255,182,39,0.12)}
-        .gps-banner-text{flex:1;line-height:1.4}
-        .gps-banner-close{background:none;border:none;color:var(--gris);font-size:1rem;cursor:pointer;padding:10px;min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center;opacity:0.6;flex-shrink:0}
+        .gps-banner{background:linear-gradient(135deg,rgba(255,182,39,0.18),rgba(255,182,39,0.07));border:1.5px solid rgba(255,182,39,0.42);border-radius:14px;margin:4px 14px 12px;padding:12px 13px;display:flex;align-items:center;gap:11px;font-size:0.9rem;color:var(--texto);cursor:pointer;transition:transform 0.15s;box-shadow:0 2px 12px rgba(255,182,39,0.13)}
+        .gps-banner:active{transform:scale(0.99)}
+        .gps-banner-icon{font-size:1.5rem;flex-shrink:0;line-height:1}
+        .gps-banner-text{flex:1;line-height:1.28;font-weight:800;letter-spacing:-0.01em}
+        .gps-banner-text small{display:block;font-weight:600;font-size:0.75rem;color:var(--gris);margin-top:2px;letter-spacing:0}
+        .gps-banner-cta{flex-shrink:0;background:var(--acc);color:#1d1d1f;font-weight:900;font-size:0.82rem;padding:9px 15px;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;font-family:inherit}
+        .gps-banner-cta:active{transform:scale(0.96)}
+        .gps-banner-close{background:none;border:none;color:var(--gris);font-size:1rem;cursor:pointer;padding:6px;min-width:30px;min-height:30px;display:flex;align-items:center;justify-content:center;opacity:0.45;flex-shrink:0}
         .gps-banner-close:hover{opacity:1}
 
         /* Restaurant Card */
@@ -977,7 +981,7 @@
             var banner=document.getElementById('gps-banner');
             if(!banner) return;
             if(!navigator.geolocation){banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">Tu navegador no soporta GPS</span>';return}
-            banner.innerHTML='<span style="font-size:0.78rem;color:var(--acc)">🔎 Buscando tu ubicación...</span>';
+            banner.innerHTML='<span style="font-size:0.88rem;font-weight:800;color:var(--texto)">🔎 Buscando tu ubicación...</span>';
             navigator.geolocation.getCurrentPosition(function(pos){
                 window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};guardarUbic();
                 currentSort='distancia';
@@ -2110,11 +2114,12 @@
                 try{dismissed=sessionStorage.getItem('dewan_gps_dismissed')==='1'}catch(e){}
                 if(!dismissed){
                     var gpsTxt=promoEnvioDiaActivo()
-                        ? 'Activa tu ubicación · si tienes un aliado cerca, hoy el envío puede bajar a $1 (pedidos desde $8, Lun-Mié)'
-                        : 'Activa tu ubicación y mira distancias y el envío real de cada local';
+                        ? 'Pon tu ubicación<small>Mira el envío real de cada local · hoy puede bajar a $1 con un aliado cerca (Lun-Mié, desde $8)</small>'
+                        : 'Pon tu ubicación<small>Mira distancias y el envío real — y al pedir ya no te la pedimos otra vez 🛵</small>';
                     h+='<div class="gps-banner" id="gps-banner" onclick="requestGPSFromBanner(event)">'+
-                        '<span style="font-size:1.1rem">📍</span>'+
+                        '<span class="gps-banner-icon">📍</span>'+
                         '<span class="gps-banner-text">'+gpsTxt+'</span>'+
+                        '<button class="gps-banner-cta" onclick="requestGPSFromBanner(event)">Activar</button>'+
                         '<button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>'+
                     '</div>';
                 }
