@@ -819,6 +819,9 @@
         var WA='593986777146';
         var app=document.getElementById('app');
         var token=new URLSearchParams(window.location.search).get('t');
+        // [14-jun] Referido: captura ?ref=<uuid del referidor>, lo guarda y lo manda en el pedido (lo procesa el bot).
+        (function(){try{var _r=new URLSearchParams(window.location.search).get('ref');if(_r)localStorage.setItem('dewan_ref',_r);}catch(e){}})();
+        function getRefCode(){try{return localStorage.getItem('dewan_ref')||''}catch(e){return''}}
         // MODO CENTRALISTA (2026-06-11): ?op=1 — la operadora arma el pedido por el cliente.
         var OP_MODE=new URLSearchParams(window.location.search).get('op')==='1';
         // Deep-link de PAUTA (Meta): ?r=<slug-del-local> aterriza directo en ese local (con sus fotos),
@@ -3873,6 +3876,7 @@
             msg+='Token: '+token+(t.subtotalBase>0?'#'+Math.round(t.subtotalBase*100):'')+'\n'; // el #NNNN es la base local en centavos: lo lee el bot, el cliente NO lo nota (sin $ ni la palabra base)
             // UUID anónimo del dispositivo - el bot lo vincula al teléfono real al recibir pedido
             msg+='Cliente: '+obtenerUuidCliente();
+            if(getRefCode()&&!OP_MODE) msg+='\nRef: '+getRefCode(); // referido: uuid del referidor (lo procesa el bot)
             // OP_MODE: teléfono real del cliente (normalizado: solo dígitos, 09… → 593…)
             if(OP_MODE){
                 var opTelMsg=String(window._opTel||'').replace(/\D/g,'');
@@ -3917,6 +3921,10 @@
                 '<div class="success-return">'+(resumen.primerPedido
                     ? '💚 Cuando confirmes por WhatsApp, te espera un descuento por volver la próxima.'
                     : '💚 Gracias por preferir el precio del local · te avisamos por WhatsApp cuando tengas un descuento listo.')+'</div>'+
+                '<div class="referido-box" style="margin-top:12px;padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:14px;text-align:left;font-size:0.84rem;line-height:1.45">'+
+                    '🎁 <strong>Invita y ganan los dos:</strong> comparte tu link; cuando un amigo pida por primera vez, <strong>su envío sale $1 y a ti te damos $1</strong> en tu próximo pedido. 🛵'+
+                    '<a class="btn-whatsapp" style="margin-top:10px;cursor:pointer" href="https://wa.me/?text='+encodeURIComponent('¡Pide en DEWAN al precio del local! 🛵 Usa mi link y tu primer envío sale $1 👉 https://pedir.dewansas.com?ref='+obtenerUuidCliente())+'" target="_blank" rel="noopener">📲 Compartir mi link</a>'+
+                '</div>'+
                 '<a class="btn-whatsapp" onclick="sendWA();return false" style="cursor:pointer">📲 Abrir WhatsApp y enviar</a>'+
                 '<div class="success-hint" style="margin-top:10px">¿No se abrió? <span onclick="sendWA()" style="color:var(--acc);font-weight:800;cursor:pointer">Reintentar</span></div>'+
                 '<button class="btn-ghost" onclick="resetAfterOrder()">Hacer otro pedido</button>'+
