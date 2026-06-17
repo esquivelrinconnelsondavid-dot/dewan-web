@@ -741,6 +741,15 @@
         .rest-filter-banner button{background:rgba(255,182,39,0.15);border:1px solid rgba(255,182,39,0.3);color:var(--acc);font-size:0.7rem;font-weight:800;padding:6px 11px;border-radius:100px;cursor:pointer;font-family:inherit;flex-shrink:0;transition:all 0.15s;letter-spacing:-0.01em}
         .rest-filter-banner button:active{transform:scale(0.96);background:rgba(255,182,39,0.25)}
         @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+        /* ===== CARRITO BOTTOM-SHEET (sube desde abajo, el menú queda detrás) ===== */
+        .sheet-overlay{position:fixed;inset:0;background:rgba(20,8,2,.5);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;z-index:95;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+        .sheet-overlay.open{opacity:1;visibility:visible}
+        .cart-sheet{position:fixed;left:0;right:0;bottom:0;height:92vh;max-height:92vh;background:var(--bg);z-index:100;transform:translateY(100%);transition:transform .34s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;border-radius:20px 20px 0 0;box-shadow:0 -14px 44px rgba(0,0,0,.34);overflow:hidden}
+        .cart-sheet.open{transform:translateY(0)}
+        .cart-sheet-handle{flex-shrink:0;display:flex;justify-content:center;align-items:center;padding:9px 0 5px;cursor:pointer}
+        .cart-sheet-handle::before{content:'';width:42px;height:5px;border-radius:999px;background:var(--border)}
+        .cart-sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        body.sheet-locked{overflow:hidden}
     </style>
 </head>
 <body>
@@ -804,6 +813,13 @@
         </button>
     </div>
 
+    <!-- Carrito como panel deslizante (bottom-sheet): el menú no se desmonta, queda detrás -->
+    <div class="sheet-overlay" id="cart-overlay" onclick="history.back()"></div>
+    <section class="cart-sheet" id="cart-sheet" aria-hidden="true" aria-label="Tu pedido">
+        <div class="cart-sheet-handle" onclick="history.back()" aria-label="Cerrar"></div>
+        <div class="cart-sheet-body" id="cart-sheet-body"></div>
+    </section>
+
     <div class="modal-overlay" id="modal-overlay">
         <div class="modal">
             <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#10005;</button>
@@ -846,7 +862,30 @@
             }
         }
         function _isVisible(el){ if(!el) return false; var s=getComputedStyle(el); return s.display!=='none'&&s.visibility!=='hidden'; }
+        // ── Carrito bottom-sheet: abrir/cerrar sin cambiar de "página" (el menú queda detrás) ──
+        function _cartSheetOpen(){var cs=document.getElementById('cart-sheet');return !!(cs&&cs.classList.contains('open'));}
+        function _openCartSheet(){
+            var ov=document.getElementById('cart-overlay'),cs=document.getElementById('cart-sheet');
+            var wasOpen=!!(cs&&cs.classList.contains('open'));
+            if(ov)ov.classList.add('open');
+            if(cs){cs.classList.add('open');cs.setAttribute('aria-hidden','false');}
+            if(!wasOpen){var sb=document.getElementById('cart-sheet-body'); if(sb)sb.scrollTop=0;} // solo al abrir, no en cada re-render
+            document.body.classList.add('sheet-locked');
+            var cf=document.getElementById('cart-float'); if(cf)cf.style.display='none';
+        }
+        function _hideCartSheet(){ // cierre solo-DOM (sin tocar la vista); lo usa la pantalla de éxito
+            var ov=document.getElementById('cart-overlay'),cs=document.getElementById('cart-sheet');
+            if(ov)ov.classList.remove('open');
+            if(cs){cs.classList.remove('open');cs.setAttribute('aria-hidden','true');}
+            document.body.classList.remove('sheet-locked');
+        }
+        window.closeCart=function(){
+            _hideCartSheet();
+            if(currentView==='cart'){ currentView=(window._prevView||'home'); currentRestIdx=(window._prevView==='rest'?window._prevRest:null); }
+            try{updateCartFloat()}catch(e){} // vuelve a mostrar el sticky 🛒 si hay items
+        };
         function closeAnyOverlay(){
+            if(_cartSheetOpen()){ closeCart(); return true; }
             var fz=document.querySelector('.foto-zoom'); if(_isVisible(fz)){fz.parentNode.removeChild(fz);return true;}
             var sf=document.getElementById('service-fee-modal'); if(_isVisible(sf)){ if(window.closeServiceFeeInfo){closeServiceFeeInfo();}else{sf.style.display='none';} return true;}
             var mo=document.getElementById('modal-overlay'); if(mo&&mo.classList.contains('visible')){ if(window.closeModal){closeModal();}else{mo.classList.remove('visible');} return true;}
@@ -3200,14 +3239,16 @@
 
         // ── CART + CHECKOUT UNIFICADO ──
         window.showCart=function(){
+            if(!_cartSheetOpen()){ window._prevView=currentView; window._prevRest=currentRestIdx; } // recordar a dónde volver al cerrar
             currentView='cart';
             syncHistory();
             if(window._cart.length) markEtapa('abrio_carrito');
             var t=cartTotals();
+            var _sheetBody=document.getElementById('cart-sheet-body');
             if(!window._cart.length){
-                app.innerHTML='<div class="cart-header"><button class="btn-back" onclick="history.back()">←</button><span class="cart-header-title">Mi pedido</span></div>'+
-                    '<div class="state-container"><div class="empty-icon">🛒</div><div class="state-title">Tu carrito esta vacio</div><button class="btn btn-accent" style="margin-top:20px;width:auto;padding:12px 28px" onclick="renderHome()">Ver restaurantes</button></div>';
-                document.getElementById('cart-float').style.display='none';
+                _sheetBody.innerHTML='<div class="cart-header"><button class="btn-back" onclick="history.back()">←</button><span class="cart-header-title">Mi pedido</span></div>'+
+                    '<div class="state-container"><div class="empty-icon">🛒</div><div class="state-title">Tu carrito esta vacio</div><button class="btn btn-accent" style="margin-top:20px;width:auto;padding:12px 28px" onclick="closeCart();renderHome()">Ver restaurantes</button></div>';
+                _openCartSheet();
                 return;
             }
             var byRest={};
@@ -3373,9 +3414,9 @@
                 '</button>';
             }
             h+='</div>';
-            app.innerHTML=h;
+            _sheetBody.innerHTML=h;
+            _openCartSheet();
             setTimeout(opInitMap,60); // recrear el mapa tras el re-render (cliente o centralista); restaura el marker desde _clientGPS
-            document.getElementById('cart-float').style.display='none';
         };
 
         // ── CART LOGIC ──
@@ -3909,6 +3950,7 @@
 
         // FIX #4: pantalla de éxito con resumen + CTA para nuevo pedido
         function showSuccessScreen(resumen){
+            _hideCartSheet(); // cerrar el panel del carrito; la pantalla de éxito toma el menú
             try{dewanTrackPurchase(resumen);}catch(e){}
             var h='<div class="success-screen">'+
                 '<div class="success-icon-wrap"><div class="success-icon">📲</div></div>'+
@@ -3934,6 +3976,7 @@
         }
         // Fallback cuando el navegador bloquea window.open: link directo (un <a> esquiva el bloqueo de popups).
         function mostrarAbrirWA(url,resumen){
+            _hideCartSheet(); // cerrar el panel del carrito antes de mostrar el fallback
             window._resumenPendiente=resumen;
             var h='<div class="success-screen">'+
                 '<div class="success-icon-wrap"><div class="success-icon">📲</div></div>'+
@@ -3951,6 +3994,7 @@
             if(r) showSuccessScreen(r);
         };
         window.resetAfterOrder=function(){
+            _hideCartSheet(); // defensivo: asegurar que el panel quede cerrado
             window._cart=[];
             window._clientAddr='';
             if(OP_MODE){ // siguiente pedido = OTRO cliente: limpiar tel y pin
