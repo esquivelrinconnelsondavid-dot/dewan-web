@@ -849,6 +849,9 @@
         function getRefCode(){try{return localStorage.getItem('dewan_ref')||''}catch(e){return''}}
         // MODO CENTRALISTA (2026-06-11): ?op=1 — la operadora arma el pedido por el cliente.
         var OP_MODE=new URLSearchParams(window.location.search).get('op')==='1';
+        // [17-jun] ARRANQUE: tarifa de servicio DESACTIVADA (no se cobra a nadie, ni a silenciosos).
+        // Poner en true para volver a cobrar el $0.10 a silenciosos. Apaga el cobro Y el badge "+servicio".
+        var SERVICE_FEE_ON=false;
         // Deep-link de PAUTA (Meta): ?r=<slug-del-local> aterriza directo en ese local (con sus fotos),
         // para que el anuncio NO caiga en la home sin fotos. Ej: pedir.dewansas.com?r=happy-pollo
         var AD_REST=new URLSearchParams(window.location.search).get('r')||'';
@@ -3068,7 +3071,7 @@
             // El badge de servicio SOLO en silenciosos (los únicos que pagan la tarifa) y si el local está abierto.
             // Aliados y cliente_paga ya llevan el markup en el precio -> ni se cobra ni se muestra el badge.
             // Menú del día EN horario de almuerzo (12-15h): exonerados -> tampoco se muestra el badge.
-            var feeBadge=(r.tipo_acuerdo==='silencioso'&&isOpen!==false&&!exentoServicioAlmuerzo(r))?'<span class="service-fee-badge" data-service-fee="1">ⓘ +servicio</span>':'';
+            var feeBadge=(SERVICE_FEE_ON&&r.tipo_acuerdo==='silencioso'&&isOpen!==false&&!exentoServicioAlmuerzo(r))?'<span class="service-fee-badge" data-service-fee="1">ⓘ +servicio</span>':'';
             var topBadge=r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'';
             // Aliados resaltan con borde verde (vitrina "Precio del local"); el resto, color por índice.
             var borderCol=isAliado?'rgba(34,197,94,0.40)':color+'25';
@@ -3546,6 +3549,7 @@
         }
         // Tarifa de servicio fija $0.10 (solo para restaurantes NO aliados)
         function calcServiceFee(sub){
+            if(!SERVICE_FEE_ON) return 0; // [17-jun] tarifa de servicio desactivada en el arranque
             if(sub<=0) return 0;
             return 0.10;
         }
