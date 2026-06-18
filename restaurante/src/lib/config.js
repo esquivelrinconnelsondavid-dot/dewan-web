@@ -7,9 +7,13 @@ export const PEDIDOS_TABLE = import.meta.env.VITE_PEDIDOS_TABLE || 'pedidos_deli
 export const MODO_HP = String(import.meta.env.VITE_MODO_HP) === 'true';
 export const MARCA = import.meta.env.VITE_MARCA || 'DEWAN';
 
-// Código visible del pedido. El bot genera un código (ej. "CV-123456") que ya
-// recibió el cliente; si está guardado en la fila (codigo_pedido), lo mostramos
-// para que cliente y cocina vean el MISMO código. Si no, caemos al # de fila.
+// Número visible del pedido.
+// - Happy Pollo: SIEMPRE el número de fila (#id), igual que la app y el aviso
+//   del bot al cliente (el bot confirma "Pedido #N" con ese mismo id). Sin
+//   códigos tipo "CV-######".
+// - DEWAN: usa el código que generó su bot (codigo_pedido) si existe; si no, #id.
 export function codigoPedido(pedido) {
-  return (pedido && pedido.codigo_pedido) ? pedido.codigo_pedido : `#${pedido ? pedido.id : ''}`;
+  if (!pedido) return '';
+  if (MODO_HP) return `#${pedido.id}`;
+  return pedido.codigo_pedido ? pedido.codigo_pedido : `#${pedido.id}`;
 }
