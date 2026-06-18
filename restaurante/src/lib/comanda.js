@@ -151,9 +151,15 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
   const pago = calcularPagoAlRestaurante(pedido);
   const montoTotal = Number(pedido.monto_total) || 0;
   // En Happy Pollo el TOTAL es lo que cobra el local (sin comisión DEWAN).
+  // Desglose: Productos = precio_base_productos (subtotal real del local);
+  // Envio = total - productos (la app no guarda el envío aparte; en delivery la
+  // diferencia es la carrera, ej. 27.35 - 25.60 = 1.75). En retiro la diferencia
+  // es 0, así que la línea Envio no se muestra.
+  const baseProd = Number(pedido.precio_base_productos) || 0;
+  const envioHP = montoTotal > baseProd ? Math.round((montoTotal - baseProd) * 100) / 100 : 0;
   const bloquePrecios = MODO_HP
     ? (montoTotal > 0
-        ? `<div class="row"><span class="tot">TOTAL</span><span class="tot">${formatDinero(montoTotal)}</span></div>`
+        ? `${baseProd > 0 ? `<div class="row"><span class="lbl">Productos</span><span class="b">${formatDinero(baseProd)}</span></div>` : ''}${envioHP > 0 ? `<div class="row"><span class="lbl">Envio</span><span class="b">${formatDinero(envioHP)}</span></div>` : ''}<div class="row"><span class="tot">TOTAL</span><span class="tot">${formatDinero(montoTotal)}</span></div>`
         : '')
     : (pago.base > 0 ? `
     ${pago.laPagaRestaurante ? `<div class="lbl">Venta ${formatDinero(pago.base)} - Comision ${formatDinero(pago.comision)}</div>` : ''}

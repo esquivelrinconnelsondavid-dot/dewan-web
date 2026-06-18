@@ -145,12 +145,30 @@ export default function PedidoEntrante({ pedido }) {
           </div>
         )}
 
-        {monto > 0 && (
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-gray-400 font-semibold">Total del pedido</span>
-            <span className="marca-title text-dewan text-2xl">{formatDinero(monto)}</span>
-          </div>
-        )}
+        {monto > 0 && (() => {
+          const base = Number(pedido.precio_base_productos) || 0;
+          const envio = monto > base ? Math.round((monto - base) * 100) / 100 : 0;
+          return (
+            <div className="mb-3 space-y-1">
+              {base > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-400">Productos</span>
+                  <span className="text-white font-semibold">{formatDinero(base)}</span>
+                </div>
+              )}
+              {envio > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-400">Envío</span>
+                  <span className="text-white font-semibold">{formatDinero(envio)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 font-semibold">Total del pedido</span>
+                <span className="marca-title text-dewan text-2xl">{formatDinero(monto)}</span>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="text-xs text-gray-400 mb-1.5 font-bold uppercase tracking-wider">Tiempo de preparación</div>
         <div className="grid grid-cols-5 gap-1.5 mb-3">
