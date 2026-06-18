@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useMetricas } from '../hooks/useMetricas';
 import { formatHoraEC, formatFechaCortaEC, formatDinero } from '../lib/formato';
+import { imprimirComanda } from '../lib/comanda';
+import { MODO_HP } from '../lib/config';
 
 const RANGOS = [
   { id: 'hoy', label: 'Hoy' },
@@ -92,8 +94,82 @@ function GraficoBarras({ porDia }) {
   );
 }
 
+// Detalle desplegable de un pedido en Ventas (solo HP) + botón para volver a
+// imprimir la comanda (por si la impresora se trabó o se cortó el papel). Usa
+// la impresora ya configurada en Ajustes; en navegador (no-Electron) avisa.
+function DetalleReimprimir({ p, restauranteNombre }) {
+  const [imprimiendo, setImprimiendo] = useState(false);
+  const [msg, setMsg] = useState('');
+  const base = Number(p.precio_base_productos) || 0;
+  const total = Number(p.monto_total) || 0;
+  const envio = total > base ? Math.round((total - base) * 100) / 100 : 0;
+  const items = String(p.detalle_pedido || '')
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const reimprimir = async () => {
+    setImprimiendo(true);
+    setMsg('');
+    const r = await imprimirComanda(p, { restauranteNombre });
+    setImprimiendo(false);
+    if (r.ok) setMsg('✅ Enviado a la impresora');
+    else if (r.motivo === 'no-electron') setMsg('Solo desde la app de escritorio (la caja)');
+    else setMsg('⚠️ No se pudo imprimir: ' + (r.motivo || 'error'));
+  };
+
+  return (
+    <div className="px-4 pb-3 bg-fondo/40 border-t border-borde text-sm">
+      {items.length > 0 && (
+        <div className="py-2 space-y-0.5">
+          {items.map((l, i) => (
+            <div key={i} className="text-gray-200">{l}</div>
+          ))}
+        </div>
+      )}
+      <div className="space-y-0.5 border-t border-borde pt-2">
+        {base > 0 && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">Productos</span>
+            <span className="text-white">{formatDinero(base)}</span>
+          </div>
+        )}
+        {envio > 0 && (
+          <div className="flex justify-between">
+            <span className="text-gray-400">Envío</span>
+            <span className="text-white">{formatDinero(envio)}</span>
+          </div>
+        )}
+        {total > 0 && (
+          <div className="flex justify-between font-bold">
+            <span className="text-gray-300">Total</span>
+            <span className="text-dewan">{formatDinero(total)}</span>
+          </div>
+        )}
+      </div>
+      {p.direccion_entrega && (
+        <div className="text-gray-400 text-xs mt-2 break-words">📍 {p.direccion_entrega}</div>
+      )}
+      {p.metodo_pago && (
+        <div className="text-gray-400 text-xs mt-1">
+          Pago: {/transfer/i.test(p.metodo_pago) ? 'Transferencia' : 'Efectivo'}
+        </div>
+      )}
+      <button
+        onClick={reimprimir}
+        disabled={imprimiendo}
+        className="mt-3 w-full bg-dewan text-white font-bold py-2.5 rounded-xl disabled:opacity-60"
+      >
+        {imprimiendo ? 'Imprimiendo…' : '🖨️ Reimprimir comanda'}
+      </button>
+      {msg && <div className="text-center text-xs text-gray-400 mt-1.5">{msg}</div>}
+    </div>
+  );
+}
+
 export default function VistaVentas({ restaurante }) {
   const [rango, setRango] = useState('hoy');
+  const [expandido, setExpandido] = useState(null);
   const {
     pedidos,
     total,
@@ -208,25 +284,41 @@ export default function VistaVentas({ restaurante }) {
                     ? '—'
                     : formatDinero(monto);
                 const nombre = p.nombre_cliente || p.cliente_nombre || p.cliente || 'Cliente';
+                const abierto = MODO_HP && expandido === p.id;
                 return (
-                  <div key={p.id} className="px-4 py-3 flex items-center gap-3 text-sm">
-                    <div className="text-xs text-gray-400 font-mono shrink-0 w-14">
-                      <div>{formatHoraEC(p.fecha_creacion)}</div>
-                      {rango !== 'hoy' && (
-                        <div className="text-[10px]">
-                          {formatFechaCortaEC(p.fecha_creacion)}
-                        </div>
+                  <div key={p.id}>
+                    <div
+                      className={`px-4 py-3 flex items-center gap-3 text-sm ${
+                        MODO_HP ? 'cursor-pointer active:bg-borde/40' : ''
+                      }`}
+                      onClick={MODO_HP ? () => setExpandido(abierto ? null : p.id) : undefined}
+                    >
+                      <div className="text-xs text-gray-400 font-mono shrink-0 w-14">
+                        <div>{formatHoraEC(p.fecha_creacion)}</div>
+                        {rango !== 'hoy' && (
+                          <div className="text-[10px]">
+                            {formatFechaCortaEC(p.fecha_creacion)}
+                          </div>
+                        )}
+                      </div>
+                      <span className="flex-1 text-white truncate">{nombre}</span>
+                      <span className="text-gray-300 font-semibold shrink-0">{montoTxt}</span>
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-1 shrink-0 ${badgeClasses(
+                          p.estado_pedido
+                        )}`}
+                      >
+                        {labelEstado(p.estado_pedido)}
+                      </span>
+                      {MODO_HP && (
+                        <span className="text-gray-500 shrink-0 w-3 text-center">
+                          {abierto ? '▾' : '▸'}
+                        </span>
                       )}
                     </div>
-                    <span className="flex-1 text-white truncate">{nombre}</span>
-                    <span className="text-gray-300 font-semibold shrink-0">{montoTxt}</span>
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-1 shrink-0 ${badgeClasses(
-                        p.estado_pedido
-                      )}`}
-                    >
-                      {labelEstado(p.estado_pedido)}
-                    </span>
+                    {abierto && (
+                      <DetalleReimprimir p={p} restauranteNombre={restaurante?.nombre} />
+                    )}
                   </div>
                 );
               })}
