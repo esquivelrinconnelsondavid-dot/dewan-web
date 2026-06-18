@@ -1,7 +1,7 @@
 // Impresión de comanda por Electron directo (sin PrintNode).
 // Configurable por local: impresora + ancho (80/76/58mm o normal) + auto al aceptar.
 import { calcularPagoAlRestaurante, formatDinero } from './formato';
-import { MARCA, MODO_HP } from './config';
+import { MARCA, MODO_HP, codigoPedido } from './config';
 
 // Nombre que va arriba del ticket: el pasado por el panel, o el del pedido, o el
 // de la sesión guardada (sucursal logueada), y como último recurso la marca
@@ -195,7 +195,7 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
   </style></head><body>
     <div class="c rest">${esc(limp(nombreLocal(pedido, restauranteNombre)))}</div>
     <div class="c">COMANDA - ${ahoraTexto()}</div>
-    <div class="row idrow"><span class="big">#${esc(pedido.id)}</span><span class="b">${esc(entrega)}</span></div>
+    <div class="row idrow"><span class="big">${esc(codigoPedido(pedido))}</span><span class="b">${esc(entrega)}</span></div>
     ${sep}
     ${formatearItems(pedido.detalle_pedido, liviano)}
     ${sep}

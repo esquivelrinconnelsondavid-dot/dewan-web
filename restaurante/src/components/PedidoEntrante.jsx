@@ -3,7 +3,7 @@ import { aceptarPedido, rechazarPedido } from '../lib/pedidos';
 import { stopAlertLoop } from '../lib/notifications';
 import { calcularPagoAlRestaurante, formatDinero } from '../lib/formato';
 import { hayImpresion, getConfigImpresora, imprimirComanda } from '../lib/comanda';
-import { MODO_HP } from '../lib/config';
+import { MODO_HP, codigoPedido } from '../lib/config';
 
 const TIEMPOS_PRESET = [10, 15, 20, 30, 45];
 
@@ -106,7 +106,7 @@ export default function PedidoEntrante({ pedido }) {
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-baseline gap-2.5">
-            <span className="marca-title text-dewan text-3xl leading-none">#{pedido.id}</span>
+            <span className="marca-title text-dewan text-3xl leading-none">{codigoPedido(pedido)}</span>
             <span className="bg-nuevo text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full tracking-wider">NUEVO</span>
           </div>
           <div className="flex items-center gap-2">

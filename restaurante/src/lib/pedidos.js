@@ -2,17 +2,43 @@ import { supabase } from './supabase';
 import { PEDIDOS_TABLE } from './config';
 
 const WEBHOOK_BASE = import.meta.env.VITE_N8N_WEBHOOK_BASE;
+// Happy Pollo: URL directa del webhook de aviso de tiempo. Su instancia de n8n
+// NO devuelve headers CORS, así que el aviso se manda como petición "simple"
+// (no-cors + text/plain) para esquivar el preflight que el navegador bloquearía.
+// DEWAN no setea esta var → mantiene su POST application/json con reintentos.
+const TIMER_URL = import.meta.env.VITE_N8N_TIMER_URL || '';
 
 async function avisarClienteTiempo(pedido, minutos) {
-  if (!WEBHOOK_BASE || !pedido?.conversation_id) return;
-  const body = JSON.stringify({
+  if (!pedido?.conversation_id) return;
+  const payload = {
     pedido_id: pedido.id,
     minutos,
     conversation_id: pedido.conversation_id,
     cliente_nombre: pedido.cliente_nombre,
     restaurante: pedido.restaurante,
     detalle_pedido: pedido.detalle_pedido,
-  });
+  };
+
+  // HP: fire-and-forget. text/plain = petición simple (sin preflight CORS). En
+  // no-cors la respuesta es opaca, por eso NO reintentamos mirando resp.ok
+  // (evitaría avisos duplicados al cliente); un solo envío basta.
+  if (TIMER_URL) {
+    try {
+      await fetch(TIMER_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      });
+    } catch (e) {
+      console.warn('[avisarCliente HP] no se pudo avisar', e?.message || e);
+    }
+    return;
+  }
+
+  if (!WEBHOOK_BASE) return;
+  const body = JSON.stringify(payload);
   // Reintenta hasta 3 veces: el aviso al cliente es importante y un blip de red
   // no debe saltearlo (antes era 1 sola llamada sin reintento → a veces no avisaba).
   for (let intento = 1; intento <= 3; intento++) {

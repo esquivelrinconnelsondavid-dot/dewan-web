@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { calcularPagoAlRestaurante, formatDinero } from '../lib/formato';
 import { hayImpresion, imprimirComanda } from '../lib/comanda';
-import { MODO_HP } from '../lib/config';
+import { MODO_HP, codigoPedido } from '../lib/config';
 import { marcarEntregado } from '../lib/pedidos';
 
 function calcularRestante(timerLanzamiento) {
@@ -51,7 +51,7 @@ export default function PedidoEnPreparacion({ pedido }) {
       <div className={`bg-tarjeta rounded-2xl border-l-4 border-preparando p-4 shadow-lg ${cargando ? 'opacity-60 pointer-events-none' : ''}`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-baseline gap-2.5">
-            <span className="marca-title text-preparando text-2xl leading-none">#{pedido.id}</span>
+            <span className="marca-title text-preparando text-2xl leading-none">{codigoPedido(pedido)}</span>
             <span className="bg-preparando text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full tracking-wider">PREPARANDO</span>
           </div>
           <div className={`marca-title text-2xl tabular-nums ${color}`}>{formatear(restante)}</div>
