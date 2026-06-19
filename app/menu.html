@@ -44,10 +44,10 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{
-            --bg:#FFFFFF;--card:#FFFFFF;--card2:#F4F5F7;--border:#E6E8EB;
+            --bg:#FBF4EA;--card:#FFFCF7;--card2:#F4EADB;--border:#EAD9C4;
             --acc:#E8431A;--acc-soft:rgba(232,67,26,0.10);
             --cta:#E8431A;--cta-hover:#CF3A12;--cta-soft:rgba(232,67,26,0.10);
-            --texto:#16181C;--gris:#6B7280;--gris-2:#9AA1AC;
+            --texto:#221A14;--gris:#6B5D4F;--gris-2:#A9978A;
             /* Escala de espaciado base-4 + tap-target mínimo (audit visual 2026-06-13) */
             --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--sp-8:32px;
             --pad-x:14px;--gap-card:10px;--gap-section:24px;--tap-min:44px;
@@ -761,6 +761,10 @@
         .cart-sheet-foot .cta-helper{margin:0 0 8px}
         .cart-sheet-foot .btn{margin:0}
         body.sheet-locked{overflow:hidden}
+        /* ── PALETA "Pan y Brasa" 2026-06-19: calidez/apetito (override final) ── */
+        .prod-price,.dest-price{color:#9A3412}
+        .prod-emoji,.dest-emoji{background:linear-gradient(180deg,#FAF0E2,#F1E2CF)}
+        .prod-card,.rest-card,.rest-compact,.dest-card{box-shadow:0 6px 18px rgba(74,42,20,0.08)}
     </style>
 </head>
 <body>
