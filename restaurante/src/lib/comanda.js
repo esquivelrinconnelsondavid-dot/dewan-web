@@ -143,7 +143,13 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
   const sep = liviano
     ? `<div class="sept">${'-'.repeat(papel.guiones)}</div>`
     : '<hr class="sep">';
-  const entrega = pedido.direccion_entrega ? 'DELIVERY' : (pedido.tipo_entrega || 'PEDIDO');
+  // En Happy Pollo (pedido propio sin motos DEWAN) un pedido SIN direccion_entrega
+  // es RETIRO en el local — antes caía a 'PEDIDO' porque pedidos_hp no guarda
+  // tipo_entrega. DEWAN mantiene 'PEDIDO' como respaldo (sus pedidos siempre traen
+  // direccion_entrega, así que el fallback casi no aplica).
+  const entrega = pedido.direccion_entrega
+    ? 'DELIVERY'
+    : (pedido.tipo_entrega || (MODO_HP ? 'RETIRO EN LOCAL' : 'PEDIDO'));
   const tiempo = pedido.tiempo_preparacion ? `${pedido.tiempo_preparacion} min` : '';
 
   // Precios (mismo cálculo que las tarjetas de la app). Se omite si no hay
