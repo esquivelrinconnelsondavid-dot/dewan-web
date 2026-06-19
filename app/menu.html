@@ -403,6 +403,9 @@
         /* Badge abierto/cerrado — CAMBIO 4 */
         .badge-open{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(31,157,85,0.16);color:var(--green);margin-left:6px;vertical-align:middle}
         .badge-closed{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(255,59,48,0.18);color:#FF3B30;margin-left:6px;vertical-align:middle}
+        /* Toast de aviso (local cerrado) — 2026-06-19 */
+        .dewan-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(18px);max-width:90%;background:#1f1a17;color:#fff;padding:12px 18px;border-radius:14px;font-size:0.9rem;line-height:1.32;text-align:center;box-shadow:0 12px 34px rgba(0,0,0,0.34);opacity:0;pointer-events:none;z-index:9999;transition:opacity .22s ease,transform .22s ease}
+        .dewan-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
         /* Cart nota input — V4: más grande y legible */
         .cart-nota-wrap{width:100%;display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
@@ -3498,6 +3501,7 @@
         }
 
         window.addCart=function(rest,nombre,precio,delivery,fotoUrl,cargoEnvase,precioRegular,precioBase){
+            var _rc=getRestByName(rest); if(_rc&&isRestOpen(_rc.horario)===false){ avisarCerrado(_rc); return; } // [19-jun] no agregar de locales cerrados
             var p=parsePrice(precio),d=parsePrice(delivery),e=parsePrice(cargoEnvase);
             var pr=(precioRegular!=null&&precioRegular!==''&&Number(precioRegular)>0)?parsePrice(precioRegular):null;
             var pb=(precioBase!=null&&precioBase!==''&&Number(precioBase)>0)?parsePrice(precioBase):null;
@@ -3830,6 +3834,11 @@
 
         // sendWA — CAMBIO 3: incluir dirección de texto si no hay GPS
         window.sendWA=function(){
+            // [19-jun] Red de seguridad: no enviar si algun local del carrito está CERRADO ahora.
+            // El carrito persiste en localStorage; el cliente pudo volver tras el cierre. null = permitir.
+            var _cerr=[],_vis={};
+            window._cart.forEach(function(c){ if(_vis[c.restaurante])return; _vis[c.restaurante]=1; var r=getRestByName(c.restaurante); if(r&&isRestOpen(r.horario)===false) _cerr.push(r); });
+            if(_cerr.length){ mostrarCarritoCerrado(_cerr); return; }
             // V2.3: Enforce GPS o dirección manual antes de enviar
             var addrInputCheck=document.getElementById('loc-addr');
             var addrVal=addrInputCheck?addrInputCheck.value.trim():(window._clientAddr||'').trim();
@@ -4046,43 +4055,125 @@
         function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
         function jsEsc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
         function infoBox(icon,val,label){return '<div class="info-box"><div class="info-box-icon">'+icon+'</div><div class="info-box-val">'+val+'</div><div class="info-box-label">'+label+'</div></div>'}
-        function isRestOpen(horario){
-            if(!horario||!horario.trim()) return null;
-            var now=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'}));
-            var nowMin=now.getHours()*60+now.getMinutes();
-            var clean=horario.replace(/\s*(am|pm)\s*/gi,function(m,p){return ' '+p.toLowerCase()+' '}).trim();
-            // Extrae TODAS las horas (acepta "HH:MM" y "HHhMM"); 1ª = abre, última = cierra.
-            // Soporta separador "-", " a " y prefijos de día ("Lunes a Sábado 10h00 a 19h00").
-            var re=/(\d{1,2})[:h](\d{2})\s*(am|pm)?/gi,mins=[],m;
-            while((m=re.exec(clean))){
-                var h=parseInt(m[1],10),min=parseInt(m[2],10),ampm=m[3]?m[3].toLowerCase():null;
-                if(ampm==='pm'&&h<12) h+=12;
-                if(ampm==='am'&&h===12) h=0;
-                mins.push(h*60+min);
+        // ── HORARIO / ABIERTO-CERRADO (reescrito 2026-06-19) ──
+        // isRestOpen(horario) -> true=abierto / false=cerrado / null=sin horario o no se pudo leer.
+        // Soporta multi-rango por coma y dias de la semana (cierra domingo, etc.). Probado contra
+        // los 99 horarios reales de la BD. Politica: ante la duda -> null = PERMITIR (no perder
+        // ventas); solo se bloquea el pedido cuando esta CONFIRMADO cerrado (isRestOpen===false).
+        function _hNorm(s){
+            return String(s||'').toLowerCase()
+                .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+                .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u');
+        }
+        var _HDOW={domingo:0,dom:0,lunes:1,lun:1,martes:2,mar:2,miercoles:3,mier:3,mie:3,jueves:4,jue:4,viernes:5,vier:5,vie:5,sabado:6,sab:6};
+        // Dias permitidos (array 0=Dom..6=Sab) o null si el texto no menciona dias.
+        function _hParseDays(sn){
+            if(/todos los dias|todos los d|diario|toda la semana|lun(?:es)?\s*[a-]\s*dom/.test(sn)) return [0,1,2,3,4,5,6];
+            var re=/(domingo|lunes|martes|miercoles|jueves|viernes|sabado|dom|lun|mar|mie|jue|vie|sab)/g,matches=[],m;
+            while((m=re.exec(sn))){ matches.push({idx:_HDOW[m[1]],pos:m.index,end:re.lastIndex}); }
+            if(!matches.length) return null;
+            var allowed={};
+            for(var i=0;i<matches.length;i++){
+                if(i>0){
+                    var between=sn.slice(matches[i-1].end,matches[i].pos);
+                    if(/\b(a|al|hasta)\b|-|–/.test(between)){ // rango de dias (con wrap)
+                        for(var d=matches[i-1].idx; d!==matches[i].idx; d=(d+1)%7) allowed[d]=1;
+                        allowed[matches[i].idx]=1; continue;
+                    }
+                }
+                allowed[matches[i].idx]=1;
             }
-            if(mins.length<2) return null;
-            var open=mins[0],close=mins[mins.length-1];
-            if(close<=open) return nowMin>=open||nowMin<close;
-            return nowMin>=open&&nowMin<close;
+            return Object.keys(allowed).map(Number);
+        }
+        // Horas (minutos desde 00:00) en un trozo de texto. am/pm solo desplaza si la hora es 1-12.
+        function _hTimes(str){
+            var re=/(\d{1,2})[:h](\d{2})\s*(a\.?m\.?|p\.?m\.?)?/gi,out=[],m;
+            while((m=re.exec(str))){
+                var h=+m[1],mn=+m[2],ap=m[3]?m[3].replace(/[.\s]/g,'').toLowerCase():null;
+                if(ap==='pm'&&h<12) h+=12;
+                if(ap==='am'&&h===12) h=0;
+                if(h>23||mn>59) continue;
+                out.push(h*60+mn);
+            }
+            return out;
+        }
+        // Rangos [abre,cierra] en minutos. Multi-rango por coma; cae al texto completo si no hubo comas con horas.
+        function _hRanges(sn){
+            var ranges=[];
+            sn.split(',').forEach(function(seg){ var t=_hTimes(seg); if(t.length>=2) ranges.push([t[0],t[t.length-1]]); });
+            if(!ranges.length){ var t=_hTimes(sn); if(t.length>=2) ranges.push([t[0],t[t.length-1]]); }
+            return ranges;
+        }
+        var _hCache={};
+        function _hParse(horario){
+            var k=String(horario);
+            if(_hCache[k]) return _hCache[k];
+            var sn=_hNorm(horario);
+            return (_hCache[k]={days:_hParseDays(sn),ranges:_hRanges(sn)});
+        }
+        function _hNowEc(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'})); }
+        function isRestOpen(horario){
+            if(!horario||!String(horario).trim()) return null;
+            var pr=_hParse(horario),now=_hNowEc(),dow=now.getDay(),nowMin=now.getHours()*60+now.getMinutes();
+            if(pr.days&&pr.days.indexOf(dow)===-1) return false; // hoy cerrado por dia de la semana
+            if(!pr.ranges.length) return null; // no se pudo leer la hora -> permitir
+            for(var i=0;i<pr.ranges.length;i++){
+                var o=pr.ranges[i][0],c=pr.ranges[i][1];
+                if(c<=o){ if(nowMin>=o||nowMin<c) return true; } // cruza medianoche
+                else { if(nowMin>=o&&nowMin<c) return true; }
+            }
+            return false;
         }
         function openBadge(horario){
             var st=isRestOpen(horario);
             if(st===null) return '';
             return st?'<span class="badge-open">🟢 Abierto</span>':'<span class="badge-closed">🔴 Cerrado</span>';
         }
-        // Hora de apertura legible (am/pm) reutilizando el mismo parseo que isRestOpen. null si no hay horario válido (no inventar).
+        // Hora de apertura legible (am/pm). Prefiere el proximo turno de HOY; si no, el 1er rango. null si no hay hora.
         function proximaApertura(horario){
-            if(!horario||!horario.trim()) return null;
-            var clean=horario.replace(/\s*(am|pm)\s*/gi,function(m,p){return ' '+p.toLowerCase()+' '}).trim();
-            // Misma extracción que isRestOpen: la 1ª hora del texto = apertura (soporta "-", " a ", prefijos de día).
-            var m=clean.match(/(\d{1,2})[:h](\d{2})\s*(am|pm)?/i);
-            if(!m) return null;
-            var h=parseInt(m[1],10),min=parseInt(m[2],10),ampm=m[3]?m[3].toLowerCase():null;
-            if(ampm==='pm'&&h<12) h+=12;
-            if(ampm==='am'&&h===12) h=0;
-            var ap=h<12?'am':'pm',h12=h%12;if(h12===0)h12=12;
+            if(!horario||!String(horario).trim()) return null;
+            var ranges=_hParse(horario).ranges;
+            if(!ranges.length) return null;
+            var now=_hNowEc(),nowMin=now.getHours()*60+now.getMinutes(),next=null,first=null;
+            ranges.forEach(function(r){ var o=r[0]; if(first===null||o<first)first=o; if(o>nowMin&&(next===null||o<next))next=o; });
+            var pick=next!==null?next:first;
+            var h=Math.floor(pick/60),min=pick%60,ap=h<12?'am':'pm',h12=h%12;if(h12===0)h12=12;
             return h12+':'+(min<10?'0'+min:min)+' '+ap;
         }
+        // ── AVISO DE LOCAL CERRADO (toast) — 2026-06-19 ──
+        function _toast(html,ms){
+            var t=document.getElementById('_toast');
+            if(!t){ t=document.createElement('div'); t.id='_toast'; t.className='dewan-toast'; document.body.appendChild(t); }
+            t.style.pointerEvents='none'; t.innerHTML=html; t.classList.add('show');
+            clearTimeout(window._toastTimer);
+            window._toastTimer=setTimeout(function(){t.classList.remove('show');},ms||2800);
+        }
+        function avisarCerrado(restObj){
+            var ap=restObj?proximaApertura(restObj.horario):null;
+            var nombre=(restObj&&restObj.nombre)?restObj.nombre:'Este local';
+            _toast('🔴 <strong>'+esc(nombre)+'</strong> está cerrado ahora'+(ap?' · abre '+esc(ap):'')+'<br><span style="opacity:.85;font-size:.9em">No se puede pedir hasta que abra</span>');
+            try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
+        }
+        // El carrito tiene locales cerrados (cerraron mientras los items esperaban): avisar y ofrecer quitarlos.
+        function mostrarCarritoCerrado(restObjs){
+            try{ if(typeof currentView!=='undefined'&&currentView!=='cart'&&typeof showCart==='function') showCart(); }catch(e){}
+            var nombres=restObjs.map(function(r){ var ap=proximaApertura(r.horario); return '<strong>'+esc(r.nombre||'Local')+'</strong>'+(ap?' (abre '+esc(ap)+')':''); }).join(', ');
+            var t=document.getElementById('_toast');
+            if(!t){ t=document.createElement('div'); t.id='_toast'; t.className='dewan-toast'; document.body.appendChild(t); }
+            t.style.pointerEvents='auto';
+            t.innerHTML='🔴 '+(restObjs.length>1?'Estos locales están cerrados':'Este local está cerrado')+' ahora: '+nombres+
+                '<div style="margin-top:11px"><button onclick="quitarCerradosDelCarrito()" style="pointer-events:auto;background:#D93A0B;color:#fff;border:none;border-radius:10px;padding:9px 18px;font-weight:700;font-size:.9rem;cursor:pointer">Quitar y seguir</button></div>';
+            t.classList.add('show');
+            clearTimeout(window._toastTimer); // este aviso requiere acción: no se auto-oculta
+            try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
+        }
+        window.quitarCerradosDelCarrito=function(){
+            window._cart=window._cart.filter(function(c){ var r=getRestByName(c.restaurante); return !(r&&isRestOpen(r.horario)===false); });
+            saveCart();
+            var t=document.getElementById('_toast'); if(t){t.classList.remove('show');t.style.pointerEvents='none';}
+            refreshView();
+            try{ if(typeof showCart==='function') showCart(); }catch(e){}
+        };
         function getColor(i){var c=['#D93A0B','#E0951A','#B45309','#166534','#7C2D12','#A16207'];return c[i%c.length]}
         // Color de marca ESTABLE por nombre (mismo local = mismo color siempre), para el monograma sin foto.
         function monoColor(nombre){var s=String(nombre||''),n=0;for(var i=0;i<s.length;i++)n+=s.charCodeAt(i);return getColor(n);}
@@ -4249,6 +4340,7 @@
         window.confirmAlmuerzo=function(){
             if(!window._almPending)return;
             var p=window._almPending;
+            var _rc=getRestByName(p.rest); if(_rc&&isRestOpen(_rc.horario)===false){ avisarCerrado(_rc); closeModal(); return; } // [19-jun]
             var choices={};
             var selected=document.querySelectorAll('.almuerzo-opt.selected');
             selected.forEach(function(el){
@@ -4381,6 +4473,7 @@
         };
         window.confirmWings=function(){
             var p=window._wingsPending; if(!p)return;
+            var _rc=getRestByName(p.rest); if(_rc&&isRestOpen(_rc.horario)===false){ avisarCerrado(_rc); closeModal(); return; } // [19-jun]
             var total=p.counts.reduce(function(a,b){return a+b},0);
             if(total!==p.sabores)return;
             var choices=[];
@@ -4454,6 +4547,7 @@
         };
         window.confirmWingsGrupos=function(){
             var p=window._wingsPending; if(!p||!p.grupos)return;
+            var _rc=getRestByName(p.rest); if(_rc&&isRestOpen(_rc.horario)===false){ avisarCerrado(_rc); closeModal(); return; } // [19-jun]
             if(!gruposCompletos(p))return;
             var choices=p.grupos.map(function(g){
                 var items=[];
