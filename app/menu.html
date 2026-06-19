@@ -2517,7 +2517,7 @@
                     if(wingsData&&wingsData.dia!=null&&new Date().getDay()!==wingsData.dia){return;} // promo de otro día: ocultar
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
-                        window._almMenuData.push({desc:p.descripcion,foto:p.foto_url||null});
+                        window._almMenuData.push({desc:p.descripcion,foto:p.foto_url||null,envase:Number(p.cargo_envase)||0});
                         var almQty=countAlmuerzoCart(r.nombre,p.nombre);
                         var precioDisp=almData.precio?'$'+Number(almData.precio).toFixed(2):'—';
                         h+='<div class="dest-card'+(almQty?' in-cart':'')+'" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">'+
@@ -2598,7 +2598,7 @@
                     if(wingsData&&wingsData.dia!=null&&new Date().getDay()!==wingsData.dia){return;} // promo de otro día: ocultar
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
-                        window._almMenuData.push({desc:p.descripcion,foto:p.foto_url||null});
+                        window._almMenuData.push({desc:p.descripcion,foto:p.foto_url||null,envase:Number(p.cargo_envase)||0});
                         var almQty=countAlmuerzoCart(r.nombre,p.nombre);
                         var descLegible=buildAlmuerzoHint(almData);
                         var precioDisplay=almData.precio?'$'+Number(almData.precio).toFixed(2):'Consultar';
@@ -2612,6 +2612,7 @@
                                     '</div>':'')+
                                     '<div class="prod-name">'+esc(p.nombre)+'</div>'+
                                     '<div class="prod-desc">'+descLegible+'</div>'+
+                                    (p.cargo_envase>0?'<div class="prod-envase">+ envase $'+Number(p.cargo_envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
                                         '<span class="prod-price">'+precioDisplay+'</span>'+
                                         '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">+</button>'+
@@ -3298,8 +3299,8 @@
                             (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(c.foto_url)+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\'🍱\'"></div>':'<div class="cart-item-emoji">🍱</div>')+
                             '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
                                 '<div class="almuerzo-choices">'+choicesH+'</div>'+
-                                '<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+c.precio.toFixed(2)+' c/u</div>'+
-                                '<div style="color:var(--texto);font-weight:900;font-size:1rem;margin-top:2px">$'+c.precio.toFixed(2)+'</div>'+
+                                (parsePrice(c.cargo_envase)>0?'<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+parsePrice(c.precio).toFixed(2)+' + envase $'+parsePrice(c.cargo_envase).toFixed(2)+'</div>':'<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+c.precio.toFixed(2)+' c/u</div>')+
+                                '<div style="color:var(--texto);font-weight:900;font-size:1rem;margin-top:2px">$'+(parsePrice(c.precio)+parsePrice(c.cargo_envase)).toFixed(2)+'</div>'+
                             '</div>'+
                             '<button class="almuerzo-remove" onclick="removeAlmuerzoCart('+cartIdx+')">✕</button>'+
                         '</div>';
@@ -3887,6 +3888,7 @@
                         catOrder.forEach(function(cat){
                             if(c.almuerzoChoices[cat]) msg+='    ▸ '+(catLabels[cat]||cat)+': '+c.almuerzoChoices[cat]+'\n';
                         });
+                        if(parsePrice(c.cargo_envase)>0) msg+='    📦 Envase: $'+parsePrice(c.cargo_envase).toFixed(2)+'\n';
                     }
                     if(c.wingsChoices){
                         if(c.wingsChoices[0]&&c.wingsChoices[0].items){ // multi-grupo: una línea por grupo
@@ -4168,6 +4170,7 @@
         window.openAlmuerzoModal=function(rest,nombre,almIdx,delivery){
             var descRaw=window._almMenuData[almIdx].desc;
             var fotoM=window._almMenuData[almIdx].foto||null;
+            var envaseM=Number(window._almMenuData[almIdx].envase)||0;
             var data=parseAlmuerzo(descRaw);
             if(!data)return;
             var precio=data.precio||0;
@@ -4184,6 +4187,7 @@
                     '<div class="almuerzo-header-title">'+esc(nombre)+'</div>'+
                     '<div class="almuerzo-header-rest">'+esc(rest)+'</div>'+
                     (precio?'<div class="almuerzo-header-price">$'+Number(precio).toFixed(2)+'</div>':'<div class="almuerzo-header-price" style="color:var(--gris)">Consultar</div>')+
+                    (envaseM>0?'<div style="font-size:0.74rem;color:var(--gris);font-weight:700;margin-top:2px">+ envase $'+Number(envaseM).toFixed(2)+'</div>':'')+
                 '</div>';
 
             var needsSelection=[];
@@ -4257,6 +4261,7 @@
                 delivery:p.delivery,
                 qty:1,
                 almuerzoChoices:choices,
+                cargo_envase:p.envase||0,
                 foto_url:p.foto||null
             });
             saveCart(); // CAMBIO 2
