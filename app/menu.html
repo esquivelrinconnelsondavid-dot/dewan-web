@@ -1808,6 +1808,7 @@
             '</div>';
         }
         function renderMundialBanner(){
+            return ''; // [19-jun] David: fuera el banner Mundial "¡Vamos por la copa!" (apoyemos la Tri). Re-activar: borrar esta linea.
             if(!isMundial()||mundialBannerDismissed()) return '';
             return '<div class="mundial-banner" id="mundial-banner" onclick="toggleCategoryV2(\'partido\')">'+
                 '<button class="mundial-banner-x" onclick="dismissMundialBanner(event)" aria-label="Cerrar">×</button>'+
@@ -2092,7 +2093,7 @@
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
             var _catKeysHome=isAlmuerzoHour()?['almuerzo'].concat(CAT_KEYS_V2.filter(function(k){return k!=='almuerzo';})):CAT_KEYS_V2;
             _catKeysHome.forEach(function(k){
-                if(k==='partido'&&!isMundial()) return;
+                if(k==='partido') return; // [19-jun] David: fuera el chip "Antojos partido". Re-activar: volver a &&!isMundial()
                 if(k==='almuerzo'&&!isAlmuerzoHour()) return; // chip Almuerzo solo 12-15h
                 var c=CAT_MAP_V2[k];
                 var active=window._activeCat===k;
