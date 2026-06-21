@@ -1900,6 +1900,7 @@
         // - Cliente recurrente sin cupón activo: nada
         function estimarCuponCarrito(subtotal){
             if(OP_MODE) return {codigo:null,monto:0}; // centralista: los cupones los aplica el sistema según el cliente real
+            if(!cartSoloSocios()) return {codigo:null,monto:0}; // el bot aplica cupones SOLO en socios → no prometer en silenciosos
             if(!yaPidio()){
                 if(subtotal<4) return {codigo:null,monto:0};
                 return {codigo:'BIENVENIDA',monto:0.50,vence_en:null};
@@ -3551,6 +3552,14 @@
             var r=getRestByName(restName);
             return !!(r && (r.tipo_acuerdo==='aliado'||r.tipo_acuerdo==='cliente_paga'));
         }
+        // El cupón (BIENVENIDA/VUELVE) lo aplica el bot SOLO en socios (aliado|cliente_paga).
+        // Si el carrito tiene algún silencioso, no prometer el descuento (el bot no lo honra) → evita el "Pagas $X menos" falso.
+        function cartSoloSocios(){
+            var rests={};window._cart.forEach(function(c){rests[c.restaurante]=1});
+            var keys=Object.keys(rests);
+            if(!keys.length) return false;
+            return keys.every(function(n){return esSocioPromo(n)});
+        }
         // Delivery de UN local con la promo aplicada. baseDel=envío base del local; sub=subtotal de comida de TODO el pedido.
         function deliveryConPromo(baseDel,sub,restName){
             if(promoPartidoActiva()&&sub>=PROMO_PARTIDO.minSubtotal&&baseDel>0&&baseDel<=PROMO_PARTIDO.baseMax+0.005&&esSocioPromo(restName)) return PROMO_PARTIDO.precio;
@@ -3659,7 +3668,7 @@
                             ? ' · 🛵 suma $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' y tu envío baja a $1'
                             : ' · ✅ hoy tu envío es $1';
                     }
-                    var cup=(!envioNudge&&typeof yaPidio==='function'&&!yaPidio()&&t.subtotal>=4)?' · 🎁 -$0.50 1er pedido':'';
+                    var cup=(!envioNudge&&typeof yaPidio==='function'&&!yaPidio()&&t.subtotal>=4&&cartSoloSocios())?' · 🎁 -$0.50 1er pedido':'';
                     subEl.textContent=pieces+(rests>1?' · '+rests+' locales':'')+envioNudge+cup;
                 }
                 var toVal=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
@@ -3963,7 +3972,7 @@
             var eraPrimerPedido=!yaPidio();
             var cupRes=estimarCuponCarrito(t.subtotal);
             var totalBaseRes=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
-            var resumen={items:t.items,total:Math.max(0,totalBaseRes-cupRes.monto),conGPS:!!window._clientGPS,primerPedido:eraPrimerPedido,token:token};
+            var resumen={items:t.items,total:Math.max(0,totalBaseRes-cupRes.monto),conGPS:!!window._clientGPS,primerPedido:eraPrimerPedido,socioCupon:cartSoloSocios(),token:token};
             markEtapa('confirmo');
             var waWin=window.open(waUrl,'_blank');
             if(!waWin){
@@ -3994,7 +4003,7 @@
                     '<div class="success-row"><span>Productos</span><span>'+resumen.items+'</span></div>'+
                     '<div class="success-row"><span>'+(resumen.conGPS?'Total':'Subtotal')+'</span><span>$'+resumen.total.toFixed(2)+(resumen.conGPS?'':' + envío')+'</span></div>'+
                 '</div>'+
-                '<div class="success-return">'+(resumen.primerPedido
+                '<div class="success-return">'+((resumen.primerPedido&&resumen.socioCupon)
                     ? '💚 Cuando confirmes por WhatsApp, te espera un descuento por volver la próxima.'
                     : '💚 Gracias por preferir el precio del local · te avisamos por WhatsApp cuando tengas un descuento listo.')+'</div>'+
                 '<div class="referido-box" style="margin-top:12px;padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:14px;text-align:left;font-size:0.84rem;line-height:1.45">'+
