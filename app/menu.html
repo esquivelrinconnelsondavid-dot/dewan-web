@@ -1290,7 +1290,7 @@
             if(window._destHome!==undefined||window._destHomeLoading) return;
             if(!(sessionData&&sessionData.resultados&&sessionData.resultados.length)) return; // catálogo aún no listo
             window._destHomeLoading=true;
-            var url=SB_URL+'/rest/v1/menu_items?select=id,nombre_item,precio,categoria_menu,descripcion,foto_url,cargo_envase,restaurante_id&disponible=eq.true&foto_url=not.is.null&limit=80';
+            var url=SB_URL+'/rest/v1/menu_items?select=id,nombre_item,precio,categoria_menu,descripcion,foto_url,cargo_envase,restaurante_id&disponible=eq.true&foto_url=not.is.null&limit=1000';
             fetch(url,{headers:supaHeaders()})
                 .then(function(r){return r.json()})
                 .then(function(items){
@@ -1331,9 +1331,9 @@
                             logo:(rest.logo_url||rest.imagen_url||rest.foto_url||null)
                         });
                     });
-                    // Cada local aporta sus platos con foto MÁS ECONÓMICOS (máx 3), sin repetir plato/foto.
-                    // El orden de locales se MEZCLA en CADA carga (rota siempre, ya no fijo por día) y el 1er
-                    // plato de cada local es el más barato → la comida económica abre el carril.
+                    // Cada local aporta una MUESTRA ALEATORIA de sus platos con foto (máx 3), sin repetir
+                    // plato/foto. Tanto el orden de locales como QUÉ platos salen se MEZCLAN en CADA carga →
+                    // el carril rota en cada apertura (los locales fotografían sus mejores platos = estrella).
                     function _rand(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
                     var seen={},seenFoto={},groups={},order=[];
                     out.forEach(function(p){
@@ -1344,8 +1344,7 @@
                         groups[p.rest].push(p);
                     });
                     Object.keys(groups).forEach(function(r){
-                        groups[r].sort(function(a,b){return (Number(a.precio_base)||0)-(Number(b.precio_base)||0);}); // más barato primero
-                        groups[r]=groups[r].slice(0,3);                                                               // máx 3 por local
+                        groups[r]=_rand(groups[r]).slice(0,3);   // muestra ALEATORIA de hasta 3 por local (rota en cada carga)
                     });
                     var localOrder=_rand(order);            // qué local abre el carril cambia en cada carga
                     var g={};localOrder.forEach(function(r){g[r]=groups[r].slice();});
