@@ -848,7 +848,15 @@
         'use strict';
         var SB_URL='https://wfpdtjmmrhhfuxayvpzu.supabase.co';
         var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
-        var WA='593962223600'; // [24-jun] FLIP a número MANUAL/despacho (antes bot 593986777146): los pedidos de la app entran por el manual (procesador 4INZl545Iex4nT95 + enrutador de estados aaJ7ngiQx6ZCslzs). Evita doble canal/duplicados.
+        // [24-jun] Ruteo por origen. DEFAULT = número MANUAL/despacho (procesador 4INZl545Iex4nT95
+        // + enrutador de estados aaJ7ngiQx6ZCslzs → un solo chat, la operadora despacha).
+        // Solo los links de MARKETING/ADS llevan ?b=1 → van al BOT automatizado (593986777146).
+        // ?b=1 se recuerda (localStorage) para mantener al cliente de campaña en el bot; ?m=1 lo regresa al manual.
+        var WA_MANUAL='593962223600', WA_BOT='593986777146';
+        try{ var _qsWA=new URLSearchParams(window.location.search);
+             if(_qsWA.get('b')==='1') localStorage.setItem('dewan_to_bot','1');
+             if(_qsWA.get('m')==='1') localStorage.removeItem('dewan_to_bot'); }catch(e){}
+        var WA=(function(){ try{ return localStorage.getItem('dewan_to_bot')==='1'; }catch(e){ return false; } })() ? WA_BOT : WA_MANUAL;
         var app=document.getElementById('app');
         var token=new URLSearchParams(window.location.search).get('t');
         // [14-jun] Referido: captura ?ref=<uuid del referidor>, lo guarda y lo manda en el pedido (lo procesa el bot).
