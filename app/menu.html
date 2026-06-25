@@ -1831,7 +1831,7 @@
                 '<div class="promo-home-banner-emoji">🛵</div>'+
                 '<div class="promo-home-banner-txt">'+
                     '<div class="promo-home-banner-title">Hoy es '+nombreDiaPromo()+' de envío a $1</div>'+
-                    '<div class="promo-home-banner-sub">En aliados cercanos · pedidos desde $8 · solo lunes, martes y miércoles</div>'+
+                    '<div class="promo-home-banner-sub">En aliados cercanos · pedidos desde $10 · solo lunes, martes y miércoles</div>'+
                 '</div>'+
             '</div>';
         }
@@ -2107,7 +2107,7 @@
                 try{dismissed=sessionStorage.getItem('dewan_gps_dismissed')==='1'}catch(e){}
                 if(!dismissed){
                     var gpsTxt=promoEnvioDiaActivo()
-                        ? 'Pon tu ubicación<small>Mira el envío real de cada local · hoy puede bajar a $1 con un aliado cerca (Lun-Mié, desde $8)</small>'
+                        ? 'Pon tu ubicación<small>Mira el envío real de cada local · hoy puede bajar a $1 con un aliado cerca (Lun-Mié, desde $10)</small>'
                         : 'Pon tu ubicación<small>Mira distancias y el envío real — y al pedir ya no te la pedimos otra vez 🛵</small>';
                     h+='<div class="gps-banner" id="gps-banner" onclick="requestGPSFromBanner(event)">'+
                         '<span class="gps-banner-icon">📍</span>'+
@@ -2431,7 +2431,7 @@
             var precioLocalPill=(r.tipo_acuerdo==='aliado'&&(Number(r.markup_pct)||0)===0)?'<span class="rest-pill rest-pill-aliado">✓ Mismo precio que en el local</span>':'';
             // Envío $1 (socios cercanos, día de promo, con GPS para verificar cercanía).
             var _esSocio=(r.tipo_acuerdo==='aliado'||r.tipo_acuerdo==='cliente_paga');
-            var envio1Pill=(promoEnvioDiaActivo()&&_esSocio&&window._clientGPS&&deliveryPrice>0&&deliveryPrice<=2.005)?'<span class="rest-pill rest-pill-envio1">🛵 Envío $1 (desde $8)</span>':'';
+            var envio1Pill=(promoEnvioDiaActivo()&&_esSocio&&window._clientGPS&&deliveryPrice>0&&deliveryPrice<=2.005)?'<span class="rest-pill rest-pill-envio1">🛵 Envío $1 (desde $10)</span>':'';
             var h='<div class="rest-detail-header" style="--rest-color:'+color+'40">'+
                 '<div class="rest-detail-photo" style="'+heroBg+(hasImg?'':';background-color:'+color+'22')+'">'+
                     (hasImg?'':'<span class="rest-detail-photo-fallback">'+getEmoji(r.nombre)+'</span>')+
@@ -2757,7 +2757,7 @@
             var html='';
             // Gancho de valor en la pantalla de búsqueda vacía (antes no tenía nada)
             html+='<div class="aliados-banner">'+(promoEnvioDiaActivo()
-                ? '🛵 Hoy es '+nombreDiaPromo()+' de envío a $1 — en aliados cercanos, pedidos desde $8 (Lun-Mié)'
+                ? '🛵 Hoy es '+nombreDiaPromo()+' de envío a $1 — en aliados cercanos, pedidos desde $10 (Lun-Mié)'
                 : '⭐ En aliados pagas el mismo precio del local')+'</div>';
             if(recent.length){
                 html+='<div class="search-section-title-v2">🕒 Recientes</div>';
@@ -3514,11 +3514,11 @@
         function findCart(rest,nombre){
             for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices&&!window._cart[i].wingsChoices)return window._cart[i]}return null;
         }
-        // ── Promo "Envío $1 · Lun-Mié · pedidos de $8+" ──
+        // ── Promo "Envío $1 · Lun-Mié · pedidos de $10+" ──  [25-jun: mínimo subido $8→$10]
         // dias: 1=Lun,2=Mar,3=Mié (Date.getDay, hora local del dispositivo).
-        // Solo envíos cercanos (base ≤ $2) y pedidos con subtotal ≥ $8. El moto SIEMPRE
+        // Solo socios (aliado|cliente_paga, vía esSocioPromo), envíos cercanos (base ≤ $2) y subtotal ≥ $10. El moto SIEMPRE
         // cobra su tarifa completa; DEWAN absorbe la diferencia (cubierta por el markup de la comida).
-        var PROMO_ENVIO={dias:[1,2,3],minSubtotal:8,precio:1.00,baseMax:2.00};
+        var PROMO_ENVIO={dias:[1,2,3],minSubtotal:10,precio:1.00,baseMax:2.00};
         function promoEnvioDiaActivo(){return PROMO_ENVIO.dias.indexOf(new Date().getDay())!==-1}
         // ── Promo "Envío GRATIS durante el partido" (Mundial 2026) ──
         // Ventana puntual fijada en UTC (NO depende de la zona del celular del cliente).
