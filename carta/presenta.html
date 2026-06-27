@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¿Cuánto dinero se le escapa por WhatsApp?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    :root{--bg:#0d100e;--card:#15191a;--card2:#1b2022;--ink:#fff;--muted:#9aa39f;--ok:#4ED17F;--no:#E5544B;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden;}
+    .wrap{max-width:560px;margin:0 auto;position:relative;}
+    .pad{padding:0 20px;}
+    .mono{font-family:'JetBrains Mono',monospace;}
+
+    /* HEADER sticky */
+    .hdr{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:rgba(13,16,14,.82);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);max-width:560px;margin:0 auto;}
+    .hdr .brand{display:flex;align-items:center;gap:9px;}
+    .hdr .blogo{width:30px;height:30px;border-radius:8px;object-fit:cover;background:#fff;}
+    .hdr .bn{font-family:'Plus Jakarta Sans';font-weight:800;font-size:15px;letter-spacing:-.01em;}
+    .hdr .bn small{display:block;font-weight:600;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+    .hdr .hcta{font-family:'Plus Jakarta Sans';font-weight:800;font-size:12.5px;color:#08110b;background:var(--marca,#E05B19);border-radius:999px;padding:9px 14px;text-decoration:none;white-space:nowrap;}
+
+    /* secciones */
+    section{padding:54px 0;position:relative;}
+    .eyebrow{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--marca,#E05B19);display:flex;align-items:center;gap:8px;margin-bottom:18px;}
+    .eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--marca,#E05B19);box-shadow:0 0 12px var(--marca,#E05B19);}
+    h1{font-family:'Plus Jakarta Sans';font-weight:800;font-size:46px;line-height:1.02;letter-spacing:-.03em;}
+    h2{font-family:'Plus Jakarta Sans';font-weight:800;font-size:33px;line-height:1.08;letter-spacing:-.03em;}
+    .mk{color:var(--marca,#E05B19);text-shadow:0 0 34px color-mix(in srgb,var(--marca,#E05B19) 50%,transparent);}
+    .body{font-size:15.5px;line-height:1.6;color:#cdd3d0;margin-top:18px;}
+    .body b{color:#fff;font-weight:700;}
+    .small-note{font-size:12.5px;color:var(--muted);font-style:italic;line-height:1.5;margin-top:16px;}
+
+    .cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--marca,#E05B19);color:#0a0f0b;font-family:'Plus Jakarta Sans';font-weight:800;font-size:16px;border:none;border-radius:14px;padding:17px 24px;text-decoration:none;box-shadow:0 14px 36px color-mix(in srgb,var(--marca,#E05B19) 40%,transparent);transition:transform .12s;}
+    .cta:active{transform:scale(.98);}
+    .cta.block{display:flex;width:100%;}
+    .cta-mini{font-size:12px;color:var(--muted);margin-top:12px;text-align:center;}
+
+    /* DEMO */
+    .demo-feats{display:flex;flex-direction:column;gap:9px;margin-top:18px;}
+    .feat{display:flex;gap:12px;align-items:flex-start;background:var(--card);border-radius:13px;padding:13px 15px;}
+    .feat .i{font-size:21px;flex:0 0 auto;}
+    .feat b{font-family:'Plus Jakarta Sans';font-weight:800;font-size:14px;color:var(--marca,#E05B19);}
+    .feat span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.45;}
+    .phone{margin:22px auto 6px;width:300px;max-width:84vw;height:600px;background:#000;border-radius:38px;padding:9px;box-shadow:0 30px 70px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.08);}
+    .phone .scr{width:100%;height:100%;border-radius:30px;overflow:hidden;background:#fff;position:relative;}
+    .phone iframe{position:absolute;top:0;left:0;width:166.66%;height:166.66%;border:0;transform:scale(.6);transform-origin:top left;}
+    .pickhint{text-align:center;font-family:'Plus Jakarta Sans';font-weight:700;font-size:13px;color:var(--muted);margin:16px 0 9px;}
+    .segs{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
+    .seg{font-family:'Plus Jakarta Sans';font-weight:700;font-size:12.5px;color:#cdd3d0;background:var(--card2);border:1.5px solid rgba(255,255,255,.10);border-radius:11px;padding:8px 12px;cursor:pointer;white-space:nowrap;transition:.15s;}
+    .seg.on{background:var(--marca,#E05B19);color:#0a0f0b;border-color:var(--marca,#E05B19);}
+    .demorow{display:flex;gap:9px;justify-content:center;align-items:center;margin-top:14px;flex-wrap:wrap;}
+    .mini{display:inline-flex;align-items:center;gap:7px;font-family:'Plus Jakarta Sans';font-weight:700;font-size:12.5px;text-decoration:none;border-radius:11px;padding:9px 13px;}
+    .mini.qr{background:var(--card);border:1.5px solid rgba(255,255,255,.1);color:#fff;}
+    .mini.qr img{width:34px;height:34px;border-radius:6px;}
+    .mini.full{background:var(--marca,#E05B19);color:#0a0f0b;}
+
+    /* MÉTRICAS dolor */
+    .metric{background:var(--card);border-radius:20px;padding:22px 20px;position:relative;margin-bottom:13px;border:1px solid rgba(255,255,255,.05);}
+    .metric .tag{position:absolute;top:18px;right:18px;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;color:var(--muted);opacity:.65;}
+    .metric .big{font-family:'Plus Jakarta Sans';font-weight:800;font-size:54px;line-height:.95;color:var(--marca,#E05B19);text-shadow:0 0 30px color-mix(in srgb,var(--marca,#E05B19) 42%,transparent);}
+    .metric .big small{font-size:23px;font-weight:800;}
+    .metric .lbl{font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;margin:8px 0 9px;}
+    .metric .desc{font-size:13.5px;color:var(--muted);line-height:1.5;}
+
+    /* ANTES / DESPUÉS */
+    .bd{background:var(--card);border-radius:20px;padding:20px;margin-bottom:13px;border:1px solid rgba(255,255,255,.05);}
+    .chip{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;padding:6px 13px;border-radius:999px;margin-bottom:15px;}
+    .bd.antes .chip{background:rgba(229,84,75,.13);color:var(--no);border:1px solid rgba(229,84,75,.32);}
+    .bd.con .chip{background:rgba(78,209,127,.13);color:var(--ok);border:1px solid rgba(78,209,127,.32);}
+    .bd ul{list-style:none;}
+    .bd li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:14px;line-height:1.4;color:#d6dad8;}
+    .bd li .m{font-weight:800;flex:0 0 auto;}
+    .bd.antes li .m{color:var(--no);} .bd.con li .m{color:var(--ok);}
+
+    /* PASOS */
+    .stepbig{display:flex;gap:15px;align-items:flex-start;padding:18px 0;border-top:1px solid rgba(255,255,255,.07);}
+    .stepbig:first-of-type{border-top:none;}
+    .stepbig .n{flex:0 0 auto;width:40px;height:40px;border-radius:12px;background:var(--marca,#E05B19);color:#0a0f0b;font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;}
+    .stepbig .t{font-family:'Plus Jakarta Sans';font-weight:800;font-size:16px;margin-bottom:4px;}
+    .stepbig .d{font-size:13.5px;color:var(--muted);line-height:1.5;}
+
+    /* CALLOUTS imprime / GPS */
+    .callout{display:flex;gap:15px;align-items:center;background:linear-gradient(150deg,var(--card2),var(--card));border-radius:18px;padding:20px;margin-bottom:12px;border:1px solid rgba(255,255,255,.06);}
+    .callout .ic{font-size:34px;flex:0 0 auto;}
+    .callout .t{font-family:'Plus Jakarta Sans';font-weight:800;font-size:16.5px;margin-bottom:5px;}
+    .callout .d{font-size:13px;color:var(--muted);line-height:1.5;}
+
+    /* GRID capacidades */
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+    .fcard{background:var(--card);border-radius:16px;padding:16px 15px;border:1px solid rgba(255,255,255,.05);}
+    .fcard .ic{font-size:25px;}
+    .fcard .t{font-family:'Plus Jakarta Sans';font-weight:800;font-size:14px;margin:9px 0 5px;color:var(--marca,#E05B19);}
+    .fcard .d{font-size:12px;color:var(--muted);line-height:1.45;}
+
+    /* CHECKLIST */
+    .checklist{background:var(--card);border-radius:20px;padding:22px;border:1px solid rgba(255,255,255,.05);}
+    .checklist li{list-style:none;display:flex;gap:11px;align-items:flex-start;padding:9px 0;font-size:14.5px;color:#d6dad8;border-bottom:1px solid rgba(255,255,255,.05);}
+    .checklist li:last-child{border-bottom:none;}
+    .checklist li .ck{color:var(--marca,#E05B19);font-weight:800;flex:0 0 auto;}
+
+    /* RIESGO / TRIAL */
+    .trial{background:linear-gradient(165deg,color-mix(in srgb,var(--marca,#E05B19) 22%,var(--card)),var(--card));border:1px solid color-mix(in srgb,var(--marca,#E05B19) 30%,transparent);border-radius:22px;padding:26px 22px;text-align:center;}
+    .trial .free{font-family:'Plus Jakarta Sans';font-weight:800;font-size:40px;letter-spacing:-.02em;color:var(--marca,#E05B19);text-shadow:0 0 30px color-mix(in srgb,var(--marca,#E05B19) 45%,transparent);}
+    .trial .sub{font-size:14px;color:#cdd3d0;margin:4px 0 18px;}
+    .trial ul{list-style:none;text-align:left;max-width:330px;margin:0 auto 20px;}
+    .trial li{display:flex;gap:10px;padding:7px 0;font-size:14px;color:#d6dad8;}
+    .trial li .ck{color:var(--ok);font-weight:800;}
+
+    /* CIERRE */
+    .close{text-align:center;}
+    .urg{font-size:12.5px;color:var(--muted);margin-top:16px;line-height:1.5;}
+    .contact{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:22px;font-size:12.5px;color:var(--muted);}
+    .contact span{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:999px;padding:7px 13px;}
+    .foot{text-align:center;color:#5e6663;font-size:11.5px;padding:26px 20px 30px;border-top:1px solid rgba(255,255,255,.05);}
+
+    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:0 20px;}
+    .err{padding:60px 30px;text-align:center;font-size:15px;color:#fff;}
+
+    @media(max-width:380px){ h1{font-size:39px;} h2{font-size:29px;} }
+  </style>
+  <script src="restaurantes/baltimore.js"></script>
+  <script src="restaurantes/monaco.js"></script>
+  <script src="restaurantes/prinfresa.js"></script>
+  <script src="restaurantes/texas.js"></script>
+  <script src="restaurantes/aidita.js"></script>
+  <script src="restaurantes/bogati.js"></script>
+  <script src="restaurantes/verdebolon.js"></script>
+  <script src="restaurantes/mammamia.js"></script>
+  <script src="restaurantes/bellavista.js"></script>
+  <script src="restaurantes/demo.js"></script>
+  <script src="templates/_helpers.js"></script>
+  <script src="templates/premium.js"></script>
+  <script src="templates/grid-foto.js"></script>
+  <script src="templates/inmersivo.js"></script>
+  <script src="templates/ticket.js"></script>
+  <script src="templates/poster.js"></script>
+  <script src="templates/estantes.js"></script>
+  <script src="templates/portada.js"></script>
+  <script src="templates/revista.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    /* ===================== EDITA AQUÍ ===================== */
+    var VENDEDOR_WA = "593962223600";   // ⚠️ TU WhatsApp (David)
+    var TRIAL_DIAS  = "15";             // días de prueba gratis
+    var IG = "@dewanriobamba";
+    /* ===================================================== */
+
+    var params = new URLSearchParams(location.search);
+    var slug = params.get("r") || "baltimore";
+    var R = (window.RESTAURANTES || {})[slug];
+    var T = window.TEMPLATES || {};
+    var ORIGIN = location.origin + location.pathname.replace(/presenta\.html.*$/, "");
+    var root = document.getElementById("root");
+
+    if (!R) {
+      root.innerHTML = '<div class="err">No encontré el restaurante "' + slug + '".<br>Probá con <b>?r=baltimore</b></div>';
+    } else {
+      document.documentElement.style.setProperty("--marca", R.marca || "#E05B19");
+      var N = R.nombre;
+      var modelos = R.plantillas || ["premium"];
+      var liveSuffix = slug === "demo" ? "" : "&live=1";
+      var sel = modelos[0];
+      function liveURL(t){ return ORIGIN + "index.html?r=" + slug + "&tpl=" + t + liveSuffix; }
+      function lbl(t){ return (T[t] && T[t].label) || t; }
+      function wa(msg){ return "https://wa.me/" + VENDEDOR_WA + "?text=" + encodeURIComponent(msg); }
+      function qr(u){ return "https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=4&data=" + encodeURIComponent(u); }
+      function msg(){ return "Hola David! Vi la presentación de " + N + " (me gustó el diseño \"" + lbl(sel) + "\") y quiero probar los " + TRIAL_DIAS + " días gratis del sistema. ¿Cómo arrancamos?"; }
+
+      root.innerHTML =
+      '<div class="wrap">' +
+
+      /* HEADER */
+      '<div class="hdr">' +
+        '<div class="brand">' +
+          (R.logo ? '<img class="blogo" src="' + R.logo + '">' : '') +
+          '<div class="bn">' + N + '<small>con el sistema DEWAN</small></div>' +
+        '</div>' +
+        '<a class="hcta" id="h-cta" href="#probar">Probar ' + TRIAL_DIAS + ' días</a>' +
+      '</div>' +
+
+      /* HERO */
+      '<section class="pad" style="padding-top:42px">' +
+        '<div class="eyebrow">Dueño de ' + N + ' · pregunta incómoda</div>' +
+        '<h1>¿Cuánto dinero <span class="mk">se le escapa por WhatsApp?</span></h1>' +
+        '<p class="body">En hora pico, un mensaje sin contestar a tiempo es un pedido que <b>ya le cayó a la competencia</b>. El sistema toma el pedido, cobra, valida la transferencia e imprime en cocina — <b>solo</b>. Usted solo prepara y despacha.</p>' +
+        '<div style="margin-top:24px"><a class="cta block" id="hero-cta" href="#probar">Parar la fuga · Prueba ' + TRIAL_DIAS + ' días →</a></div>' +
+        '<div class="cta-mini">Sin tarjeta · sin contrato · lo instalamos nosotros</div>' +
+      '</section>' +
+
+      '<div class="divider"></div>' +
+
+      /* DEMO — su carta */
+      '<section class="pad">' +
+        '<div class="eyebrow">Su carta · ya lista para ver</div>' +
+        '<h2>Su menú, <span class="mk">dentro de WhatsApp.</span></h2>' +
+        '<p class="body">Sin apps que descargar. Sin páginas que cargar. El cliente toca un link y ya está escogiendo. <b>Mire cómo se vería la carta de ' + N + ':</b></p>' +
+        '<div class="phone"><div class="scr"><iframe id="prev" src="' + liveURL(sel) + '" loading="lazy" title="Su carta"></iframe></div></div>' +
+        '<div class="pickhint">Toque un diseño — usted elige:</div>' +
+        '<div class="segs" id="segs"></div>' +
+        '<div class="demorow">' +
+          '<a class="mini qr" id="qr-link" href="' + liveURL(sel) + '" target="_blank" rel="noopener"><img id="qr" src="' + qr(liveURL(sel)) + '" alt="QR"> Pruébela en su celular</a>' +
+          '<a class="mini full" id="full" href="' + liveURL(sel) + '" target="_blank" rel="noopener">Verla completa ↗</a>' +
+        '</div>' +
+        '<div class="demo-feats">' +
+          '<div class="feat"><span class="i">🎨</span><div><b>Con su marca</b><span>Su logo, sus colores, sus fotos de producto.</span></div></div>' +
+          '<div class="feat"><span class="i">🍽️</span><div><b>Con su menú</b><span>Sus categorías, precios y combos, tal como usted los maneja.</span></div></div>' +
+          '<div class="feat"><span class="i">⚡</span><div><b>Pedido rápido</b><span>El cliente frecuente vuelve a pedir en 3 toques.</span></div></div>' +
+        '</div>' +
+        '<div class="small-note">Así se vería la carta de ' + N + ' funcionando: su marca, sus productos, sus precios.</div>' +
+      '</section>' +
+
+      '<div class="divider"></div>' +
+
+      /* PROBLEMA */
+      '<section class="pad">' +
+        '<div class="eyebrow">El problema real</div>' +
+        '<h2>Hora pico. Y su <span class="mk">WhatsApp está en llamas.</span></h2>' +
+        '<p class="body">Mientras usted lee esto, su restaurante está perdiendo dinero que no va a recuperar. Sepa dónde:</p>' +
+        '<div style="margin-top:22px">' +
+          '<div class="metric"><div class="tag">01 / SU TIEMPO</div><div class="big">4<small>h</small></div><div class="lbl">al día pegado al celular</div><div class="desc">En vez de supervisar cocina, cuidar la caja o estar con su familia. Usted compró un negocio, no un segundo trabajo de mesero.</div></div>' +
+          '<div class="metric"><div class="tag">02 / ERRORES</div><div class="big">3<small>/10</small></div><div class="lbl">pedidos con errores</div><div class="desc">Combo mal armado, precio viejo, adicional olvidado. El cliente reclama, usted regala el plato — y pierde al cliente.</div></div>' +
+          '<div class="metric"><div class="tag">03 / VENTAS</div><div class="big">12<small>min</small></div><div class="lbl">de espera en hora pico</div><div class="desc">El cliente pregunta el precio a las 7:42 pm. Usted en la cocina, el celular apagado. A los 12 minutos ya pidió a la competencia. Esa venta estaba lista y la perdió por lentitud.</div></div>' +
+          '<div class="metric"><div class="tag">04 / ESTRÉS</div><div class="big">0</div><div class="lbl">hora pico sin caos</div><div class="desc">20 mensajes apilados. Platos mal armados porque iba a las carreras. Gritos en cocina. Mirando el celular en vez de atender. Así no se puede.</div></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<div class="divider"></div>' +
+
+      /* SOLUCIÓN */
+      '<section class="pad">' +
+        '<div class="eyebrow">La solución</div>' +
+        '<h2>Así se cierra la fuga. Y su <span class="mk">caja vuelve a llenarse.</span></h2>' +
+        '<p class="body">El sistema toma los pedidos como su mejor mesero — pero atiende <b>20 clientes al mismo tiempo</b>, nunca se equivoca y nunca pide aumento. Usted recupera su tiempo, su equipo respira, y <b>ni un solo pedido se escapa</b>.</p>' +
+        '<div style="margin-top:22px">' +
+          '<div class="bd antes"><span class="chip">ANTES</span><ul>' +
+            '<li><span class="m">✕</span> Celular en la mano 4 h al día</li>' +
+            '<li><span class="m">✕</span> 3 de cada 10 pedidos con error</li>' +
+            '<li><span class="m">✕</span> El cliente espera 12 min y pide a la competencia</li>' +
+            '<li><span class="m">✕</span> Hora pico = gritos, caos, platos mal armados</li>' +
+            '<li><span class="m">✕</span> Alguien dedicado solo a contestar el teléfono</li>' +
+          '</ul></div>' +
+          '<div class="bd con"><span class="chip">CON SU CARTA + SISTEMA</span><ul>' +
+            '<li><span class="m">✓</span> Cero tiempo al teléfono — usted cocina o descansa</li>' +
+            '<li><span class="m">✓</span> Cero errores: el sistema valida cada combo</li>' +
+            '<li><span class="m">✓</span> Contesta en segundos, a 20 clientes a la vez</li>' +
+            '<li><span class="m">✓</span> Hora pico ordenada, cocina enfocada</li>' +
+            '<li><span class="m">✓</span> Nadie amarrado al WhatsApp</li>' +
+          '</ul></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<div class="divider"></div>' +
+
+      /* CÓMO FUNCIONA */
+      '<section class="pad">' +
+        '<div class="eyebrow">Así de simple</div>' +
+        '<h2>De pedido <span class="mk">a cocina, solo.</span></h2>' +
+        '<div style="margin-top:14px">' +
+          '<div class="stepbig"><div class="n">1</div><div><div class="t">El cliente escribe o abre su carta</div><div class="d">Al WhatsApp del local, o abre su carta digital desde el mismo chat y arma el pedido tocando.</div></div></div>' +
+          '<div class="stepbig"><div class="n">2</div><div><div class="t">El sistema atiende y cobra</div><div class="d">Toma el pedido, valida el menú, calcula el envío por GPS y cobra — efectivo o transferencia. Si es transferencia, detecta el comprobante y lo manda al administrador para aprobar.</div></div></div>' +
+          '<div class="stepbig"><div class="n">3</div><div><div class="t">El ticket imprime en cocina</div><div class="d">Al confirmar el pago, el ticket térmico sale solo en cocina. Su equipo ve el pedido sin tocar un teléfono.</div></div></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<div class="divider"></div>' +
+
+      /* CALLOUTS */
+      '<section class="pad">' +
+        '<div class="callout"><div class="ic">🖨️</div><div><div class="t">El pedido llega directo a cocina</div><div class="d">Apenas se confirma el pago, el ticket sale solo en su impresora térmica (la que ya tiene, USB o red). Nadie transcribe nada.</div></div></div>' +
+        '<div class="callout"><div class="ic">📍</div><div><div class="t">Y el envío se calcula solo</div><div class="d">El cliente comparte su ubicación de un toque, el sistema mide la distancia por GPS y cobra el envío exacto. Cero discusiones por el precio.</div></div></div>' +
+      '</section>' +
+
+      '<div class="divider"></div>' +
+
+      /* CAPACIDADES */
+      '<section class="pad">' +
+        '<div class="eyebrow">Lo que otros no hacen</div>' +
+        '<h2>Hecho para <span class="mk">restaurantes.</span></h2>' +
+        '<div class="grid2" style="margin-top:20px">' +
+          '<div class="fcard"><div class="ic">🧠</div><div class="t">IA + reglas</div><div class="d">Distingue pedidos, preguntas y comprobantes. Su cocina solo recibe órdenes limpias.</div></div>' +
+          '<div class="fcard"><div class="ic">✅</div><div class="t">Valida combos</div><div class="d">Cero errores de armado. El cliente recibe lo que pidió, siempre.</div></div>' +
+          '<div class="fcard"><div class="ic">🏦</div><div class="t">Valida transferencias</div><div class="d">Lee la foto del comprobante (banco y monto) y la manda al admin para aprobar.</div></div>' +
+          '<div class="fcard"><div class="ic">🏍️</div><div class="t">Entregamos nosotros</div><div class="d">Motos propias por Riobamba. El envío lo paga el cliente, usted no pone repartidor.</div></div>' +
+          '<div class="fcard"><div class="ic">📲</div><div class="t">Carta incluida</div><div class="d">Su menú en WhatsApp. El cliente escoge visual, paga y listo.</div></div>' +
+          '<div class="fcard"><div class="ic">🖨️</div><div class="t">Imprime en cocina</div><div class="d">El pedido llega directo a la impresora. Su equipo nunca toca un celular.</div></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<div class="divider"></div>' +
+
+      /* ¿ES PARA USTED? */
+      '<section class="pad">' +
+        '<div class="eyebrow">¿Es para ' + N + '?</div>' +
+        '<h2>Si marca <span class="mk">3 o más,</span> le funciona.</h2>' +
+        '<ul class="checklist" style="margin-top:20px">' +
+          '<li><span class="ck">✓</span> Recibe pedidos por WhatsApp todos los días</li>' +
+          '<li><span class="ck">✓</span> Alguien de su equipo pasa tiempo respondiendo</li>' +
+          '<li><span class="ck">✓</span> Sabe que está perdiendo pedidos por no alcanzar</li>' +
+          '<li><span class="ck">✓</span> Quiere vender más sin contratar un mesero extra</li>' +
+        '</ul>' +
+        '<p class="small-note">Si marcó 3 o más, el sistema le va a funcionar. Los ' + TRIAL_DIAS + ' días de prueba son para confirmarlo.</p>' +
+      '</section>' +
+
+      '<div class="divider"></div>' +
+
+      /* TRIAL / RIESGO */
+      '<section class="pad" id="probar">' +
+        '<div class="eyebrow">El riesgo lo ponemos nosotros</div>' +
+        '<div class="trial">' +
+          '<div class="free">' + TRIAL_DIAS + ' días gratis</div>' +
+          '<div class="sub">Sin tarjeta · sin compromiso · $0 de instalación</div>' +
+          '<ul>' +
+            '<li><span class="ck">✓</span> Montaje e instalación incluidos</li>' +
+            '<li><span class="ck">✓</span> Capacitación a su equipo</li>' +
+            '<li><span class="ck">✓</span> Soporte directo por WhatsApp</li>' +
+            '<li><span class="ck">✓</span> Lo probamos con sus pedidos reales</li>' +
+          '</ul>' +
+          '<a class="cta block" id="trial-cta" href="#">Empezar los ' + TRIAL_DIAS + ' días gratis →</a>' +
+          '<div class="cta-mini">Si no le cierra la fuga, lo apagamos y no pasó nada.</div>' +
+        '</div>' +
+      '</section>' +
+
+      /* CIERRE */
+      '<section class="pad close">' +
+        '<h2>Cada hora pico sin esto, <span class="mk">su caja pierde.</span></h2>' +
+        '<p class="body">Lo instalamos, lo capacitamos, y usted decide. Después de la prueba conversamos el plan que más le convenga según su volumen.</p>' +
+        '<div style="margin-top:22px"><a class="cta block" id="close-cta" href="#"><span style="font-size:19px">📲</span> Hablar con DEWAN ahora</a></div>' +
+        '<div class="urg">Equipo de aquí, de Riobamba — con motos propias en la calle todos los días. Le respondemos hoy mismo.</div>' +
+        '<div class="contact"><span>📱 WhatsApp</span><span>🌐 dewansas.com</span><span>📷 ' + IG + '</span></div>' +
+      '</section>' +
+
+      '<div class="foot">' + N + ' · presentación con el sistema DEWAN 🔥</div>' +
+      '</div>';
+
+      /* ---------- interacción demo ---------- */
+      var segs = document.getElementById("segs");
+      segs.innerHTML = modelos.map(function(k,x){ return '<button class="seg ' + (x===0?'on':'') + '" data-k="' + k + '">' + lbl(k) + '</button>'; }).join("");
+      var prev=document.getElementById("prev"), qrimg=document.getElementById("qr"), qrlink=document.getElementById("qr-link"), full=document.getElementById("full");
+      function refreshCTAs(){ var u=wa(msg()); ["h-cta","hero-cta","trial-cta","close-cta"].forEach(function(id){ var e=document.getElementById(id); if(e && id!=="h-cta" && id!=="hero-cta") e.href=u; }); document.getElementById("trial-cta").href=u; document.getElementById("close-cta").href=u; }
+      function pick(k,btn){ sel=k; var u=liveURL(k); prev.src=u; qrimg.src=qr(u); qrlink.href=u; full.href=u; [].forEach.call(segs.children,function(c){c.classList.toggle("on",c===btn);}); refreshCTAs(); }
+      [].forEach.call(segs.children,function(c){ c.addEventListener("click",function(){ pick(c.dataset.k,c); }); });
+      refreshCTAs();
+    }
+  </script>
+</body>
+</html>
