@@ -3873,6 +3873,14 @@
             window._enviando=true;
             setTimeout(function(){window._enviando=false},4000);
             var byRest={};window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
+            // [27-jun FIX envío $0] Re-sincronizar el envío del carrito con el GPS ACTUAL antes de armar el mensaje.
+            // El bug: c.delivery se congela cuando se agrega el plato; si se agregó antes de tener GPS quedaba en 0
+            // y el mensaje mostraba "Envío: $0.00" (el cliente lo leía como gratis y el moto entregaba sin cobrar).
+            if(window._clientGPS){
+                var _delByRest={};getFilteredRestaurantes().forEach(function(r){_delByRest[r.nombre]=r.precio_delivery||0});
+                window._cart.forEach(function(c){if(_delByRest[c.restaurante])c.delivery=_delByRest[c.restaurante]});
+                saveCart();
+            }
             var t=cartTotals();
             var msg='Hola! Quiero pedir:\n\n';
             Object.keys(byRest).forEach(function(rest){
@@ -3909,11 +3917,13 @@
             msg+='💰 *Subtotal: $'+t.subtotal.toFixed(2)+'*\n';
             if(t.envases>0) msg+='📦 Envases: $'+t.envases.toFixed(2)+'\n';
             if(t.serviceFee>0) msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
-            if(window._clientGPS){
-                msg+='🛵 Envío: $'+(t.delivery||0).toFixed(2)+(t.promoEnvio?' (promo Lun-Mié, antes $'+t.deliveryFull.toFixed(2)+')':'')+'\n';
+            if(window._clientGPS&&t.delivery>0){
+                msg+='🛵 Envío: $'+t.delivery.toFixed(2)+(t.promoEnvio?' (promo Lun-Mié, antes $'+t.deliveryFull.toFixed(2)+')':'')+'\n';
                 msg+='💰 *Total: $'+t.total.toFixed(2)+'*\n\n';
             } else {
-                msg+='💰 *Total parcial: $'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+'* + envío (se calcula al compartir ubicación)\n\n';
+                // [27-jun FIX envío $0] Sin GPS, o con GPS pero sin envío calculable: NUNCA mostrar "Envío $0"
+                // (se lee como envío gratis). El bot calcula el envío real al confirmar la ubicación.
+                msg+='💰 *Total parcial: $'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+'* + envío (se calcula al confirmar tu ubicación)\n\n';
             }
             // Capturar valor actual del campo de dirección/referencia
             var addrInput=document.getElementById('loc-addr');
