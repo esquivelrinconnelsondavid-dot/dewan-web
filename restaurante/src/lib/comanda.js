@@ -62,8 +62,24 @@ export async function listarImpresoras() {
   try { return await window.electronAPI.listarImpresoras(); } catch { return []; }
 }
 
+// Quita "surrogates" UTF-16 sueltos (mitad de un emoji que llegó corrupto del
+// bot por un doble-encoding, ej. \uDC9D). Un solo carácter inválido rompía la
+// impresión por Electron (encodeURIComponent/print del HTML lanza y deja la
+// app en PANTALLA BLANCA). Conserva los pares válidos (emojis bien formados).
+function quitarSurrogatesSueltos(str) {
+  return str.replace(/[\uD800-\uDFFF]/g, (ch, i, s) => {
+    const code = ch.charCodeAt(0);
+    if (code <= 0xDBFF) {                     // alto: válido solo si le sigue un bajo
+      const next = s.charCodeAt(i + 1);
+      return next >= 0xDC00 && next <= 0xDFFF ? ch : '';
+    }
+    const prev = s.charCodeAt(i - 1);         // bajo: válido solo si le precede un alto
+    return prev >= 0xD800 && prev <= 0xDBFF ? ch : '';
+  });
+}
+
 function esc(s) {
-  return String(s == null ? '' : s)
+  return quitarSurrogatesSueltos(String(s == null ? '' : s))
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
