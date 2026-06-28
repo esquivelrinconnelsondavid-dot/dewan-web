@@ -5,7 +5,7 @@ import { HP_LOGO } from '../lib/hpLogo';
 const ES_HP = MARCA.toLowerCase().includes('happy');
 const LOGO_HP = HP_LOGO;
 
-export default function LoginScreen({ onLogin }) {
+export default function LoginScreen({ onLogin, ciudad, onCambiarCiudad }) {
   const [dispositivo, setDispositivo] = useState('');
   const [codigo, setCodigo] = useState('');
   const [error, setError] = useState('');
@@ -94,6 +94,16 @@ export default function LoginScreen({ onLogin }) {
 
         {error && (
           <p className="text-nuevo text-xs text-center mt-2 animate-pulse">{error}</p>
+        )}
+
+        {ciudad && onCambiarCiudad && (
+          <button
+            onClick={onCambiarCiudad}
+            className="w-full text-center text-gray-400 text-xs mt-1 py-2 hover:text-dewan transition-colors"
+          >
+            {ciudad.bandera} {ciudad.nombre}, {ciudad.pais} ·{' '}
+            <span className="underline">Cambiar ciudad</span>
+          </button>
         )}
       </div>
     </div>

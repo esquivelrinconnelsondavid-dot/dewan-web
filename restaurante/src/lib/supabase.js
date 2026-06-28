@@ -1,8 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
+import { ciudadActual } from './ciudades';
+
+// Backend según la ciudad elegida por el usuario (Riobamba / San Cristóbal). Al
+// cambiar de ciudad, App recarga la página y este cliente se reconstruye solo.
+const ciudad = ciudadActual();
 
 export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  ciudad.url,
+  ciudad.anonKey,
   {
     // Heartbeat más corto: detecta antes un WebSocket "zombi" (socket muerto que
     // no dispara onclose tras dormir/cortar la red) y reconecta el realtime.

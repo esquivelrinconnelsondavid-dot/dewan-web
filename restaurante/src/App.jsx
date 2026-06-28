@@ -24,6 +24,8 @@ import { registrarPushRestaurante, olvidarRestaurantePush } from './lib/push';
 import { tiempoSinDatos } from './lib/conexion';
 import { resucitarSocket } from './lib/supabase';
 import { MARCA, MODO_HP } from './lib/config';
+import CitySelector from './components/CitySelector';
+import { MULTI_CIUDAD, ciudadActualId, ciudadActual, elegirCiudad } from './lib/ciudades';
 
 function buildTabs(enProcesoCount) {
   return [
@@ -266,6 +268,9 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
 
 export default function App() {
   const { restaurante, cargando, login, logout, actualizar } = useAuth();
+  // Ciudad/backend elegido. null = aún no eligió → mostrar selector (solo DEWAN).
+  const [forzarSelector, setForzarSelector] = useState(false);
+  const ciudadId = ciudadActualId();
 
   // Latido al proceso principal de Electron. Si el renderer se congela, deja de
   // latir y el watchdog del MAIN relanza la app (proceso nuevo) solo. Va en el
@@ -277,6 +282,31 @@ export default function App() {
     const id = setInterval(() => { try { api.latido(); } catch {} }, 5000);
     return () => clearInterval(id);
   }, []);
+
+  // Elegir ciudad. Si cambia respecto a la guardada, limpiamos la sesión cacheada
+  // (es de otra ciudad/backend) y recargamos para reconstruir el cliente Supabase.
+  const elegir = (id) => {
+    const previa = ciudadActualId();
+    if (!elegirCiudad(id)) return;
+    if (previa === id) { setForzarSelector(false); return; }
+    if (previa && previa !== id) {
+      try {
+        localStorage.removeItem('dewan_rest_token');
+        localStorage.removeItem('dewan_rest_data');
+      } catch { /* ignorar */ }
+    }
+    window.location.reload();
+  };
+
+  // Selector de ciudad: solo DEWAN, y solo si aún no eligió (o lo pidió a mano).
+  if (MULTI_CIUDAD && (forzarSelector || !ciudadId)) {
+    return (
+      <CitySelector
+        onElegir={elegir}
+        onCancelar={forzarSelector ? () => setForzarSelector(false) : null}
+      />
+    );
+  }
 
   if (cargando) {
     return (
@@ -290,7 +320,13 @@ export default function App() {
   }
 
   if (!restaurante) {
-    return <LoginScreen onLogin={login} />;
+    return (
+      <LoginScreen
+        onLogin={login}
+        ciudad={MULTI_CIUDAD ? ciudadActual() : null}
+        onCambiarCiudad={MULTI_CIUDAD ? () => setForzarSelector(true) : null}
+      />
+    );
   }
 
   return (
