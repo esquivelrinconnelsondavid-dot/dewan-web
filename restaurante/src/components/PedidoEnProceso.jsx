@@ -1,4 +1,5 @@
-import { formatDinero as formatearMoneda } from '../lib/formato';
+import { calcularPagoAlRestaurante, formatDinero } from '../lib/formato';
+import { hayImpresion, imprimirComanda } from '../lib/comanda';
 
 const LABELS = {
   confirmado: 'Buscando motorizado',
@@ -27,12 +28,9 @@ export default function PedidoEnProceso({ pedido }) {
   const colorCls = COLORES[pedido.estado_pedido] || 'bg-gray-500/15 text-gray-300 border-gray-500/30';
   const moto = pedido.nombre_moto;
   const tel = pedido.telefono_moto;
-  // Venta base del local (SIN markup DEWAN): precio_base_productos, o fallback
-  // histórico monto_total - markup_dewan cuando precio_base_productos es null.
-  const total =
-    pedido.precio_base_productos !== null && pedido.precio_base_productos !== undefined
-      ? Number(pedido.precio_base_productos) || 0
-      : (Number(pedido.monto_total) || 0) - (Number(pedido.markup_dewan) || 0);
+  // Mismo desglose que la vista de preparación, para que el restaurante vea
+  // SIEMPRE lo mismo (antes aquí salía solo el "precio base" suelto y confundía).
+  const { total: base, comision, laPagaRestaurante, recibe } = calcularPagoAlRestaurante(pedido);
 
   return (
     <div className="bg-tarjeta border border-borde rounded-xl p-3 space-y-2">
@@ -42,7 +40,7 @@ export default function PedidoEnProceso({ pedido }) {
           <p className="text-sm font-bold text-white leading-tight truncate">
             {pedido.cliente_nombre || 'Cliente'}
           </p>
-          <p className="text-[11px] text-gray-400 truncate">{pedido.detalle_pedido || ''}</p>
+          <p className="text-[11px] text-gray-300 whitespace-pre-line">{pedido.detalle_pedido || ''}</p>
         </div>
         <span className={`text-[10px] font-bold px-2 py-1 rounded border whitespace-nowrap ${colorCls}`}>
           {label}
@@ -71,10 +69,34 @@ export default function PedidoEnProceso({ pedido }) {
         </div>
       )}
 
-      {total > 0 && (
-        <div className="flex items-center justify-between text-[11px] text-gray-400 pt-1 border-t border-borde">
-          <span>Tu venta (base)</span>
-          <span className="text-white font-bold">{formatearMoneda(total)}</span>
+      {base > 0 && (
+        <div className="bg-fondo/60 border border-borde rounded-lg p-2.5 text-[11px]">
+          <div className="flex justify-between text-gray-300">
+            <span>Tu venta</span>
+            <span className="font-semibold text-white">{formatDinero(base)}</span>
+          </div>
+          {laPagaRestaurante && (
+            <div className="flex justify-between text-gray-400">
+              <span>Comisión (la pagas tú)</span>
+              <span>− {formatDinero(comision)}</span>
+            </div>
+          )}
+          <div className="flex justify-between mt-1 pt-1 border-t border-borde">
+            <span className="text-dewan font-bold uppercase tracking-wider">Motorizado te entrega</span>
+            <span className="text-dewan font-bold text-sm">{formatDinero(recibe)}</span>
+          </div>
+        </div>
+      )}
+
+      {hayImpresion() && (
+        <div className="pt-1">
+          <button
+            onClick={() => imprimirComanda(pedido, { restauranteNombre: pedido.restaurante || pedido.restaurante_nombre })}
+            title="Reimprimir comanda"
+            className="w-full bg-bg2 text-dewan font-bold py-2 rounded-lg border border-borde active:scale-95 flex items-center justify-center gap-2"
+          >
+            🖨️ Reimprimir
+          </button>
         </div>
       )}
     </div>
