@@ -1019,9 +1019,10 @@
                 .then(function(items){
                     window._destHome=buildPhotoRail(items,16);
                     window._destHomeLoading=false;
-                    try{var el=document.getElementById('home-food-rail');if(el){if(window._destHome.length)el.innerHTML=homeFoodRailInner();else if(el.parentNode)el.parentNode.removeChild(el);}}catch(e){}
+                    // si hay fotos y seguimos en la home sin filtro, re-render para que el carril aparezca con contenido (sin parpadeo previo)
+                    if(window._destHome.length&&currentView==='home'&&!window._activeCat){try{renderHome()}catch(e){}}
                 })
-                .catch(function(){window._destHomeLoading=false;window._destHome=[];try{var el=document.getElementById('home-food-rail');if(el&&el.parentNode)el.parentNode.removeChild(el);}catch(e){}}); // []=colapsa sin hueco, no reintenta ni deja skeleton
+                .catch(function(){window._destHomeLoading=false;window._destHome=[];}); // sin fotos/falló → no se muestra (no se renderizó esqueleto)
         }
         function homeFoodRailInner(){
             var _hr=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Caracas'})).getHours();
@@ -1059,8 +1060,8 @@
             '</div>';
         }
         function renderHomeFoodRail(){
-            if(window._destHome===undefined) loadDestacadosHome();
-            if(window._destHome!==undefined&&!window._destHome.length) return ''; // cargó vacío → sin hueco
+            if(window._destHome===undefined){ loadDestacadosHome(); return ''; } // sin esqueleto: el carril aparece recién cuando hay fotos cargadas
+            if(!window._destHome.length) return ''; // sin fotos → no se muestra (sin hueco ni parpadeo)
             return '<section class="destacados" id="home-food-rail">'+homeFoodRailInner()+'</section>';
         }
         // ── Carril de fotos por CONTEXTO (categoría / búsqueda) ──
