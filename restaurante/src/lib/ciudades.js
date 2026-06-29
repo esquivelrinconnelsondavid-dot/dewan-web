@@ -20,6 +20,7 @@ export const CIUDADES = {
     bandera: '🇪🇨',
     moneda: 'USD',
     simbolo: '$',
+    decimales: 2,
     url: 'https://wfpdtjmmrhhfuxayvpzu.supabase.co',
     anonKey:
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s',
@@ -29,8 +30,9 @@ export const CIUDADES = {
     nombre: 'San Cristóbal',
     pais: 'Venezuela',
     bandera: '🇻🇪',
-    moneda: 'VES',
-    simbolo: 'Bs',
+    moneda: 'COP',
+    simbolo: '$',
+    decimales: 0,
     url: 'https://emmfmcajgskgdtbazbyu.supabase.co',
     anonKey:
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtbWZtY2FqZ3NrZ2R0YmF6Ynl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDY1NzAsImV4cCI6MjA5MTg4MjU3MH0.jXArI6rxthXWNLHDUeTnopqC3DLt5e00NKj1cYSkhhk',

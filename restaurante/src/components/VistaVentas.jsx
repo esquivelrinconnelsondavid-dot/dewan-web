@@ -75,7 +75,7 @@ function GraficoBarras({ porDia }) {
           return (
             <div key={d.dia} className="flex-1 flex flex-col items-center gap-1 min-w-0">
               <div className="text-[9px] text-gray-400 font-semibold">
-                ${d.ingresos.toFixed(0)}
+                {formatDinero(d.ingresos)}
               </div>
               <div className="w-full bg-fondo rounded-t overflow-hidden flex-1 flex items-end">
                 <div

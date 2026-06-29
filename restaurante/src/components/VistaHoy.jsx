@@ -1,5 +1,5 @@
 import { useMetricasHoy } from '../hooks/useMetricasHoy';
-import { formatHoraEC } from '../lib/formato';
+import { formatHoraEC, formatDinero } from '../lib/formato';
 
 function badgeClasses(estado) {
   switch (estado) {
@@ -107,17 +107,17 @@ export default function VistaHoy({ restaurante }) {
         />
         <KpiCard
           label="Ingresos"
-          value={sinMontos ? '—' : `$${ingresosNeto.toFixed(2)}`}
+          value={sinMontos ? '—' : formatDinero(ingresosNeto)}
           sub={
             sinMontos
               ? 'Sin monto registrado en pedidos'
-              : `Bruto $${ingresosBruto.toFixed(2)} · Comisión $${comisionTotal.toFixed(2)}`
+              : `Bruto ${formatDinero(ingresosBruto)} · Comisión ${formatDinero(comisionTotal)}`
           }
           principal
         />
         <KpiCard
           label="Ticket promedio"
-          value={ticketPromedio > 0 ? `$${ticketPromedio.toFixed(2)}` : '—'}
+          value={ticketPromedio > 0 ? formatDinero(ticketPromedio) : '—'}
         />
         <KpiCard
           label="Tiempo prep. prom."

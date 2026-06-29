@@ -1,3 +1,5 @@
+import { ciudadActual } from './ciudades';
+
 const TZ_EC = 'America/Guayaquil';
 
 // Lazy init para no crashear el módulo si el WebView no soporta la zona.
@@ -74,10 +76,18 @@ export function inicioDelDiaECisoUtc(fecha = new Date()) {
   return `${ymd}T05:00:00.000Z`;
 }
 
+// Formatea un monto en la moneda de la ciudad activa.
+//  - Riobamba (USD): "$1.40" (2 decimales).
+//  - San Cristóbal (COP, pesos colombianos): "$8.000" (0 decimales, separador de
+//    miles con punto).
 export function formatDinero(valor) {
   const n = Number(valor);
   if (!Number.isFinite(n)) return '—';
-  return `$${n.toFixed(2)}`;
+  const c = ciudadActual();
+  if (c.decimales === 0) {
+    return `${c.simbolo}${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+  }
+  return `${c.simbolo}${n.toFixed(c.decimales)}`;
 }
 
 // Calcula cuánto recibe el restaurante del motorizado según quién paga la comisión.
