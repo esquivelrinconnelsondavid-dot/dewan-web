@@ -281,6 +281,20 @@
         .cart-total-label{font-weight:900;font-size:1rem;letter-spacing:-0.01em}
         .cart-total-val{font-weight:900;font-size:1.55rem;color:var(--acc);letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1}
 
+        /* ===== CARRITO BOTTOM-SHEET (sube desde abajo, el menú queda detrás) — paleta Táchira ===== */
+        .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;z-index:95;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+        .sheet-overlay.open{opacity:1;visibility:visible}
+        .cart-sheet{position:fixed;left:0;right:0;bottom:0;height:92vh;max-height:92vh;max-width:430px;margin:0 auto;background:var(--bg);z-index:100;transform:translateY(100%);transition:transform .34s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;border-radius:20px 20px 0 0;box-shadow:0 -14px 44px rgba(0,0,0,.5);overflow:hidden}
+        .cart-sheet.open{transform:translateY(0)}
+        .cart-sheet-handle{flex-shrink:0;display:flex;justify-content:center;align-items:center;padding:9px 0 5px;cursor:pointer}
+        .cart-sheet-handle::before{content:'';width:42px;height:5px;border-radius:999px;background:var(--border)}
+        .cart-sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        .cart-sheet-foot{flex-shrink:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--border);box-shadow:0 -7px 22px rgba(0,0,0,0.18)}
+        .cart-sheet-foot:empty{display:none}
+        .cart-sheet-foot .cta-helper{margin:0 0 8px}
+        .cart-sheet-foot .btn{margin:0}
+        body.sheet-locked{overflow:hidden}
+
         /* Modal */
         .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
         .modal-overlay.visible{opacity:1;pointer-events:auto}
@@ -648,6 +662,14 @@
         </button>
     </div>
 
+    <!-- Carrito como panel deslizante (bottom-sheet): el menú no se desmonta, queda detrás -->
+    <div class="sheet-overlay" id="cart-overlay" onclick="history.back()"></div>
+    <section class="cart-sheet" id="cart-sheet" aria-hidden="true" aria-label="Tu pedido">
+        <div class="cart-sheet-handle" onclick="history.back()" aria-label="Cerrar"></div>
+        <div class="cart-sheet-body" id="cart-sheet-body"></div>
+        <div class="cart-sheet-foot" id="cart-sheet-foot"></div>
+    </section>
+
     <div class="modal-overlay" id="modal-overlay">
         <div class="modal">
             <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">&#10005;</button>
@@ -697,13 +719,37 @@
                 try{history.pushState({v:currentView,r:currentRestIdx},'');}catch(e){}
             }
         }
-        // Cierra, EN ORDEN DE PRIORIDAD, SOLO los overlays que existen hoy en Táchira.
-        // Devuelve true si cerró algo (así el 1er back cierra el overlay y el 2º ya navega).
+        // ── Carrito bottom-sheet: abrir/cerrar sin cambiar de "página" (el menú queda detrás) ──
+        function _cartSheetOpen(){var cs=document.getElementById('cart-sheet');return !!(cs&&cs.classList.contains('open'));}
+        function _openCartSheet(){
+            var ov=document.getElementById('cart-overlay'),cs=document.getElementById('cart-sheet');
+            var wasOpen=!!(cs&&cs.classList.contains('open'));
+            if(ov)ov.classList.add('open');
+            if(cs){cs.classList.add('open');cs.setAttribute('aria-hidden','false');}
+            if(!wasOpen){var sb=document.getElementById('cart-sheet-body'); if(sb)sb.scrollTop=0;} // solo al abrir, no en cada re-render
+            document.body.classList.add('sheet-locked');
+            var cf=document.getElementById('cart-float'); if(cf)cf.style.display='none';
+        }
+        function _hideCartSheet(){ // cierre solo-DOM (sin tocar la vista); lo usa la pantalla de éxito
+            var ov=document.getElementById('cart-overlay'),cs=document.getElementById('cart-sheet');
+            if(ov)ov.classList.remove('open');
+            if(cs){cs.classList.remove('open');cs.setAttribute('aria-hidden','true');}
+            document.body.classList.remove('sheet-locked');
+        }
+        window.closeCart=function(){
+            _hideCartSheet();
+            if(currentView==='cart'){ currentView=(window._prevView||'home'); currentRestIdx=(window._prevView==='rest'?window._prevRest:null); }
+            try{updateCartFloat()}catch(e){} // vuelve a mostrar el sticky 🛒 si hay items
+        };
+        // Cierra, EN ORDEN DE PRIORIDAD, los overlays abiertos. Devuelve true si cerró algo
+        // (así el 1er back cierra el overlay y el 2º ya navega).
         function closeAnyOverlay(){
-            // 1) Lightbox de foto (se monta/desmonta del DOM; sin estado oculto)
+            // 1) Carrito bottom-sheet ABIERTO (prioridad sobre lightbox/modales)
+            if(_cartSheetOpen()){ closeCart(); return true; }
+            // 2) Lightbox de foto (se monta/desmonta del DOM; sin estado oculto)
             var fz=document.querySelector('.foto-zoom');
             if(fz){ if(window.cerrarZoom){cerrarZoom();}else if(fz.parentNode){fz.parentNode.removeChild(fz);} return true; }
-            // 2) Modales que comparten #modal-overlay: WINGS, ALMUERZO y GPS estricto
+            // 3) Modales que comparten #modal-overlay: WINGS, ALMUERZO y GPS estricto
             var mo=document.getElementById('modal-overlay');
             if(mo&&mo.classList.contains('visible')){ if(window.closeModal){closeModal();}else{mo.classList.remove('visible');} return true; }
             return false;
@@ -2396,22 +2442,25 @@
             openRest(currentRestIdx);
         };
 
-        // ── CART + CHECKOUT UNIFICADO ──
+        // ── CART + CHECKOUT UNIFICADO (bottom-sheet: el menú queda detrás) ──
         window.showCart=function(){
+            if(!_cartSheetOpen()){ window._prevView=currentView; window._prevRest=currentRestIdx; } // recordar a dónde volver al cerrar
             currentView='cart';
             syncHistory();
             if(window._cart.length) markEtapa('abrio_carrito');
             var t=cartTotals();
+            var _sheetBody=document.getElementById('cart-sheet-body');
             if(!window._cart.length){
-                app.innerHTML='<div class="cart-header"><button class="btn-back" onclick="renderHome()">←</button><span class="cart-header-title">Mi pedido</span></div>'+
-                    '<div class="state-container"><div class="empty-icon">🛒</div><div class="state-title">Tu carrito esta vacio</div><button class="btn btn-accent" style="margin-top:20px;width:auto;padding:12px 28px" onclick="renderHome()">Ver restaurantes</button></div>';
-                document.getElementById('cart-float').style.display='none';
+                _sheetBody.innerHTML='<div class="cart-header"><button class="btn-back" onclick="history.back()">←</button><span class="cart-header-title">Mi pedido</span></div>'+
+                    '<div class="state-container"><div class="empty-icon">🛒</div><div class="state-title">Tu carrito esta vacio</div><button class="btn btn-accent" style="margin-top:20px;width:auto;padding:12px 28px" onclick="closeCart();renderHome()">Ver restaurantes</button></div>';
+                var _f0=document.getElementById('cart-sheet-foot'); if(_f0) _f0.innerHTML='';
+                _openCartSheet();
                 return;
             }
             var byRest={};
             window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
 
-            var h='<div class="cart-header"><button class="btn-back" onclick="'+(currentRestIdx!==null?"openRest('"+currentRestIdx+"')":'renderHome()')+'">←</button><span class="cart-header-title">Mi pedido</span><span class="cart-header-count">'+t.items+' '+(t.items===1?'item':'items')+'</span></div>';
+            var h='<div class="cart-header"><button class="btn-back" onclick="history.back()">←</button><span class="cart-header-title">Mi pedido</span><span class="cart-header-count">'+t.items+' '+(t.items===1?'item':'items')+'</span></div>';
             h+='<div style="padding:16px;padding-bottom:40px">';
 
             Object.keys(byRest).forEach(function(rest){
@@ -2479,16 +2528,13 @@
                 h+='<div class="loc-ref-label" style="margin-top:14px">Agregar referencia (opcional)</div>';
                 h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
             } else {
+                // GPS estricto (como Riobamba): la ubicación se fija SOLO con GPS o pin en el mapa.
                 h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
-                h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
-                h+='<div style="font-size:0.78rem;color:var(--gris-2);font-weight:700;margin:12px 0 6px;text-align:center">¿el GPS no agarra? marca tu casa en el mapa 👇</div>';
+                h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px;text-align:center"></div>';
+                h+='<div style="font-size:0.82rem;color:var(--gris-2);font-weight:700;margin-top:8px;text-align:center;line-height:1.4">👆 Un toque y verás tu casa en el mapa para confirmar 🛵</div>';
+                h+='<div style="font-size:0.78rem;color:var(--gris-2);font-weight:700;margin:14px 0 6px;text-align:center">¿el GPS no agarra? marca tu casa en el mapa 👇</div>';
                 h+='<div id="op-map" style="height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>';
                 h+='<div style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 Toca tu casa en el mapa</div>';
-                h+='<div class="loc-or">o escribe tu dirección</div>';
-                h+='<div class="loc-addr-wrap" id="loc-addr-wrap">';
-                h+='<div class="loc-addr-label">Dirección exacta</div>';
-                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. principal, casa azul, punto de referencia" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
-                h+='</div>';
             }
             h+='</div>';
 
@@ -2510,33 +2556,35 @@
                 '</div>'+
             '</div>';
 
-            // V2.3: Detectar si falta ubicación (sin GPS y sin dirección escrita)
-            var hasAddr=window._clientAddr&&window._clientAddr.trim().length>=6;
-            var needsLoc=!window._clientGPS&&!hasAddr;
+            // GPS estricto (como Riobamba): exige ubicación (GPS o pin en el mapa) antes de enviar.
+            var needsLoc=!window._clientGPS;
 
+            // El BOTÓN va al pie FIJO del panel (no al cuerpo que scrollea) → siempre visible sin scroll.
+            var foot='';
             if(needsLoc){
                 h+='<div class="loc-missing-banner">'+
                     '<div class="loc-missing-icon">⚠️</div>'+
                     '<div class="loc-missing-content">'+
                         '<div class="loc-missing-title">Falta tu ubicación</div>'+
-                        '<div class="loc-missing-text">Toca arriba 📍 <strong>Usar mi ubicación GPS</strong> o escribe tu dirección en el campo para poder enviar tu pedido.</div>'+
+                        '<div class="loc-missing-text">Usa <strong>📍 mi ubicación (GPS)</strong> o <strong>marca tu casa en el mapa</strong> 👆 para calcular tu envío y confirmar el pedido.</div>'+
                     '</div>'+
                 '</div>';
                 // CTA "premium deshabilitado" — invita a completar la ubicacion sin lucir como placeholder
-                h+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
-                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+(window._clientGPS?fmtMoney(t.subtotal,cartMoneda())+' + '+fmtCOP(t.delivery):fmtMoney(t.subtotal,cartMoneda()))+'</span></span>'+
-                    '<span class="btn-wa-need-loc-hint">Agrega tu ubicación arriba para activar</span>'+
+                foot+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
+                    '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · '+fmtMoney(t.subtotal,cartMoneda())+'</span></span>'+
+                    '<span class="btn-wa-need-loc-hint">👆 Toca arriba para poner tu ubicación y confirmar</span>'+
                 '</button>';
             } else {
-                h+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
-                h+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
+                foot+='<div class="cta-helper">Al confirmar se abrirá WhatsApp con tu pedido listo para enviar.</div>';
+                foot+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
                     '<span style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">✅</span><span>Confirmar pedido</span></span>'+
                     '<span style="font-variant-numeric:tabular-nums">'+(window._clientGPS?fmtMoney(t.subtotal,cartMoneda())+' + '+fmtCOP(t.delivery):fmtMoney(t.subtotal,cartMoneda())+' + envío')+'</span>'+
                 '</button>';
             }
             h+='</div>';
-            app.innerHTML=h;
-            document.getElementById('cart-float').style.display='none';
+            _sheetBody.innerHTML=h;
+            var _foot=document.getElementById('cart-sheet-foot'); if(_foot) _foot.innerHTML=foot;
+            _openCartSheet();
             setTimeout(opInitMap,60); // recrear el mapa tras el re-render; restaura el pin arrastrable desde _clientGPS
         };
 
@@ -2796,10 +2844,10 @@
 
         // sendWA — CAMBIO 3: incluir dirección de texto si no hay GPS
         window.sendWA=function(){
-            // V2.3: Enforce GPS o dirección manual antes de enviar
+            // GPS estricto (como Riobamba): exigir ubicación (GPS o pin del mapa) antes de enviar
             var addrInputCheck=document.getElementById('loc-addr');
             var addrVal=addrInputCheck?addrInputCheck.value.trim():(window._clientAddr||'').trim();
-            if(!window._clientGPS&&(!addrVal||addrVal.length<6)){
+            if(!window._clientGPS){
                 // Scroll + pulso visual hacia la sección de ubicación
                 var locSection=document.getElementById('loc-section');
                 if(locSection){
@@ -2897,6 +2945,7 @@
 
         // FIX #4: pantalla de éxito con resumen + CTA para nuevo pedido
         function showSuccessScreen(resumen){
+            _hideCartSheet(); // cerrar el panel del carrito; la pantalla de éxito toma el menú
             var h='<div class="success-screen">'+
                 '<div class="success-icon-wrap"><div class="success-icon">✅</div></div>'+
                 '<div class="success-title">¡Pedido enviado!</div>'+
@@ -2915,6 +2964,7 @@
         }
         // (10) Fallback cuando el navegador bloquea window.open: link directo (un <a> esquiva el bloqueo de popups).
         function mostrarAbrirWA(url,resumen){
+            _hideCartSheet(); // cerrar el panel del carrito antes de mostrar el fallback
             window._resumenPendiente=resumen;
             var h='<div class="success-screen">'+
                 '<div class="success-icon-wrap"><div class="success-icon">📲</div></div>'+
@@ -2931,6 +2981,7 @@
             if(r) showSuccessScreen(r);
         };
         window.resetAfterOrder=function(){
+            _hideCartSheet(); // defensivo: asegurar que el panel quede cerrado
             window._cart=[];
             window._clientAddr='';
             clearCartStorage();
@@ -3422,8 +3473,9 @@
         };
 
         // V2: Modal estricto para forzar GPS o dirección antes de pedir
+        // FIX: usa #modal-overlay (el contenedor real, igual que Riobamba); #modal-root no existe.
         window.openGPSStrict=function(){
-            var modalRoot=document.getElementById('modal-root');
+            var modalRoot=document.getElementById('modal-overlay');
             var content=document.getElementById('modal-content');
             if(!modalRoot||!content) return;
             content.innerHTML='<div class="gps-strict">'+
