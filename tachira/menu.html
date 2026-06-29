@@ -424,6 +424,16 @@
         .almuerzo-choices{font-size:0.72rem;color:var(--gris);line-height:1.6;margin-top:4px}
         .almuerzo-remove{background:var(--card2);border:1px solid var(--border);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--texto);flex-shrink:0;transition:all 0.15s}
         .almuerzo-remove:active{transform:scale(0.9);background:rgba(229,62,62,0.2);border-color:#e53e3e;color:#e53e3e}
+        /* ── MOTOR DE OPCIONES (alitas/promos) — paleta Táchira ── */
+        .wings-counter{margin:4px 0 12px;padding:9px 12px;background:var(--cta-soft);border:1px solid rgba(255,107,53,0.30);border-radius:10px;font-size:0.82rem;font-weight:800;color:var(--cta-hover);text-align:center}
+        .wings-list{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto}
+        .wings-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+        .wings-salsa-name{font-weight:800;font-size:0.9rem;color:var(--texto)}
+        .wings-stepper{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:2px;flex-shrink:0}
+        .wings-salsa-count{min-width:18px;text-align:center;font-weight:900;font-size:0.95rem;color:var(--acc)}
+        /* ── Toast aviso de local cerrado — paleta Táchira ── */
+        .dewan-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(18px);max-width:90%;background:var(--card2);color:var(--texto);border:1px solid var(--border);padding:12px 18px;border-radius:14px;font-size:0.9rem;line-height:1.32;text-align:center;box-shadow:0 12px 34px rgba(0,0,0,0.5);opacity:0;pointer-events:none;z-index:9999;transition:opacity .22s ease,transform .22s ease}
+        .dewan-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
         /* ═══════════════════════════════════════════════
            V2: HOME PREMIUM (saludo + search hero + chips)
@@ -903,6 +913,12 @@
         function getRestById(id){
             var arr=(sessionData&&sessionData.resultados)||[];
             for(var i=0;i<arr.length;i++){if(arr[i].id===id)return arr[i]}
+            return null;
+        }
+        // Resolver restaurante por nombre (para guardas de "local cerrado").
+        function getRestByName(nombre){
+            var arr=(sessionData&&sessionData.resultados)||[];
+            for(var i=0;i<arr.length;i++){if(arr[i].nombre===nombre)return arr[i]}
             return null;
         }
 
@@ -1783,6 +1799,7 @@
             '</div>';
 
             window._almMenuData=[];
+            window._wingsMenuData=[];
 
             var catMap={};
             prods.forEach(function(p){var c=p.categoria||'General';if(!catMap[c])catMap[c]=[];catMap[c].push(p)});
@@ -1800,6 +1817,8 @@
                     '<div class="destacados-scroll">';
                 destacados.forEach(function(p){
                     var almData=parseAlmuerzo(p.descripcion);
+                    var wingsData=almData?null:parseWings(p.descripcion);
+                    if(wingsData&&wingsData.dia!=null&&_hNowVe().getDay()!==wingsData.dia){return;} // promo de otro día: ocultar
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
                         window._almMenuData.push({desc:p.descripcion});
@@ -1811,6 +1830,25 @@
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">'+precioDisp+'</span>'+
                                 (almQty?'<span class="dest-qty-mini">×'+almQty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
+                            '</div>'+
+                        '</div>';
+                    } else if(wingsData){
+                        var wIdx=window._wingsMenuData.length;
+                        window._wingsMenuData.push({desc:p.descripcion,foto:p.foto_url||null,moneda:r.moneda||'COP'});
+                        var wQty=countWingsCart(r.nombre,p.nombre);
+                        var wPorUnidad=!!wingsData.porUnidad;
+                        var wHasSauce=!!((wingsData.grupos&&wingsData.grupos.length)||(wingsData.salsas&&wingsData.salsas.length&&((wingsData.sabores||0)>0||wPorUnidad)));
+                        var wPrecio=Number(wPorUnidad?(wingsData.precioUnidad||0):(wingsData.precio||0)); // SC: sin markup
+                        var wEmoji=wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗');
+                        var wClick=wHasSauce
+                            ?'openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')'
+                            :'addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\',\''+jsEsc(r.moneda||'COP')+'\')';
+                        h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();'+wClick+'">'+
+                            (p.foto_url?'<div class="dest-photo"><img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+wEmoji+'</div>\'"></div>':'<div class="dest-emoji">'+wEmoji+'</div>')+
+                            '<div class="dest-name">'+esc(p.nombre)+'</div>'+
+                            '<div class="dest-footer">'+
+                                '<span class="dest-price">'+fmtMoney(wPrecio,r.moneda)+'</span>'+
+                                (wQty?'<span class="dest-qty-mini">×'+wQty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>')+
                             '</div>'+
                         '</div>';
                     } else {
@@ -1859,6 +1897,8 @@
                 catMap[cat].forEach(function(p,idxInCat){
                     var isFirstInCat=idxInCat===0&&showCat;
                     var almData=parseAlmuerzo(p.descripcion);
+                    var wingsData=almData?null:parseWings(p.descripcion);
+                    if(wingsData&&wingsData.dia!=null&&_hNowVe().getDay()!==wingsData.dia){return;} // promo de otro día: ocultar
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
                         window._almMenuData.push({desc:p.descripcion});
@@ -1878,6 +1918,35 @@
                                     '<div class="prod-bottom">'+
                                         '<span class="prod-price">'+precioDisplay+'</span>'+
                                         '<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">+</button>'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'+
+                        '</div>';
+                    } else if(wingsData){
+                        var wIdx=window._wingsMenuData.length;
+                        window._wingsMenuData.push({desc:p.descripcion,foto:p.foto_url||null,moneda:r.moneda||'COP'});
+                        var wQty=countWingsCart(r.nombre,p.nombre);
+                        var wPorUnidad=!!wingsData.porUnidad;
+                        var wHasSauce=!!((wingsData.grupos&&wingsData.grupos.length)||(wingsData.salsas&&wingsData.salsas.length&&((wingsData.sabores||0)>0||wPorUnidad)));
+                        var wSab=(wingsData.sabores||0)+' '+((wingsData.sabores||0)===1?'salsa':'salsas');
+                        var wPrecio=Number(wPorUnidad?(wingsData.precioUnidad||0):(wingsData.precio||0)); // SC: sin markup
+                        var wEmoji=wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗');
+                        var wDescTxt=(wingsData.grupos&&wingsData.grupos.length)
+                            ?((wingsData.desc?esc(wingsData.desc)+' · ':'')+wingsData.grupos.map(function(g){return (g.emoji||'🌶️')+' Elige '+(g.elige||1)+' '+esc((g.label||'').toLowerCase());}).join(' · '))
+                            :(wPorUnidad?'🌶️ Elige cantidad y salsas':(wingsData.desc?(esc(wingsData.desc)+(wHasSauce?' · 🌶️ Elige '+wSab:'')):('🌶️ Elige '+wSab+' (puedes repetir)')));
+                        var wBtn=wHasSauce
+                            ?'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')">+</button>'
+                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\',\''+jsEsc(r.moneda||'COP')+'\')">+</button>';
+                        h+='<div class="prod-card'+(wQty?' in-cart':'')+'">'+
+                            '<div class="prod-top">'+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+wEmoji+'</div>\'">':'<div class="prod-emoji">'+wEmoji+'</div>')+
+                                '<div class="prod-info">'+
+                                    (wQty?'<div class="prod-badges"><span class="badge badge-cart">×'+wQty+' en carrito</span></div>':'')+
+                                    '<div class="prod-name">'+esc(p.nombre)+'</div>'+
+                                    '<div class="prod-desc">'+wDescTxt+'</div>'+
+                                    '<div class="prod-bottom">'+
+                                        '<span class="prod-price">'+fmtMoney(wPrecio,r.moneda)+(wPorUnidad?' c/u':'')+'</span>'+
+                                        wBtn+
                                     '</div>'+
                                 '</div>'+
                             '</div>'+
@@ -2306,7 +2375,16 @@
                 h+='<div class="cart-rest-label">'+esc(rest)+'</div>';
                 byRest[rest].forEach(function(c,ci){
                     var cartIdx=window._cart.indexOf(c);
-                    if(c.almuerzoChoices){
+                    if(c.wingsChoices){
+                        h+='<div class="cart-item" style="flex-wrap:wrap">'+
+                            (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(c.foto_url)+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\'🍗\'"></div>':'<div class="cart-item-emoji">🍗</div>')+
+                            '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
+                                '<div class="almuerzo-choices">'+((c.wingsChoices[0]&&c.wingsChoices[0].items)?'':'🌶️ ')+esc(wingsChoicesStr(c.wingsChoices))+'</div>'+
+                                '<div style="color:var(--acc);font-weight:900;font-size:1rem;margin-top:2px">'+fmtMoney(c.precio,c.moneda)+'</div>'+
+                            '</div>'+
+                            '<button class="almuerzo-remove" onclick="removeWingsCart('+cartIdx+')">✕</button>'+
+                        '</div>';
+                    } else if(c.almuerzoChoices){
                         var choicesH='';
                         var catIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',postre:'🍰'};
                         var catOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
@@ -2352,16 +2430,21 @@
             h+='<div class="loc-section" id="loc-section">';
             h+='<div class="loc-title">📍 ¿Dónde te lo llevamos?</div>';
             if(window._clientGPS){
-                h+='<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>';
-                h+='<div class="loc-ref-label">Agregar referencia (opcional)</div>';
+                h+='<div class="loc-gps-ok"><span>✅ ¡Te ubicamos! Mira el mapa: ¿el pin está en tu casa?</span></div>';
+                h+='<div id="op-map" style="height:230px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:8px"></div>';
+                h+='<div style="font-size:0.78rem;color:var(--gris-2);font-weight:700;margin-top:6px;text-align:center">👆 Si no está exacto, arrastra el pin a tu casa</div>';
+                h+='<div class="loc-ref-label" style="margin-top:14px">Agregar referencia (opcional)</div>';
                 h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: edificio azul, 2do piso" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
             } else {
                 h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
                 h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px"></div>';
+                h+='<div style="font-size:0.78rem;color:var(--gris-2);font-weight:700;margin:12px 0 6px;text-align:center">¿el GPS no agarra? marca tu casa en el mapa 👇</div>';
+                h+='<div id="op-map" style="height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>';
+                h+='<div style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 Toca tu casa en el mapa</div>';
                 h+='<div class="loc-or">o escribe tu dirección</div>';
                 h+='<div class="loc-addr-wrap" id="loc-addr-wrap">';
                 h+='<div class="loc-addr-label">Dirección exacta</div>';
-                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. Daniel León Borja y Carabobo" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
+                h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: Av. principal, casa azul, punto de referencia" value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
                 h+='</div>';
             }
             h+='</div>';
@@ -2411,6 +2494,7 @@
             h+='</div>';
             app.innerHTML=h;
             document.getElementById('cart-float').style.display='none';
+            setTimeout(opInitMap,60); // recrear el mapa tras el re-render; restaura el pin arrastrable desde _clientGPS
         };
 
         // ── CART LOGIC ──
@@ -2474,6 +2558,7 @@
         }
 
         window.addCart=function(rest,nombre,precio,delivery,fotoUrl,moneda){
+            var _rc=getRestByName(rest); if(_rc&&isRestOpen(_rc.horario)===false){ avisarCerrado(_rc); return; } // no agregar de locales cerrados
             var p=parsePrice(precio),d=parsePrice(delivery);
             var m=moneda||'COP';
             var pt=captureClickPoint();
@@ -2496,7 +2581,7 @@
             saveCart(); // CAMBIO 2
         };
         function findCart(rest,nombre){
-            for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices)return window._cart[i]}return null;
+            for(var i=0;i<window._cart.length;i++){if(window._cart[i].restaurante===rest&&window._cart[i].nombre===nombre&&!window._cart[i].almuerzoChoices&&!window._cart[i].wingsChoices)return window._cart[i]}return null;
         }
         function cartTotals(){
             var items=0,sub=0,dels={};
@@ -2596,6 +2681,76 @@
             if(input&&wrap.classList.contains('visible')) input.focus();
         };
 
+        // ── MAPA PARA FIJAR EL PIN DE ENTREGA (Leaflet + OSM, carga perezosa) ──
+        // Resuelve coordenadas malas: el cliente arrastra el pin a su casa exacta.
+        // Carga perezosa: Leaflet SOLO se inyecta cuando el carrito muestra el mapa.
+        var _opLeafletReq=false;
+        window._opGpsTimer=null;
+        function opLoadLeaflet(cb){
+            if(window.L){cb();return;}
+            window._opLeafletCbs=window._opLeafletCbs||[];
+            window._opLeafletCbs.push(cb);
+            if(_opLeafletReq) return; // ya se está inyectando: solo encolar el cb
+            _opLeafletReq=true;
+            var css=document.createElement('link');
+            css.rel='stylesheet';
+            css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(css);
+            var js=document.createElement('script');
+            js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            js.onload=function(){
+                var cbs=window._opLeafletCbs||[];window._opLeafletCbs=[];
+                cbs.forEach(function(f){try{f()}catch(e){}});
+            };
+            document.head.appendChild(js);
+        }
+        // Se llama tras cada render del carrito (showCart → setTimeout): el innerHTML destruye el mapa,
+        // así que SIEMPRE se crea uno nuevo y se restaura el marker (arrastrable) desde _clientGPS.
+        function opInitMap(){
+            if(!document.getElementById('op-map')) return; // no estamos en el carrito (o carrito vacío)
+            opLoadLeaflet(function(){
+                var el=document.getElementById('op-map');
+                if(!el) return; // el carrito se re-renderizó/cerró mientras cargaba Leaflet
+                if(window._opMap){try{window._opMap.remove()}catch(e){} window._opMap=null;}
+                window._opMapMarker=null;
+                // Centro inicial: San Cristóbal, Táchira (Venezuela).
+                var map=L.map(el,{dragging:true,scrollWheelZoom:true}).setView([7.7669,-72.2250],14);
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+                if(window._clientGPS){
+                    var la=parseFloat(window._clientGPS.lat),lo=parseFloat(window._clientGPS.lng);
+                    if(isFinite(la)&&isFinite(lo)){
+                        window._opMapMarker=L.marker([la,lo],{draggable:true}).addTo(map);
+                        window._opMapMarker.on('dragend',function(){var ll=window._opMapMarker.getLatLng();opMapPick(ll.lat,ll.lng);});
+                        map.setView([la,lo],16);
+                    }
+                }
+                map.on('click',function(ev){opMapPick(ev.latlng.lat,ev.latlng.lng)});
+                window._opMap=map;
+                setTimeout(function(){try{map.invalidateSize()}catch(e){}},120); // por si el contenedor se midió tarde
+            });
+        }
+        // Click/tap o soltar el pin: fija coords de entrega + guardarUbic + recalcula envíos + re-render diferido.
+        function opMapPick(lat,lng){
+            var la=(+lat).toFixed(6),lo=(+lng).toFixed(6);
+            if(window._opMap){ // feedback inmediato (el re-render lo restaura igual desde _clientGPS)
+                if(window._opMapMarker) window._opMapMarker.setLatLng([lat,lng]);
+                else { window._opMapMarker=L.marker([lat,lng],{draggable:true}).addTo(window._opMap); window._opMapMarker.on('dragend',function(){var ll=window._opMapMarker.getLatLng();opMapPick(ll.lat,ll.lng);}); }
+            }
+            window._clientGPS={lat:la,lng:lo}; // strings: el mensaje WA los concatena tal cual
+            guardarUbic();
+            // Recalcular delivery del carrito con la nueva ubicación (mismo patrón que requestGPSCart)
+            var rests=getFilteredRestaurantes();
+            var deliveryByRest={};
+            rests.forEach(function(r){deliveryByRest[r.nombre]=r.precio_delivery||0});
+            window._cart.forEach(function(c){ if(deliveryByRest[c.restaurante]!=null) c.delivery=deliveryByRest[c.restaurante]; });
+            saveCart();
+            var addrInput=document.getElementById('loc-addr');
+            if(addrInput) window._clientAddr=addrInput.value;
+            // Re-render diferido para actualizar totales (el mapa se recrea con el marker puesto y centrado).
+            if(window._opGpsTimer) clearTimeout(window._opGpsTimer);
+            window._opGpsTimer=setTimeout(function(){ window._opGpsTimer=null; if(currentView==='cart') showCart(); },150);
+        }
+
         // sendWA — CAMBIO 3: incluir dirección de texto si no hay GPS
         window.sendWA=function(){
             // V2.3: Enforce GPS o dirección manual antes de enviar
@@ -2618,6 +2773,10 @@
                 }
                 return;
             }
+            // Guard: no enviar si algún local del carrito está cerrado ahora (cerró mientras esperaba).
+            var _cerr=[],_vis={};
+            window._cart.forEach(function(c){ if(_vis[c.restaurante])return; _vis[c.restaurante]=1; var r=getRestByName(c.restaurante); if(r&&isRestOpen(r.horario)===false) _cerr.push(r); });
+            if(_cerr.length){ mostrarCarritoCerrado(_cerr); return; }
             // (10) Anti doble-tap: evita dos window.open / pedido duplicado.
             if(window._enviando) return;
             window._enviando=true;
@@ -2635,6 +2794,15 @@
                         catOrder.forEach(function(cat){
                             if(c.almuerzoChoices[cat]) msg+='    ▸ '+(catLabels[cat]||cat)+': '+c.almuerzoChoices[cat]+'\n';
                         });
+                    }
+                    if(c.wingsChoices){
+                        if(c.wingsChoices[0]&&c.wingsChoices[0].items){ // multi-grupo: una línea por grupo
+                            c.wingsChoices.forEach(function(g){
+                                msg+='    '+(g.emoji||'🌶️')+' '+g.label+': '+g.items.map(function(it){return it.n+'× '+it.opcion}).join(' · ')+'\n';
+                            });
+                        } else {
+                            msg+='    🌶️ Salsas: '+wingsChoicesStr(c.wingsChoices)+'\n';
+                        }
                     }
                     if(c.nota)msg+='    📝 '+c.nota+'\n';
                 });
@@ -2745,32 +2913,126 @@
         function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
         function jsEsc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
         function infoBox(icon,val,label){return '<div class="info-box"><div class="info-box-icon">'+icon+'</div><div class="info-box-val">'+val+'</div><div class="info-box-label">'+label+'</div></div>'}
-        function isRestOpen(horario){
-            if(!horario||!horario.trim()) return null;
-            var now=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Caracas'}));
-            var nowMin=now.getHours()*60+now.getMinutes();
-            var clean=horario.replace(/\s*(am|pm)\s*/gi,function(m,p){return ' '+p.toLowerCase()+' '}).trim();
-            var parts=clean.split(/\s*[-–]\s*/);
-            if(parts.length<2) return null;
-            function parseTime(s){
-                s=s.trim();
-                var m=s.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
-                if(!m) return null;
-                var h=parseInt(m[1],10),min=parseInt(m[2],10),ampm=m[3]?m[3].toLowerCase():null;
-                if(ampm==='pm'&&h<12) h+=12;
-                if(ampm==='am'&&h===12) h=0;
-                return h*60+min;
+        // ── HORARIO / ABIERTO-CERRADO (parser robusto, portado de RI 2026-06-28 · TZ Caracas) ──
+        // isRestOpen(horario) -> true=abierto / false=cerrado / null=sin horario o no se pudo leer.
+        // Soporta multi-rango por coma y dias de la semana (cierra domingo, etc.). Politica: ante la
+        // duda -> null = PERMITIR (no perder ventas); solo se bloquea el pedido cuando esta CONFIRMADO
+        // cerrado (isRestOpen===false).
+        function _hNorm(s){
+            return String(s||'').toLowerCase()
+                .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+                .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u');
+        }
+        var _HDOW={domingo:0,dom:0,lunes:1,lun:1,martes:2,mar:2,miercoles:3,mier:3,mie:3,jueves:4,jue:4,viernes:5,vier:5,vie:5,sabado:6,sab:6};
+        // Dias permitidos (array 0=Dom..6=Sab) o null si el texto no menciona dias.
+        function _hParseDays(sn){
+            if(/todos los dias|todos los d|diario|toda la semana|lun(?:es)?\s*[a-]\s*dom/.test(sn)) return [0,1,2,3,4,5,6];
+            var re=/(domingo|lunes|martes|miercoles|jueves|viernes|sabado|dom|lun|mar|mie|jue|vie|sab)/g,matches=[],m;
+            while((m=re.exec(sn))){ matches.push({idx:_HDOW[m[1]],pos:m.index,end:re.lastIndex}); }
+            if(!matches.length) return null;
+            var allowed={};
+            for(var i=0;i<matches.length;i++){
+                if(i>0){
+                    var between=sn.slice(matches[i-1].end,matches[i].pos);
+                    if(/\b(a|al|hasta)\b|-|–/.test(between)){ // rango de dias (con wrap)
+                        for(var d=matches[i-1].idx; d!==matches[i].idx; d=(d+1)%7) allowed[d]=1;
+                        allowed[matches[i].idx]=1; continue;
+                    }
+                }
+                allowed[matches[i].idx]=1;
             }
-            var open=parseTime(parts[0]),close=parseTime(parts[1]);
-            if(open===null||close===null) return null;
-            if(close<=open) return nowMin>=open||nowMin<close;
-            return nowMin>=open&&nowMin<close;
+            return Object.keys(allowed).map(Number);
+        }
+        // Horas (minutos desde 00:00) en un trozo de texto. am/pm solo desplaza si la hora es 1-12.
+        function _hTimes(str){
+            var re=/(\d{1,2})[:h](\d{2})\s*(a\.?m\.?|p\.?m\.?)?/gi,out=[],m;
+            while((m=re.exec(str))){
+                var h=+m[1],mn=+m[2],ap=m[3]?m[3].replace(/[.\s]/g,'').toLowerCase():null;
+                if(ap==='pm'&&h<12) h+=12;
+                if(ap==='am'&&h===12) h=0;
+                if(h>23||mn>59) continue;
+                out.push(h*60+mn);
+            }
+            return out;
+        }
+        // Rangos [abre,cierra] en minutos. Multi-rango por coma; cae al texto completo si no hubo comas con horas.
+        function _hRanges(sn){
+            var ranges=[];
+            sn.split(',').forEach(function(seg){ var t=_hTimes(seg); if(t.length>=2) ranges.push([t[0],t[t.length-1]]); });
+            if(!ranges.length){ var t=_hTimes(sn); if(t.length>=2) ranges.push([t[0],t[t.length-1]]); }
+            return ranges;
+        }
+        var _hCache={};
+        function _hParse(horario){
+            var k=String(horario);
+            if(_hCache[k]) return _hCache[k];
+            var sn=_hNorm(horario);
+            return (_hCache[k]={days:_hParseDays(sn),ranges:_hRanges(sn)});
+        }
+        // "Ahora" en hora de Venezuela (San Cristóbal / Táchira).
+        function _hNowVe(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Caracas'})); }
+        function isRestOpen(horario){
+            if(!horario||!String(horario).trim()) return null;
+            var pr=_hParse(horario),now=_hNowVe(),dow=now.getDay(),nowMin=now.getHours()*60+now.getMinutes();
+            if(pr.days&&pr.days.indexOf(dow)===-1) return false; // hoy cerrado por dia de la semana
+            if(!pr.ranges.length) return null; // no se pudo leer la hora -> permitir
+            for(var i=0;i<pr.ranges.length;i++){
+                var o=pr.ranges[i][0],c=pr.ranges[i][1];
+                if(c<=o){ if(nowMin>=o||nowMin<c) return true; } // cruza medianoche
+                else { if(nowMin>=o&&nowMin<c) return true; }
+            }
+            return false;
         }
         function openBadge(horario){
             var st=isRestOpen(horario);
             if(st===null) return '';
             return st?'<span class="badge-open">🟢 Abierto</span>':'<span class="badge-closed">🔴 Cerrado</span>';
         }
+        // Hora de apertura legible (am/pm). Prefiere el proximo turno de HOY; si no, el 1er rango. null si no hay hora.
+        function proximaApertura(horario){
+            if(!horario||!String(horario).trim()) return null;
+            var ranges=_hParse(horario).ranges;
+            if(!ranges.length) return null;
+            var now=_hNowVe(),nowMin=now.getHours()*60+now.getMinutes(),next=null,first=null;
+            ranges.forEach(function(r){ var o=r[0]; if(first===null||o<first)first=o; if(o>nowMin&&(next===null||o<next))next=o; });
+            var pick=next!==null?next:first;
+            var h=Math.floor(pick/60),min=pick%60,ap=h<12?'am':'pm',h12=h%12;if(h12===0)h12=12;
+            return h12+':'+(min<10?'0'+min:min)+' '+ap;
+        }
+        // ── AVISO DE LOCAL CERRADO (toast) ──
+        function _toast(html,ms){
+            var t=document.getElementById('_toast');
+            if(!t){ t=document.createElement('div'); t.id='_toast'; t.className='dewan-toast'; document.body.appendChild(t); }
+            t.style.pointerEvents='none'; t.innerHTML=html; t.classList.add('show');
+            clearTimeout(window._toastTimer);
+            window._toastTimer=setTimeout(function(){t.classList.remove('show');},ms||2800);
+        }
+        function avisarCerrado(restObj){
+            var ap=restObj?proximaApertura(restObj.horario):null;
+            var nombre=(restObj&&restObj.nombre)?restObj.nombre:'Este local';
+            _toast('🔴 <strong>'+esc(nombre)+'</strong> está cerrado ahora'+(ap?' · abre '+esc(ap):'')+'<br><span style="opacity:.85;font-size:.9em">No se puede pedir hasta que abra</span>');
+            try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
+        }
+        // El carrito tiene locales cerrados (cerraron mientras los items esperaban): avisar y ofrecer quitarlos.
+        function mostrarCarritoCerrado(restObjs){
+            try{ if(typeof currentView!=='undefined'&&currentView!=='cart'&&typeof showCart==='function') showCart(); }catch(e){}
+            var nombres=restObjs.map(function(r){ var ap=proximaApertura(r.horario); return '<strong>'+esc(r.nombre||'Local')+'</strong>'+(ap?' (abre '+esc(ap)+')':''); }).join(', ');
+            var t=document.getElementById('_toast');
+            if(!t){ t=document.createElement('div'); t.id='_toast'; t.className='dewan-toast'; document.body.appendChild(t); }
+            t.style.pointerEvents='auto';
+            t.innerHTML='🔴 '+(restObjs.length>1?'Estos locales están cerrados':'Este local está cerrado')+' ahora: '+nombres+
+                '<div style="margin-top:11px"><button onclick="quitarCerradosDelCarrito()" style="pointer-events:auto;background:var(--cta);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-weight:700;font-size:.9rem;cursor:pointer">Quitar y seguir</button></div>';
+            t.classList.add('show');
+            clearTimeout(window._toastTimer); // este aviso requiere acción: no se auto-oculta
+            try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
+        }
+        window.quitarCerradosDelCarrito=function(){
+            window._cart=window._cart.filter(function(c){ var r=getRestByName(c.restaurante); return !(r&&isRestOpen(r.horario)===false); });
+            saveCart();
+            var t=document.getElementById('_toast'); if(t){t.classList.remove('show');t.style.pointerEvents='none';}
+            refreshView();
+            try{ if(typeof showCart==='function') showCart(); }catch(e){}
+        };
         function getColor(i){var c=['#FF6B35','#FF3B5C','#8B5CF6','#00C2D1','#00D26A','#FFB800'];return c[i%c.length]}
         function getEmoji(name){
             var n=(name||'').toLowerCase();
@@ -2924,6 +3186,194 @@
             });
             saveCart(); // CAMBIO 2
             window._almPending=null;
+            closeModal();
+            refreshView();
+        };
+
+        // ── MOTOR DE OPCIONES (alitas/promos genéricas) — portado de RI 2026-06-28 ──
+        // WINGS_OPTS = opciones normales (elige N salsas, permite repetir, o por unidad).
+        // PROMO_OPTS = igual + puede traer 'dia' (mostrarse solo ese día) y 'desc'. SC: SIN envase.
+        // Precios SIEMPRE en la moneda del local (fmtMoney) — nunca USD fijo.
+        function parseWings(desc){
+            if(!desc) return null;
+            var pfx = desc.indexOf('WINGS_OPTS:')===0 ? 'WINGS_OPTS:' : (desc.indexOf('PROMO_OPTS:')===0 ? 'PROMO_OPTS:' : null);
+            if(!pfx) return null;
+            // Tolerar saltos de línea metidos al copiar/pegar el SQL (romperían el JSON).
+            try{ var _o=JSON.parse(desc.slice(pfx.length).replace(/[\r\n]+\s*/g,' ')); if(_o&&pfx==='PROMO_OPTS:') _o._promo=true; return _o; }catch(_){ return null; }
+        }
+        function countWingsCart(rest,nombre){
+            var n=0; window._cart.forEach(function(c){if(c.restaurante===rest&&c.nombre===nombre&&c.wingsChoices)n++}); return n;
+        }
+        function wingsChoicesStr(choices){
+            if(!choices||!choices.length) return '';
+            if(choices[0]&&choices[0].items){ // multi-grupo
+                return choices.map(function(g){
+                    return (g.emoji||'🌶️')+' '+g.label+': '+g.items.map(function(it){return it.n+'× '+it.opcion}).join(' · ');
+                }).join('   ·   ');
+            }
+            return choices.map(function(c){return c.n+'× '+c.salsa}).join(' · ');
+        }
+        window.removeWingsCart=function(idx){
+            if(idx>=0&&idx<window._cart.length) window._cart.splice(idx,1);
+            saveCart(); refreshView();
+        };
+        window.openWingsModal=function(rest,nombre,wIdx,delivery,precioFinal){
+            var slot=window._wingsMenuData[wIdx]||{};
+            var data=parseWings(slot.desc);
+            if(!data)return;
+            var fotoW=slot.foto||null;
+            var moneda=slot.moneda||restMonedaByNombre(rest)||'COP';
+            // Formato multi-grupo (cada grupo: su propio "elige N", permite repetir, precio incluido).
+            if(data.grupos&&data.grupos.length){ return openWingsModalGrupos(rest,nombre,data,delivery,precioFinal,fotoW,moneda); }
+            var salsas=data.salsas||[];
+            var porUnidad=!!data.porUnidad;
+            var p={rest:rest,nombre:nombre,delivery:delivery,salsas:salsas,counts:salsas.map(function(){return 0}),porUnidad:porUnidad,foto:fotoW,moneda:moneda};
+            if(porUnidad){
+                p.precioUnidad=(precioFinal!=null)?Number(precioFinal):(data.precioUnidad||0);
+                p.salsasCada=data.salsasCada||5;
+                p.min=data.min||p.salsasCada;
+                p.qty=p.min;
+                p.sabores=Math.floor(p.qty/p.salsasCada);
+            } else {
+                p.precio=(precioFinal!=null)?Number(precioFinal):(data.precio||0);
+                p.sabores=data.sabores||1;
+            }
+            window._wingsPending=p;
+            var precioShow=porUnidad?(p.qty*p.precioUnidad):p.precio;
+            var h='<div class="almuerzo-modal">'+
+                '<div class="almuerzo-header">'+
+                    '<div class="almuerzo-header-icon">🍗</div>'+
+                    '<div class="almuerzo-header-title">'+esc(nombre)+'</div>'+
+                    '<div class="almuerzo-header-rest">'+esc(rest)+'</div>'+
+                    '<div class="almuerzo-header-price"><span id="wings-price">'+fmtMoney(precioShow,moneda)+'</span></div>'+
+                '</div>'+
+                (porUnidad?'<div class="wings-row" style="margin-bottom:10px"><span class="wings-salsa-name">🍗 Cantidad de alas</span><div class="wings-stepper"><button class="btn-qty btn-qty-minus" onclick="changeWingQty(-1)">−</button><span class="wings-salsa-count" id="wings-qty">'+p.qty+'</span><button class="btn-qty btn-qty-plus" onclick="changeWingQty(1)">+</button></div></div>':'')+
+                '<div class="wings-counter">🌶️ Elige <b id="wings-sabores">'+p.sabores+'</b> salsa(s) · puedes repetir · faltan <span id="wings-left">'+p.sabores+'</span></div>'+
+                '<div class="wings-list">';
+            salsas.forEach(function(s,i){
+                h+='<div class="wings-row">'+
+                    '<span class="wings-salsa-name">'+esc(s)+'</span>'+
+                    '<div class="wings-stepper">'+
+                        '<button class="btn-qty btn-qty-minus" onclick="changeWingSalsa('+i+',-1)">−</button>'+
+                        '<span class="wings-salsa-count" id="wcount-'+i+'">0</span>'+
+                        '<button class="btn-qty btn-qty-plus" onclick="changeWingSalsa('+i+',1)">+</button>'+
+                    '</div>'+
+                '</div>';
+            });
+            h+='</div>'+
+                '<button class="btn-almuerzo-add" id="btn-wings-add" onclick="confirmWings()" disabled>🍗 Agregar al pedido</button>'+
+                '<button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancelar</button>'+
+            '</div>';
+            document.getElementById('modal-content').innerHTML=h;
+            document.getElementById('modal-overlay').classList.add('visible');
+        };
+        // Alitas por unidad: cambia cantidad → recalcula sabores = ⌊cant/salsasCada⌋
+        window.changeWingQty=function(delta){
+            var p=window._wingsPending; if(!p||!p.porUnidad)return;
+            var nq=p.qty+delta; if(nq<p.min)nq=p.min;
+            p.qty=nq;
+            p.sabores=Math.floor(p.qty/p.salsasCada);
+            var total=p.counts.reduce(function(a,b){return a+b},0);
+            while(total>p.sabores){ for(var i=0;i<p.counts.length&&total>p.sabores;i++){ if(p.counts[i]>0){p.counts[i]--;total--;} } }
+            var qEl=document.getElementById('wings-qty'); if(qEl)qEl.textContent=p.qty;
+            var prEl=document.getElementById('wings-price'); if(prEl)prEl.textContent=fmtMoney(p.qty*p.precioUnidad,p.moneda);
+            var sEl=document.getElementById('wings-sabores'); if(sEl)sEl.textContent=p.sabores;
+            p.counts.forEach(function(c,i){var el=document.getElementById('wcount-'+i);if(el)el.textContent=c;});
+            var nt=p.counts.reduce(function(a,b){return a+b},0);
+            var lEl=document.getElementById('wings-left'); if(lEl)lEl.textContent=(p.sabores-nt);
+            var btn=document.getElementById('btn-wings-add'); if(btn)btn.disabled=(nt!==p.sabores);
+        };
+        window.changeWingSalsa=function(i,delta){
+            var p=window._wingsPending; if(!p)return;
+            var total=p.counts.reduce(function(a,b){return a+b},0);
+            if(delta>0&&total>=p.sabores) return; // no exceder el máximo
+            var nv=p.counts[i]+delta; if(nv<0)nv=0;
+            p.counts[i]=nv;
+            var cEl=document.getElementById('wcount-'+i); if(cEl)cEl.textContent=nv;
+            var newTotal=p.counts.reduce(function(a,b){return a+b},0);
+            var leftEl=document.getElementById('wings-left'); if(leftEl)leftEl.textContent=(p.sabores-newTotal);
+            var btn=document.getElementById('btn-wings-add'); if(btn)btn.disabled=(newTotal!==p.sabores);
+        };
+        window.confirmWings=function(){
+            var p=window._wingsPending; if(!p)return;
+            var _rc=getRestByName(p.rest); if(_rc&&isRestOpen(_rc.horario)===false){ avisarCerrado(_rc); closeModal(); return; }
+            var total=p.counts.reduce(function(a,b){return a+b},0);
+            if(total!==p.sabores)return;
+            var choices=[];
+            p.salsas.forEach(function(s,i){ if(p.counts[i]>0) choices.push({salsa:s,n:p.counts[i]}); });
+            var precio=p.porUnidad?(Math.round(p.qty*p.precioUnidad*100)/100):p.precio;
+            var nombre=p.porUnidad?(p.qty+' Alitas'):p.nombre;
+            window._cart.push({restaurante:p.rest,nombre:nombre,precio:precio,delivery:p.delivery,qty:1,wingsChoices:choices,foto_url:p.foto||null,moneda:p.moneda});
+            saveCart();
+            window._wingsPending=null;
+            closeModal();
+            refreshView();
+        };
+        // ── MULTI-GRUPO (ej. 2 ensaladas + 2 salsas) ── N grupos independientes; precio incluido (no suma).
+        function openWingsModalGrupos(rest,nombre,data,delivery,precioFinal,foto,moneda){
+            moneda=moneda||restMonedaByNombre(rest)||'COP';
+            var precio=(precioFinal!=null)?Number(precioFinal):(data.precio||0);
+            var grupos=(data.grupos||[]).map(function(g){
+                return {label:g.label||'Opciones',emoji:g.emoji||'🌶️',elige:g.elige||1,
+                        opciones:g.opciones||[],counts:(g.opciones||[]).map(function(){return 0})};
+            });
+            var p={rest:rest,nombre:nombre,delivery:delivery,precio:precio,grupos:grupos,foto:foto||null,moneda:moneda};
+            window._wingsPending=p;
+            var h='<div class="almuerzo-modal">'+
+                '<div class="almuerzo-header">'+
+                    '<div class="almuerzo-header-icon">🥔</div>'+
+                    '<div class="almuerzo-header-title">'+esc(nombre)+'</div>'+
+                    '<div class="almuerzo-header-rest">'+esc(rest)+'</div>'+
+                    '<div class="almuerzo-header-price">'+fmtMoney(precio,moneda)+'</div>'+
+                '</div>';
+            grupos.forEach(function(g,gi){
+                h+='<div class="wings-counter">'+g.emoji+' Elige <b>'+g.elige+'</b> '+esc(g.label.toLowerCase())+' · puedes repetir · faltan <span id="wleft-'+gi+'">'+g.elige+'</span></div>'+
+                   '<div class="wings-list">';
+                g.opciones.forEach(function(s,oi){
+                    h+='<div class="wings-row">'+
+                        '<span class="wings-salsa-name">'+esc(s)+'</span>'+
+                        '<div class="wings-stepper">'+
+                            '<button class="btn-qty btn-qty-minus" onclick="changeWingGrupo('+gi+','+oi+',-1)">−</button>'+
+                            '<span class="wings-salsa-count" id="wgc-'+gi+'-'+oi+'">0</span>'+
+                            '<button class="btn-qty btn-qty-plus" onclick="changeWingGrupo('+gi+','+oi+',1)">+</button>'+
+                        '</div>'+
+                    '</div>';
+                });
+                h+='</div>';
+            });
+            h+='<button class="btn-almuerzo-add" id="btn-wings-add" onclick="confirmWingsGrupos()" disabled>🛒 Agregar al pedido</button>'+
+                '<button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancelar</button>'+
+            '</div>';
+            document.getElementById('modal-content').innerHTML=h;
+            document.getElementById('modal-overlay').classList.add('visible');
+        }
+        function gruposCompletos(p){
+            return p.grupos.every(function(g){return g.counts.reduce(function(a,b){return a+b},0)===g.elige;});
+        }
+        window.changeWingGrupo=function(gi,oi,delta){
+            var p=window._wingsPending; if(!p||!p.grupos)return;
+            var g=p.grupos[gi]; if(!g)return;
+            var total=g.counts.reduce(function(a,b){return a+b},0);
+            if(delta>0&&total>=g.elige) return; // no exceder el máximo del grupo
+            var nv=g.counts[oi]+delta; if(nv<0)nv=0;
+            g.counts[oi]=nv;
+            var cEl=document.getElementById('wgc-'+gi+'-'+oi); if(cEl)cEl.textContent=nv;
+            var newTotal=g.counts.reduce(function(a,b){return a+b},0);
+            var lEl=document.getElementById('wleft-'+gi); if(lEl)lEl.textContent=(g.elige-newTotal);
+            var btn=document.getElementById('btn-wings-add'); if(btn)btn.disabled=!gruposCompletos(p);
+        };
+        window.confirmWingsGrupos=function(){
+            var p=window._wingsPending; if(!p||!p.grupos)return;
+            var _rc=getRestByName(p.rest); if(_rc&&isRestOpen(_rc.horario)===false){ avisarCerrado(_rc); closeModal(); return; }
+            if(!gruposCompletos(p))return;
+            var choices=p.grupos.map(function(g){
+                var items=[];
+                g.opciones.forEach(function(s,i){ if(g.counts[i]>0) items.push({opcion:s,n:g.counts[i]}); });
+                return {label:g.label,emoji:g.emoji,items:items};
+            });
+            window._cart.push({restaurante:p.rest,nombre:p.nombre,precio:p.precio,delivery:p.delivery,qty:1,wingsChoices:choices,foto_url:p.foto||null,moneda:p.moneda});
+            saveCart();
+            window._wingsPending=null;
             closeModal();
             refreshView();
         };
