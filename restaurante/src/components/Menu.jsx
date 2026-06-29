@@ -7,7 +7,7 @@ import {
   subirFotoMenu,
 } from '../lib/menu';
 import { formatDinero } from '../lib/formato';
-import { codigoMonedaActual } from '../lib/moneda';
+import { codigoMonedaActual, permiteElegirMoneda } from '../lib/moneda';
 import SelectorMoneda from './SelectorMoneda';
 
 const VACIO = {
@@ -107,7 +107,7 @@ function Formulario({ inicial, onCancelar, onGuardar }) {
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="text-[10px] text-gray-500 uppercase tracking-wider">
-            Precio * ({codigoMonedaActual()})
+            Precio *{permiteElegirMoneda() ? ` (${codigoMonedaActual()})` : ''}
           </label>
           <input
             value={form.precio}
@@ -397,9 +397,11 @@ export default function Menu() {
 
   return (
     <div className="px-3 pt-3 pb-8 space-y-4">
-      <div className="bg-tarjeta border border-borde rounded-lg px-3 py-2.5">
-        <SelectorMoneda compacto onCambio={() => setVer((v) => v + 1)} />
-      </div>
+      {permiteElegirMoneda() && (
+        <div className="bg-tarjeta border border-borde rounded-lg px-3 py-2.5">
+          <SelectorMoneda compacto onCambio={() => setVer((v) => v + 1)} />
+        </div>
+      )}
 
       <button
         onClick={() => setModo('nuevo')}

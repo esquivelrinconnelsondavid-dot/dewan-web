@@ -30,3 +30,9 @@ export function monedaActual() {
 export function codigoMonedaActual() {
   return monedaActual().codigo;
 }
+
+// Solo San Cristóbal (la frontera) maneja varias monedas. En Riobamba siempre es
+// USD, así que el selector de moneda NO se muestra ahí.
+export function permiteElegirMoneda() {
+  return ciudadActual().id === 'sc';
+}

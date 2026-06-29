@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { subirLogo, actualizarPerfil } from '../lib/perfilLocal';
 import SelectorMoneda from './SelectorMoneda';
+import { permiteElegirMoneda } from '../lib/moneda';
 
 function Campo({ label, value }) {
   return (
@@ -202,12 +203,14 @@ export default function MiLocal({ restaurante, onActualizado }) {
         </div>
       </div>
 
-      <div className="bg-tarjeta rounded-xl border border-borde p-4">
-        <SelectorMoneda
-          valorInicial={restaurante?.moneda}
-          onCambio={(c) => onActualizado?.({ ...restaurante, moneda: c })}
-        />
-      </div>
+      {permiteElegirMoneda() && (
+        <div className="bg-tarjeta rounded-xl border border-borde p-4">
+          <SelectorMoneda
+            valorInicial={restaurante?.moneda}
+            onCambio={(c) => onActualizado?.({ ...restaurante, moneda: c })}
+          />
+        </div>
+      )}
     </div>
   );
 }
