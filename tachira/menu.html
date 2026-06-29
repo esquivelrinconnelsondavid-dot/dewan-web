@@ -533,8 +533,8 @@
         /* V2.1: Banner de filtro activo dentro del menú del restaurante */
         .rest-filter-banner{margin:10px 14px 4px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(184,255,0,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.78rem;font-weight:700;color:var(--acc);letter-spacing:-0.01em}
 
-        /* V3.0: Grilla 3 columnas (home default) — con soporte de imagen/logo */
-        .grid3-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 12px 10px}
+        /* Grilla 2 columnas (home default) — con soporte de imagen/logo */
+        .grid3-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:8px 12px 10px}
         .grid3-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s;display:flex;flex-direction:column;position:relative}
         .grid3-card:active{transform:scale(0.95)}
         .grid3-top{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden}
@@ -1001,33 +1001,49 @@
         }
 
         // ── HOME VIEW ──
-        // V2: Categorías del catálogo (mapeo keyword-based)
-        // IMPORTANTE: PostgreSQL ILIKE no hace accent-folding, por eso incluimos
-        // las variantes con tilde y sin tilde para que la query server las matchee.
+        // Catálogo de categorías (Táchira / Venezuela) — mapeo por keywords.
+        // IMPORTANTE: PostgreSQL ILIKE no hace accent-folding → incluir variantes con y sin tilde.
+        // Los chips se muestran SOLO si hay un restaurante ACTIVO que matchee (data-driven, ver renderHome):
+        // así, decida David los aliados que decida, nunca queda un chip vacío y aparecen solos al sumar aliados.
         var CAT_MAP_V2={
-            pollo:{icon:'🍗',label:'Pollo',
-                core:['pollo','pollos','polleria','pollería'],
-                kw:['pollo','pollos','broster','alita','alitas','presa','presas','chicken','polleria','pollería']},
+            perros:{icon:'🌭',label:'Perros',
+                core:['perro','perros','perro caliente','perros calientes','hot dog','hot dogs','pancho','panchos'],
+                kw:['hot dog','hotdog','perro caliente','perros calientes','perro','salchicha','salchichas','choripan','choripanes','chorizo','pancho','salchipapa','dog']},
+            hamburguesa:{icon:'🍔',label:'Hamburguesas',
+                core:['hamburguesa','hamburguesas','burger','burguer'],
+                kw:['hamburguesa','hamburguesas','hambur','burger','burgers','burguer','smash']},
+            pollo:{icon:'🍗',label:'Pollo y Alitas',
+                core:['pollo','pollos','alita','alitas','wings'],
+                kw:['pollo','pollos','broaster','broster','broasted','chicken','pechuga','presa','presas','alita','alitas','wings','wing']},
             pizza:{icon:'🍕',label:'Pizza',
                 core:['pizza','pizzas','pizzeria','pizzería'],
-                kw:['pizza','pizzas','pizzer']},
-            almuerzo:{icon:'🍱',label:'Almuerzo',
-                core:['almuerzo','almuerzos','menu del dia','menú del día','menus del dia','menús del día'],
-                kw:['almuerzo','almuerzos','menú','menu','menús','menus','ejecutivo','ejecutivos']},
-            mariscos:{icon:'🐟',label:'Mariscos',
-                core:['marisco','mariscos','marisqueria','marisquería','cevicheria','cevichería'],
-                kw:['marisco','mariscos','ceviche','ceviches','encebollado','pescado','camaron','camarón','camarones','camarónes','concha','langosta','cangrejo','atun','atún']},
-            hamburguesa:{icon:'🍔',label:'Hamburguesas',
-                core:['hamburguesa','hamburguesas','hamburgueseria','hamburguesería','hambur','burger','burgers','burguer'],
-                kw:['hambur','burger']},
-            postres:{icon:'🧁',label:'Postres',
-                core:['postre','postres','dulce','dulces','pasteleria','pastelería','reposteria','repostería','heladeria','heladería'],
-                kw:['postre','postres','helado','helados','torta','tortas','pastel','pasteles','pasteleria','pastelería','bizcocho','bizcochos','dulce','dulces','pastry','cupcake','cheesecake','bolleria','bollería']},
-            bebidas:{icon:'🥤',label:'Bebidas',
-                core:['bebida','bebidas','cafeteria','cafetería','jugueria','juguería'],
-                kw:['bebida','bebidas','jugo','jugos','refresco','refrescos','gaseosa','gaseosas','cafe','café','cafeteria','cafetería','batido','batidos','smoothie','agua']}
+                kw:['pizza','pizzas','pizzeria','pizzería','pizzer','calzone']},
+            parrilla:{icon:'🥩',label:'Parrilla',
+                core:['parrilla','parrillas','carne','carnes','asado','asados','bbq'],
+                kw:['parrilla','parrillas','carne','carnes','churrasco','brasa','bbq','ahumado','humo','pulled','brisket','costilla','costillas']},
+            empanadas:{icon:'🥟',label:'Empanadas',
+                core:['empanada','empanadas','pastelito','pastelitos'],
+                kw:['empanada','empanadas','pastelito','pastelitos','tequeño','tequeno','tequeños','pasapalo','pasapalos']},
+            arepas:{icon:'🫓',label:'Arepas y Cachapas',
+                core:['arepa','arepas','cachapa','cachapas'],
+                kw:['arepa','arepas','arepera','cachapa','cachapas','pabellon','pabellón','patacon','patacón','toston','tostón']},
+            china:{icon:'🥡',label:'Comida China',
+                core:['china','chino','comida china','chifa'],
+                kw:['china','chino','chifa','wok','wor','lumpia','chop suey','arroz chino','asiatica','asiática']},
+            mariscos:{icon:'🦐',label:'Mariscos',
+                core:['marisco','mariscos','ceviche','ceviches','pescado'],
+                kw:['marisco','mariscos','pescado','pescados','camaron','camarón','camarones','ceviche','ceviches','sebiche','cangrejo','tilapia']},
+            arabe:{icon:'🧆',label:'Árabe',
+                core:['arabe','árabe','shawarma','shawarmas','kebab'],
+                kw:['arabe','árabe','shawarma','shawarmas','kebab','falafel','manakish','tabule']},
+            sushi:{icon:'🍣',label:'Sushi',
+                core:['sushi','sashimi','roll','rolls'],
+                kw:['sushi','sashimi','roll','rolls','maki','nigiri','japonesa','japones']},
+            postres:{icon:'🧁',label:'Postres y Pastelería',
+                core:['postre','postres','pastel','pasteles','dulce','dulces','churro','churros'],
+                kw:['postre','postres','dulce','dulces','torta','tortas','pastel','pasteles','pasteleria','pastelería','reposteria','repostería','churro','churros','helado','helados','cheesecake','cupcake','brownie']}
         };
-        var CAT_KEYS_V2=['pollo','pizza','almuerzo','mariscos','hamburguesa','postres','bebidas'];
+        var CAT_KEYS_V2=['perros','hamburguesa','pollo','pizza','parrilla','empanadas','arepas','china','mariscos','arabe','sushi','postres'];
 
         function matchCategoryV2(r,catKey){
             var cm=CAT_MAP_V2[catKey];if(!cm)return false;
@@ -1200,9 +1216,12 @@
                 '</button>'+
             '</div>';
 
-            // Chips de categoría
+            // Chips de categoría (data-driven: solo los que tienen ≥1 restaurante activo)
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
-            CAT_KEYS_V2.forEach(function(k){
+            var _allRchips=(sessionData.resultados||[]);
+            CAT_KEYS_V2.filter(function(k){
+                return window._activeCat===k||_allRchips.some(function(r){return matchCategoryV2(r,k)});
+            }).forEach(function(k){
                 var c=CAT_MAP_V2[k];
                 var active=window._activeCat===k;
                 h+='<button class="cat-chip'+(active?' active':'')+'" onclick="toggleCategoryV2(\''+k+'\')">'+
