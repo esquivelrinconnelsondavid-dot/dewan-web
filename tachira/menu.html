@@ -223,6 +223,24 @@
         .dest-plus{width:30px;height:30px;border-radius:50%;background:var(--acc);color:#111;border:none;font-weight:900;font-size:1.15rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s;box-shadow:0 2px 8px rgba(184,255,0,0.2);flex-shrink:0}
         .dest-plus:active{transform:scale(0.88)}
         .dest-qty-mini{background:var(--acc);color:#111;border-radius:100px;padding:4px 10px;font-weight:900;font-size:0.74rem;display:inline-flex;align-items:center;gap:4px}
+        /* Carril de fotos "Para ti" / contextual — foto del plato + chip de logo del local */
+        .dest-photo{position:relative}
+        .dest-logo-chip{position:absolute;top:8px;left:8px;width:34px;height:34px;border-radius:50%;background:#fff;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.4);z-index:2;border:1.5px solid #fff}
+        .dest-logo-chip img{width:100%;height:100%;object-fit:cover}
+        .dest-rest-tag{font-size:0.68rem;color:var(--gris);font-weight:700;margin:7px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .dest-card-cerrada .dest-emoji{filter:grayscale(45%) brightness(0.78);opacity:0.9}
+        .dest-cerrada-cinta{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.72);color:#FF5C4D;font-size:0.6rem;font-weight:900;padding:3px 8px;border-radius:8px;z-index:2;letter-spacing:0.03em;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+
+        /* Lightbox: ampliar foto del plato (paleta oscura + CTA naranja Táchira) */
+        .foto-zoom{position:fixed;inset:0;z-index:210;background:rgba(0,0,0,0.86);display:flex;align-items:center;justify-content:center;padding:18px}
+        .foto-zoom-box{position:relative;width:100%;max-width:430px;background:var(--card);border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,0.7)}
+        .foto-zoom-img{width:100%;max-height:62vh;object-fit:cover;display:block;background:#000}
+        .foto-zoom-x{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;font-size:1.15rem;font-weight:800;cursor:pointer;z-index:2;line-height:1;font-family:inherit}
+        .foto-zoom-info{padding:14px 18px 4px}
+        .foto-zoom-name{font-weight:800;font-size:1.12rem;letter-spacing:-0.01em;line-height:1.2;color:var(--texto)}
+        .foto-zoom-sub{font-size:0.86rem;color:var(--gris-2);font-weight:700;margin-top:4px}
+        .foto-zoom-cta{display:block;width:calc(100% - 36px);margin:14px 18px 18px;padding:15px;border:none;border-radius:14px;background:var(--cta);color:#fff;font-weight:900;font-size:1rem;font-family:inherit;cursor:pointer}
+        .foto-zoom-cta:active{transform:scale(0.98)}
 
         /* Cart floating — V4: Premium two-section bar (dark + orange CTA) */
         .cart-float{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:94%;max-width:402px;z-index:60;animation:cart-rise 0.35s cubic-bezier(0.34,1.3,0.64,1)}
@@ -832,12 +850,166 @@
                         nombre:it.nombre_item,
                         precio:Number(it.precio)||0,
                         categoria:it.categoria_menu||'General',
-                        descripcion:it.descripcion||''
+                        descripcion:it.descripcion||'',
+                        foto_url:it.foto_url||null
                     }});
                     window._menuCache[restId]=norm;
                     return norm;
                 });
         }
+
+        // ── Resolver restaurante activo por id (sessionData.resultados ya son solo activos) ──
+        function getRestById(id){
+            var arr=(sessionData&&sessionData.resultados)||[];
+            for(var i=0;i<arr.length;i++){if(arr[i].id===id)return arr[i]}
+            return null;
+        }
+
+        // ── Carril "Para ti": platos con FOTO de CUALQUIER restaurante activo (cross-restaurant) ──
+        // SC: sin tipo_acuerdo, sin envase. Precio en la moneda del local (fmtMoney + r.moneda). Tope 3/local.
+        // window._destHome: undefined=no cargado · []=cargó vacío/falló · [..]=platos. Se inyecta por id sin re-render global.
+        function loadDestacadosHome(){
+            if(window._destHome!==undefined||window._destHomeLoading) return;
+            if(!(sessionData&&sessionData.resultados&&sessionData.resultados.length)) return; // catálogo aún no listo
+            window._destHomeLoading=true;
+            var url=SB_URL+'/rest/v1/menu_items?select=id,nombre_item,precio,categoria_menu,descripcion,foto_url,restaurante_id,restaurante_nombre&disponible=eq.true&foto_url=not.is.null&limit=1000';
+            fetch(url,{headers:supaHeaders()})
+                .then(function(r){return r.json()})
+                .then(function(items){
+                    window._destHome=buildPhotoRail(items,16);
+                    window._destHomeLoading=false;
+                    try{var el=document.getElementById('home-food-rail');if(el){if(window._destHome.length)el.innerHTML=homeFoodRailInner();else if(el.parentNode)el.parentNode.removeChild(el);}}catch(e){}
+                })
+                .catch(function(){window._destHomeLoading=false;window._destHome=[];try{var el=document.getElementById('home-food-rail');if(el&&el.parentNode)el.parentNode.removeChild(el);}catch(e){}}); // []=colapsa sin hueco, no reintenta ni deja skeleton
+        }
+        function homeFoodRailInner(){
+            var _hr=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Caracas'})).getHours();
+            var _sub=_hr<11?'🥐 Para el desayuno':(_hr<15?'🍽 Para el almuerzo':(_hr<19?'😋 Antojo de la tarde':'🌙 Para la cena'));
+            if(window._destHome===undefined){
+                var sk='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
+                for(var i=0;i<4;i++) sk+='<div class="dest-card" style="border:none;height:210px;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:skel-shimmer 1.6s ease-in-out infinite"></div>';
+                return sk+'</div>';
+            }
+            if(!window._destHome.length) return '';
+            if(window._destHome.every(function(p){return p.abierto===false})) _sub='🌙 Abren temprano · agenda tu antojo';
+            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
+            window._destHome.forEach(function(p,idx){h+=_railCard(p,idx);});
+            return h+'</div>';
+        }
+        function _railCard(p,idx,ctx){
+            var ci=findCart(p.rest,p.nombre);
+            var qty=ci?ci.qty:0;
+            var cerrado=p.abierto===false;
+            var click=cerrado
+                ?'openRest(\''+jsEsc(p.rest)+'\')'
+                :'addCart(\''+jsEsc(p.rest)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(p.delivery||0)+',\''+jsEsc(p.foto_url||'')+'\',\''+jsEsc(p.moneda||'COP')+'\')';
+            return '<div class="dest-card'+(qty?' in-cart':'')+(cerrado?' dest-card-cerrada':'')+'" onclick="event.stopPropagation();'+click+'">'+
+                '<div class="dest-photo">'+
+                    '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+',\''+(ctx||'home')+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
+                    (p.logo?'<span class="dest-logo-chip"><img src="'+esc(p.logo)+'" alt="'+esc(p.rest)+'" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></span>':'')+
+                    (cerrado?'<div class="dest-cerrada-cinta">Cerrado ahora</div>':'')+
+                '</div>'+
+                '<div class="dest-name">'+esc(p.nombre)+'</div>'+
+                '<div class="dest-rest-tag">'+esc(p.rest)+'</div>'+
+                '<div class="dest-footer">'+
+                    '<span class="dest-price">'+fmtMoney(Number(p.precio),p.moneda)+'</span>'+
+                    (cerrado?'<span class="dest-plus" aria-label="Ver carta">›</span>':(qty?'<span class="dest-qty-mini">×'+qty+'</span>':'<span class="dest-plus" aria-label="Agregar">+</span>'))+
+                '</div>'+
+            '</div>';
+        }
+        function renderHomeFoodRail(){
+            if(window._destHome===undefined) loadDestacadosHome();
+            if(window._destHome!==undefined&&!window._destHome.length) return ''; // cargó vacío → sin hueco
+            return '<section class="destacados" id="home-food-rail">'+homeFoodRailInner()+'</section>';
+        }
+        // ── Carril de fotos por CONTEXTO (categoría / búsqueda) ──
+        // Mismas tarjetas que "Para ti", alimentado por los platos que matchean. Reusa _railCard con ctx='ctx'
+        // → zoomFoto lee window._railCtxItems. plateToRailItem comparte filtros/precio con el rail de la home.
+        function _railShuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+        function plateToRailItem(it){
+            if(!it||!it.foto_url||!String(it.foto_url).trim()) return null;
+            var rest=getRestById(it.restaurante_id);
+            if(!rest) return null;                       // no está en sesión / no activo
+            var base=Number(it.precio)||0;
+            if(base<=0) return null;
+            var _abierto=isRestOpen(rest.horario);
+            return {
+                rest:rest.nombre, nombre:it.nombre_item,
+                precio:base, moneda:rest.moneda||'COP',
+                delivery:Number(rest.precio_delivery)||0,
+                foto_url:it.foto_url,
+                abierto:_abierto,
+                logo:(rest.logo_url||rest.imagen_url||rest.foto_url||null)
+            };
+        }
+        function buildPhotoRail(plates,limit){
+            var seen={},seenF={},groups={},order=[];
+            (plates||[]).forEach(function(it){
+                var p=plateToRailItem(it); if(!p) return;
+                var k=p.rest+'|'+p.nombre;
+                if(seen[k]||seenF[p.foto_url]) return;       // no repetir plato ni foto
+                seen[k]=1; seenF[p.foto_url]=1;
+                if(!groups[p.rest]){groups[p.rest]=[];order.push(p.rest);}
+                groups[p.rest].push(p);
+            });
+            // máx 3 por local (muestra aleatoria) + round-robin con locales mezclados → variedad entre locales
+            Object.keys(groups).forEach(function(r){groups[r]=_railShuffle(groups[r]).slice(0,3);});
+            var localOrder=_railShuffle(order);
+            var g={}; localOrder.forEach(function(r){g[r]=groups[r].slice();});
+            var pick=[],added=true;
+            while(added){ added=false; localOrder.forEach(function(r){ if(g[r].length){pick.push(g[r].shift());added=true;} }); }
+            var ab=pick.filter(function(p){return p.abierto!==false}); // abiertos primero
+            var ce=pick.filter(function(p){return p.abierto===false}); // cerrados al final
+            return ab.concat(ce).slice(0,limit||12);
+        }
+        function renderCtxPhotoRail(items,titulo,sub){
+            if(!items||!items.length) return '';
+            window._railCtxItems=items;
+            var h='<section class="destacados"><div class="destacados-head">'+
+                '<span class="destacados-title">'+titulo+'</span>'+
+                (sub?'<span class="destacados-sub">'+sub+'</span>':'')+
+                '</div><div class="destacados-scroll">';
+            items.forEach(function(p,idx){h+=_railCard(p,idx,'ctx');});
+            return h+'</div></section>';
+        }
+        // ── Lightbox: tocar la foto la abre en grande. Cierre por X o tap fuera (sin History API). ──
+        window.zoomFoto=function(idx,ctx){
+            var p=((ctx==='ctx'?window._railCtxItems:window._destHome)||[])[idx];
+            if(!p) return;
+            var ov=document.createElement('div');
+            ov.className='foto-zoom';
+            ov.onclick=function(e){if(e.target===ov) cerrarZoom();};
+            ov.innerHTML='<div class="foto-zoom-box">'+
+                '<button class="foto-zoom-x" aria-label="Cerrar" onclick="cerrarZoom()">✕</button>'+
+                '<img class="foto-zoom-img" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'">'+
+                '<div class="foto-zoom-info">'+
+                    '<div class="foto-zoom-name">'+esc(p.nombre)+'</div>'+
+                    '<div class="foto-zoom-sub">'+esc(p.rest)+' · '+fmtMoney(Number(p.precio),p.moneda)+'</div>'+
+                '</div>'+
+                '<button class="foto-zoom-cta" id="foto-zoom-cta">🏪 Visitar restaurante</button>'+
+            '</div>';
+            document.body.appendChild(ov);
+            var cta=document.getElementById('foto-zoom-cta');
+            cta.onclick=function(){cerrarZoom();openRest(p.rest);};
+        };
+        window.cerrarZoom=function(){var ov=document.querySelector('.foto-zoom');if(ov)ov.parentNode.removeChild(ov);};
+        // Lightbox solo-ver (fotos dentro del restaurante: destacados + menú). Cierre por X o tap fuera.
+        window.zoomFotoRaw=function(foto,nombre,sub){
+            if(!foto) return;
+            var ov=document.createElement('div');
+            ov.className='foto-zoom';
+            ov.onclick=function(e){if(e.target===ov) cerrarZoom();};
+            ov.innerHTML='<div class="foto-zoom-box">'+
+                '<button class="foto-zoom-x" aria-label="Cerrar" onclick="cerrarZoom()">✕</button>'+
+                '<img class="foto-zoom-img" src="'+esc(foto)+'" alt="'+esc(nombre||'')+'">'+
+                '<div class="foto-zoom-info">'+
+                    '<div class="foto-zoom-name">'+esc(nombre||'')+'</div>'+
+                    (sub?'<div class="foto-zoom-sub">'+esc(sub)+'</div>':'')+
+                '</div>'+
+                '<button class="foto-zoom-cta" onclick="cerrarZoom()">Cerrar</button>'+
+            '</div>';
+            document.body.appendChild(ov);
+        };
 
         // ── CAMBIO 2: localStorage para carrito ──
         function getCartKey(){return 'dewan_cart_'+(token||'anon_v2')}
@@ -1072,7 +1244,7 @@
 
         // V2.3: fetch paginado para superar el límite de 1000 filas de PostgREST
         function fetchAllMatchingPlates(orsParam,selectCols){
-            var sel=selectCols||'restaurante_id,restaurante_nombre,nombre_item,categoria_menu,descripcion,precio';
+            var sel=selectCols||'restaurante_id,restaurante_nombre,nombre_item,categoria_menu,descripcion,precio,foto_url';
             var acc=[];
             function page(offset){
                 var url=SB_URL+'/rest/v1/menu_items?select='+sel+'&disponible=eq.true&or=('+orsParam+')&order=restaurante_id&limit=1000&offset='+offset;
@@ -1113,6 +1285,8 @@
             }).join(',');
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
+                    window._catPlatesCache=window._catPlatesCache||{};
+                    window._catPlatesCache[key]=buildPhotoRail(plates,12); // carril de fotos de la categoría
                     var rests=aggregatePlatesByRest(plates);
                     // V2.5 + V2.8: Para 'almuerzo', incluir restaurantes de almuerzos_hoy y boostearlos,
                     // pero SOLO durante horario de almuerzo (12:00–15:00)
@@ -1151,6 +1325,8 @@
                     if(window._activeCat===key) renderHome();
                 }).catch(function(){
                     window._catRestsCache[key]=[];
+                    window._catPlatesCache=window._catPlatesCache||{};
+                    window._catPlatesCache[key]=[];
                     window._catLoading=false;
                     if(window._activeCat===key) renderHome();
                 });
@@ -1216,6 +1392,9 @@
                 '</button>'+
             '</div>';
 
+            // 🔥 Carril de COMIDA "Para ti" (solo home sin filtro de categoría): la comida vende, va arriba.
+            if(!window._activeCat) h+=renderHomeFoodRail();
+
             // Chips de categoría (data-driven: solo los que tienen ≥1 restaurante activo)
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
             var _allRchips=(sessionData.resultados||[]);
@@ -1249,6 +1428,13 @@
                         '</div>'+
                     '</div>';
                 }
+            }
+
+            // Carril de FOTOS de platos de la categoría — estilo "Para ti", arriba de la lista.
+            if(window._activeCat&&!window._catLoading){
+                var _cmRail=CAT_MAP_V2[window._activeCat];
+                var _railCat=(window._catPlatesCache||{})[window._activeCat];
+                if(_cmRail&&_railCat&&_railCat.length) h+=renderCtxPhotoRail(_railCat,_cmRail.icon+' '+_cmRail.label,'📸 con foto · toca para agregar');
             }
 
             // Banner GPS (si no tiene, no está descartado)
@@ -1542,7 +1728,7 @@
                         var ci=findCart(r.nombre,p.nombre);
                         var qty=ci?ci.qty:0;
                         h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\',\''+jsEsc(r.moneda||'COP')+'\')">'+
-                            '<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>'+
+                            (p.foto_url?'<div class="dest-photo"><img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'"></div>':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre)+'</div>'+
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">'+fmtMoney(Number(p.precio),r.moneda)+'</span>'+
@@ -1612,7 +1798,7 @@
                         var qty=ci?ci.qty:0;
                         h+='<div class="prod-card'+(qty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
-                                '<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>'+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                                 '<div class="prod-info">'+
                                     ((isFirstInCat||qty)?'<div class="prod-badges">'+
                                         (isFirstInCat?'<span class="badge badge-recomendado">⭐ Recomendado</span>':'')+
@@ -1940,6 +2126,9 @@
                 return;
             }
             var html='';
+            // Carril de FOTOS de los platos que matchean (estilo "Para ti")
+            var _railSearch=buildPhotoRail(plates,12);
+            if(_railSearch.length) html+=renderCtxPhotoRail(_railSearch,'📸 "'+esc(query)+'" con foto','toca para agregar');
             if(rests.length){
                 var parts=partitionRests(rests);
                 var hasSpecs=parts.specs.length>0;
