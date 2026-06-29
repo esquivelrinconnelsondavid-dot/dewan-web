@@ -1,4 +1,5 @@
 import { supabase, consultarConTimeout } from './supabase';
+import { setMonedaRestaurante } from './moneda';
 
 export const STORAGE_TOKEN = 'dewan_rest_token';
 export const STORAGE_REST = 'dewan_rest_data';
@@ -10,11 +11,13 @@ async function enriquecerConPerfil(restaurante) {
     const { data, error } = await consultarConTimeout(
       supabase
         .from('restaurantes')
-        .select('logo_url, direccion, horario, categoria, telefono, tipo_restaurante, activo')
+        .select('logo_url, direccion, horario, categoria, telefono, tipo_restaurante, activo, moneda')
         .eq('id', restaurante.restaurante_id)
         .maybeSingle()
     );
     if (error || !data) return restaurante;
+    // Moneda del local (frontera SC: COP/USD/EUR/VES). Default por ciudad si es null.
+    setMonedaRestaurante(data.moneda);
     return { ...restaurante, ...data };
   } catch (e) {
     console.warn('[enriquecerConPerfil]', e?.message || e);
