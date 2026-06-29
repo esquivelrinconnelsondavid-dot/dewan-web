@@ -7,6 +7,8 @@ import {
   subirFotoMenu,
 } from '../lib/menu';
 import { formatDinero } from '../lib/formato';
+import { codigoMonedaActual } from '../lib/moneda';
+import SelectorMoneda from './SelectorMoneda';
 
 const VACIO = {
   nombre_item: '',
@@ -104,7 +106,9 @@ function Formulario({ inicial, onCancelar, onGuardar }) {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-[10px] text-gray-500 uppercase tracking-wider">Precio *</label>
+          <label className="text-[10px] text-gray-500 uppercase tracking-wider">
+            Precio * ({codigoMonedaActual()})
+          </label>
           <input
             value={form.precio}
             onChange={(e) => cambiar('precio', e.target.value)}
@@ -311,6 +315,7 @@ export default function Menu() {
   const [error, setError] = useState('');
   const [modo, setModo] = useState('lista');
   const [editando, setEditando] = useState(null);
+  const [, setVer] = useState(0); // fuerza re-render al cambiar la moneda
 
   const cargar = async () => {
     setCargando(true);
@@ -392,6 +397,10 @@ export default function Menu() {
 
   return (
     <div className="px-3 pt-3 pb-8 space-y-4">
+      <div className="bg-tarjeta border border-borde rounded-lg px-3 py-2.5">
+        <SelectorMoneda compacto onCambio={() => setVer((v) => v + 1)} />
+      </div>
+
       <button
         onClick={() => setModo('nuevo')}
         className="w-full bg-dewan text-fondo font-bold py-3 rounded-lg active:scale-95"

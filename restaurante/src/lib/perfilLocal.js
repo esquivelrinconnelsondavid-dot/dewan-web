@@ -38,3 +38,17 @@ export async function actualizarPerfil({ logo_url = null, horario = null, telefo
   if (error) throw error;
   return data;
 }
+
+// Guarda la moneda del restaurante (restaurantes.moneda) vía RPC validando token.
+// Requiere el RPC `actualizar_moneda_restaurante(p_token, p_moneda)` en Supabase.
+export async function actualizarMoneda(codigo) {
+  const token = localStorage.getItem(STORAGE_TOKEN);
+  if (!token) throw new Error('Sesión expirada');
+
+  const { data, error } = await supabase.rpc('actualizar_moneda_restaurante', {
+    p_token: token,
+    p_moneda: codigo,
+  });
+  if (error) throw error;
+  return data;
+}
