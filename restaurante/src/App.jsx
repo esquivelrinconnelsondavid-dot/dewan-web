@@ -283,6 +283,17 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
+  // Pedir el permiso de notificaciones APENAS abre la app (antes del selector de
+  // ciudad y del login). Android 13+ solo muestra el diálogo si la app llama a
+  // requestPermissions(); antes esto vivía SOLO dentro de <Panel> (post-login),
+  // así que en una instalación nueva la app abría, mostraba elegir-ciudad/login
+  // y nunca pedía el permiso si el local no llegaba a entrar. El registro del
+  // token FCM sigue en <Panel> (necesita el restaurante logueado); acá solo
+  // disparamos el diálogo del sistema para que el permiso quede concedido ya.
+  useEffect(() => {
+    requestPushPermission();
+  }, []);
+
   // Elegir ciudad. Si cambia respecto a la guardada, limpiamos la sesión cacheada
   // (es de otra ciudad/backend) y recargamos para reconstruir el cliente Supabase.
   const elegir = (id) => {
