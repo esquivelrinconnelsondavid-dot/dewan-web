@@ -7,6 +7,7 @@ import TimerDisplay from './TimerDisplay';
 import SelectorSucursal from './SelectorSucursal';
 import { lanzarMotorizado, cancelarPedido as wCancelarPedido, restauranteNoPuede, timerRestaurante } from '../lib/webhooks';
 import { stopAlertLoop, alertActiva } from '../lib/notifications';
+import DesglosePedido from './DesglosePedido';
 
 const ESTADO_LABEL = {
   pendiente: 'Pendiente',
@@ -293,6 +294,12 @@ export default function PedidoCard({ p, tipoAcuerdo }) {
       </div>
 
       {p.direccion_entrega && <div className="text-[11px] text-gray-400 line-clamp-1">📍 {p.direccion_entrega}</div>}
+
+      {/* Desglose de la carrera: paga al local (neto de comisión) / cobra al cliente / envío / markup.
+          Mismos números que ve el motorizado (lib/precios.js). Solo aplica a pedidos de comida. */}
+      {p.intencion === 'pedido_comida' && (p.monto_total != null || p.precio_base_productos != null) && (
+        <DesglosePedido pedido={p} />
+      )}
 
       {/* fix 2026-06-12 (#282): botones también con restaurante registrado cuando el
           pedido fue escalado o rechazado. fix 2026-06-16: + locales silencioso/cliente_paga
