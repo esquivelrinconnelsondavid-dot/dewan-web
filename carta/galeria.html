@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galería · Apps web de menú</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;background:#0e1116;color:#e9edf2;padding:22px 16px 60px;}
+    .head{max-width:880px;margin:0 auto 26px;text-align:center;}
+    .head h1{font-size:26px;font-weight:800;letter-spacing:-.3px;}
+    .head p{color:#9aa3af;font-size:14px;margin-top:8px;line-height:1.5;}
+    .grid{max-width:880px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+    .card{background:#161b22;border:1px solid #232a33;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;border-top:4px solid var(--c,#888);}
+    .top{display:flex;align-items:center;gap:12px;}
+    .logo{width:56px;height:56px;border-radius:14px;overflow:hidden;background:#fff;flex:0 0 auto;box-shadow:0 4px 12px rgba(0,0,0,.4);}
+    .logo img{width:100%;height:100%;object-fit:cover;}
+    .nm{font-size:17px;font-weight:700;line-height:1.15;}
+    .tipo{font-size:12px;color:#9aa3af;margin-top:2px;}
+    .looks{display:flex;flex-direction:column;gap:8px;}
+    .looks a{display:flex;align-items:center;justify-content:space-between;gap:8px;text-decoration:none;
+      background:#1d242d;border:1px solid #2b333d;border-radius:11px;padding:11px 13px;color:#e9edf2;font-size:13.5px;font-weight:600;transition:all .14s;}
+    .looks a:hover{background:var(--c,#2b333d);color:#0e1116;border-color:var(--c,#2b333d);}
+    .looks a span.k{font-size:11px;opacity:.7;font-weight:500;}
+    .looks a:hover span.k{opacity:.85;}
+    .badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--c,#888);}
+    .foot{max-width:880px;margin:28px auto 0;text-align:center;color:#6b7280;font-size:12px;line-height:1.6;}
+  </style>
+  <!-- Configs -->
+  <script src="restaurantes/baltimore.js?v=2"></script>
+  <script src="restaurantes/monaco.js?v=2"></script>
+  <script src="restaurantes/prinfresa.js?v=2"></script>
+  <script src="restaurantes/texas.js?v=2"></script>
+  <script src="restaurantes/aidita.js?v=2"></script>
+  <script src="restaurantes/bogati.js?v=2"></script>
+  <script src="restaurantes/verdebolon.js?v=2"></script>
+  <script src="restaurantes/mammamia.js?v=2"></script>
+  <script src="restaurantes/bellavista.js?v=2"></script>
+  <script src="restaurantes/gitano.js?v=2"></script>
+  <script src="restaurantes/tenaza.js?v=2"></script>
+  <script src="restaurantes/ales.js?v=2"></script>
+  <script src="restaurantes/andaluza.js?v=2"></script>
+  <script src="restaurantes/corcel.js?v=2"></script>
+  <!-- Templates (para los labels) -->
+  <script src="templates/_helpers.js?v=2"></script>
+  <script src="templates/brasa-noir.js?v=2"></script>
+  <script src="templates/street.js?v=2"></script>
+  <script src="templates/swift.js?v=2"></script>
+  <script src="templates/trattoria.js?v=2"></script>
+  <script src="templates/editorial.js?v=2"></script>
+  <script src="templates/tostado.js?v=2"></script>
+  <script src="templates/marea.js?v=2"></script>
+  <script src="templates/dulce.js?v=2"></script>
+  <script src="templates/premium.js?v=2"></script>
+  <script src="templates/grid-foto.js?v=2"></script>
+  <script src="templates/inmersivo.js?v=2"></script>
+  <script src="templates/ticket.js?v=2"></script>
+  <script src="templates/poster.js?v=2"></script>
+  <script src="templates/estantes.js?v=2"></script>
+  <script src="templates/portada.js?v=2"></script>
+  <script src="templates/revista.js?v=2"></script>
+  <!-- Plantillas EXCLUSIVAS por local -->
+  <script src="templates/x-monaco.js?v=2"></script>
+  <script src="templates/x-texas.js?v=2"></script>
+  <script src="templates/x-mammamia.js?v=2"></script>
+  <script src="templates/x-gitano.js?v=2"></script>
+  <script src="templates/x-tenaza.js?v=2"></script>
+  <script src="templates/x-ales.js?v=2"></script>
+  <script src="templates/x-andaluza.js?v=2"></script>
+  <script src="templates/x-corcel.js?v=2"></script>
+</head>
+<body>
+  <div class="head">
+    <h1>🍽️ Apps web de menú — Riobamba</h1>
+    <p>14 restaurantes · cada uno con su diseño EXCLUSIVO + 4 modelos alternos · menú real en vivo.<br>Toca un modelo para abrirlo. Abajo de cada app: 📍 ubicación de un toque + 🧾 factura.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="foot">El servidor local debe estar encendido (puerto 8090). Cada link abre la app con el menú real de Supabase.</div>
+
+  <script>
+    const ORDEN = ["baltimore","monaco","mammamia","texas","gitano","tenaza","ales","andaluza","corcel","bellavista","aidita","prinfresa","bogati","verdebolon"];
+    const TIPOS = {
+      baltimore:"Hamburguesas & Alitas", monaco:"Parrillada & Pizza", mammamia:"Pizzería Italiana",
+      texas:"Asadero / Parrilla", bellavista:"Hamburguesería", aidita:"Cevichería",
+      prinfresa:"Fresas & Postres", bogati:"Heladería", verdebolon:"Cafetería",
+      gitano:"Resto Bar & Grill", tenaza:"Marisquería / Cangrejería", ales:"Asadero de Pollo",
+      andaluza:"Embutidos & Deli / Cafetería", corcel:"Comida Rápida"
+    };
+    const grid = document.getElementById("grid");
+    const R = window.RESTAURANTES || {};
+    const T = window.TEMPLATES || {};
+    ORDEN.filter(s => R[s]).forEach(slug => {
+      const r = R[slug];
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.setProperty("--c", r.marca || "#888");
+      const looks = (r.plantillas || []).map((k, i) => {
+        const label = (T[k] && T[k].label) || k;
+        const tag = i === 0 ? `<span class="badge">Principal</span>` : `<span class="k">${k}</span>`;
+        return `<a href="index.html?r=${slug}&tpl=${k}&live=1" target="_blank">${label} ${tag}</a>`;
+      }).join("");
+      card.innerHTML = `
+        <div class="top">
+          <div class="logo">${r.logo ? `<img src="${r.logo}" alt="">` : ""}</div>
+          <div><div class="nm">${r.nombre}</div><div class="tipo">${TIPOS[slug] || ""}</div></div>
+        </div>
+        <div class="looks">${looks}</div>`;
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>

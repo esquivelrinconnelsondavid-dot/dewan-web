@@ -9,9 +9,9 @@ window.RESTAURANTES["monaco"] = {
   logo: "assets/monaco.jpeg",
   emojiDefault: "🍖",
   cocina: "parrilla",
-  plantillas: ["premium", "inmersivo", "poster", "revista", "grid-foto"],
+  plantillas: ["x-monaco", "premium", "inmersivo", "revista", "grid-foto"],
   promo: "🛵 A domicilio o retira en el local",
-  ordenCategorias: ["Parrilladas", "Parrilla", "Pizzas", "Pizza", "Hamburguesas", "Para Picar"],
+  ordenCategorias: ["Al Grill", "Pizza", "Pasta", "Fast Food", "Entradas", "Ensalada", "Menú Infantil", "Postres"],
   menu: [
     { categoria: "Parrilladas", items: [
       { id: "m1", nombre: "Parrillada Mônaco para 2", precio: 19.5, emoji: "🔥", desc: "Carne, chorizo, pollo y chuleta a la brasa con papas, maduro y ensalada." },
