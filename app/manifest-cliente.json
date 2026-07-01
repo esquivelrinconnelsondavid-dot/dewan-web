@@ -1,0 +1,20 @@
+{
+  "id": "dewan-cliente",
+  "name": "DEWAN — Pide a domicilio",
+  "short_name": "DEWAN",
+  "description": "Los restaurantes de Riobamba al precio del local. Pide en 2 toques.",
+  "lang": "es",
+  "start_url": "/app/menu.html?pwa=1",
+  "scope": "/app/menu.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3ECE0",
+  "theme_color": "#FFFFFF",
+  "categories": ["food", "shopping"],
+  "icons": [
+    { "src": "/app/icons-cliente/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icons-cliente/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icons-cliente/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/app/icons-cliente/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
