@@ -1374,8 +1374,8 @@
                 :'addCart(\''+jsEsc(p.rest)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+p.delivery+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+','+(p.precio_regular||0)+','+(p.precio_base||0)+')';
             return '<div class="dest-card'+(qty?' in-cart':'')+(cerrado?' dest-card-cerrada':'')+'" onclick="event.stopPropagation();'+click+'">'+
                 '<div class="dest-photo">'+
-                    '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+',\''+(ctx||'home')+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
-                    (p.logo?'<span class="dest-logo-chip"><img src="'+esc(p.logo)+'" alt="'+esc(p.rest)+'" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></span>':'')+
+                    '<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(cdnImg(p.foto_url,400))+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFoto('+idx+',\''+(ctx||'home')+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">'+
+                    (p.logo?'<span class="dest-logo-chip"><img src="'+esc(cdnImg(p.logo,200))+'" alt="'+esc(p.rest)+'" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></span>':'')+
                     (cerrado?'<div class="dest-cerrada-cinta">'+(p.apertura?'Abre '+esc(p.apertura):'Cerrado ahora')+'</div>':'')+
                 '</div>'+
                 '<div class="dest-name">'+esc(p.nombre).split(' + ').join(' + ')+'</div>'+
@@ -1464,7 +1464,7 @@
             ov.onclick=function(e){if(e.target===ov) cerrarZoom();};
             ov.innerHTML='<div class="foto-zoom-box">'+
                 '<button class="foto-zoom-x" aria-label="Cerrar" onclick="cerrarZoom()">✕</button>'+
-                '<img class="foto-zoom-img" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'">'+
+                '<img class="foto-zoom-img" src="'+esc(cdnImg(p.foto_url,800,75))+'" alt="'+esc(p.nombre)+'">'+
                 '<div class="foto-zoom-info">'+
                     '<div class="foto-zoom-name">'+esc(p.nombre)+'</div>'+
                     '<div class="foto-zoom-sub">'+esc(p.rest)+' · $'+Number(p.precio).toFixed(2)+(p.porUnidad?'/u':'')+'</div>'+
@@ -2229,7 +2229,7 @@
                                     '<span class="aliado-badge">⭐ Aliado</span>'+
                                     (r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'')+
                                     '<span class="grid3-mono">'+esc(inicialLocal(r.nombre))+'</span>'+
-                                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'<span class="grid3-mono-cat">'+getEmoji(r.nombre)+'</span>')+
+                                    (hasImg?'<img class="grid3-img" src="'+esc(cdnImg(hasImg,320))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'<span class="grid3-mono-cat">'+getEmoji(r.nombre)+'</span>')+
                                     (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
                                 '</div>'+
                                 '<div class="grid3-body">'+
@@ -2334,7 +2334,7 @@
                 r._loadAttempted=true;
                 var colorLoad=getColor(ridx);
                 var hasImgLoad=!!(r.imagen_url||r.logo_url||r.foto_url);
-                var heroBgLoad=hasImgLoad?'background-image:url('+esc(r.imagen_url||r.logo_url||r.foto_url)+')':'';
+                var heroBgLoad=hasImgLoad?'background-image:url('+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,70))+')':'';
                 app.innerHTML='<div class="rest-detail-header" style="--rest-color:'+colorLoad+'40">'+
                     '<div class="rest-detail-photo" style="'+heroBgLoad+(hasImgLoad?'':';background-color:'+colorLoad+'22')+'">'+
                         (hasImgLoad?'':'<span class="rest-detail-photo-fallback">'+getEmoji(r.nombre)+'</span>')+
@@ -2346,7 +2346,7 @@
                     '<div class="rest-detail-card">'+
                         '<div class="rest-detail-info">'+
                             '<div class="rest-detail-avatar" style="background:'+colorLoad+'25;border:2px solid '+colorLoad+'45">'+
-                                (hasImgLoad?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
+                                (hasImgLoad?'<img src="'+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,70))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
                             '</div>'+
                             '<div style="flex:1;min-width:0"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div></div>'+
                         '</div>'+
@@ -2427,7 +2427,7 @@
             }
 
             var hasImg=!!(r.imagen_url||r.logo_url||r.foto_url);
-            var heroBg=hasImg?'background-image:url('+esc(r.imagen_url||r.logo_url||r.foto_url)+')':'';
+            var heroBg=hasImg?'background-image:url('+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,70))+')':'';
             var deliveryPrice=parsePrice(r.precio_delivery);
             var deliveryPill=window._clientGPS
                 ?(deliveryPrice>0
@@ -2451,7 +2451,7 @@
                 '<div class="rest-detail-card">'+
                     '<div class="rest-detail-info">'+
                         '<div class="rest-detail-avatar" style="background:'+color+'25;border:2px solid '+color+'45">'+
-                            (hasImg?'<img src="'+esc(r.imagen_url||r.logo_url||r.foto_url)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
+                            (hasImg?'<img src="'+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,70))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
                         '</div>'+
                         '<div style="flex:1;min-width:0">'+
                             '<div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
@@ -2514,7 +2514,7 @@
                         var almQty=countAlmuerzoCart(r.nombre,p.nombre);
                         var precioDisp=almData.precio?'$'+Number(almData.precio).toFixed(2):'—';
                         h+='<div class="dest-card'+(almQty?' in-cart':'')+'" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">'+
-                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>🍱</div>\'">':'<div class="dest-emoji">🍱</div>')+
+                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(cdnImg(p.foto_url,400))+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>🍱</div>\'">':'<div class="dest-emoji">🍱</div>')+
                             '<div class="dest-name">'+esc(p.nombre).split(' + ').join(' + ')+'</div>'+
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">'+precioDisp+'</span>'+
@@ -2533,7 +2533,7 @@
                             ?'openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')'
                             :'addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)';
                         h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();'+wClick+'">'+
-                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="dest-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
+                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(cdnImg(p.foto_url,400))+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="dest-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre).split(' + ').join(' + ')+'</div>'+
                             '<div class="dest-footer">'+
                                 '<span class="dest-price">$'+wPrecio.toFixed(2)+'</span>'+
@@ -2544,7 +2544,7 @@
                         var ci=findCart(r.nombre,p.nombre);
                         var qty=ci?ci.qty:0;
                         h+='<div class="dest-card'+(qty?' in-cart':'')+'" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+p.precio+','+(r.precio_delivery||0)+',\''+jsEsc(p.foto_url||'')+'\','+(p.cargo_envase||0)+','+(p.precio_regular||0)+','+(p.precio_base||0)+')">'+
-                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
+                            (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(cdnImg(p.foto_url,400))+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="dest-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre).split(' + ').join(' + ')+'</div>'+
                             '<div class="dest-footer">'+
                                 (p.precio_regular&&p.precio_regular>p.precio?'<span class="dest-price-antes">$'+Number(p.precio_regular).toFixed(2)+'</span>':'')+
@@ -2597,7 +2597,7 @@
                         var precioDisplay=almData.precio?'$'+Number(almData.precio).toFixed(2):'Consultar';
                         h+='<div class="prod-card'+(almQty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
-                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>🍱</div>\'">':'<div class="prod-emoji">🍱</div>')+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(cdnImg(p.foto_url,200))+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>🍱</div>\'">':'<div class="prod-emoji">🍱</div>')+
                                 '<div class="prod-info">'+
                                     ((almQty)?'<div class="prod-badges">'+
                                         
@@ -2630,7 +2630,7 @@
                             :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)">+</button>';
                         h+='<div class="prod-card'+(wQty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
-                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="prod-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(cdnImg(p.foto_url,200))+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="prod-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
                                 '<div class="prod-info">'+
                                     (wQty?'<div class="prod-badges"><span class="badge badge-cart">×'+wQty+' en carrito</span></div>':'')+
                                     '<div class="prod-name">'+esc(p.nombre)+'</div>'+
@@ -2649,7 +2649,7 @@
                         h+='<div class="prod-card'+(qty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
                                 (p.precio_regular&&p.precio_regular>p.precio?'<span class="prod-sello">-'+Math.round((p.precio_regular-p.precio)/p.precio_regular*100)+'%</span>':'')+
-                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
+                                (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(cdnImg(p.foto_url,200))+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+jsEsc(getEmojiPlato(p.nombre))+'</div>\'">':'<div class="prod-emoji">'+getEmojiPlato(p.nombre)+'</div>')+
                                 '<div class="prod-info">'+
                                     ((qty)?'<div class="prod-badges">'+
                                         
@@ -3036,7 +3036,7 @@
                 '<div class="rest-compact-stripe" style="background:'+color+'"></div>'+
                 '<div class="rest-compact-body">'+
                     '<div class="rest-compact-avatar" style="background:'+color+'1F;border:1.5px solid '+color+'33">'+
-                        (hasImg?'<img src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
+                        (hasImg?'<img src="'+esc(cdnImg(hasImg,400))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
                     '</div>'+
                     '<div class="rest-compact-info">'+
                         '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
@@ -3076,7 +3076,7 @@
                     feeBadge+
                     topBadge+
                     '<span class="grid3-mono">'+esc(inicialLocal(r.nombre))+'</span>'+
-                    (hasImg?'<img class="grid3-img" src="'+esc(hasImg)+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'<span class="grid3-mono-cat">'+getEmoji(r.nombre)+'</span>')+
+                    (hasImg?'<img class="grid3-img" src="'+esc(cdnImg(hasImg,320))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'<span class="grid3-mono-cat">'+getEmoji(r.nombre)+'</span>')+
                     (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
                 '</div>'+
                 '<div class="grid3-body">'+
@@ -3280,7 +3280,7 @@
                     if(c.wingsChoices){
                         var totalConEnvase=(parsePrice(c.precio)+parsePrice(c.cargo_envase));
                         h+='<div class="cart-item" style="flex-wrap:wrap">'+
-                            (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(c.foto_url)+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\'🍗\'"></div>':'<div class="cart-item-emoji">🍗</div>')+
+                            (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(cdnImg(c.foto_url,200))+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\'🍗\'"></div>':'<div class="cart-item-emoji">🍗</div>')+
                             '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
                                 '<div class="almuerzo-choices">'+((c.wingsChoices[0]&&c.wingsChoices[0].items)?'':'🌶️ ')+esc(wingsChoicesStr(c.wingsChoices))+'</div>'+
                                 (parsePrice(c.cargo_envase)>0?'<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+parsePrice(c.precio).toFixed(2)+' + envase $'+parsePrice(c.cargo_envase).toFixed(2)+'</div>':'')+
@@ -3296,7 +3296,7 @@
                             if(c.almuerzoChoices[cat]) choicesH+='<div>'+(catIcons[cat]||'▸')+' '+c.almuerzoChoices[cat]+'</div>';
                         });
                         h+='<div class="cart-item" style="flex-wrap:wrap">'+
-                            (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(c.foto_url)+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\'🍱\'"></div>':'<div class="cart-item-emoji">🍱</div>')+
+                            (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(cdnImg(c.foto_url,200))+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\'🍱\'"></div>':'<div class="cart-item-emoji">🍱</div>')+
                             '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
                                 '<div class="almuerzo-choices">'+choicesH+'</div>'+
                                 (parsePrice(c.cargo_envase)>0?'<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+parsePrice(c.precio).toFixed(2)+' + envase $'+parsePrice(c.cargo_envase).toFixed(2)+'</div>':'<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+c.precio.toFixed(2)+' c/u</div>')+
@@ -3306,7 +3306,7 @@
                         '</div>';
                     } else {
                         h+='<div class="cart-item" style="flex-wrap:wrap">'+
-                            (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(c.foto_url)+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\''+jsEsc(getEmojiPlato(c.nombre))+'\'"></div>':'<div class="cart-item-emoji">'+getEmojiPlato(c.nombre)+'</div>')+
+                            (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(cdnImg(c.foto_url,200))+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\''+jsEsc(getEmojiPlato(c.nombre))+'\'"></div>':'<div class="cart-item-emoji">'+getEmojiPlato(c.nombre)+'</div>')+
                             '<div style="flex:1"><div style="font-weight:800;font-size:0.88rem">'+esc(c.nombre)+'</div>'+
                                 '<div style="color:var(--gris);font-size:0.72rem;margin-top:2px">$'+c.precio.toFixed(2)+' c/u</div>'+
                                 '<div style="color:var(--texto);font-weight:900;font-size:1rem;margin-top:2px">$'+(c.precio*c.qty).toFixed(2)+'</div>'+
@@ -4055,6 +4055,21 @@
         function showError(t,txt){app.innerHTML='<div class="state-container"><div class="empty-icon">😕</div><div class="state-title">'+t+'</div><div class="state-text">'+txt+'</div></div>'}
         function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
         function jsEsc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+        // ── Fotos por CDN de Supabase (2026-07-01): pide la MINIATURA transformada
+        //    (?width=&quality=) en vez del original (~7x menos peso, verificado:
+        //    328KB → 45KB a 400px). Solo toca URLs del Storage propio; data:/externas
+        //    pasan intactas. Tamaños estándar: 200 miniatura, 400 tarjeta, 800 hero/zoom.
+        function cdnImg(u,w,q){
+            try{
+                if(!u)return u;
+                u=String(u);
+                var marca='/storage/v1/object/public/';
+                var i=u.indexOf(marca);
+                if(i===-1||u.indexOf(SB_URL)!==0||u.indexOf('data:')===0)return u;
+                var path=u.slice(i+marca.length).split('?')[0];
+                return SB_URL+'/storage/v1/render/image/public/'+path+'?width='+(w||400)+'&quality='+(q||60);
+            }catch(e){return u}
+        }
         function infoBox(icon,val,label){return '<div class="info-box"><div class="info-box-icon">'+icon+'</div><div class="info-box-val">'+val+'</div><div class="info-box-label">'+label+'</div></div>'}
         // ── HORARIO / ABIERTO-CERRADO (reescrito 2026-06-19) ──
         // isRestOpen(horario) -> true=abierto / false=cerrado / null=sin horario o no se pudo leer.
