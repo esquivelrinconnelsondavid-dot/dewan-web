@@ -21,7 +21,7 @@ window.RESTAURANTES["baltimore"] = {
   logo: "assets/baltimore.jpeg",
   emojiDefault: "🍔",
   cocina: "burger",
-  plantillas: ["x-baltimore", "premium", "grid-foto", "poster", "inmersivo"],
+  plantillas: ["x-baltimore"],
   ordenCategorias: ["Hamburguesas", "Burgers", "Alitas", "Salchipapas", "Hot Dogs", "Combos"],
 
   /* Menú de respaldo (si falla la lectura live de Supabase). El real se lee con ?r=baltimore&live=1 */

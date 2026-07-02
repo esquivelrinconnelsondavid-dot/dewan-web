@@ -11,7 +11,7 @@ window.RESTAURANTES["andaluza"] = {
   cocina: "cafe",
   vozDestacado: "🥖 De la casa",
   meta: ["🥖 Embutidos & Deli", "📍 Av. 11 de Noviembre", "⛰️ De la Sierra"],
-  plantillas: ["x-andaluza", "premium", "revista", "portada", "estantes"],
+  plantillas: ["x-andaluza", "x-andaluza-v"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Desayunos", "Especiales", "Sánduches", "Pizzas", "Tapitas", "Batidos con Leche", "Jugos"],
   menu: [

@@ -9,7 +9,7 @@ window.RESTAURANTES["aidita"] = {
   logo: "assets/aidita.jpeg",
   emojiDefault: "🦐",
   cocina: "ceviche",
-  plantillas: ["x-aidita", "premium", "grid-foto", "estantes", "portada"],
+  plantillas: ["x-aidita"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Ceviches", "Sopas y Caldos", "Arroces y Marinos", "Arroces y Cazuelas", "Apanados", "Apanados y Fritos"],
   menu: [

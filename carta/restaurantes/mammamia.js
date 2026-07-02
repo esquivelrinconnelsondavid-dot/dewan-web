@@ -9,7 +9,7 @@ window.RESTAURANTES["mammamia"] = {
   logo: "assets/mammamia.jpeg",
   emojiDefault: "🍕",
   cocina: "pizza",
-  plantillas: ["x-mammamia", "premium", "portada", "revista", "inmersivo"],
+  plantillas: ["x-mammamia", "x-mammamia-v", "x-mammamia-n"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Pizzas", "Pastas", "Calzones", "Entradas", "Postres"],
   menu: [

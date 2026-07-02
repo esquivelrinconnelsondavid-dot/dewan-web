@@ -9,7 +9,7 @@ window.RESTAURANTES["verdebolon"] = {
   logo: "assets/verdebolon.jpeg",
   emojiDefault: "☕",
   cocina: "cafe",
-  plantillas: ["x-verdebolon", "premium", "portada", "revista", "grid-foto"],
+  plantillas: ["x-verdebolon"],
   promo: "☕ Para llevar o a domicilio",
   ordenCategorias: ["Bolones", "Desayunos", "Sánduches", "Café & Bebidas", "Dulces"],
   menu: [

@@ -11,7 +11,7 @@ window.RESTAURANTES["gitano"] = {
   cocina: "parrilla",
   vozDestacado: "🔥 De la parrilla",
   meta: ["🥩 Resto Bar & Grill", "📍 Ayacucho y Colón", "🕐 Lunes a sábado"],
-  plantillas: ["x-gitano", "premium", "inmersivo", "portada", "ticket"],
+  plantillas: ["x-gitano", "x-gitano-v", "x-gitano-n"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Parrillada", "Platos Fuertes", "Complementos"],
   menu: [

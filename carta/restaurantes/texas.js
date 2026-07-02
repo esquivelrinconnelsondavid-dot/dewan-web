@@ -11,7 +11,7 @@ window.RESTAURANTES["texas"] = {
   cocina: "parrilla",
   vozDestacado: "🔥 De la parrilla",
   meta: ["🔥 Carne al carbón", "🛵 Desde 1989", "📍 Multiplaza"],
-  plantillas: ["x-texas", "premium", "poster", "ticket", "inmersivo"],
+  plantillas: ["x-texas", "x-texas-v", "x-texas-n"],
   promo: "🛵 A domicilio o retira en el asadero",
   ordenCategorias: ["Parrillas", "Parrilladas", "Almuerzos", "Hamburguesas", "Entradas"],
   menu: [

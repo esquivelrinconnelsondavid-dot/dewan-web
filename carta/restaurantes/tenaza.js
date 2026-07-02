@@ -11,7 +11,7 @@ window.RESTAURANTES["tenaza"] = {
   cocina: "ceviche",
   vozDestacado: "🦀 Del mar a su mesa",
   meta: ["🦀 Crab Food House", "📍 Buenos Aires y La Paz", "👨‍🍳 By Liz & Oscar"],
-  plantillas: ["x-tenaza", "premium", "portada", "inmersivo", "grid-foto"],
+  plantillas: ["x-tenaza", "x-tenaza-v", "x-tenaza-n"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Especialidades Don Tenaza", "Especialidades de la Casa", "Ceviches", "Encebollados", "Arroces", "Camarones", "Tongas", "Colonche Crabón", "Chop Suey", "Combos", "Entradas", "Cafetería de Autor"],
   categoriasAlFinal: ["bebida", "cerveza", "michelada", "acompa", "adicional", "extra", "postre"],

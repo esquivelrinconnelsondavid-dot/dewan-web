@@ -9,7 +9,7 @@ window.RESTAURANTES["prinfresa"] = {
   logo: "assets/prinfresa.jpeg",
   emojiDefault: "🍓",
   cocina: "postres",
-  plantillas: ["x-prinfresa", "premium", "grid-foto", "estantes", "revista"],
+  plantillas: ["x-prinfresa"],
   promo: "🍓 Para llevar o a domicilio",
   ordenCategorias: ["Fresas con Crema", "Waffles", "Crepes", "Helados y Postres"],
   menu: [

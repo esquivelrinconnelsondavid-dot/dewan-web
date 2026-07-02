@@ -9,7 +9,7 @@ window.RESTAURANTES["monaco"] = {
   logo: "assets/monaco.jpeg",
   emojiDefault: "🍖",
   cocina: "parrilla",
-  plantillas: ["x-monaco", "premium", "inmersivo", "revista", "grid-foto"],
+  plantillas: ["x-monaco", "x-monaco-v", "x-monaco-n"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Al Grill", "Pizza", "Pasta", "Fast Food", "Entradas", "Ensalada", "Menú Infantil", "Postres"],
   menu: [

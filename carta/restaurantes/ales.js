@@ -11,7 +11,7 @@ window.RESTAURANTES["ales"] = {
   cocina: "parrilla",
   vozDestacado: "🍗 Recién salido del asadero",
   meta: ["🍗 Asadero", "📍 9 de Octubre y J. Félix Proaño", "📱 0991786064"],
-  plantillas: ["x-ales", "premium", "poster", "estantes", "ticket"],
+  plantillas: ["x-ales", "x-ales-v", "x-ales-n"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Combos Grandes", "Combos"],
   menu: [
