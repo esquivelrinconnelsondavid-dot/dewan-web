@@ -10,6 +10,14 @@ window.TEMPLATES["ticket"] = {
     font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased;padding:14px 0 120px;overflow-x:hidden;
     --papel:#FBF7EF;
   }
+  /* ===== PACKS DE COCINA: el papel de la comanda cambia de tono ===== */
+  body[data-tpl="ticket"][data-cocina="parrilla"]{--papel:#FBF1E2;}
+  body[data-tpl="ticket"][data-cocina="burger"]{--papel:#FFF8E4;}
+  body[data-tpl="ticket"][data-cocina="ceviche"]{--papel:#EFF9F4;}
+  body[data-tpl="ticket"][data-cocina="pizza"]{--papel:#FCF3EA;}
+  body[data-tpl="ticket"][data-cocina="cafe"]{--papel:#F6EEDC;}
+  body[data-tpl="ticket"][data-cocina="helados"]{--papel:#FDF3F6;}
+  body[data-tpl="ticket"][data-cocina="postres"]{--papel:#FFF1F7;}
   body[data-tpl="ticket"] *{box-sizing:border-box;}
   body[data-tpl="ticket"] .tk-paper{
     position:relative;max-width:384px;margin:0 auto;background:var(--papel);
@@ -93,6 +101,7 @@ window.TEMPLATES["ticket"] = {
   body[data-tpl="ticket"] .ubic-btn{border-radius:0 !important;}
   `,
   render(R, root, ctrl, slug) {
+    document.body.dataset.cocina = R.cocina || "";
     const emo = (it, cat) => it.emoji || (window.emojiPara ? window.emojiPara(it.nombre, cat, R.emojiDefault) : (R.emojiDefault || "🍽️"));
     const secs = (R.menu || []).map((cat) => {
       const cid = slug(cat.categoria);

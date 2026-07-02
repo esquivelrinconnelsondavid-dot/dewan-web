@@ -9,7 +9,7 @@ window.RESTAURANTES["bellavista"] = {
   logo: "assets/bellavista.jpeg",
   emojiDefault: "🍔",
   cocina: "burger",
-  plantillas: ["premium", "grid-foto", "poster", "inmersivo", "ticket"],
+  plantillas: ["x-bellavista", "premium", "grid-foto", "poster", "ticket"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Hamburguesas", "Salchipapas", "Hot Dogs", "Combos", "Para compartir"],
   menu: [
