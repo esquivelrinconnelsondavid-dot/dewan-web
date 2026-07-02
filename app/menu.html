@@ -3973,6 +3973,11 @@
             var waUrl='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
             var totalBaseRes=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
             var resumen={items:t.items,total:totalBaseRes,conGPS:!!window._clientGPS,token:token};
+            // FIX carrito persistente: el pedido ya quedó armado en waUrl. Guardarlo para los
+            // botones de reintento y VACIAR el carrito ahora, para que el próximo pedido arranque
+            // limpio aunque el cliente no toque "Hacer otro pedido" (vuelva por atrás/reabra la PWA).
+            window._lastOrder={url:waUrl,resumen:resumen};
+            window._cart=[]; try{clearCartStorage();}catch(e){}
             markEtapa('confirmo');
             var waWin=window.open(waUrl,'_blank');
             if(!waWin){
@@ -4005,8 +4010,8 @@
                     '🎁 <strong>Invita y ganan los dos:</strong> comparte tu link; cuando un amigo pida por primera vez, <strong>su envío sale $1 y a ti te damos $1</strong> en tu próximo pedido. 🛵'+
                     '<a class="btn-whatsapp" style="margin-top:10px;cursor:pointer" href="https://wa.me/?text='+encodeURIComponent('¡Pide en DEWAN al precio del local! 🛵 Usa mi link y tu primer envío sale $1 👉 https://pedir.dewansas.com?ref='+obtenerUuidCliente())+'" target="_blank" rel="noopener">📲 Compartir mi link</a>'+
                 '</div>'+
-                '<a class="btn-whatsapp" onclick="sendWA();return false" style="cursor:pointer">📲 Abrir WhatsApp y enviar</a>'+
-                '<div class="success-hint" style="margin-top:10px">¿No se abrió? <span onclick="sendWA()" style="color:var(--acc);font-weight:800;cursor:pointer">Reintentar</span></div>'+
+                '<a class="btn-whatsapp" onclick="reabrirWA();return false" style="cursor:pointer">📲 Abrir WhatsApp y enviar</a>'+
+                '<div class="success-hint" style="margin-top:10px">¿No se abrió? <span onclick="reabrirWA()" style="color:var(--acc);font-weight:800;cursor:pointer">Reintentar</span></div>'+
                 '<button class="btn-ghost" onclick="resetAfterOrder()">Hacer otro pedido</button>'+
             '</div>';
             app.innerHTML=h;
@@ -4029,6 +4034,12 @@
         window.confirmarEnvioManual=function(){
             var r=window._resumenPendiente; window._resumenPendiente=null;
             if(r) showSuccessScreen(r);
+        };
+        // Reintento de envío: reabre la URL YA armada (window._lastOrder), no reconstruye desde
+        // el carrito (que ya se vació al enviar). Así el reintento nunca sale vacío.
+        window.reabrirWA=function(){
+            var o=window._lastOrder;
+            if(o&&o.url){ var w=window.open(o.url,'_blank'); if(!w){ location.href=o.url; } }
         };
         window.resetAfterOrder=function(){
             _hideCartSheet(); // defensivo: asegurar que el panel quede cerrado

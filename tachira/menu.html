@@ -2930,6 +2930,11 @@
             var waUrl='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
             // FIX #4: guardar resumen para pantalla de éxito ANTES de limpiar el carrito
             var resumen={items:t.items,subtotal:t.subtotal,delivery:t.delivery,conGPS:!!window._clientGPS,moneda:cartMoneda()};
+            // FIX carrito persistente: el pedido ya quedó armado en waUrl. Guardarlo para el
+            // reintento y VACIAR el carrito ahora, para que el próximo pedido arranque limpio
+            // aunque el cliente no toque "Hacer otro pedido" (vuelva por atrás/reabra la PWA).
+            window._lastOrder={url:waUrl,resumen:resumen};
+            window._cart=[]; try{clearCartStorage();}catch(e){}
             markEtapa('confirmo');
             // (10) Si el navegador bloquea el popup (window.open == null), mostrar link directo que el usuario toca.
             var waWin=window.open(waUrl,'_blank');
@@ -2957,7 +2962,7 @@
                     (resumen.conGPS?'<div class="success-row"><span>Delivery</span><span>'+fmtCOP(resumen.delivery)+'</span></div>':'<div class="success-row"><span>Envío</span><span style="color:var(--gris)">por calcular</span></div>')+
                 '</div>'+
                 '<div class="success-hint">¿No se abrió WhatsApp?</div>'+
-                '<button class="btn btn-wa" onclick="sendWA()">📲 Reintentar envío</button>'+
+                '<button class="btn btn-wa" onclick="reabrirWA()">📲 Reintentar envío</button>'+
                 '<button class="btn-ghost" onclick="resetAfterOrder()">Hacer otro pedido</button>'+
             '</div>';
             app.innerHTML=h;
@@ -2980,6 +2985,12 @@
         window.confirmarEnvioManual=function(){
             var r=window._resumenPendiente; window._resumenPendiente=null;
             if(r) showSuccessScreen(r);
+        };
+        // Reintento de envío: reabre la URL YA armada (window._lastOrder), no reconstruye desde
+        // el carrito (que ya se vació al enviar). Así el reintento nunca sale vacío.
+        window.reabrirWA=function(){
+            var o=window._lastOrder;
+            if(o&&o.url){ var w=window.open(o.url,'_blank'); if(!w){ location.href=o.url; } }
         };
         window.resetAfterOrder=function(){
             _hideCartSheet(); // defensivo: asegurar que el panel quede cerrado
