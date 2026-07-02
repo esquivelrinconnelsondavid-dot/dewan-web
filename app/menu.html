@@ -2515,7 +2515,7 @@
                         '</div>';
                     } else if(wingsData){
                         var wIdx=window._wingsMenuData.length;
-                        window._wingsMenuData.push({desc:p.descripcion,foto:p.foto_url||null});
+                        window._wingsMenuData.push({desc:p.descripcion,foto:p.foto_url||null,envase:Number(p.cargo_envase)||0});
                         var wQty=countWingsCart(r.nombre,p.nombre);
                         var wPorUnidad=!!wingsData.porUnidad;
                         var wHasSauce=!!((wingsData.grupos&&wingsData.grupos.length)||(wingsData.salsas&&wingsData.salsas.length&&((wingsData.sabores||0)>0||wPorUnidad)));
@@ -2523,7 +2523,7 @@
                         var wPrecio=wingsData._promo?_wBaseD:applyTierPricing(_wBaseD,r,p.categoria||'Alitas');
                         var wClick=wHasSauce
                             ?'openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')'
-                            :'addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)';
+                            :'addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(p.cargo_envase||0)+',0)';
                         h+='<div class="dest-card'+(wQty?' in-cart':'')+'" onclick="event.stopPropagation();'+wClick+'">'+
                             (p.foto_url?'<img class="dest-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'dest-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="dest-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
                             '<div class="dest-name">'+esc(p.nombre).split(' + ').join(' + ')+'</div>'+
@@ -2607,7 +2607,7 @@
                         '</div>';
                     } else if(wingsData){
                         var wIdx=window._wingsMenuData.length;
-                        window._wingsMenuData.push({desc:p.descripcion,foto:p.foto_url||null});
+                        window._wingsMenuData.push({desc:p.descripcion,foto:p.foto_url||null,envase:Number(p.cargo_envase)||0});
                         var wQty=countWingsCart(r.nombre,p.nombre);
                         var wPorUnidad=!!wingsData.porUnidad;
                         var wHasSauce=!!((wingsData.grupos&&wingsData.grupos.length)||(wingsData.salsas&&wingsData.salsas.length&&((wingsData.sabores||0)>0||wPorUnidad)));
@@ -2619,7 +2619,7 @@
                             :(wPorUnidad?'🌶️ Elige cantidad y salsas':(wingsData.desc?(esc(wingsData.desc)+(wHasSauce?' · 🌶️ Elige '+wSab:'')):('🌶️ Elige '+wSab+' (puedes repetir)')));
                         var wBtn=wHasSauce
                             ?'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();openWingsModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wIdx+','+(r.precio_delivery||0)+','+wPrecio+')">+</button>'
-                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(wingsData.envase||0)+',0)">+</button>';
+                            :'<button class="btn-agregar" aria-label="Agregar" onclick="event.stopPropagation();addCart(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+wPrecio+','+(r.precio_delivery||0)+',\'\','+(p.cargo_envase||0)+',0)">+</button>';
                         h+='<div class="prod-card'+(wQty?' in-cart':'')+'">'+
                             '<div class="prod-top">'+
                                 (p.foto_url?'<img class="prod-emoji" style="object-fit:cover;padding:0" src="'+esc(p.foto_url)+'" alt="'+esc(p.nombre)+'" loading="lazy" onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(p.foto_url)+'\',\''+jsEsc(p.nombre)+'\',\''+jsEsc(r.nombre)+'\')" onerror="this.outerHTML=\'<div class=\\\'prod-emoji\\\'>'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>\'">':'<div class="prod-emoji">'+(wingsData.grupos?'🥔':(wingsData.dia!=null?'🔥':'🍗'))+'</div>')+
@@ -2627,7 +2627,7 @@
                                     (wQty?'<div class="prod-badges"><span class="badge badge-cart">×'+wQty+' en carrito</span></div>':'')+
                                     '<div class="prod-name">'+esc(p.nombre)+'</div>'+
                                     '<div class="prod-desc">'+wDescTxt+'</div>'+
-                                    (wingsData.envase>0?'<div class="prod-envase">+ envase $'+Number(wingsData.envase).toFixed(2)+'</div>':'')+
+                                    (Number(p.cargo_envase)>0?'<div class="prod-envase">+ envase $'+Number(p.cargo_envase).toFixed(2)+'</div>':'')+
                                     '<div class="prod-bottom">'+
                                         '<span class="prod-price">$'+wPrecio.toFixed(2)+(wPorUnidad?' c/u':'')+'</span>'+
                                         wBtn+
@@ -3902,10 +3902,11 @@
                     if(c.wingsChoices){
                         if(c.wingsChoices[0]&&c.wingsChoices[0].items){ // multi-grupo: una línea por grupo
                             c.wingsChoices.forEach(function(g){
-                                msg+='    '+(g.emoji||'🌶️')+' '+g.label+': '+g.items.map(function(it){return it.n+'× '+it.opcion}).join(' · ')+'\n';
+                                // El ▸ inicial es lo que el bot conserva al rearmar detalle_pedido (así imprime la opción).
+                                msg+='    ▸ '+(g.emoji||'🌶️')+' '+g.label+': '+g.items.map(function(it){return it.n+'× '+it.opcion}).join(' · ')+'\n';
                             });
                         } else {
-                            msg+='    🌶️ Salsas: '+wingsChoicesStr(c.wingsChoices)+'\n';
+                            msg+='    ▸ 🌶️ Salsas: '+wingsChoicesStr(c.wingsChoices)+'\n';
                         }
                         if(parsePrice(c.cargo_envase)>0) msg+='    📦 Envase: $'+parsePrice(c.cargo_envase).toFixed(2)+'\n';
                     }
@@ -4390,12 +4391,15 @@
             var data=parseWings(window._wingsMenuData[wIdx].desc);
             if(!data)return;
             var fotoW=window._wingsMenuData[wIdx].foto||null;
+            // El envase viaja en la COLUMNA cargo_envase (guardada en _wingsMenuData), NO en el JSON
+            // WINGS_OPTS (ahí queda en 0). Fallback al JSON solo por compatibilidad.
+            var envaseW=window._wingsMenuData[wIdx].envase; if(envaseW==null)envaseW=(data.envase||0);
             // Formato multi-grupo (ej. Papazota: 2 ensaladas + 2 salsas). Cada grupo es
             // independiente: su propio "elige N", permite repetir, precio incluido (no suma).
-            if(data.grupos&&data.grupos.length){ return openWingsModalGrupos(rest,nombre,data,delivery,precioFinal,fotoW); }
+            if(data.grupos&&data.grupos.length){ return openWingsModalGrupos(rest,nombre,data,delivery,precioFinal,fotoW,envaseW); }
             var salsas=data.salsas||[];
             var porUnidad=!!data.porUnidad;
-            var p={rest:rest,nombre:nombre,delivery:delivery,envase:data.envase||0,salsas:salsas,counts:salsas.map(function(){return 0}),porUnidad:porUnidad,foto:fotoW};
+            var p={rest:rest,nombre:nombre,delivery:delivery,envase:envaseW,salsas:salsas,counts:salsas.map(function(){return 0}),porUnidad:porUnidad,foto:fotoW};
             if(porUnidad){
                 p.precioUnidad=(precioFinal!=null)?Number(precioFinal):(data.precioUnidad||0);
                 p.precioBaseUnidad=Number(data.precioUnidad||0); // precio REAL del local (sin uplift)
@@ -4485,14 +4489,14 @@
         // Reusa el mismo estilo del modal de alas, pero con N grupos independientes.
         // Cada grupo tiene su contador "elige X", permite repetir, y el botón se habilita
         // solo cuando TODOS los grupos están completos. El precio NO cambia (incluido).
-        function openWingsModalGrupos(rest,nombre,data,delivery,precioFinal,foto){
+        function openWingsModalGrupos(rest,nombre,data,delivery,precioFinal,foto,envaseCol){
             var precio=(precioFinal!=null)?Number(precioFinal):(data.precio||0);
             var precioBase=Number(data.precio||0); // precio REAL del local (sin uplift)
             var grupos=(data.grupos||[]).map(function(g){
                 return {label:g.label||'Opciones',emoji:g.emoji||'🌶️',elige:g.elige||1,
                         opciones:g.opciones||[],counts:(g.opciones||[]).map(function(){return 0})};
             });
-            var p={rest:rest,nombre:nombre,delivery:delivery,envase:data.envase||0,
+            var p={rest:rest,nombre:nombre,delivery:delivery,envase:(envaseCol!=null?envaseCol:(data.envase||0)),
                    precio:precio,precioBase:precioBase,grupos:grupos,foto:foto||null};
             window._wingsPending=p;
             var h='<div class="almuerzo-modal">'+
