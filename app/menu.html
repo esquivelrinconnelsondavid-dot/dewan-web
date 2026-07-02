@@ -2319,7 +2319,7 @@
             window._catSpyHandler();
         }
 
-        window.openRest=function(nombre){
+        window.openRest=function(nombre,keepScroll){
             currentView='rest';
             currentRestIdx=nombre;
             syncHistory();
@@ -2678,7 +2678,9 @@
             });
             h+='</div>';
             app.innerHTML=h;
-            try{window.scrollTo(0,0);}catch(e){} // abrir restaurante SIEMPRE arranca arriba (Destacados primero)
+            // Abrir un restaurante arranca arriba; pero un re-render por agregar/quitar (keepScroll)
+            // NO debe saltar arriba (refreshView restaura la posición exacta).
+            if(!keepScroll){ try{window.scrollTo(0,0);}catch(e){} }
             setupCatScrollSpy();
             updateCartFloat();
         };
@@ -3665,9 +3667,13 @@
             }else{f.style.display='none';document.body.classList.remove('has-cart');window._cartFloatPrevTotal=0}
         }
         function refreshView(){
+            // Preservar la posición de scroll: agregar/quitar un plato re-renderiza toda la
+            // vista; sin esto la página saltaba al inicio y el cliente tenía que volver a buscar el plato.
+            var _sy=window.scrollY||window.pageYOffset||0;
             if(currentView==='home')renderHome();
-            else if(currentView==='rest'&&currentRestIdx!==null)openRest(currentRestIdx);
+            else if(currentView==='rest'&&currentRestIdx!==null)openRest(currentRestIdx,true);
             else if(currentView==='cart')showCart();
+            try{window.scrollTo(0,_sy);}catch(e){}
         }
 
         // ── GPS desde carrito inline ──
