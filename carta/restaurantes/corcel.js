@@ -11,7 +11,7 @@ window.RESTAURANTES["corcel"] = {
   cocina: "burger",
   vozDestacado: "⚡ Lo más pedido",
   meta: ["🍔 Comida rápida", "📍 Espejo y 10 de Agosto", "⚡ Al paso"],
-  plantillas: ["x-corcel"],
+  plantillas: ["x-corcel", "x-corcel-v", "x-corcel-n"],
   promo: "🛵 A domicilio o retira en el local",
   ordenCategorias: ["Especiales", "Combos Hamburguesas", "Combos Hot Dogs", "Combos Papitas", "Combos Pollo Broaster", "Hamburguesas", "Hot Dogs", "Papitas", "Pollo Broaster"],
   menu: [

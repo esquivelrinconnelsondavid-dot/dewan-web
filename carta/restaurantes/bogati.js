@@ -11,7 +11,7 @@ window.RESTAURANTES["bogati"] = {
   cocina: "helados",
   vozDestacado: "🍦 Antojos fríos",
   meta: ["🍦 Helados artesanales", "🧀 con queso", "📍 Riobamba"],
-  plantillas: ["x-bogati"],
+  plantillas: ["x-bogati", "x-bogati-v", "x-bogati-n"],
   promo: "🍦 Para llevar o a domicilio",
   ordenCategorias: ["Helados con Queso", "Helados Artesanales", "Copas y Sundaes", "Waffles y Postres", "Malteadas y Bebidas"],
   menu: [
