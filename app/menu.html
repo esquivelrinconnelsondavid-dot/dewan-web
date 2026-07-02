@@ -1464,7 +1464,7 @@
             ov.onclick=function(e){if(e.target===ov) cerrarZoom();};
             ov.innerHTML='<div class="foto-zoom-box">'+
                 '<button class="foto-zoom-x" aria-label="Cerrar" onclick="cerrarZoom()">✕</button>'+
-                '<img class="foto-zoom-img" src="'+esc(cdnImg(p.foto_url,800,82))+'" alt="'+esc(p.nombre)+'">'+
+                '<img class="foto-zoom-img" src="'+esc(cdnImg(p.foto_url,800,75))+'" alt="'+esc(p.nombre)+'">'+
                 '<div class="foto-zoom-info">'+
                     '<div class="foto-zoom-name">'+esc(p.nombre)+'</div>'+
                     '<div class="foto-zoom-sub">'+esc(p.rest)+' · $'+Number(p.precio).toFixed(2)+(p.porUnidad?'/u':'')+'</div>'+
@@ -2334,7 +2334,7 @@
                 r._loadAttempted=true;
                 var colorLoad=getColor(ridx);
                 var hasImgLoad=!!(r.imagen_url||r.logo_url||r.foto_url);
-                var heroBgLoad=hasImgLoad?'background-image:url('+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,76))+')':'';
+                var heroBgLoad=hasImgLoad?'background-image:url('+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,70))+')':'';
                 app.innerHTML='<div class="rest-detail-header" style="--rest-color:'+colorLoad+'40">'+
                     '<div class="rest-detail-photo" style="'+heroBgLoad+(hasImgLoad?'':';background-color:'+colorLoad+'22')+'">'+
                         (hasImgLoad?'':'<span class="rest-detail-photo-fallback">'+getEmoji(r.nombre)+'</span>')+
@@ -2346,7 +2346,7 @@
                     '<div class="rest-detail-card">'+
                         '<div class="rest-detail-info">'+
                             '<div class="rest-detail-avatar" style="background:'+colorLoad+'25;border:2px solid '+colorLoad+'45">'+
-                                (hasImgLoad?'<img src="'+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,76))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
+                                (hasImgLoad?'<img src="'+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,70))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
                             '</div>'+
                             '<div style="flex:1;min-width:0"><div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div></div>'+
                         '</div>'+
@@ -2427,7 +2427,7 @@
             }
 
             var hasImg=!!(r.imagen_url||r.logo_url||r.foto_url);
-            var heroBg=hasImg?'background-image:url('+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,76))+')':'';
+            var heroBg=hasImg?'background-image:url('+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,70))+')':'';
             var deliveryPrice=parsePrice(r.precio_delivery);
             var deliveryPill=window._clientGPS
                 ?(deliveryPrice>0
@@ -2451,7 +2451,7 @@
                 '<div class="rest-detail-card">'+
                     '<div class="rest-detail-info">'+
                         '<div class="rest-detail-avatar" style="background:'+color+'25;border:2px solid '+color+'45">'+
-                            (hasImg?'<img src="'+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,76))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
+                            (hasImg?'<img src="'+esc(cdnImg(r.imagen_url||r.logo_url||r.foto_url,800,70))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="var p=this.parentNode;this.remove();p.insertAdjacentText(\'afterbegin\',\''+jsEsc(getEmoji(r.nombre))+'\')">':getEmoji(r.nombre))+
                         '</div>'+
                         '<div style="flex:1;min-width:0">'+
                             '<div class="rest-detail-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
@@ -4056,11 +4056,9 @@
         function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
         function jsEsc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
         // ── Fotos por CDN de Supabase (2026-07-01): pide la MINIATURA transformada
-        //    (?width=&quality=) en vez del original. Solo toca URLs del Storage propio;
-        //    data:/externas pasan intactas. El ancho pedido se ESCALA por la densidad
-        //    de pantalla del teléfono (retina 2x-3x, tope 2x) — sin esto los logos y
-        //    fotos salían borrosos en celular. Bases: 200 miniatura, 400 tarjeta, 800 hero/zoom.
-        var _cdnDpr=Math.min(Math.max(window.devicePixelRatio||1,1),2);
+        //    (?width=&quality=) en vez del original (~7x menos peso, verificado:
+        //    328KB → 45KB a 400px). Solo toca URLs del Storage propio; data:/externas
+        //    pasan intactas. Tamaños estándar: 200 miniatura, 400 tarjeta, 800 hero/zoom.
         function cdnImg(u,w,q){
             try{
                 if(!u)return u;
@@ -4069,8 +4067,7 @@
                 var i=u.indexOf(marca);
                 if(i===-1||u.indexOf(SB_URL)!==0||u.indexOf('data:')===0)return u;
                 var path=u.slice(i+marca.length).split('?')[0];
-                var ancho=Math.min(Math.round((w||400)*_cdnDpr),1400);
-                return SB_URL+'/storage/v1/render/image/public/'+path+'?width='+ancho+'&quality='+(q||72);
+                return SB_URL+'/storage/v1/render/image/public/'+path+'?width='+(w||400)+'&quality='+(q||60);
             }catch(e){return u}
         }
         function infoBox(icon,val,label){return '<div class="info-box"><div class="info-box-icon">'+icon+'</div><div class="info-box-val">'+val+'</div><div class="info-box-label">'+label+'</div></div>'}
