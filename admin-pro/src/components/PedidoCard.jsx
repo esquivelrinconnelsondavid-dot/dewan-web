@@ -148,6 +148,34 @@ export default function PedidoCard({ p, tipoAcuerdo }) {
     setCargando(false);
   };
 
+  // Quitar el pedido al moto que ya lo aceptó y volver a ofrecerlo a todos los motorizados
+  // (deja motorizado_id NULL + estado 'confirmado' y dispara lanzar-motorizado de inmediato).
+  // El moto que lo tenía lo pierde en su app por realtime (el filtro es por motorizado_id).
+  const quitarMotoYRelanzar = async () => {
+    if (!confirm(`¿Quitar el pedido #${p.id} a ${p.nombre_moto?.trim() || 'la moto'} y relanzarlo a los motorizados?`)) return;
+    setCargando(true);
+    try {
+      const sucursalId = sucursalSeleccionada?.id || p.sucursal_id || null;
+      await supabase
+        .from('pedidos_delivery')
+        .update({
+          estado_pedido: 'confirmado',
+          motorizado_id: null,
+          nombre_moto: '',
+          telefono_moto: '',
+          fecha_aceptado: null,
+          estado_motorizado: 'pendiente',
+        })
+        .eq('id', p.id);
+      await lanzarMotorizado(p.id, false, sucursalId).catch((e) => console.warn('webhook lanzar:', e?.message));
+      stopAlertLoop(p.id);
+    } catch (e) {
+      console.error('quitarMotoYRelanzar:', e);
+      alert('No se pudo relanzar el pedido');
+    }
+    setCargando(false);
+  };
+
   useEffect(() => {
     if (p.estado_pedido === 'preparando' && expirado && !lanzadoRef.current && !requiereSucursal) {
       lanzadoRef.current = true;
@@ -327,6 +355,15 @@ export default function PedidoCard({ p, tipoAcuerdo }) {
           <div className="text-[11px] text-buscando font-semibold">
             🔍 Buscando moto ({tiempoEspera.texto})
           </div>
+        </div>
+      )}
+
+      {/* Moto ya asignado: permitir quitárselo y volver a lanzar la carrera a todos los motos */}
+      {p.motorizado_id && !terminal && (
+        <div className="flex gap-1.5 pt-1">
+          <Boton color="nuevo" full onClick={quitarMotoYRelanzar} disabled={cargando}>
+            🔄 Quitar moto y relanzar
+          </Boton>
         </div>
       )}
 
