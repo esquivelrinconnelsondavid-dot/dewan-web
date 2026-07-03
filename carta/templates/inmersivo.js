@@ -3,13 +3,23 @@ window.TEMPLATES["inmersivo"] = {
   label: "Carta Nocturna",
   unaCategoria: false,
   css: `
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&family=Oswald:wght@500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:ital,opsz,wght@1,9..144,400;0,9..144,500&family=Oswald:wght@500;600&family=Archivo+Black&family=Marcellus&family=Cinzel:wght@600&family=Cormorant+Garamond:wght@700&family=Baloo+2:wght@800&family=Quicksand:wght@700&display=swap');
 
   body[data-tpl="inmersivo"]{
+    --nc-display:'Bebas Neue'; --nc-lh:.82; --nc-ls:1px;
+    --nc-h1:clamp(58px,22vw,98px); --nc-h2:clamp(40px,13vw,64px); --nc-nom:25px; --nc-precio:29px;
     margin:0;background:#0E0C0B;color:var(--crema,#EDE6DA);
     font-family:'Fraunces',Georgia,serif;-webkit-font-smoothing:antialiased;padding-bottom:118px;overflow-x:hidden;
   }
   body[data-tpl="inmersivo"] *{box-sizing:border-box;}
+
+  /* ===== PACKS DE COCINA: la Carta Nocturna cambia de voz segun el local ===== */
+  body[data-tpl="inmersivo"][data-cocina="burger"]{--nc-display:'Archivo Black';--nc-lh:1;--nc-ls:0px;--nc-h1:clamp(32px,10vw,52px);--nc-h2:clamp(24px,7vw,38px);--nc-nom:16.5px;--nc-precio:20px;}
+  body[data-tpl="inmersivo"][data-cocina="pizza"]{--nc-display:'Marcellus';--nc-lh:1;--nc-ls:.5px;--nc-h1:clamp(40px,13vw,62px);--nc-h2:clamp(28px,9vw,44px);--nc-nom:19px;--nc-precio:22px;}
+  body[data-tpl="inmersivo"][data-cocina="ceviche"]{--nc-display:'Cinzel';--nc-lh:1.02;--nc-ls:1px;--nc-h1:clamp(36px,11vw,56px);--nc-h2:clamp(26px,8vw,40px);--nc-nom:17px;--nc-precio:20px;}
+  body[data-tpl="inmersivo"][data-cocina="cafe"]{--nc-display:'Cormorant Garamond';--nc-lh:.98;--nc-ls:.5px;--nc-h1:clamp(44px,14vw,68px);--nc-h2:clamp(30px,10vw,48px);--nc-nom:20px;--nc-precio:23px;}
+  body[data-tpl="inmersivo"][data-cocina="helados"]{--nc-display:'Baloo 2';--nc-lh:1;--nc-ls:0px;--nc-h1:clamp(38px,12vw,58px);--nc-h2:clamp(27px,8vw,42px);--nc-nom:17.5px;--nc-precio:21px;}
+  body[data-tpl="inmersivo"][data-cocina="postres"]{--nc-display:'Quicksand';--nc-lh:1.02;--nc-ls:0px;--nc-h1:clamp(36px,11vw,56px);--nc-h2:clamp(26px,8vw,40px);--nc-nom:17px;--nc-precio:20px;}
 
   /* ---------- BARRA CAPÍTULO (sticky) ---------- */
   body[data-tpl="inmersivo"] .nc-bar{
@@ -25,7 +35,7 @@ window.TEMPLATES["inmersivo"] = {
     padding:30px 22px;background:linear-gradient(165deg, var(--marca), color-mix(in srgb,var(--tinta) 72%,#000));overflow:hidden;
   }
   body[data-tpl="inmersivo"] .nc-hero .wm{position:absolute;top:-6%;right:-12%;width:62%;opacity:.10;filter:grayscale(1) contrast(1.2);mix-blend-mode:luminosity;pointer-events:none;}
-  body[data-tpl="inmersivo"] .nc-hero h1{font-family:'Bebas Neue';font-size:clamp(58px,22vw,98px);line-height:.82;margin:0;color:#fff;letter-spacing:1px;text-shadow:0 6px 30px rgba(0,0,0,.4);}
+  body[data-tpl="inmersivo"] .nc-hero h1{font-family:var(--nc-display),'Bebas Neue';font-size:var(--nc-h1);line-height:var(--nc-lh);margin:0;color:#fff;letter-spacing:var(--nc-ls);text-shadow:0 6px 30px rgba(0,0,0,.4);}
   body[data-tpl="inmersivo"] .nc-hero .slo{font-family:'Fraunces';font-style:italic;font-size:16px;color:rgba(255,255,255,.9);margin:14px 0 0;}
   body[data-tpl="inmersivo"] .nc-hero .promo{margin-top:20px;font-family:'Oswald';font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:#fff;border:1px solid var(--acento);border-radius:999px;padding:8px 16px;}
   body[data-tpl="inmersivo"] .nc-hero .addr{position:absolute;bottom:18px;left:0;right:0;font-family:'Oswald';font-weight:500;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6);}
@@ -40,16 +50,16 @@ window.TEMPLATES["inmersivo"] = {
   }
   body[data-tpl="inmersivo"] .nc-cover .wm{position:absolute;top:-10%;right:-10%;width:58%;opacity:.08;filter:grayscale(1) contrast(1.2);mix-blend-mode:luminosity;pointer-events:none;}
   body[data-tpl="inmersivo"] .nc-cover .num{font-family:'Oswald';font-weight:600;font-size:14px;letter-spacing:.2em;color:var(--acento);}
-  body[data-tpl="inmersivo"] .nc-cover h2{font-family:'Bebas Neue';font-size:clamp(40px,13vw,64px);line-height:.9;margin:6px 0 0;color:#fff;letter-spacing:1px;}
+  body[data-tpl="inmersivo"] .nc-cover h2{font-family:var(--nc-display),'Bebas Neue';font-size:var(--nc-h2);line-height:var(--nc-lh);margin:6px 0 0;color:#fff;letter-spacing:var(--nc-ls);}
 
   /* ---------- LÍNEAS ---------- */
   body[data-tpl="inmersivo"] .nc-lineas{list-style:none;margin:0;padding:0;background:#0E0C0B;}
   body[data-tpl="inmersivo"] .nc-renglon{padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.08);}
   body[data-tpl="inmersivo"] .nc-head{display:flex;align-items:baseline;gap:10px;}
   body[data-tpl="inmersivo"] .nc-glifo{flex:0 0 auto;font-size:24px;line-height:1;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--acento) 45%,transparent));align-self:center;}
-  body[data-tpl="inmersivo"] .nc-nom{flex:0 1 auto;font-family:'Bebas Neue';font-size:25px;letter-spacing:.5px;color:var(--crema);line-height:1;}
+  body[data-tpl="inmersivo"] .nc-nom{flex:0 1 auto;font-family:var(--nc-display),'Bebas Neue';font-size:var(--nc-nom);letter-spacing:.5px;color:var(--crema);line-height:1;}
   body[data-tpl="inmersivo"] .nc-leader{flex:1 1 auto;min-width:12px;border-bottom:1px dotted rgba(255,255,255,.28);transform:translateY(-5px);}
-  body[data-tpl="inmersivo"] .nc-precio{flex:0 0 auto;font-family:'Bebas Neue';font-size:29px;color:var(--crema);letter-spacing:.5px;line-height:1;}
+  body[data-tpl="inmersivo"] .nc-precio{flex:0 0 auto;font-family:var(--nc-display),'Bebas Neue';font-size:var(--nc-precio);color:var(--crema);letter-spacing:.5px;line-height:1;}
   body[data-tpl="inmersivo"] .nc-precio i{font-style:normal;font-size:15px;color:var(--acento);vertical-align:top;margin-right:1px;}
   body[data-tpl="inmersivo"] .nc-sub{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;padding-left:34px;}
   body[data-tpl="inmersivo"] .nc-desc{font-family:'Fraunces';font-style:italic;font-weight:400;font-size:13px;color:rgba(237,230,218,.6);line-height:1.35;margin:0;flex:1;}
@@ -70,7 +80,7 @@ window.TEMPLATES["inmersivo"] = {
   body[data-tpl="inmersivo"] .nc-index .x{align-self:flex-end;background:none;border:none;color:var(--crema);font-size:30px;cursor:pointer;line-height:1;}
   body[data-tpl="inmersivo"] .nc-index .it{display:flex;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.1);cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left;}
   body[data-tpl="inmersivo"] .nc-index .it .n{font-family:'Oswald';font-weight:600;font-size:14px;color:var(--acento);}
-  body[data-tpl="inmersivo"] .nc-index .it .t{font-family:'Bebas Neue';font-size:30px;color:var(--crema);letter-spacing:.5px;}
+  body[data-tpl="inmersivo"] .nc-index .it .t{font-family:var(--nc-display),'Bebas Neue';font-size:var(--nc-precio);color:var(--crema);letter-spacing:.5px;}
 
   body[data-tpl="inmersivo"] .nc-end{text-align:center;padding:34px 0 8px;font-family:'Oswald';font-weight:500;letter-spacing:.2em;text-transform:uppercase;font-size:11px;color:rgba(237,230,218,.4);}
 
@@ -92,6 +102,7 @@ window.TEMPLATES["inmersivo"] = {
   body[data-tpl="inmersivo"] #cart .cart-row .st-add{background:var(--acento) !important;color:#0E0C0B !important;}
   `,
   render(R, root, ctrl, slug) {
+    document.body.dataset.cocina = R.cocina || "";
     const emo = (it, cat) => it.emoji || (window.emojiPara ? window.emojiPara(it.nombre, cat, R.emojiDefault) : (R.emojiDefault || "🍽️"));
     const cats = R.menu || [];
     const chaptersHtml = cats.map((cat, ci) => {

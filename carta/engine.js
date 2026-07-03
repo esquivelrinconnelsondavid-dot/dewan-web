@@ -273,6 +273,22 @@ function ordenarCategorias(cats) {
 }
 
 /* =================== MENÚ REAL DESDE SUPABASE =================== */
+/* Algunas descripciones vienen con formato máquina de DEWAN
+   (ALMUERZO_OPTS:{...}, WINGS_OPTS:{...}, PROMO_OPTS:{...}).
+   Acá se traducen a texto legible para el cliente. */
+function limpiarDesc(txt) {
+  const m = /^([A-Z]+_OPTS)\s*:\s*(\{[\s\S]*\})\s*$/.exec(txt || "");
+  if (!m) return txt || "";
+  try {
+    const o = JSON.parse(m[2]);
+    const lista = (o.opciones || o.salsas || o.items || [])
+      .map((x) => (typeof x === "string" ? x : (x && x.nombre) || ""))
+      .filter(Boolean);
+    if (lista.length) return "A su elección: " + lista.join(" · ");
+  } catch (e) {}
+  return "";
+}
+
 async function cargarMenuSupabase(rid) {
   const url = `${SUPA_URL}/rest/v1/vitrina_menu?restaurante_id=eq.${rid}&order=categoria_menu`;
   const r = await fetch(url, { headers: { apikey: SUPA_ANON, Authorization: "Bearer " + SUPA_ANON } });
@@ -286,7 +302,7 @@ async function cargarMenuSupabase(rid) {
       id: row.id,
       nombre: row.nombre_item,
       precio: Number(row.precio) || 0,
-      desc: row.descripcion || "",
+      desc: limpiarDesc(row.descripcion),
       foto: row.foto_url || "",
     });
   }

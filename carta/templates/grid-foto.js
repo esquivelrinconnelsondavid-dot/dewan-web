@@ -3,13 +3,23 @@ window.TEMPLATES["grid-foto"] = {
   label: "Vitrina",
   unaCategoria: false,
   css: `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@500;600;700&family=Alfa+Slab+One&family=Archivo+Black&family=Baloo+2:wght@700;800&family=Fraunces:opsz,wght@9..144,700&family=Bitter:wght@700&family=Quicksand:wght@700&display=swap');
 
   body[data-tpl="grid-foto"]{
+    --vt-display:'Plus Jakarta Sans'; --vt-radio:16px; --vt-chip:999px; --vt-up:none; --vt-ls:0em;
     margin:0;background:color-mix(in srgb,var(--crema) 92%,#777);color:var(--tinta);
     font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:120px;overflow-x:hidden;
   }
   body[data-tpl="grid-foto"] *{box-sizing:border-box;}
+
+  /* ===== PACKS DE COCINA: la Vitrina cambia de carácter según el local ===== */
+  body[data-tpl="grid-foto"][data-cocina="parrilla"]{--vt-display:'Alfa Slab One';--vt-radio:9px;--vt-chip:8px;--vt-up:uppercase;--vt-ls:.02em;}
+  body[data-tpl="grid-foto"][data-cocina="burger"]{--vt-display:'Archivo Black';--vt-radio:12px;--vt-chip:10px;}
+  body[data-tpl="grid-foto"][data-cocina="ceviche"]{--vt-display:'Baloo 2';--vt-radio:20px;}
+  body[data-tpl="grid-foto"][data-cocina="pizza"]{--vt-display:'Fraunces';--vt-radio:13px;}
+  body[data-tpl="grid-foto"][data-cocina="cafe"]{--vt-display:'Bitter';--vt-radio:11px;--vt-chip:7px;}
+  body[data-tpl="grid-foto"][data-cocina="helados"]{--vt-display:'Baloo 2';--vt-radio:26px;}
+  body[data-tpl="grid-foto"][data-cocina="postres"]{--vt-display:'Quicksand';--vt-radio:24px;}
 
   /* ---------- TOOLBAR (logo cuadrado IZQUIERDA) ---------- */
   body[data-tpl="grid-foto"] .vt-bar{
@@ -20,7 +30,7 @@ window.TEMPLATES["grid-foto"] = {
   body[data-tpl="grid-foto"] .vt-logo{width:44px;height:44px;flex:0 0 auto;border-radius:13px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);}
   body[data-tpl="grid-foto"] .vt-logo img{width:100%;height:100%;object-fit:cover;}
   body[data-tpl="grid-foto"] .vt-id{flex:1;min-width:0;}
-  body[data-tpl="grid-foto"] .vt-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  body[data-tpl="grid-foto"] .vt-name{font-family:var(--vt-display),'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:var(--vt-up);letter-spacing:var(--vt-ls);}
   body[data-tpl="grid-foto"] .vt-sub{font-size:11.5px;color:color-mix(in srgb,var(--tinta) 55%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
   body[data-tpl="grid-foto"] .vt-wa{flex:0 0 auto;font-family:'Manrope';font-weight:700;font-size:12px;color:#fff;background:#25D366;border-radius:999px;padding:7px 11px;}
 
@@ -29,7 +39,7 @@ window.TEMPLATES["grid-foto"] = {
   /* ---------- CHIPS sticky ---------- */
   body[data-tpl="grid-foto"] .vt-chips{position:sticky;top:62px;z-index:25;display:flex;gap:8px;overflow-x:auto;padding:11px 14px;background:color-mix(in srgb,var(--crema) 90%,transparent);backdrop-filter:blur(8px);scrollbar-width:none;}
   body[data-tpl="grid-foto"] .vt-chips::-webkit-scrollbar{display:none;}
-  body[data-tpl="grid-foto"] .vt-chips button{flex:0 0 auto;font-family:'Manrope';font-weight:600;font-size:13px;color:color-mix(in srgb,var(--tinta) 70%,transparent);background:#fff;border:1px solid color-mix(in srgb,var(--tinta) 10%,transparent);padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:all .15s;}
+  body[data-tpl="grid-foto"] .vt-chips button{flex:0 0 auto;font-family:'Manrope';font-weight:600;font-size:13px;color:color-mix(in srgb,var(--tinta) 70%,transparent);background:#fff;border:1px solid color-mix(in srgb,var(--tinta) 10%,transparent);padding:8px 14px;border-radius:var(--vt-chip);cursor:pointer;white-space:nowrap;transition:all .15s;}
   body[data-tpl="grid-foto"] .vt-chips button.activa{background:var(--marca);color:#fff;border-color:var(--marca);box-shadow:0 4px 14px color-mix(in srgb,var(--marca) 35%,transparent);}
 
   /* ---------- SECCIÓN + GRID 2 COL ---------- */
@@ -39,7 +49,7 @@ window.TEMPLATES["grid-foto"] = {
   body[data-tpl="grid-foto"] .vt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 14px;}
 
   /* ---------- TILE vertical (foto/emoji ARRIBA) ---------- */
-  body[data-tpl="grid-foto"] .vt-tile{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;flex-direction:column;}
+  body[data-tpl="grid-foto"] .vt-tile{background:#fff;border-radius:var(--vt-radio);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;flex-direction:column;}
   body[data-tpl="grid-foto"] .vt-media{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, color-mix(in srgb,var(--marca) 15%,var(--crema)), var(--crema));}
   body[data-tpl="grid-foto"] .vt-tile:nth-child(even) .vt-media{background:linear-gradient(315deg, color-mix(in srgb,var(--marca) 15%,var(--crema)), var(--crema));}
   body[data-tpl="grid-foto"] .vt-media img{width:100%;height:100%;object-fit:cover;}
@@ -48,7 +58,7 @@ window.TEMPLATES["grid-foto"] = {
   body[data-tpl="grid-foto"] .vt-body{padding:10px 11px 12px;display:flex;flex-direction:column;gap:3px;}
   body[data-tpl="grid-foto"] .vt-pname{font-family:'Manrope';font-weight:700;font-size:13.5px;line-height:1.2;color:var(--tinta);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:32px;}
   body[data-tpl="grid-foto"] .vt-pdesc{font-size:11px;color:color-mix(in srgb,var(--tinta) 50%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  body[data-tpl="grid-foto"] .vt-price{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;color:var(--marca);margin-top:3px;}
+  body[data-tpl="grid-foto"] .vt-price{font-family:var(--vt-display),'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:16px;color:var(--marca);margin-top:3px;}
   body[data-tpl="grid-foto"] .vt-price small{font-size:11px;}
 
   /* ---------- STEPPER (FAB sobre la media) ---------- */
@@ -74,6 +84,7 @@ window.TEMPLATES["grid-foto"] = {
   body[data-tpl="grid-foto"] #cart .cart-row .st-add{background:var(--acento) !important;color:#fff !important;}
   `,
   render(R, root, ctrl, slug) {
+    document.body.dataset.cocina = R.cocina || "";
     const emo = (it, cat) => it.emoji || (window.emojiPara ? window.emojiPara(it.nombre, cat, R.emojiDefault) : (R.emojiDefault || "🍽️"));
     const menuHtml = (R.menu || []).map((cat) => {
       const cid = slug(cat.categoria);
