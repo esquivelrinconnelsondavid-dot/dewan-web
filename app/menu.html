@@ -3282,8 +3282,8 @@
                         '</div>';
                     } else if(c.almuerzoChoices){
                         var choicesH='';
-                        var catIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',postre:'🍰'};
-                        var catOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
+                        var catIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',bebida:'☕',postre:'🍰'};
+                        var catOrder=['entrada','sopa','segundo','guarnicion','jugo','bebida','postre'];
                         catOrder.forEach(function(cat){
                             if(c.almuerzoChoices[cat]) choicesH+='<div>'+(catIcons[cat]||'▸')+' '+c.almuerzoChoices[cat]+'</div>';
                         });
@@ -3892,8 +3892,8 @@
                     var precioStr=c.qty>1 ? '$'+c.precio.toFixed(2)+' c/u' : '$'+c.precio.toFixed(2);
                     msg+='  - '+c.qty+'x '+c.nombre+' ('+precioStr+')\n';
                     if(c.almuerzoChoices){
-                        var catOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
-                        var catLabels={entrada:'Entrada',sopa:'Sopa',segundo:'Segundo',guarnicion:'Guarnición',jugo:'Jugo',postre:'Postre'};
+                        var catOrder=['entrada','sopa','segundo','guarnicion','jugo','bebida','postre'];
+                        var catLabels={entrada:'Entrada',sopa:'Sopa',segundo:'Segundo',guarnicion:'Guarnición',jugo:'Jugo',bebida:'Bebida caliente',postre:'Postre'};
                         catOrder.forEach(function(cat){
                             if(c.almuerzoChoices[cat]) msg+='    ▸ '+(catLabels[cat]||cat)+': '+c.almuerzoChoices[cat]+'\n';
                         });
@@ -4214,8 +4214,8 @@
             if(desc.indexOf('ALMUERZO_OPTS:')!==0) return null;
             try{return JSON.parse(desc.substring(14))}catch(e){return null}
         }
-        var almCatIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',postre:'🍰'};
-        var almCatOrder=['entrada','sopa','segundo','guarnicion','jugo','postre'];
+        var almCatIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',bebida:'☕',postre:'🍰'};
+        var almCatOrder=['entrada','sopa','segundo','guarnicion','jugo','bebida','postre'];
         function buildAlmuerzoDesc(data){
             var grouped={};
             (data.opciones||[]).forEach(function(o){
@@ -4234,7 +4234,7 @@
         // Hint corto para la TARJETA: muestra lo que viene incluido (categorías con 1 sola
         // opción) y, para las que tienen varias, un "Elige 1 …" en vez de listar TODO.
         // Evita el muro de guarniciones en platos como los de Sr. Moro.
-        var almCatSingular={entrada:'entrada',sopa:'sopa',segundo:'segundo',guarnicion:'guarnición',jugo:'jugo',postre:'postre'};
+        var almCatSingular={entrada:'entrada',sopa:'sopa',segundo:'segundo',guarnicion:'guarnición',jugo:'jugo',bebida:'bebida caliente',postre:'postre'};
         function buildAlmuerzoHint(data){
             var grouped={};
             (data.opciones||[]).forEach(function(o){
