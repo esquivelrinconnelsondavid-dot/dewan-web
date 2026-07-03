@@ -296,7 +296,7 @@
         /* Lightbox de foto (tap para ampliar) */
         .foto-zoom{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.84);display:flex;align-items:center;justify-content:center;padding:18px}
         .foto-zoom-box{position:relative;width:100%;max-width:430px;background:var(--card);border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,0.65)}
-        .foto-zoom-img{width:100%;max-height:62vh;min-height:40vh;object-fit:cover;display:block;background:#000}
+        .foto-zoom-img{width:100%;max-height:62vh;object-fit:cover;display:block;background:#000}
         .foto-zoom-x{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;font-size:1.15rem;font-weight:800;cursor:pointer;z-index:2;line-height:1}
         .foto-zoom-info{padding:14px 18px 4px}
         .foto-zoom-name{font-weight:800;font-size:1.12rem;letter-spacing:-0.01em;line-height:1.2}
@@ -4107,7 +4107,9 @@
         // agrandar un logo chico fue lo que dejó las imágenes borrosas en el intento de jul-2026.
         function thumb(u,w){
             if(!u||String(u).indexOf('/storage/v1/object/public/menu-fotos/')===-1) return u;
-            return u.replace('/storage/v1/object/public/','/storage/v1/render/image/public/')+'?width='+w+'&quality=80';
+            // resize=contain OBLIGATORIO: sin él, Supabase encoge el ancho pero deja el ALTO
+            // original (320x1080 de una foto 1080x1080) = imagen deformada "con zoom".
+            return u.replace('/storage/v1/object/public/','/storage/v1/render/image/public/')+'?width='+w+'&quality=80&resize=contain';
         }
         function infoBox(icon,val,label){return '<div class="info-box"><div class="info-box-icon">'+icon+'</div><div class="info-box-val">'+val+'</div><div class="info-box-label">'+label+'</div></div>'}
         // ── HORARIO / ABIERTO-CERRADO (reescrito 2026-06-19) ──
