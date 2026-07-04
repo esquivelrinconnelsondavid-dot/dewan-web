@@ -975,8 +975,9 @@
             if(st){st.className='gps-status';st.textContent='🔎 Buscando tu ubicación...';}
             if(btn){btn.disabled=true;btn.textContent='🔎 Buscando...';}
             if(!navigator.geolocation){if(st){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Ver restaurantes cerca de ti';}return}
-            navigator.geolocation.getCurrentPosition(function(pos){
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};guardarUbic();
+            getBestPosition(function(pos){
+                if(!gpsEnZona(pos)){if(st){st.className='gps-status error';st.textContent='Tu GPS te ubicó fuera de la ciudad — puedes continuar y marcar tu casa en el mapa 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}return;}
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};guardarUbic();
                 markEtapa('eligio_gps');
                 if(st){st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';}
                 // Si viene del banner, actualizar la vista
@@ -987,9 +988,9 @@
                     setTimeout(function(){document.getElementById('gps-welcome').style.display='none';app.style.display='block';loadSession()},500);
                 }
             },function(err){
-                if(st){st.className='gps-status error';st.textContent=err.code===1?'No hay problema, puedes continuar sin ubicación 😊':'No se pudo obtener GPS, pero puedes continuar 😊';}
+                if(st){st.className='gps-status error';st.textContent=(err&&err.code===1)?'No hay problema, puedes continuar sin ubicación 😊':'No se pudo obtener GPS, pero puedes continuar 😊';}
                 if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}
-            },{enableHighAccuracy:true,timeout:15000});
+            });
         };
         window.skipGPS=function(){markEtapa('eligio_sin_gps');document.getElementById('gps-welcome').style.display='none';app.style.display='block';loadSession()};
 
@@ -1000,13 +1001,14 @@
             if(!banner) return;
             if(!navigator.geolocation){banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">Tu navegador no soporta GPS</span>';return}
             banner.innerHTML='<span style="font-size:0.88rem;font-weight:800;color:var(--texto)">🔎 Buscando tu ubicación...</span>';
-            navigator.geolocation.getCurrentPosition(function(pos){
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};guardarUbic();
+            getBestPosition(function(pos){
+                if(!gpsEnZona(pos)){banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">Tu GPS te ubicó fuera de la ciudad. Marca tu casa en el mapa del carrito.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';return;}
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};guardarUbic();
                 currentSort='distancia';
                 renderHome();
             },function(){
                 banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">No se pudo obtener GPS. Puedes seguir sin ubicación.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';
-            },{enableHighAccuracy:true,timeout:15000});
+            });
         };
         window.dismissGPSBanner=function(){
             var banner=document.getElementById('gps-banner');
@@ -3344,7 +3346,12 @@
                 // CLIENTE: el GPS es la opción HÉROE (un toque). El mapa = confirmación visual
                 // (ver tus calles) + ajuste del pin; y respaldo si el GPS no agarra.
                 if(window._clientGPS){
-                    h+='<div class="loc-gps-ok"><span>✅ ¡Te ubicamos! Mira el mapa: ¿el pin está en tu casa?</span></div>';
+                    var _accUI=Number(window._clientGPS.acc)||0;
+                    if(_accUI>150){
+                        h+='<div class="loc-gps-ok" style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E"><span>⚠️ Tu ubicación es APROXIMADA (±'+accTxt(_accUI)+'). Mueve el pin a tu casa para que el motorizado llegue bien 👇</span></div>';
+                    } else {
+                        h+='<div class="loc-gps-ok"><span>✅ ¡Te ubicamos! Mira el mapa: ¿el pin está en tu casa?</span></div>';
+                    }
                     h+='<div id="op-map" style="height:240px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:8px"></div>';
                     h+='<div style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:6px;text-align:center">👆 Si no está exacto, arrastra el pin a tu casa</div>';
                     h+='<div class="loc-ref-label" style="margin-top:14px">Referencia para el motorizado (opcional)</div>';
@@ -3668,12 +3675,37 @@
         }
 
         // ── GPS desde carrito inline ──
+        // ── BLINDAJE GPS (3-jul) ──
+        // El primer fix del teléfono suele ser el de RED/IP (error de cientos de metros o km,
+        // sobre todo en interiores o con "ubicación precisa" apagada). Escuchamos hasta 8s y nos
+        // quedamos con el fix MÁS preciso; si llega uno ≤30m cortamos antes.
+        function getBestPosition(cb,errCb){
+            if(!navigator.geolocation){if(errCb)errCb();return;}
+            var best=null,done=false,wid=null,timer=null;
+            function cleanup(){try{if(wid!=null)navigator.geolocation.clearWatch(wid)}catch(e){} if(timer)clearTimeout(timer);}
+            function finish(){if(done)return;done=true;cleanup();if(best)cb(best);else if(errCb)errCb();}
+            try{
+                wid=navigator.geolocation.watchPosition(function(pos){
+                    if(!best||pos.coords.accuracy<best.coords.accuracy) best=pos;
+                    if(pos.coords.accuracy<=30) finish();
+                },function(){ if(!best) finish(); },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+            }catch(e){if(errCb)errCb();return;}
+            timer=setTimeout(finish,8000);
+        }
+        // Un fix a >20km del centro es de otra ciudad (IP de la operadora): NO sirve para el envío.
+        function gpsEnZona(pos){return haversine(pos.coords.latitude,pos.coords.longitude,-1.6635,-78.6547)<=20}
+        function accTxt(m){return m>=1000?(m/1000).toFixed(1)+' km':m+' m'}
         window.requestGPSCart=function(){
             var st=document.getElementById('gps-status-cart'),btn=document.getElementById('btn-gps-cart');
             if(st){st.className='gps-status checkout-gps-searching';st.textContent='🔍 Buscando tu ubicación...';}
             if(btn){btn.disabled=true;btn.textContent='🔍 Buscando...';}
-            navigator.geolocation.getCurrentPosition(function(pos){
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude};guardarUbic();
+            getBestPosition(function(pos){
+                if(!gpsEnZona(pos)){
+                    if(st){st.className='gps-status';st.textContent='⚠️ Tu GPS te ubicó fuera de la ciudad. Marca tu casa en el mapa 👇';}
+                    if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}
+                    return;
+                }
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};guardarUbic();
                 trackUbicacionPixel();
                 // Recalcular delivery en el carrito con nueva ubicación
                 var rests=getFilteredRestaurantes();
@@ -3694,7 +3726,7 @@
                 // Mostrar campo de texto automáticamente si falla GPS
                 var wrap=document.getElementById('loc-addr-wrap');
                 if(wrap) wrap.classList.add('visible');
-            },{enableHighAccuracy:true,timeout:15000});
+            });
         };
         // OP_MODE: parsear el pin que pega la centralista (link de Maps o "lat,lng").
         // fromBlur=true → re-render inmediato; oninput → re-render diferido para no cortar el tipeo.
@@ -3782,7 +3814,15 @@
                     if(isFinite(la)&&isFinite(lo)){
                         window._opMapMarker=L.marker([la,lo],{draggable:true}).addTo(map);
                         window._opMapMarker.on('dragend',function(ev){var ll=ev.target.getLatLng();opMapPick(ll.lat,ll.lng)});
-                        map.setView([la,lo],16);
+                        // GPS impreciso: dibujar el círculo de error para que el cliente VEA
+                        // la incertidumbre y ajuste el pin (el zoom abarca el círculo completo).
+                        var _accM=Number(window._clientGPS.acc)||0;
+                        if(_accM>150){
+                            window._opMapCircle=L.circle([la,lo],{radius:_accM,color:'#F59E0B',fillColor:'#F59E0B',fillOpacity:0.12,weight:1.5}).addTo(map);
+                            try{map.fitBounds(window._opMapCircle.getBounds(),{maxZoom:16})}catch(e){map.setView([la,lo],16)}
+                        } else {
+                            map.setView([la,lo],16);
+                        }
                     }
                 }
                 map.on('click',function(ev){opMapPick(ev.latlng.lat,ev.latlng.lng)});
@@ -3801,7 +3841,8 @@
                     window._opMapMarker.on('dragend',function(ev){var ll=ev.target.getLatLng();opMapPick(ll.lat,ll.lng)});
                 }
             }
-            window._clientGPS={lat:la,lng:lo}; // strings: el mensaje WA los concatena tal cual y haversine los coerce
+            window._clientGPS={lat:la,lng:lo,acc:0}; // strings: el mensaje WA los concatena tal cual; acc:0 = pin puesto A MANO (exacto)
+            if(window._opMapCircle){try{window._opMap.removeLayer(window._opMapCircle)}catch(e){} window._opMapCircle=null;} // ya no hay incertidumbre
             window._opGpsApplied='map';
             guardarUbic(); // el pin del mapa también persiste (guardarUbic ya ignora OP_MODE)
             trackUbicacionPixel();
@@ -3941,6 +3982,8 @@
             if(addrInput) window._clientAddr=addrInput.value;
             if(window._clientGPS){
                 msg+='📍 Mi ubicacion:\nhttps://maps.google.com/?q='+window._clientGPS.lat+','+window._clientGPS.lng+'\n';
+                var _accWA=Number(window._clientGPS.acc)||0;
+                if(_accWA>150) msg+='⚠️ GPS aproximado (±'+accTxt(_accWA)+') — confirmar ubicacion exacta con el cliente\n';
                 if(window._clientAddr&&window._clientAddr.trim()) msg+='📝 Ref: '+window._clientAddr.trim()+'\n';
                 msg+='\n';
             } else if(window._clientAddr&&window._clientAddr.trim()){
