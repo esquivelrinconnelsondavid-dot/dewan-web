@@ -3354,6 +3354,10 @@
                     }
                     h+='<div id="op-map" style="height:240px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:8px"></div>';
                     h+='<div style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:6px;text-align:center">👆 Si no está exacto, arrastra el pin a tu casa</div>';
+                    var _dmUI=distMinCarrito();
+                    if(_dmUI!=null&&_dmUI>4){
+                        h+='<div style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:0.8rem;font-weight:700;text-align:center">⚠️ Tu entrega queda a ~'+_dmUI.toFixed(1)+' km del local. Revisa que el pin esté en tu casa 👆</div>';
+                    }
                     h+='<div class="loc-ref-label" style="margin-top:14px">Referencia para el motorizado (opcional)</div>';
                     h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: casa azul, portón negro, 2do piso, junto a..." value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
                 } else {
@@ -3695,6 +3699,21 @@
         // Un fix a >20km del centro es de otra ciudad (IP de la operadora): NO sirve para el envío.
         function gpsEnZona(pos){return haversine(pos.coords.latitude,pos.coords.longitude,-1.6635,-78.6547)<=20}
         function accTxt(m){return m>=1000?(m/1000).toFixed(1)+' km':m+' m'}
+        // Distancia lineal (km) de la ubicación del cliente al local MÁS CERCANO del carrito.
+        // Señal anti-pin-erróneo: una entrega a 5km de una pizzería casi siempre es un pin mal puesto.
+        function distMinCarrito(){
+            if(!window._clientGPS||!window._cart.length) return null;
+            var min=null,vistos={};
+            window._cart.forEach(function(c){
+                if(vistos[c.restaurante])return;vistos[c.restaurante]=1;
+                var r=getRestByName(c.restaurante);
+                if(r&&r.restaurante_lat&&r.restaurante_lng){
+                    var d=haversine(parseFloat(window._clientGPS.lat),parseFloat(window._clientGPS.lng),parseFloat(r.restaurante_lat),parseFloat(r.restaurante_lng));
+                    if(min==null||d<min)min=d;
+                }
+            });
+            return min;
+        }
         window.requestGPSCart=function(){
             var st=document.getElementById('gps-status-cart'),btn=document.getElementById('btn-gps-cart');
             if(st){st.className='gps-status checkout-gps-searching';st.textContent='🔍 Buscando tu ubicación...';}
@@ -3840,6 +3859,9 @@
                     window._opMapMarker=L.marker([lat,lng],{draggable:true}).addTo(window._opMap);
                     window._opMapMarker.on('dragend',function(ev){var ll=ev.target.getLatLng();opMapPick(ll.lat,ll.lng)});
                 }
+                // Toque con el mapa alejado = dedo impreciso (cuadras enteras). El pin SE PONE igual,
+                // pero acercamos a nivel de casas para que el cliente VEA dónde cayó y lo ajuste si no es.
+                try{if(window._opMap.getZoom()<16) window._opMap.setView([lat,lng],17);}catch(e){}
             }
             window._clientGPS={lat:la,lng:lo,acc:0}; // strings: el mensaje WA los concatena tal cual; acc:0 = pin puesto A MANO (exacto)
             if(window._opMapCircle){try{window._opMap.removeLayer(window._opMapCircle)}catch(e){} window._opMapCircle=null;} // ya no hay incertidumbre
@@ -3984,6 +4006,8 @@
                 msg+='📍 Mi ubicacion:\nhttps://maps.google.com/?q='+window._clientGPS.lat+','+window._clientGPS.lng+'\n';
                 var _accWA=Number(window._clientGPS.acc)||0;
                 if(_accWA>150) msg+='⚠️ GPS aproximado (±'+accTxt(_accWA)+') — confirmar ubicacion exacta con el cliente\n';
+                var _dmWA=distMinCarrito();
+                if(_dmWA!=null) msg+='📏 A ~'+_dmWA.toFixed(1)+' km del local\n';
                 if(window._clientAddr&&window._clientAddr.trim()) msg+='📝 Ref: '+window._clientAddr.trim()+'\n';
                 msg+='\n';
             } else if(window._clientAddr&&window._clientAddr.trim()){
