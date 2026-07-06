@@ -932,7 +932,7 @@
         window._clientGPS=null;
         window._clientAddr=''; // CAMBIO 3: dirección de texto
         // Persistir ubicación: la dirección siempre; el GPS solo si es fresco (<2h) para no mandar a una ubicación vieja.
-        function guardarUbic(){if(OP_MODE)return;try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:Date.now()}))}catch(e){}}
+        function guardarUbic(){try{if(typeof cotizarEnvioReal==='function')setTimeout(cotizarEnvioReal,0)}catch(e){} if(OP_MODE)return;try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:Date.now()}))}catch(e){}}
         function restaurarUbic(){try{var d=JSON.parse(localStorage.getItem('dewan_ubic')||'null');if(!d)return;if(d.addr)window._clientAddr=d.addr;if(d.gps&&d.ts&&(Date.now()-d.ts)<2*60*60*1000)window._clientGPS=d.gps;}catch(e){}}
         // Pixel Meta: avisar cuando el cliente FIJA su ubicación (GPS o pin) = paso fuerte de intención, casi-pedido.
         // Una sola vez por sesión y solo para el cliente real (no la centralista).
@@ -3254,8 +3254,50 @@
         };
 
         // ── CART + CHECKOUT UNIFICADO ──
+        // ── Cotización REAL del envío (ruta Google) al abrir el carrito ──
+        // El estimado de la lista (haversine×1.3) se queda corto o se pasa según el
+        // trazado de calles (caso pedido #484: estimó $2.00, la ruta real valía $2.42).
+        // Aquí pedimos el precio oficial al webhook calcular-precio (SIN pedido_id:
+        // solo cotiza y responde; no toca ninguna tabla) y corregimos carrito+tarjetas.
+        // Si Google/red fallan, el estimado queda como fallback y el pedido sale igual.
+        window._envioReal=window._envioReal||{};
+        function aplicarEnvioReal(nombre,precio){
+            var cambio=false;
+            window._cart.forEach(function(c){
+                if(c.restaurante===nombre&&Math.abs(parsePrice(c.delivery)-precio)>0.005){c.delivery=precio;cambio=true;}
+            });
+            var r=getRestByName(nombre);
+            if(r&&Math.abs((Number(r.precio_delivery)||0)-precio)>0.005){r.precio_delivery=precio;cambio=true;}
+            if(cambio){saveCart();if(currentView==='cart'&&_cartSheetOpen())showCart();else updateCartFloat();}
+        }
+        function cotizarEnvioReal(){
+            if(!window._clientGPS||!window._cart.length)return;
+            var rests={};window._cart.forEach(function(c){rests[c.restaurante]=true});
+            Object.keys(rests).forEach(function(nombre){
+                var r=getRestByName(nombre);
+                if(!r||!r.restaurante_lat||!r.restaurante_lng)return;
+                var gpsKey=nombre+'|'+Number(window._clientGPS.lat).toFixed(4)+','+Number(window._clientGPS.lng).toFixed(4);
+                var cache=window._envioReal[nombre];
+                if(cache&&cache.gpsKey===gpsKey&&(Date.now()-cache.ts)<10*60*1000){aplicarEnvioReal(nombre,cache.precio);return;}
+                if(cache&&cache.pending&&(Date.now()-cache.ts)<15000)return; // ya hay una consulta en vuelo
+                window._envioReal[nombre]={pending:true,ts:Date.now(),gpsKey:gpsKey};
+                var ctl=('AbortController'in window)?new AbortController():null;
+                if(ctl)setTimeout(function(){ctl.abort()},8000);
+                fetch('https://restaurante1-n8n.bqspdc.easypanel.host/webhook/calcular-precio',{
+                    method:'POST',headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({origen_lat:r.restaurante_lat,origen_lng:r.restaurante_lng,destino_lat:window._clientGPS.lat,destino_lng:window._clientGPS.lng}),
+                    signal:ctl?ctl.signal:undefined
+                }).then(function(x){return x.json()}).then(function(j){
+                    if(j&&j.ok&&Number(j.precio)>0){
+                        window._envioReal[nombre]={precio:Number(j.precio),km:j.distancia_km,ts:Date.now(),gpsKey:gpsKey};
+                        aplicarEnvioReal(nombre,Number(j.precio));
+                    }else{delete window._envioReal[nombre];}
+                }).catch(function(){delete window._envioReal[nombre];});
+            });
+        }
         window.showCart=function(){
             if(!_cartSheetOpen()){ window._prevView=currentView; window._prevRest=currentRestIdx; } // recordar a dónde volver al cerrar
+            cotizarEnvioReal();
             currentView='cart';
             syncHistory();
             if(window._cart.length) markEtapa('abrio_carrito');
@@ -3776,6 +3818,7 @@
             if(window._opGpsApplied===key) return; // ya aplicado, no re-renderizar de nuevo
             window._opGpsApplied=key;
             window._clientGPS={lat:coords.lat,lng:coords.lng}; // strings: el mensaje WA los concatena tal cual y haversine los coerce
+            try{setTimeout(cotizarEnvioReal,0)}catch(e){} // cotización real también en modo centralista (no pasa por guardarUbic)
             // Recalcular delivery del carrito con la nueva ubicación (mismo patrón que requestGPSCart)
             var rests=getFilteredRestaurantes();
             var deliveryByRest={};
