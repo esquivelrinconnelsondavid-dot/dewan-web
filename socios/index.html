@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu local en DEWAN — 10% solo cuando vendes</title>
+<meta name="description" content="Pon tu restaurante en DEWAN, la app de pedidos de Riobamba. Subimos tu menú con fotos, te damos la app gratis y entregamos con nuestros motorizados. 10% solo cuando vendes.">
+<meta property="og:title" content="Tu local en DEWAN — 10% solo cuando vendes">
+<meta property="og:description" content="Subimos tu menú con fotos, app gratis donde suenan los pedidos y motorizados nuestros. Sin mensualidad. Sin costo de entrada.">
+<meta property="og:image" content="https://dewansas.com/socios/og.png">
+<meta property="og:url" content="https://dewansas.com/socios/">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ambar:#FFB627; --brasa:#D93A0B; --brasa-hover:#F2542D; --crema:#F3ECE0;
+    --espresso:#2B1D12; --verde:#1F9D55; --wa:#25D366; --dark:#111114; --gris:#6E6259;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Poppins',sans-serif;background:var(--crema);color:var(--espresso);-webkit-font-smoothing:antialiased}
+  h1,h2,.display{font-family:'Archivo Black',sans-serif;line-height:1.08}
+  .wrap{max-width:560px;margin:0 auto;padding:0 20px}
+  section{padding:52px 0}
+
+  /* ── HERO ── */
+  .hero{background:var(--dark);color:#fff;padding:44px 0 56px;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-140px;right:-140px;width:420px;height:420px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,182,39,.22),transparent 70%)}
+  .hero .wrap{position:relative;z-index:1}
+  .hero img.logo{width:150px;display:block;margin-bottom:26px}
+  .hero .pill{display:inline-block;background:var(--ambar);color:#111;font-weight:800;font-size:15px;
+    padding:8px 16px;border-radius:999px;margin-bottom:18px}
+  .hero h1{font-size:clamp(34px,9vw,46px);color:#fff}
+  .hero h1 em{font-style:normal;color:var(--ambar)}
+  .hero p.sub{margin-top:16px;font-size:17px;color:#D8D2CB;max-width:420px}
+  .btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;
+    font-weight:700;font-size:18px;padding:17px 26px;border-radius:14px;text-decoration:none;margin-top:28px;
+    box-shadow:0 8px 26px rgba(37,211,102,.35)}
+  .btn-wa svg{flex:0 0 auto}
+  .hero .micro{margin-top:12px;font-size:13px;color:#9d968e;text-align:center}
+
+  /* ── CUENTA CLARA ── */
+  .num-gigante{font-size:clamp(84px,24vw,130px);color:var(--brasa);letter-spacing:-2px}
+  .num-sub{font-size:20px;font-weight:700;margin-top:2px}
+  .recibo{background:#fff;border-radius:18px;padding:26px 24px;margin-top:26px;
+    box-shadow:0 10px 30px rgba(43,29,18,.10)}
+  .recibo .fila{display:flex;justify-content:space-between;font-size:18px;padding:10px 0}
+  .recibo .fila+.fila{border-top:1.5px dashed #E5DCCE}
+  .recibo .fila.total{font-weight:800;font-size:22px;color:var(--verde)}
+  .recibo .fila .menos{color:var(--brasa);font-weight:600}
+  .tres{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .tres span{background:#fff;border:1.5px solid #E5DCCE;border-radius:999px;padding:8px 14px;
+    font-size:13.5px;font-weight:600}
+
+  /* ── PASOS ── */
+  .pasos{background:#fff}
+  .paso{display:flex;gap:16px;align-items:flex-start;margin-top:26px}
+  .paso .n{flex:0 0 44px;height:44px;border-radius:50%;background:var(--ambar);color:#111;
+    font-family:'Archivo Black';font-size:20px;display:flex;align-items:center;justify-content:center}
+  .paso h3{font-size:18px;font-weight:800;font-family:'Poppins'}
+  .paso p{font-size:15px;color:var(--gris);margin-top:4px}
+  h2{font-size:clamp(26px,7vw,32px)}
+  .kicker{color:var(--brasa);font-weight:800;font-size:13.5px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+
+  /* ── DEMO APP ── */
+  .demo{background:var(--dark);color:#fff;overflow:hidden}
+  .demo h2{color:#fff}
+  .demo p.lead{color:#D8D2CB;font-size:16px;margin-top:12px}
+  .phone{width:min(320px,84vw);margin:34px auto 0;background:#000;border-radius:38px;padding:12px;
+    box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 2px #26262b}
+  .screen{background:#17171b;border-radius:28px;overflow:hidden;min-height:430px;display:flex;flex-direction:column}
+  .pedido-prev{margin:0 14px 14px;background:#1a1a1f;border:1px solid #26262b;border-radius:14px;padding:12px 14px;
+    display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#8a8a94}
+  .pedido-prev .ok{color:var(--verde);font-weight:700}
+  .app-head{display:flex;align-items:center;gap:8px;padding:14px 16px;background:#111114;border-bottom:1px solid #26262b}
+  .app-head img{height:20px}
+  .app-head .estado{margin-left:auto;font-size:11px;color:var(--verde);font-weight:700}
+  .app-head .estado::before{content:'●  ';font-size:9px}
+  .pedido-card{margin:14px;background:#1f1f25;border:1.5px solid var(--ambar);border-radius:16px;padding:16px;
+    animation:llega 7s ease infinite}
+  @keyframes llega{0%{transform:translateY(-30px);opacity:0}6%{transform:translateY(0);opacity:1}96%{opacity:1}100%{opacity:0}}
+  .campana{display:flex;align-items:center;gap:8px;color:var(--ambar);font-weight:800;font-size:14px}
+  .campana .bell{display:inline-block;animation:ring 7s ease infinite;transform-origin:top center}
+  @keyframes ring{6%{transform:rotate(0)}8%{transform:rotate(18deg)}10%{transform:rotate(-14deg)}12%{transform:rotate(10deg)}14%{transform:rotate(-6deg)}16%{transform:rotate(0)}}
+  .pedido-card .items{margin-top:12px;font-size:14.5px;line-height:1.7;color:#EDEAE4}
+  .pedido-card .tot{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;
+    border-top:1px dashed #3a3a42;font-weight:800;font-size:16px;color:#fff}
+  .tiempos{display:flex;gap:8px;margin-top:14px}
+  .tiempos span{flex:1;text-align:center;background:#2a2a31;border-radius:10px;padding:9px 0;font-size:13.5px;font-weight:700;color:#D8D2CB}
+  .tiempos span.on{background:var(--ambar);color:#111;animation:elige 7s ease infinite}
+  @keyframes elige{0%,28%{background:#2a2a31;color:#D8D2CB}34%,100%{background:var(--ambar);color:#111}}
+  .btn-aceptar{margin-top:14px;background:var(--verde);color:#fff;border-radius:12px;text-align:center;
+    padding:14px 0;font-weight:800;font-size:15.5px;animation:pulsa 7s ease infinite}
+  @keyframes pulsa{0%,40%{transform:scale(1)}46%{transform:scale(1.05)}52%{transform:scale(1)}58%{transform:scale(1.05)}64%,100%{transform:scale(1)}}
+  .demo .feats{list-style:none;margin-top:30px}
+  .demo .feats li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;color:#EDEAE4;margin-top:12px}
+  .demo .feats li::before{content:'✓';color:var(--ambar);font-weight:800}
+
+  /* ── CHECKLIST ── */
+  .check-lista{list-style:none;margin-top:26px}
+  .check-lista li{display:flex;gap:14px;align-items:flex-start;background:#fff;border-radius:14px;
+    padding:16px 18px;margin-top:12px;box-shadow:0 4px 14px rgba(43,29,18,.06);font-size:15.5px;font-weight:600}
+  .check-lista .c{flex:0 0 26px;height:26px;border-radius:50%;background:var(--verde);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;margin-top:-1px}
+  .check-lista small{display:block;font-weight:400;color:var(--gris);margin-top:2px;font-size:13.5px}
+
+  /* ── FAQ ── */
+  .faq{background:#fff}
+  details{border-bottom:1.5px solid #EFE7D9;padding:16px 0}
+  summary{font-weight:700;font-size:16px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+  summary::after{content:'+';font-family:'Archivo Black';color:var(--brasa);font-size:20px}
+  details[open] summary::after{content:'–'}
+  details p{margin-top:10px;font-size:14.5px;color:var(--gris);line-height:1.6}
+
+  /* ── CIERRE ── */
+  .cierre{background:var(--brasa);color:#fff;text-align:center}
+  .cierre h2{color:#fff;font-size:clamp(28px,8vw,36px)}
+  .cierre p{margin-top:12px;font-size:16px;color:#FFE3D6}
+  .cierre .btn-wa{margin:26px auto 0;max-width:360px;box-shadow:0 8px 26px rgba(0,0,0,.25)}
+  .cierre .tel{margin-top:16px;font-size:15px;color:#FFD9C8}
+  .cierre .tel b{color:#fff;font-size:18px;letter-spacing:1px}
+  .cierre img.logo{width:110px;margin-top:34px;opacity:.95}
+
+  /* ── STICKY CTA móvil ── */
+  .sticky-cta{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+    background:rgba(17,17,20,.92);backdrop-filter:blur(8px);z-index:50;display:flex;justify-content:center;
+    transform:translateY(110%);transition:transform .3s}
+  .sticky-cta.show{transform:none}
+  .sticky-cta a{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--wa);color:#fff;
+    font-weight:700;font-size:16px;padding:13px 22px;border-radius:12px;text-decoration:none;width:100%;max-width:520px}
+  @media(min-width:700px){.wrap{max-width:640px}}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <img class="logo" src="logo.png" alt="DEWAN">
+    <span class="pill">10% solo cuando vendes</span>
+    <h1>Tu local, en la app de pedidos de <em>Riobamba</em></h1>
+    <p class="sub">Subimos tu menú con fotos, te suenan los pedidos en una app gratis y nuestros motorizados entregan. Tú solo cocinas.</p>
+    <a class="btn-wa" id="cta1" href="https://wa.me/593962223600?text=Hola%20DEWAN%2C%20quiero%20poner%20mi%20local%20en%20la%20app%20(SOCIO)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.2.2-.3.4-.1.7.2.3.8 1.4 1.8 2.2 1.2 1.1 2.3 1.4 2.6 1.6.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.3z"/></svg>
+      Quiero mi local en DEWAN
+    </a>
+    <p class="micro">Te responde una persona real · Sin compromiso</p>
+  </div>
+</header>
+
+<!-- CUENTA CLARA -->
+<section id="cuenta">
+  <div class="wrap">
+    <div class="kicker">La cuenta clara</div>
+    <div class="display num-gigante">10%</div>
+    <div class="num-sub">solo sobre lo que vendes por la app</div>
+    <div class="recibo">
+      <div class="fila"><span>Vendes</span><b>$10.00</b></div>
+      <div class="fila"><span>Comisión DEWAN</span><span class="menos">−$1.00</span></div>
+      <div class="fila total"><span>Recibes</span><span>$9.00</span></div>
+    </div>
+    <div class="tres">
+      <span>Sin mensualidad</span><span>Sin costo de entrada</span><span>Sin permanencia</span>
+    </div>
+  </div>
+</section>
+
+<!-- PASOS -->
+<section class="pasos">
+  <div class="wrap">
+    <div class="kicker">Así de simple</div>
+    <h2>En 3 pasos tu local está vendiendo</h2>
+    <div class="paso"><div class="n">1</div><div>
+      <h3>Nos mandas tu carta</h3>
+      <p>Una foto del menú basta. Nosotros lo subimos completo y con fotos — las fotos venden 2–3×.</p>
+    </div></div>
+    <div class="paso"><div class="n">2</div><div>
+      <h3>Te suenan los pedidos</h3>
+      <p>Te dejamos instalada la app gratis en tu celular o computadora. Cada pedido llega con sonido y lo aceptas con un toque.</p>
+    </div></div>
+    <div class="paso"><div class="n">3</div><div>
+      <h3>Nosotros entregamos</h3>
+      <p>Motorizados de DEWAN retiran y entregan. El envío lo paga el cliente, no tu local.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- DEMO APP -->
+<section class="demo">
+  <div class="wrap">
+    <div class="kicker" style="color:var(--ambar)">La app del restaurante</div>
+    <h2>Así te llega un pedido</h2>
+    <p class="lead">Sin llamadas, sin apuntar en papel. Suena, aceptas y eliges cuánto te demoras.</p>
+    <div class="phone"><div class="screen">
+      <div class="app-head"><img src="logo.png" alt="DEWAN"><span class="estado">Abierto</span></div>
+      <div class="pedido-card">
+        <div class="campana"><span class="bell">🔔</span> ¡Nuevo pedido!</div>
+        <div class="items">2× Almuerzo completo<br>1× Jugo de mora</div>
+        <div class="tot"><span>Tu venta</span><span>$9.50</span></div>
+        <div class="tiempos"><span>10'</span><span class="on">15'</span><span>20'</span><span>30'</span></div>
+        <div class="btn-aceptar">ACEPTAR PEDIDO</div>
+      </div>
+      <div class="pedido-prev"><span>Pedido anterior</span><span class="ok">✓ Entregado</span></div>
+    </div></div>
+    <ul class="feats">
+      <li>Cronómetro para cada pedido: el cliente sabe que viene en camino</li>
+      <li>Tus ventas del día siempre visibles en la app</li>
+      <li>Funciona en tu celular y en tu computadora</li>
+      <li>Trae tutorial paso a paso — no necesitas saber de tecnología</li>
+    </ul>
+  </div>
+</section>
+
+<!-- CHECKLIST -->
+<section>
+  <div class="wrap">
+    <div class="kicker">Todo esto lo pone DEWAN</div>
+    <h2>Tú cocinas, nosotros hacemos el resto</h2>
+    <ul class="check-lista">
+      <li><span class="c">✓</span><div>Subimos tu menú completo con fotos<small>Las fotos venden 2–3× — nosotros nos encargamos</small></div></li>
+      <li><span class="c">✓</span><div>App gratis donde llegan los pedidos<small>En tu celular y tu computadora, con tutorial incluido</small></div></li>
+      <li><span class="c">✓</span><div>Entrega con motorizados de DEWAN<small>El envío lo paga el cliente</small></div></li>
+      <li><span class="c">✓</span><div>Primera fila en la app con sello ⭐ Aliado<small>Vitrina destacada frente a los clientes</small></div></li>
+      <li><span class="c">✓</span><div>Cupones para tus clientes, pagados por DEWAN<small>Promociones que traen pedidos sin costo para ti</small></div></li>
+      <li><span class="c">✓</span><div>Soporte directo por WhatsApp<small>Hablas con una persona real, no con un robot</small></div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <div class="wrap">
+    <div class="kicker">Preguntas de dueño a dueño</div>
+    <h2>Lo que todos nos preguntan</h2>
+    <details open>
+      <summary>¿Cuánto cuesta entrar?</summary>
+      <p>Nada. Ni inscripción, ni mensualidad, ni equipos. Solo pagas el 10% de lo que vendas por la app. Si no vendes, no pagas.</p>
+    </details>
+    <details>
+      <summary>¿El envío quién lo paga?</summary>
+      <p>El cliente. El costo de la entrega no sale de tu local ni de tu venta.</p>
+    </details>
+    <details>
+      <summary>¿Y mis clientes de siempre?</summary>
+      <p>Siguen igual. DEWAN te trae venta adicional: gente que usa la app y hoy no conoce tu local.</p>
+    </details>
+    <details>
+      <summary>¿Necesito saber de tecnología?</summary>
+      <p>No. Te dejamos la app instalada y probada, trae un tutorial paso a paso, y cualquier duda la resuelves por WhatsApp con nosotros.</p>
+    </details>
+    <details>
+      <summary>¿Y si después no me convence?</summary>
+      <p>Te sales cuando quieras. No hay contrato de permanencia ni multa. Probar no te cuesta nada.</p>
+    </details>
+    <details>
+      <summary>¿Qué necesito para empezar?</summary>
+      <p>Tu carta (una foto basta), tu horario, la ubicación del local y un WhatsApp de contacto. Nosotros armamos todo.</p>
+    </details>
+  </div>
+</section>
+
+<!-- CIERRE -->
+<section class="cierre">
+  <div class="wrap">
+    <h2>Tu local puede estar en vivo esta misma semana</h2>
+    <p>Escríbenos y armamos tu menú hoy mismo.</p>
+    <a class="btn-wa" href="https://wa.me/593962223600?text=Hola%20DEWAN%2C%20quiero%20poner%20mi%20local%20en%20la%20app%20(SOCIO)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.2.2-.3.4-.1.7.2.3.8 1.4 1.8 2.2 1.2 1.1 2.3 1.4 2.6 1.6.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.3z"/></svg>
+      Escribir al WhatsApp
+    </a>
+    <p class="tel">o guarda el número: <b>096 222 3600</b></p>
+    <img class="logo" src="logo.png" alt="DEWAN">
+  </div>
+</section>
+
+<!-- STICKY CTA -->
+<div class="sticky-cta" id="sticky">
+  <a href="https://wa.me/593962223600?text=Hola%20DEWAN%2C%20quiero%20poner%20mi%20local%20en%20la%20app%20(SOCIO)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.4 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.2.2-.3.4-.1.7.2.3.8 1.4 1.8 2.2 1.2 1.1 2.3 1.4 2.6 1.6.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.3z"/></svg>
+    Quiero mi local en DEWAN — 10%
+  </a>
+</div>
+
+<script>
+  // Muestra el CTA fijo cuando el botón del hero ya no se ve
+  var cta1 = document.getElementById('cta1'), sticky = document.getElementById('sticky');
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function(e){
+      sticky.classList.toggle('show', !e[0].isIntersecting);
+    }).observe(cta1);
+  }
+</script>
+</body>
+</html>
