@@ -78,6 +78,12 @@
   /* ── VERLO ANTES DE DECIDIR ── */
   .btn-sec{background:#fff;color:var(--espresso);border:2px solid var(--espresso);box-shadow:none}
 
+  /* ── HECHO EN RIOBAMBA ── */
+  .local-riob{background:#FCF0DC}
+  .local-riob p{margin-top:14px;font-size:15.5px;color:var(--espresso);line-height:1.65}
+  .pill-local{display:inline-block;margin-top:18px;background:var(--ambar);color:#111;
+    font-weight:800;font-size:15px;padding:10px 18px;border-radius:999px}
+
   /* ── DEMO APP ── */
   .demo{background:var(--dark);color:#fff;overflow:hidden}
   .demo h2{color:#fff}
@@ -243,7 +249,7 @@
     </div></div>
     <div class="paso"><div class="n">3</div><div>
       <h3>Nosotros entregamos</h3>
-      <p>Motorizados de DEWAN retiran y entregan. El envío lo paga el cliente, no tu local.</p>
+      <p>Motorizados de DEWAN retiran tu pedido, <b>te pagan tu venta ahí mismo</b> y entregan. El envío lo paga el cliente, no tu local.</p>
     </div></div>
   </div>
 </section>
@@ -310,6 +316,17 @@
   </div>
 </section>
 
+<!-- HECHO EN RIOBAMBA -->
+<section class="local-riob">
+  <div class="wrap">
+    <div class="kicker">Hecho en Riobamba</div>
+    <h2>Somos de aquí, como tu local</h2>
+    <p>DEWAN nació en Riobamba y está empezando: la app, los motorizados y el que te contesta el WhatsApp son de aquí. Cada pedido se queda en la ciudad — entre tu cocina, un motorizado riobambeño y una app hecha en casa.</p>
+    <p><b>Y entrar cuando algo empieza tiene ventaja:</b> menos locales compitiendo en la primera fila, atención directa de dueño a dueño y cero costo por probar.</p>
+    <div class="pill-local">🤝 Apoya lo local — y lo local te apoya</div>
+  </div>
+</section>
+
 <!-- VERLO ANTES DE DECIDIR -->
 <section id="verlo">
   <div class="wrap">
@@ -325,11 +342,11 @@
   <div class="wrap">
     <div class="kicker">Preguntas de dueño a dueño</div>
     <h2>Lo que todos nos preguntan</h2>
-    <!-- PENDIENTE OK DAVID (flujo de cobro — elegir variante y descomentar como primer details open):
-    VARIANTE A: <details open><summary>¿Cuándo cobro mi plata?</summary><p>El mismo día. El motorizado te paga tu venta al retirar el pedido. El 10% se liquida aparte, con el detalle de cada pedido visible en tu app.</p></details>
-    VARIANTE B: <details open><summary>¿Cuándo cobro mi plata?</summary><p>Tu venta la recibes [momento real confirmado]. En la app ves día por día qué vendiste y cuánto recibes.</p></details>
-    -->
     <details open>
+      <summary>¿Cuándo cobro mi plata?</summary>
+      <p>En el momento. El motorizado te paga tu venta cuando retira el pedido — plata en mano, sin esperar depósitos. Y en la app ves día por día qué vendiste.</p>
+    </details>
+    <details>
       <summary>¿Cuánto cuesta entrar?</summary>
       <p>Nada. Ni inscripción, ni mensualidad, ni equipos. Solo pagas el 10% de lo que vendas por la app. Si no vendes, no pagas.</p>
     </details>
@@ -357,8 +374,11 @@
       <summary>¿En cuánto tiempo está mi local en la app?</summary>
       <p>Rápido. Nos mandas tu carta y tu horario, nosotros armamos todo y tu local puede estar en vivo esta misma semana.</p>
     </details>
-    <!-- PENDIENTE OK DAVID (responsabilidad de entrega + exclusividad):
-    <details><summary>¿Y si algo pasa con la entrega?</summary><p>Desde que el motorizado retira tu pedido, la entrega es responsabilidad de DEWAN. Cualquier reclamo del cliente lo atendemos nosotros por WhatsApp.</p></details>
+    <details>
+      <summary>¿Y si algo pasa con la entrega?</summary>
+      <p>La entrega la hacen solo motorizados de DEWAN. Desde que retiran tu pedido, es responsabilidad nuestra — cualquier reclamo del cliente lo atendemos nosotros por WhatsApp.</p>
+    </details>
+    <!-- PENDIENTE OK DAVID (exclusividad):
     <details><summary>¿Tengo que trabajar solo con DEWAN?</summary><p>No. No pedimos exclusividad. Tu local es tuyo y tus canales siguen igual.</p></details>
     -->
   </div>
