@@ -57,6 +57,13 @@
   .tres span{background:#fff;border:1.5px solid #E5DCCE;border-radius:999px;padding:8px 14px;
     font-size:13.5px;font-weight:600}
 
+  /* ── logos de aliados ── */
+  .logo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 10px;margin-top:24px}
+  .logo-item{text-align:center}
+  .logo-item img{width:100%;max-width:76px;aspect-ratio:1/1;height:auto;border-radius:18px;
+    border:1px solid #E5DCCE;box-shadow:0 4px 12px rgba(43,29,18,.08);display:block;margin:0 auto;background:#fff}
+  .logo-item span{display:block;margin-top:7px;font-size:11.5px;font-weight:600;color:var(--gris);line-height:1.2}
+
   /* ── PASOS ── */
   .pasos{background:#fff}
   .paso{display:flex;gap:16px;align-items:flex-start;margin-top:26px}
@@ -227,10 +234,17 @@
   <div class="wrap">
     <div class="kicker">Ya están aquí</div>
     <h2>Locales de Riobamba que ya venden en DEWAN</h2>
-    <div class="tres" style="margin-top:18px">
-      <span style="font-size:15px">Happy Pollo</span><span style="font-size:15px">Sr. Moro</span><span style="font-size:15px">Pollo Ejecutivo</span><span style="font-size:15px">Air Wings</span><span style="font-size:15px">Buuba Té</span><span style="font-size:15px">Mr. Willy's</span>
+    <div class="logo-grid">
+      <div class="logo-item"><img src="img/logos/happy-pollo.webp" alt="Happy Pollo" width="160" height="160" loading="lazy" decoding="async"><span>Happy Pollo</span></div>
+      <div class="logo-item"><img src="img/logos/sr-moro.webp" alt="Sr. Moro" width="160" height="160" loading="lazy" decoding="async"><span>Sr. Moro</span></div>
+      <div class="logo-item"><img src="img/logos/pollo-ejecutivo.webp" alt="Pollo Ejecutivo" width="160" height="160" loading="lazy" decoding="async"><span>Pollo Ejecutivo</span></div>
+      <div class="logo-item"><img src="img/logos/air-wings.webp" alt="Air Wings" width="160" height="160" loading="lazy" decoding="async"><span>Air Wings</span></div>
+      <div class="logo-item"><img src="img/logos/buuba-te.webp" alt="Buuba Té" width="160" height="160" loading="lazy" decoding="async"><span>Buuba Té</span></div>
+      <div class="logo-item"><img src="img/logos/mr-willys.webp" alt="Mr. Willy's" width="160" height="160" loading="lazy" decoding="async"><span>Mr. Willy's</span></div>
+      <div class="logo-item"><img src="img/logos/cherokee.webp" alt="Cherokee" width="160" height="160" loading="lazy" decoding="async"><span>Cherokee</span></div>
+      <div class="logo-item"><img src="img/logos/papazota.webp" alt="Papazota Cheese" width="160" height="160" loading="lazy" decoding="async"><span>Papazota</span></div>
     </div>
-    <p style="margin-top:14px;font-size:14.5px;color:var(--gris)">Compruébalo tú mismo: ábrelos en <b>pedir.dewansas.com</b></p>
+    <p style="margin-top:18px;font-size:14.5px;color:var(--gris)">Compruébalo tú mismo: ábrelos en <b>pedir.dewansas.com</b></p>
   </div>
 </section>
 
