@@ -1565,6 +1565,15 @@
                     var precio=TARIFA_BASE;
                     if(distRuta>KM_INCLUIDOS) precio=TARIFA_BASE+((distRuta-KM_INCLUIDOS)*PRECIO_POR_KM);
                     r.precio_delivery=Math.round(precio*100)/100;
+                    // [8-jul] La cotización REAL (webhook Google, ver cotizarEnvioReal) manda sobre este
+                    // estimado. Sin esto, cada llamada (render home, re-sync de sendWA, etc.) PISABA la
+                    // cotización real y el mensaje de WhatsApp salía con el estimado (dif ±$0.30 en carreras).
+                    var _e=window._envioReal&&window._envioReal[r.nombre];
+                    if(_e&&!_e.pending&&Number(_e.precio)>0&&(Date.now()-_e.ts)<10*60*1000&&
+                       _e.gpsKey===r.nombre+'|'+Number(window._clientGPS.lat).toFixed(4)+','+Number(window._clientGPS.lng).toFixed(4)){
+                        r.precio_delivery=Number(_e.precio);
+                        if(_e.km)r.distancia_km=Math.round(Number(_e.km)*10)/10;
+                    }
                 }
             });
             return rests;
