@@ -36,6 +36,16 @@ export function lanzarMotorizado(pedidoId, auto = false, sucursalId = null) {
   return llamar('lanzar-motorizado', { pedido_id: pedidoId, auto, sucursal_id: sucursalId });
 }
 
+// Mismo aviso que dispara la app del moto al aceptar (solo_notificar: el RPC
+// aceptar_pedido ya hizo la asignación; esto avisa al cliente por WhatsApp).
+export function pedidoAceptado(pedidoId, motorizadoId) {
+  return llamar('pedido-aceptado', {
+    pedido_id: pedidoId,
+    motorizado_id: motorizadoId,
+    solo_notificar: true,
+  });
+}
+
 export function cancelarPedido(pedido, razon = 'Cancelado por admin') {
   return llamar('cancelar-pedido', {
     pedido_id: pedido.id,

@@ -68,6 +68,7 @@ export default function PedidosTab({ data }) {
               key={p.id}
               p={p}
               tipoAcuerdo={p.restaurante_id ? tipoPorRest.get(p.restaurante_id) : null}
+              motorizados={data.motorizados}
             />
           ))}
         </div>

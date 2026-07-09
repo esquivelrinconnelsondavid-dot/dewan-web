@@ -5,7 +5,8 @@ import { useTimer, useTimerSubir } from '../hooks/useTimer';
 import { useSucursales } from '../hooks/useSucursales';
 import TimerDisplay from './TimerDisplay';
 import SelectorSucursal from './SelectorSucursal';
-import { lanzarMotorizado, cancelarPedido as wCancelarPedido, restauranteNoPuede, timerRestaurante } from '../lib/webhooks';
+import ModalAsignarMoto from './ModalAsignarMoto';
+import { lanzarMotorizado, cancelarPedido as wCancelarPedido, restauranteNoPuede, timerRestaurante, pedidoAceptado } from '../lib/webhooks';
 import { stopAlertLoop, alertActiva } from '../lib/notifications';
 
 const ESTADO_LABEL = {
@@ -64,8 +65,9 @@ function Boton({ children, onClick, color = 'dewan', disabled, full }) {
   );
 }
 
-export default function PedidoCard({ p, tipoAcuerdo }) {
+export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   const [cargando, setCargando] = useState(false);
+  const [modalAsignar, setModalAsignar] = useState(false);
   const lanzadoRef = useRef(false);
   const { expirado } = useTimer(p.timer_lanzamiento);
   const tiempoEspera = useTimerSubir(p.fecha_creacion);
@@ -174,6 +176,49 @@ export default function PedidoCard({ p, tipoAcuerdo }) {
       alert('No se pudo relanzar el pedido');
     }
     setCargando(false);
+  };
+
+  // Asignar la carrera a UN moto elegido a dedo, sin ofertarla a todos.
+  // Reusa el mismo camino que cuando el moto acepta en su app: el RPC
+  // aceptar_pedido (atómico: asigna, cobra la comisión de la billetera y marca
+  // 'aceptado') + el webhook pedido-aceptado que avisa al cliente. El pedido le
+  // aparece al moto por realtime (su app filtra por motorizado_id).
+  const asignarMoto = async (moto) => {
+    setCargando(true);
+    try {
+      // El RPC espera el pedido en 'confirmado'. Si aún está en preparando (o
+      // colgado en pendiente_restaurante), lo confirmamos primero — igual que
+      // lanzarAhora pero SIN disparar la oferta a todos los motos.
+      if (p.estado_pedido !== 'confirmado') {
+        const updateData = { estado_pedido: 'confirmado' };
+        if (sucursalSeleccionada && !p.sucursal_id) {
+          updateData.sucursal_id = sucursalSeleccionada.id;
+          updateData.sucursal_nombre = sucursalSeleccionada.nombre_completo;
+          updateData.direccion_retiro = sucursalSeleccionada.direccion;
+          updateData.retiro_lat = sucursalSeleccionada.latitud;
+          updateData.retiro_lng = sucursalSeleccionada.longitud;
+        }
+        await supabase.from('pedidos_delivery').update(updateData).eq('id', p.id);
+      }
+      const { data, error } = await supabase.rpc('aceptar_pedido', {
+        p_pedido_id: p.id,
+        p_motorizado_id: moto.id,
+      });
+      if (error) throw error;
+      if (!data?.exito) {
+        alert(data?.error || 'No se pudo asignar (¿otro moto la tomó?)');
+        return false;
+      }
+      await pedidoAceptado(p.id, moto.id).catch((e) => console.warn('webhook aceptado:', e?.message));
+      stopAlertLoop(p.id);
+      return true;
+    } catch (e) {
+      console.error('asignarMoto:', e);
+      alert('No se pudo asignar el motorizado');
+      return false;
+    } finally {
+      setCargando(false);
+    }
   };
 
   useEffect(() => {
@@ -346,15 +391,17 @@ export default function PedidoCard({ p, tipoAcuerdo }) {
       {p.estado_pedido === 'preparando' && (
         <div className="flex gap-1.5 pt-1">
           <Boton color="encamino" full onClick={() => lanzarAhora(false)} disabled={cargando || requiereSucursal}>🚀 Lanzar ahora</Boton>
+          <Boton color="gris" onClick={() => setModalAsignar(true)} disabled={cargando || requiereSucursal}>👤 Asignar</Boton>
           <Boton color="preparando" onClick={agregar5} disabled={cargando}>+5'</Boton>
         </div>
       )}
 
       {p.estado_pedido === 'confirmado' && !p.motorizado_id && (
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex items-center justify-between gap-2 pt-1">
           <div className="text-[11px] text-buscando font-semibold">
             🔍 Buscando moto ({tiempoEspera.texto})
           </div>
+          <Boton color="gris" onClick={() => setModalAsignar(true)} disabled={cargando}>👤 Asignar moto</Boton>
         </div>
       )}
 
@@ -398,6 +445,15 @@ export default function PedidoCard({ p, tipoAcuerdo }) {
           )}
         </div>
       </div>
+
+      {modalAsignar && (
+        <ModalAsignarMoto
+          pedido={p}
+          motorizados={motorizados}
+          onAsignar={asignarMoto}
+          onCerrar={() => setModalAsignar(false)}
+        />
+      )}
     </div>
   );
 }
