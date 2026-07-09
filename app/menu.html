@@ -3988,6 +3988,40 @@
             if(window._enviando) return;
             window._enviando=true;
             setTimeout(function(){window._enviando=false},4000);
+            // [8-jul] Envío EXACTO al confirmar: la cotización real (cotizarEnvioReal) es asíncrona; si el
+            // cliente movía el pin y tocaba Enviar antes de que Google respondiera, el mensaje salía con el
+            // envío ANTERIOR (dif ±$0.30 vs la carrera real, ej. #514/#515). Regla: lo que ve el cliente ES
+            // lo que se cobra → esperar la cotización del pin FINAL (máx 6.5s) antes de armar el mensaje.
+            // Con cotización ya cacheada para este pin (caso común) no hay espera alguna.
+            if(!window._envioListo){
+                var _btnWA=document.querySelector('#cart-sheet-foot .btn-wa');
+                var _btnHTML=_btnWA?_btnWA.innerHTML:null;
+                var _t0=Date.now(),_marcado=false;
+                cotizarEnvioReal();
+                (function _esperar(){
+                    var falta=false;
+                    var rs={};window._cart.forEach(function(c){rs[c.restaurante]=1});
+                    Object.keys(rs).forEach(function(n){
+                        var r=getRestByName(n); if(!r||!r.restaurante_lat||!r.restaurante_lng)return;
+                        var gk=n+'|'+Number(window._clientGPS.lat).toFixed(4)+','+Number(window._clientGPS.lng).toFixed(4);
+                        var e=window._envioReal[n];
+                        if(e&&e.gpsKey===gk&&!e.pending)return;                 // cotización fresca lista
+                        if(e&&e.pending&&e.gpsKey===gk){falta=true;return;}     // consulta en vuelo p/este pin
+                        if((Date.now()-_t0)<2000){cotizarEnvioReal();falta=true;} // aún no arrancó (o falló): reintentar breve
+                    });
+                    if(falta&&(Date.now()-_t0)<6500){
+                        if(!_marcado&&_btnWA){_marcado=true;_btnWA.innerHTML='<span style="width:100%;text-align:center">🛵 Confirmando costo de envío…</span>';_btnWA.disabled=true;}
+                        return setTimeout(_esperar,150);
+                    }
+                    // seguir con lo que haya (cotización fresca, o el estimado si el webhook no respondió)
+                    var _btn2=document.querySelector('#cart-sheet-foot .btn-wa'); // el sheet pudo re-renderizarse al llegar el precio
+                    if(_btn2&&_btn2.disabled&&_btnHTML!=null){_btn2.innerHTML=_btnHTML;_btn2.disabled=false;}
+                    window._envioListo=true;
+                    window._enviando=false;
+                    try{sendWA();}finally{window._envioListo=false;}
+                })();
+                return;
+            }
             var byRest={};window._cart.forEach(function(c){if(!byRest[c.restaurante])byRest[c.restaurante]=[];byRest[c.restaurante].push(c)});
             // [27-jun FIX envío $0] Re-sincronizar el envío del carrito con el GPS ACTUAL antes de armar el mensaje.
             // El bug: c.delivery se congela cuando se agrega el plato; si se agregó antes de tener GPS quedaba en 0
