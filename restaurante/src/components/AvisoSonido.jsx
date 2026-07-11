@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { suscribirEstadoAudio, unlockAudio, playSirena } from '../lib/notifications';
+import { estadoAudio, suscribirEstadoAudio, unlockAudio, playSirena } from '../lib/notifications';
 
 export default function AvisoSonido() {
-  const [desbloqueado, setDesbloqueado] = useState(false);
+  // Estado inicial real: en la app nativa y en Electron el audio ya viene
+  // armado desde el arranque, así la barra no parpadea ni un frame.
+  const [desbloqueado, setDesbloqueado] = useState(() => estadoAudio() === 'running');
 
   useEffect(() => suscribirEstadoAudio(setDesbloqueado), []);
 

@@ -15,7 +15,7 @@ import { usePedidosRestaurante } from './hooks/usePedidosRestaurante';
 import {
   requestPushPermission,
   unlockAudio,
-  autoArmarAudioEscritorio,
+  autoArmarAudio,
   pedirWakeLock,
   instalarWakeLockListener,
   stopAllAlerts,
@@ -71,9 +71,10 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
   }, [restaurante?.restaurante_id, restaurante?.nombre]);
 
   // Desbloquear audio con el primer gesto del usuario.
-  // En PC (Electron) lo armamos solo al iniciar, así no aparece el botón.
+  // En PC (Electron) y en la app nativa (Android) se arma solo al iniciar, así
+  // no aparece el botón; el gesto queda como respaldo y para el navegador.
   useEffect(() => {
-    autoArmarAudioEscritorio();
+    autoArmarAudio();
     const handler = () => {
       unlockAudio();
       document.removeEventListener('touchstart', handler);

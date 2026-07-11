@@ -41,18 +41,19 @@ const SLIDES = [
       <>
         <span className="text-5xl">🔊</span>
         <div
-          className="w-full max-w-[300px] bg-nuevo text-white font-extrabold text-[13px] py-3 px-3 rounded-lg text-center"
-          style={{ boxShadow: '0 0 0 6px rgba(239,68,68,.18)' }}
+          className="w-full max-w-[300px] bg-emerald-600 text-white font-extrabold text-[13px] py-3 px-3 rounded-lg text-center"
+          style={{ boxShadow: '0 0 0 6px rgba(16,185,129,.18)' }}
         >
-          🔊 Tocá aquí para activar el sonido
+          🔊 Sonido activado — la alarma suena sola
         </div>
       </>
     ),
     titulo: 'Antes de empezar',
     texto: (
       <>
-        Apenas entres, tocá la <b className="text-gray-200">barra roja "Activar el sonido"</b> (sin eso no suena la alarma)
-        y <b className="text-gray-200">dejá la app abierta</b>. Ideal: una tablet o PC siempre encendida.
+        El sonido de la alarma <b className="text-gray-200">se activa solo</b> — no tenés que tocar nada.
+        Subí el volumen y <b className="text-gray-200">dejá la app abierta</b>. Ideal: una tablet o PC siempre encendida.
+        (Solo si usás el panel en un navegador web aparece la barra roja "Activar el sonido" — ahí sí tocala.)
       </>
     ),
   },

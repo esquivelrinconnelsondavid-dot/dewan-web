@@ -241,16 +241,21 @@ export function unlockAudio() {
   notificarEstadoAudio();
 }
 
-// En escritorio (Electron) la política de autoplay está relajada en main.cjs,
-// así que el AudioContext puede arrancar "running" sin gesto del usuario.
-// Detectamos Electron por el userAgent y armamos el audio solo allí; en web y
-// en Android se mantiene el botón "activar sonido" (ahí sí hace falta el toque).
+// En escritorio (Electron) la política de autoplay está relajada en main.cjs, y
+// en la app Android nativa MainActivity.java desactiva el gesto requerido
+// (setMediaPlaybackRequiresUserGesture(false)) → en ambos el AudioContext puede
+// arrancar sin toque del usuario. Solo en el navegador se mantiene el botón
+// "activar sonido" (ahí el gesto sí es obligatorio).
 export function esEscritorioElectron() {
   return typeof navigator !== 'undefined' && /Electron/i.test(navigator.userAgent || '');
 }
 
-export async function autoArmarAudioEscritorio() {
-  if (!esEscritorioElectron()) return false;
+export function audioSinGesto() {
+  return esEscritorioElectron() || Capacitor.isNativePlatform();
+}
+
+export async function autoArmarAudio() {
+  if (!audioSinGesto()) return false;
   try {
     const ctx = getAudioCtx();
     if (ctx.state !== 'running') await ctx.resume().catch(() => {});
@@ -259,6 +264,12 @@ export async function autoArmarAudioEscritorio() {
   } catch {
     return false;
   }
+}
+
+// Armar apenas carga el módulo: cuando AvisoSonido se monte el audio ya está
+// corriendo y la barra roja ni aparece. En navegador no hace nada.
+if (typeof window !== 'undefined') {
+  autoArmarAudio();
 }
 
 // Wake Lock: evita que la pantalla se apague mientras la app está abierta.
