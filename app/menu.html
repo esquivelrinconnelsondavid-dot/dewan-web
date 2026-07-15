@@ -2213,7 +2213,10 @@
                             h+='</div>';
                             h+='</section>';
                         } else {
-                            h+=renderMasOpciones(silenc,gIdx,function(r){return catCmd(r.nombre)});
+                            // Categoría CON socios: silenciosos colapsados a botón (igual que la
+                            // home) — la vitrina de navegación es de socios; el catálogo largo
+                            // vive en la búsqueda y detrás del botón.
+                            h+=renderMasOpciones(silenc,gIdx,function(r){return catCmd(r.nombre)},null,0);
                         }
                     }
                 } else {
