@@ -2267,9 +2267,10 @@
                         }
                     }
                     h+='</section>';
-                    // "Más opciones": no-aliados (silenciosos). Visibles para dar variedad,
-                    // sin badges ni promo, separados de los socios. Preview + expandir el resto.
-                    h+=renderMasOpciones(homeBy.silenciosos,homeBy.socios.length,function(r){return 'openRest(\''+jsEsc(r.nombre)+'\')'});
+                    // "Más opciones": no-aliados (silenciosos). En la HOME van colapsados a un
+                    // solo botón (preview 0): la vitrina principal es de los socios. En categorías
+                    // y búsqueda siguen con preview normal (variedad donde el cliente ya busca).
+                    h+=renderMasOpciones(homeBy.silenciosos,homeBy.socios.length,function(r){return 'openRest(\''+jsEsc(r.nombre)+'\')'},null,0);
                 }
             }
             h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
@@ -2942,20 +2943,25 @@
         // Sección "Más opciones" reutilizable (home / categorías / búsqueda).
         // sil=array de silenciosos; baseIdx=índice para getColor; cmdFn=onclick por restaurante;
         // titleCls=clase del título según la vista.
-        function renderMasOpciones(sil,baseIdx,cmdFn,titleCls){
+        function renderMasOpciones(sil,baseIdx,cmdFn,titleCls,preview){
             if(!sil||!sil.length) return '';
+            // preview=0 (home): la vitrina es de los socios — los silenciosos quedan
+            // detrás de un solo botón y salen completos solo si el cliente los pide.
+            if(preview===undefined) preview=SILENCIOSOS_PREVIEW;
             // [14-jun] Logo-primero: locales con foto/logo arriba; los de bloque-letra al final.
             // Sort ESTABLE (respeta el orden previo dentro de cada grupo).
             sil=sil.slice().sort(function(a,b){var la=(a.logo_url||a.imagen_url||a.foto_url)?0:1;var lb=(b.logo_url||b.imagen_url||b.foto_url)?0:1;return la-lb;});
             var showAll=window._showSilenciosos;
-            var vis=showAll?sil:sil.slice(0,SILENCIOSOS_PREVIEW);
+            var vis=showAll?sil:sil.slice(0,preview);
             var h='<div id="silenciosos-section">';
-            h+='<div class="'+(titleCls||'list-section-title')+'">🍽 Más opciones · '+sil.length+'</div>';
-            h+='<div class="grid3-wrap">';
-            vis.forEach(function(r,i){h+=renderRestCardGrid(r,baseIdx+i,cmdFn(r))});
-            h+='</div>';
-            if(sil.length>SILENCIOSOS_PREVIEW){
-                h+=showAll?renderOcultarSilenciososBtn():renderSilenciososBtn(sil.length-SILENCIOSOS_PREVIEW);
+            if(vis.length){
+                h+='<div class="'+(titleCls||'list-section-title')+'">🍽 Más opciones · '+sil.length+'</div>';
+                h+='<div class="grid3-wrap">';
+                vis.forEach(function(r,i){h+=renderRestCardGrid(r,baseIdx+i,cmdFn(r))});
+                h+='</div>';
+            }
+            if(sil.length>preview){
+                h+=showAll?renderOcultarSilenciososBtn():renderSilenciososBtn(sil.length-vis.length);
             }
             h+='</div>';
             return h;
