@@ -4916,5 +4916,68 @@
         else if (esAndroid && esInApp) setTimeout(function(){ pintarBanner('chrome'); }, 12000);
     })();
     </script>
+    <script>
+    /* ===== Sellos DEWAN: cada 6 pedidos, envío gratis (widget autocontenido) ===== */
+    (function(){
+        var LS_TEL='dewan_sellos_tel';
+        function telGuardado(){ try{return localStorage.getItem(LS_TEL)||''}catch(e){return''} }
+        function pintarCirculos(n){
+            var h='';
+            for(var i=0;i<6;i++){
+                h+='<span style="width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;'+
+                   (i<n?'background:#F59E0B;color:#fff;':'background:#EDE4D3;color:#B9A88F;')+'margin:0 3px;">'+(i<n?'🎟':'')+'</span>';
+            }
+            return h;
+        }
+        function consultar(tel, cont){
+            fetch(SB_URL+'/rest/v1/rpc/sellos_estado',{method:'POST',
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+                body:JSON.stringify({tel:tel})})
+            .then(function(r){return r.json()})
+            .then(function(d){
+                if(!d||typeof d.sellos==='undefined'){ cont.innerHTML='<div style="font-size:.82rem;color:#8a7a6d">No pudimos consultar ahora, intenta más tarde.</div>'; return; }
+                try{localStorage.setItem(LS_TEL,tel)}catch(e){}
+                var premio = d.premios_disponibles>0;
+                cont.innerHTML=
+                    '<div style="display:flex;align-items:center;justify-content:center;margin:6px 0 4px">'+pintarCirculos(d.sellos)+'</div>'+
+                    (premio
+                        ? '<div style="font-weight:800;color:#1F9D55;font-size:.92rem">🎁 ¡Tienes un ENVÍO GRATIS para tu próximo pedido!</div>'
+                        : '<div style="font-size:.88rem;color:#4A2C17">Llevas <b>'+d.sellos+' de 6</b> — te '+(d.faltan===1?'falta <b>1 pedido</b>':'faltan <b>'+d.faltan+' pedidos</b>')+' para tu <b>envío GRATIS</b> 🛵</div>')+
+                    '<button onclick="dewanSellosCambiarTel()" style="background:none;border:0;color:#B9A88F;font-size:.72rem;margin-top:4px;text-decoration:underline;font-family:inherit">consultar otro número</button>';
+            })
+            .catch(function(){ cont.innerHTML='<div style="font-size:.82rem;color:#8a7a6d">Sin conexión — intenta más tarde.</div>'; });
+        }
+        window.dewanSellosCambiarTel=function(){
+            try{localStorage.removeItem(LS_TEL)}catch(e){}
+            var c=document.getElementById('dewan-sellos-body'); if(c) pintarForm(c);
+        };
+        function pintarForm(cont){
+            cont.innerHTML='<div style="font-size:.88rem;color:#4A2C17;margin-bottom:6px">Cada 6 pedidos, tu carrera va <b>GRATIS</b> (¡y ya llevas 2 de regalo!)</div>'+
+                '<div style="display:flex;gap:6px;justify-content:center">'+
+                '<input id="dewan-sellos-tel" type="tel" inputmode="tel" placeholder="Tu número (09...)" style="border:1.5px solid #EDE4D3;border-radius:10px;padding:8px 10px;font-size:.9rem;width:170px;font-family:inherit">'+
+                '<button onclick="dewanSellosVer()" style="background:#F59E0B;color:#fff;border:0;border-radius:10px;padding:8px 14px;font-weight:800;font-family:inherit;font-size:.88rem">Ver mis sellos</button></div>';
+        }
+        window.dewanSellosVer=function(){
+            var i=document.getElementById('dewan-sellos-tel');
+            var tel=(i&&i.value||'').replace(/\D/g,'');
+            if(tel.length<9){ if(i){i.style.borderColor='#D93A0B'; i.focus();} return; }
+            consultar(tel, document.getElementById('dewan-sellos-body'));
+        };
+        function montar(){
+            if(document.getElementById('dewan-sellos')) return;
+            var card=document.createElement('div');
+            card.id='dewan-sellos';
+            card.style.cssText='margin:14px 12px;background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:0 3px 12px rgba(74,44,23,.08);max-width:406px;margin-left:auto;margin-right:auto;';
+            card.innerHTML='<div style="font-weight:900;color:#4A2C17;font-size:.98rem;margin-bottom:2px">🎟️ Sellos DEWAN</div><div id="dewan-sellos-body"></div>';
+            var footer=document.querySelector('footer');
+            if(footer) footer.parentNode.insertBefore(card,footer); else document.body.appendChild(card);
+            var body=card.querySelector('#dewan-sellos-body');
+            var t=telGuardado();
+            if(t) consultar(t, body); else pintarForm(body);
+        }
+        if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(montar,800)});
+        else setTimeout(montar,800);
+    })();
+    </script>
 </body>
 </html>
