@@ -2257,17 +2257,13 @@
                     h+='<section class="home-card">';
                     h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+homeBy.socios.length+'</div>';
                     if(homeBy.socios.length){
-                        var _socVis=window._showSocios?homeBy.socios:homeBy.socios.slice(0,8); // home corto: preview de 8
+                        // [14-jul] Socios COMPLETOS en la home (pedido de David): la vitrina
+                        // principal muestra todos los aliados + cliente_paga, sin preview.
                         h+='<div class="grid3-wrap">';
-                        _socVis.forEach(function(r,idx){
+                        homeBy.socios.forEach(function(r,idx){
                             h+=renderRestCardGrid(r,idx,'openRest(\''+jsEsc(r.nombre)+'\')');
                         });
                         h+='</div>';
-                        if(homeBy.socios.length>8){
-                            h+=window._showSocios
-                                ?'<button class="ocultar-otros-btn" onclick="toggleSocios()">↑ Ver menos</button>'
-                                :'<button class="ver-otros-btn" onclick="toggleSocios()"><span class="ver-otros-title">Ver todos los locales <span class="ver-otros-count">'+homeBy.socios.length+'</span></span></button>';
-                        }
                     }
                     h+='</section>';
                     // "Más opciones": no-aliados (silenciosos). En la HOME van colapsados a un
