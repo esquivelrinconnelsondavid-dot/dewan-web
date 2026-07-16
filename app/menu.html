@@ -1291,6 +1291,42 @@
                 });
         }
 
+        // ── Popularidad real 30d (espejo de la app nativa): pedidos por local +
+        // unidades por plato parseando "2x Nombre — $17.98" del detalle. Cacheado
+        // en una promesa; si falla devuelve mapas vacíos (rankea solo el barajado). ──
+        function loadPopularidad30d(){
+            if(window._popPromise) return window._popPromise;
+            var desde=new Date(Date.now()-30*24*3600*1000).toISOString();
+            var u=SB_URL+'/rest/v1/pedidos_delivery?select=restaurante_id,detalle_pedido&fecha_creacion=gte.'+encodeURIComponent(desde)+'&estado_pedido=neq.cancelado&order=fecha_creacion.desc&limit=1000';
+            window._popPromise=fetch(u,{headers:supaHeaders()})
+                .then(function(r){return r.json()})
+                .then(function(rows){
+                    var rests={},platos={},re=/^\s*(\d+)\s*x\s+(.+?)\s+[—–-]\s+\$/;
+                    (rows||[]).forEach(function(rw){
+                        if(rw.restaurante_id) rests[rw.restaurante_id]=(rests[rw.restaurante_id]||0)+1;
+                        String(rw.detalle_pedido||'').split('\n').forEach(function(l){
+                            var m=l.match(re); if(!m) return;
+                            var k=removeAccents(m[2].toLowerCase().trim());
+                            platos[k]=(platos[k]||0)+Number(m[1]);
+                        });
+                    });
+                    window._popRests=rests; window._popPlatos=platos;
+                    return {rests:rests,platos:platos};
+                })
+                .catch(function(){window._popRests={};window._popPlatos={};return {rests:{},platos:{}}});
+            return window._popPromise;
+        }
+        function _ventasPlato(nombre){return (window._popPlatos||{})[removeAccents(String(nombre||'').toLowerCase().trim())]||0}
+        // Barajado determinístico por FECHA (mismo orden todo el día, cambia mañana)
+        function _dayShuffle(arr,key){
+            var d=new Date(),seed=d.getFullYear()*372+(d.getMonth()+1)*31+d.getDate();
+            return arr.slice().sort(function(a,b){
+                var ha=(key(a)+seed).split('').reduce(function(s,c){return (s*31+c.charCodeAt(0))%9973},7);
+                var hb=(key(b)+seed).split('').reduce(function(s,c){return (s*31+c.charCodeAt(0))%9973},7);
+                return ha-hb;
+            });
+        }
+
         // ── Home food rail: platos con FOTO de aliados (cross-restaurant) ──
         // Muestra COMIDA real apenas entra el cliente (no solo logos). window._destHome:
         // undefined=no cargado · []=cargó vacío/falló · [..]=platos. Se inyecta por id sin re-render global.
@@ -1299,19 +1335,26 @@
             if(!(sessionData&&sessionData.resultados&&sessionData.resultados.length)) return; // catálogo aún no listo
             window._destHomeLoading=true;
             var url=SB_URL+'/rest/v1/menu_items?select=id,nombre_item,precio,categoria_menu,descripcion,foto_url,cargo_envase,restaurante_id&disponible=eq.true&foto_url=not.is.null&limit=1000';
-            fetch(url,{headers:supaHeaders()})
-                .then(function(r){return r.json()})
-                .then(function(items){
+            Promise.all([
+                fetch(url,{headers:supaHeaders()}).then(function(r){return r.json()}),
+                loadPopularidad30d() // en paralelo; nunca rechaza
+            ])
+                .then(function(_res){
+                    var items=_res[0];
                     var out=[];
                     (items||[]).forEach(function(it){
                         if(!it.foto_url||!String(it.foto_url).trim()) return;
                         if(esAdicional(it.categoria_menu,it.nombre_item)) return; // adicionales/porciones/proteínas sueltas tampoco
                         var rest=getRestById(it.restaurante_id);
                         if(!rest) return;                              // rest no está en la sesión
-                        // [16-jul] portada de PLATO por local para el feed premium (todas las tiers)
+                        // [16-jul] candidatas a portada por local (todas las tiers). Se rankean
+                        // al final por VENTAS 30d — ya no "la primera foto que llegue de la BD"
+                        // (queja real: Brisa Marina siempre con la sopa de bagre, Los Morochos con el té)
                         if(!esBebida(it.categoria_menu)||esLocalBebidas(rest)){
-                            window._fotoRest=window._fotoRest||{};
-                            if(!window._fotoRest[rest.id]) window._fotoRest[rest.id]=it.foto_url;
+                            window._fotoRestCand=window._fotoRestCand||{};
+                            var _fc=(window._fotoRestCand[rest.id]=window._fotoRestCand[rest.id]||[]);
+                            var _dup=false;for(var _i=0;_i<_fc.length;_i++){if(_fc[_i].url===it.foto_url){_dup=true;break;}}
+                            if(!_dup) _fc.push({url:it.foto_url,nombre:it.nombre_item});
                         }
                         if(rest.tipo_acuerdo!=='aliado'&&rest.tipo_acuerdo!=='cliente_paga') return; // aliados + cliente_paga (excluye silenciosos como Rodri Pollos)
                         // Bebidas NO van en el carril de comida... EXCEPTO en locales de bebidas (frappería/cafetería/
@@ -1367,7 +1410,18 @@
                     // Ej.: Papazota (abre 3pm) al mediodía nunca lidera el carril; aparece al final solo si queda lugar.
                     var _ab=pick.filter(function(p){return p.abierto!==false});
                     var _ce=pick.filter(function(p){return p.abierto===false});
+                    // Los que SÍ se venden (30d) encabezan el carril; sort estable →
+                    // los sin ventas conservan el orden aleatorio de variedad
+                    _ab.sort(function(a,b){return _ventasPlato(b.nombre)-_ventasPlato(a.nombre)});
                     window._destHome=_ab.concat(_ce).slice(0,16);
+                    // Portadas FINALES por local: la más vendida primero, empates barajados
+                    // POR DÍA (hasta 3; con 2+ la tarjeta hero rota con fundido)
+                    window._fotoRest={};
+                    Object.keys(window._fotoRestCand||{}).forEach(function(rid){
+                        var arr=_dayShuffle(window._fotoRestCand[rid],function(x){return x.url});
+                        arr.sort(function(a,b){return _ventasPlato(b.nombre)-_ventasPlato(a.nombre)});
+                        window._fotoRest[rid]=arr.slice(0,3).map(function(x){return x.url});
+                    });
                     window._destHomeLoading=false;
                     // [16-jul] Las portadas del feed (window._fotoRest) llegan con este fetch:
                     // re-pintar la HOME completa para que las tarjetas hero aparezcan
@@ -1383,14 +1437,14 @@
             var _hr=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'})).getHours();
             var _sub=_hr<11?'🥐 Para el desayuno':(_hr<15?'🍽 Para el almuerzo':(_hr<19?'😋 Antojo de la tarde':'🌙 Para la cena'));
             if(window._destHome===undefined){
-                var sk='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
+                var sk='<div class="destacados-head"><span class="destacados-title">🔥 Los más pedidos</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
                 for(var i=0;i<4;i++) sk+='<div class="dest-card" style="border:none;height:210px;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:skel-shimmer 1.6s ease-in-out infinite"></div>';
                 return sk+'</div>';
             }
             if(!window._destHome.length) return '';
             // Carril MEZCLADO (un solo scroll): variedad en un swipe. Cada tarjeta = foto del plato + logo del local.
             if(window._destHome.every(function(p){return p.abierto===false})) _sub='🌙 Abren temprano · agenda tu antojo';
-            var h='<div class="destacados-head"><span class="destacados-title">🔥 Para ti</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
+            var h='<div class="destacados-head"><span class="destacados-title">🔥 Los más pedidos</span><span class="destacados-sub">'+_sub+'</span></div><div class="destacados-scroll">';
             window._destHome.forEach(function(p,idx){h+=_railCard(p,idx);});
             return h+'</div>';
         }
@@ -3108,10 +3162,13 @@
             var topBadge=r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'';
             // Aliados resaltan con borde verde (vitrina "Precio del local"); el resto, color por índice.
             var borderCol=isAliado?'rgba(34,197,94,0.40)':color+'25';
-            // [16-jul] Feed premium: la portada es la mejor foto de PLATO del local
-            // (window._fotoRest, la llena loadDestacadosHome). Con portada -> tarjeta hero
-            // 16:9 con logo en círculo; sin portada -> fila compacta con logo/monograma.
-            var cover=(window._fotoRest&&window._fotoRest[r.id])||null;
+            // [16-jul] Feed premium: portadas = fotos de PLATO rankeadas por ventas
+            // (window._fotoRest[id] es ARRAY, la llena loadDestacadosHome). Con 2+ y
+            // local abierto la tarjeta ROTA con fundido (motor _covStep); sin portada
+            // -> fila compacta con logo/monograma.
+            var covers=(window._fotoRest&&window._fotoRest[r.id])||null;
+            if(covers&&!covers.length) covers=null;
+            var cover=covers?covers[0]:null;
             var perksH=(isAliado?'<div class="grid3-aliado-perks">'+((Number(r.markup_pct)||0)===0?'<span class="grid3-pl">✓ Mismo precio en el local</span>':'')+((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'');
             if(cover){
                 return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+borderCol+'">'+
@@ -3119,7 +3176,9 @@
                         aliadoBadge+
                         feeBadge+
                         topBadge+
-                        '<img class="grid3-img" src="'+esc(thumb(cover,720))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()"'+(isOpen===false?' style="opacity:0.45"':'')+'>'+
+                        '<img class="grid3-img" src="'+esc(thumb(cover,720))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()"'+
+                            (isOpen!==false&&covers.length>1?' data-covers="'+esc(covers.join('|'))+'" data-ci="0" data-ph="'+Math.floor(Math.random()*3)+'"':'')+
+                            (isOpen===false?' style="opacity:0.45"':'')+'>'+
                         (r.logo_url?'<img class="grid3-logochip" src="'+esc(r.logo_url)+'" alt="" loading="lazy" onerror="this.remove()">':'')+
                         (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
                     '</div>'+
@@ -3147,6 +3206,54 @@
                 '</div>'+
                 '<span class="grid3-row-chev">›</span>'+
             '</div>';
+        }
+
+        // ── Portadas VIVAS (espejo app nativa v1.5): las tarjetas hero del feed
+        // alternan entre platos del local con fundido. UN solo timer global; cada
+        // tarjeta tiene fase propia (no cambian todas a la vez), solo rota si está
+        // EN PANTALLA y la pestaña visible, y la siguiente foto se PRE-CARGA — si
+        // no llega (sin datos), la tarjeta se queda quieta en vez de parpadear. ──
+        window._covTick=0;
+        setInterval(function(){
+            try{
+                window._covTick++;
+                if(document.hidden) return;
+                var imgs=document.querySelectorAll('img.grid3-img[data-covers]');
+                for(var i=0;i<imgs.length;i++) _covStep(imgs[i]);
+            }catch(e){}
+        },1700);
+        function _covStep(img){
+            var covers=(img.getAttribute('data-covers')||'').split('|');
+            if(covers.length<2||img._covLoading) return;
+            if((window._covTick+(Number(img.getAttribute('data-ph'))||0))%3!==0) return; // ~5s por tarjeta, desfasado
+            var rc=img.getBoundingClientRect();
+            if(!rc.height||rc.bottom<0||rc.top>(window.innerHeight||1e4)) return; // solo visibles
+            var next=((Number(img.getAttribute('data-ci'))||0)+1)%covers.length;
+            var url=thumb(covers[next],720);
+            img._covLoading=true;
+            var pre=new Image();
+            pre.onload=function(){
+                img._covLoading=false;
+                if(!document.body.contains(img)) return; // la home se re-pintó
+                var p=img.parentNode;
+                if(p&&p.style){
+                    // crossfade barato: el frame actual queda de FONDO del contenedor
+                    // mientras la foto nueva funde encima (sin flash vacío)
+                    var cur=img.currentSrc||img.src;
+                    p.style.backgroundImage='url("'+cur+'")';
+                    p.style.backgroundSize='cover';
+                    p.style.backgroundPosition='center';
+                }
+                img.style.transition='opacity .4s ease';
+                img.style.opacity='0';
+                setTimeout(function(){
+                    img.setAttribute('data-ci',String(next));
+                    img.src=url;
+                    img.style.opacity='1';
+                },200);
+            };
+            pre.onerror=function(){img._covLoading=false;};
+            pre.src=url;
         }
 
         // Listener delegado en CAPTURE phase — corre ANTES del onclick del card padre.
