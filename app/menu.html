@@ -1369,7 +1369,13 @@
                     var _ce=pick.filter(function(p){return p.abierto===false});
                     window._destHome=_ab.concat(_ce).slice(0,16);
                     window._destHomeLoading=false;
-                    try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}catch(e){}
+                    // [16-jul] Las portadas del feed (window._fotoRest) llegan con este fetch:
+                    // re-pintar la HOME completa para que las tarjetas hero aparezcan
+                    // (antes solo se refrescaba el carril y la grilla quedaba sin fotos).
+                    try{
+                        if(currentView==='home'&&!window._activeCat){renderHome();}
+                        else{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}
+                    }catch(e){try{var el2=document.getElementById('home-food-rail');if(el2)el2.innerHTML=homeFoodRailInner();}catch(e2){}}
                 })
                 .catch(function(){window._destHomeLoading=false;window._destHome=[];try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML='';}catch(e){}}); // []=colapsa, no reintenta ni deja skeleton
         }
