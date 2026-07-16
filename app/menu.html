@@ -33,7 +33,7 @@
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1924288741457770&ev=PageView&noscript=1"/></noscript>
     <!-- End Meta Pixel -->
-    <meta name="theme-color" content="#FBF4EA">
+    <meta name="theme-color" content="#FFFFFF">
     <!-- PWA cliente (instalable). OJO: manifest-cliente.json y sw-cliente.js son de ESTA app;
          el manifest.json y sw.js del mismo directorio son de la app del MOTORIZADO. -->
     <link rel="manifest" href="/app/manifest-cliente.json">
@@ -52,10 +52,12 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{
-            --bg:#FBF4EA;--card:#FFFCF7;--card2:#F4EADB;--border:#EAD9C4;
+            /* [16-jul] Paleta BLANCA premium (misma que la app nativa aprobada por David):
+               blanco 90% + un solo acento brasa; las fotos ponen el color */
+            --bg:#FFFFFF;--card:#FFFFFF;--card2:#F5F4F2;--border:#EBEAE8;
             --acc:#E8431A;--acc-soft:rgba(232,67,26,0.10);
             --cta:#E8431A;--cta-hover:#CF3A12;--cta-soft:rgba(232,67,26,0.10);
-            --texto:#221A14;--gris:#6B5D4F;--gris-2:#A9978A;
+            --texto:#1B1B1B;--gris:#6E6A66;--gris-2:#A3A09C;
             /* Escala de espaciado base-4 + tap-target mínimo (audit visual 2026-06-13) */
             --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--sp-8:32px;
             --pad-x:14px;--gap-card:10px;--gap-section:24px;--tap-min:44px;
@@ -519,10 +521,12 @@
         /* 1 sola fila con scroll horizontal — más bajo, deja ver la comida arriba */
         .cat-chips-scroll{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0 14px 4px;-webkit-overflow-scrolling:touch}
         .cat-chips-scroll::-webkit-scrollbar{display:none}
-        .cat-chip{padding:11px 11px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--texto);font-size:0.78rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;letter-spacing:-0.01em}
-        .cat-chip:active{transform:scale(0.96)}
-        .cat-chip.active{background:var(--acc);color:#111;border-color:var(--acc);box-shadow:0 2px 10px rgba(232,67,26,0.25)}
-        .cat-chip-icon{font-size:1.05rem}
+        /* [16-jul] Burbujas de categoría (patrón PedidosYa): círculo + label debajo */
+        .cat-chip{padding:0;background:transparent;border:none;color:var(--texto);font-size:0.62rem;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;display:inline-flex;flex-direction:column;align-items:center;gap:5px;transition:all 0.15s;letter-spacing:-0.01em;min-width:60px}
+        .cat-chip:active{transform:scale(0.94)}
+        .cat-chip-icon{font-size:1.5rem;width:54px;height:54px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;transition:all 0.15s;border:2px solid transparent}
+        .cat-chip.active .cat-chip-icon{background:var(--acc-soft);border-color:var(--acc);box-shadow:0 2px 10px rgba(232,67,26,0.2)}
+        .cat-chip.active{color:var(--acc)}
 
         /* Active filter banner */
         .filter-banner-v2{margin:4px 14px 10px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(232,67,26,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.82rem;font-weight:800;color:var(--acc);letter-spacing:-0.01em}
@@ -625,21 +629,29 @@
         /* V2.1: Banner de filtro activo dentro del menú del restaurante */
         .rest-filter-banner{margin:10px 14px 4px;padding:10px 14px;background:var(--acc-soft);border:1px solid rgba(232,67,26,0.22);border-radius:12px;display:flex;align-items:center;gap:10px;font-size:0.78rem;font-weight:700;color:var(--acc);letter-spacing:-0.01em}
 
-        /* V3.0: Grilla 3 columnas (home default) — con soporte de imagen/logo */
-        .grid3-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--gap-card);padding:8px var(--pad-x) 10px}
+        /* [16-jul] Feed premium a lo ancho (como la app nativa): tarjeta hero 16:9
+           con foto de PLATO de portada, o fila compacta con logo si no hay foto */
+        .grid3-wrap{display:grid;grid-template-columns:1fr;gap:14px;padding:8px var(--pad-x) 10px}
         .grid3-wrap.solo{grid-template-columns:1fr}
-        .grid3-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s;display:flex;flex-direction:column;position:relative}
-        .grid3-card:active{transform:scale(0.95)}
-        .grid3-top{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden}
+        .grid3-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s;display:flex;flex-direction:column;position:relative}
+        .grid3-card:active{transform:scale(0.98)}
+        .grid3-top{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden}
+        .grid3-logochip{position:absolute;bottom:8px;left:10px;width:42px;height:42px;border-radius:50%;border:2px solid #fff;background:#fff;object-fit:cover;z-index:3;box-shadow:0 2px 8px rgba(0,0,0,0.18)}
+        .grid3-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 12px;cursor:pointer;transition:transform 0.15s}
+        .grid3-row:active{transform:scale(0.98)}
+        .grid3-row-logo{width:52px;height:52px;border-radius:50%;object-fit:cover;background:var(--card2);flex:0 0 auto}
+        .grid3-row-mono{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.3rem;color:#fff;flex:0 0 auto}
+        .grid3-row-body{flex:1;min-width:0}
+        .grid3-row-chev{color:var(--gris-2);font-size:1.25rem;font-weight:700;flex:0 0 auto}
         .grid3-emoji{position:relative;z-index:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))}
         /* Monograma de marca para locales SIN foto (inicial grande + emoji de categoría chico) — reemplaza el emoji plano */
         .grid3-mono{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:2.6rem;color:rgba(0,0,0,0.9);z-index:1;letter-spacing:-0.02em;text-shadow:0 1px 2px rgba(255,255,255,0.45)}
         .grid3-mono-cat{position:absolute;bottom:6px;right:8px;font-size:1.05rem;opacity:0.55;z-index:1}
         .grid3-sello{position:absolute;top:8px;right:8px;z-index:3;background:#ff3b30;color:#fff;font-size:0.72rem;font-weight:900;padding:4px 9px;border-radius:999px;box-shadow:0 3px 9px rgba(255,59,48,0.5);letter-spacing:-0.02em}
         .grid3-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;background:var(--card2)}
-        .grid3-body{padding:7px 9px 9px;min-height:44px}
-        .grid3-name{font-weight:800;font-size:0.84rem;line-height:1.2;color:var(--texto);letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.4em}
-        .grid3-meta{font-size:0.64rem;color:var(--gris-2);font-weight:700;margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;line-height:1.2}
+        .grid3-body{padding:9px 12px 11px;min-height:44px}
+        .grid3-name{font-weight:800;font-size:1rem;line-height:1.2;color:var(--texto);letter-spacing:-0.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .grid3-meta{font-size:0.72rem;color:var(--gris);font-weight:700;margin-top:3px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;line-height:1.2}
         .grid3-badge-count{background:var(--acc-soft);color:var(--acc);font-size:0.56rem;font-weight:900;padding:1px 6px;border-radius:20px;letter-spacing:0.02em}
         /* Línea "qué vende" (categoría) + claim de aliado */
         .grid3-cat{display:flex;align-items:center;gap:5px;margin-top:2px;min-width:0}
@@ -1296,6 +1308,11 @@
                         if(esAdicional(it.categoria_menu,it.nombre_item)) return; // adicionales/porciones/proteínas sueltas tampoco
                         var rest=getRestById(it.restaurante_id);
                         if(!rest) return;                              // rest no está en la sesión
+                        // [16-jul] portada de PLATO por local para el feed premium (todas las tiers)
+                        if(!esBebida(it.categoria_menu)||esLocalBebidas(rest)){
+                            window._fotoRest=window._fotoRest||{};
+                            if(!window._fotoRest[rest.id]) window._fotoRest[rest.id]=it.foto_url;
+                        }
                         if(rest.tipo_acuerdo!=='aliado'&&rest.tipo_acuerdo!=='cliente_paga') return; // aliados + cliente_paga (excluye silenciosos como Rodri Pollos)
                         // Bebidas NO van en el carril de comida... EXCEPTO en locales de bebidas (frappería/cafetería/
                         // juguería) donde el frappé/jugo ES el producto estrella, ej. Buuba Té (sus fotos son frapps).
@@ -3085,23 +3102,44 @@
             var topBadge=r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'';
             // Aliados resaltan con borde verde (vitrina "Precio del local"); el resto, color por índice.
             var borderCol=isAliado?'rgba(34,197,94,0.40)':color+'25';
-            return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+borderCol+'">'+
-                '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
-                    (descuentoPctRest(r)>0?'<span class="grid3-sello">-'+descuentoPctRest(r)+'%</span>':'')+
-                    aliadoBadge+
-                    feeBadge+
-                    topBadge+
-                    '<span class="grid3-mono">'+esc(inicialLocal(r.nombre))+'</span>'+
-                    (hasImg?'<img class="grid3-img" src="'+esc(thumb(hasImg,360))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'<span class="grid3-mono-cat">'+getEmoji(r.nombre)+'</span>')+
-                    (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
+            // [16-jul] Feed premium: la portada es la mejor foto de PLATO del local
+            // (window._fotoRest, la llena loadDestacadosHome). Con portada -> tarjeta hero
+            // 16:9 con logo en círculo; sin portada -> fila compacta con logo/monograma.
+            var cover=(window._fotoRest&&window._fotoRest[r.id])||null;
+            var perksH=(isAliado?'<div class="grid3-aliado-perks">'+((Number(r.markup_pct)||0)===0?'<span class="grid3-pl">✓ Mismo precio en el local</span>':'')+((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'');
+            if(cover){
+                return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+borderCol+'">'+
+                    '<div class="grid3-top" style="background:var(--card2)">'+
+                        aliadoBadge+
+                        feeBadge+
+                        topBadge+
+                        '<img class="grid3-img" src="'+esc(thumb(cover,720))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()"'+(isOpen===false?' style="opacity:0.45"':'')+'>'+
+                        (r.logo_url?'<img class="grid3-logochip" src="'+esc(r.logo_url)+'" alt="" loading="lazy" onerror="this.remove()">':'')+
+                        (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
+                    '</div>'+
+                    '<div class="grid3-body">'+
+                        '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
+                        sucursalHTML(r)+
+                        (cat?'<div class="grid3-cat"><span class="grid3-cat-name">'+cat+'</span></div>':'')+
+                        perksH+
+                        '<div class="grid3-meta">'+metaBits.join(' · ')+'</div>'+
+                    '</div>'+
+                '</div>';
+            }
+            // fila compacta (sin foto de plato)
+            var logoH=r.logo_url
+                ?'<img class="grid3-row-logo" src="'+esc(r.logo_url)+'" alt="" loading="lazy" onerror="this.outerHTML=\'<span class=grid3-row-mono style=background:'+color+'>'+esc(inicialLocal(r.nombre))+'</span>\'">'
+                :'<span class="grid3-row-mono" style="background:'+color+'">'+esc(inicialLocal(r.nombre))+'</span>';
+            return '<div class="grid3-row" onclick="'+openCmd+'"'+(isOpen===false?' style="opacity:0.55"':'')+'>'+
+                logoH+
+                '<div class="grid3-row-body">'+
+                    '<div class="grid3-name" style="-webkit-line-clamp:1">'+(isAliado?'⭐ ':'')+esc(r.nombre)+'</div>'+
+                    (isOpen===false
+                        ?'<div class="grid3-meta">'+(proximaApertura(r.horario)?'Cerrado · abre '+proximaApertura(r.horario):'Cerrado')+'</div>'
+                        :'<div class="grid3-meta">'+(cat?'<span class="grid3-cat-name">'+cat+'</span> · ':'')+metaBits.join(' · ')+'</div>')+
+                    perksH+
                 '</div>'+
-                '<div class="grid3-body">'+
-                    '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
-                    sucursalHTML(r)+
-                    (cat?'<div class="grid3-cat"><span class="grid3-cat-name">'+cat+'</span></div>':'')+
-                    (isAliado?'<div class="grid3-aliado-perks">'+((Number(r.markup_pct)||0)===0?'<span class="grid3-pl">✓ Mismo precio en el local</span>':'')+((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'')+
-                    '<div class="grid3-meta">'+metaBits.join(' · ')+'</div>'+
-                '</div>'+
+                '<span class="grid3-row-chev">›</span>'+
             '</div>';
         }
 
