@@ -47,8 +47,8 @@ export default function PedidosTab({ data }) {
           <button
             key={f.id}
             onClick={() => setFiltro(f.id)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap ${
-              filtro === f.id ? 'bg-dewan text-black' : 'bg-tarjeta text-gray-300 border border-borde'
+            className={`px-3.5 py-2 text-xs font-bold rounded-xl whitespace-nowrap ${
+              filtro === f.id ? 'bg-dewan text-black shadow-lg shadow-dewan/20' : 'bg-tarjeta text-gray-300 border border-borde'
             }`}
           >
             {f.label}

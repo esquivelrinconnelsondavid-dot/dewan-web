@@ -41,24 +41,43 @@ const ICONO_INTENCION = {
   compras: '🛒',
 };
 
+// Franja izquierda de la tarjeta según el estado — se lee de un vistazo sin abrir nada
+const ESTADO_BORDE = {
+  pendiente: 'border-l-gray-500',
+  pendiente_restaurante: 'border-l-nuevo',
+  preparando: 'border-l-preparando',
+  confirmado: 'border-l-buscando',
+  aceptado: 'border-l-encamino',
+  en_camino: 'border-l-encamino',
+  en_camino_entrega: 'border-l-encamino',
+  llegado: 'border-l-encamino',
+  entregado: 'border-l-dewan',
+  cancelado: 'border-l-gray-600',
+};
+
 // [19-jun] El moto se lanza cuando faltan estos minutos para que el plato esté listo.
 // 15' → lanza a los 5'; 10' → lanza ya; 20' → a los 10'. El conteo se ve en admin; al
 // expirar (cliente y cron server-side) se despacha a la app de motos.
 const LEAD_LANZAMIENTO_MIN = 10;
 
-function Boton({ children, onClick, color = 'dewan', disabled, full }) {
+// Botones GRANDES y con color según lo que hacen (pedido de David 16-jul: la app
+// se veía genérica y las operadoras no encontraban las acciones):
+// verde = tiempo de cocina · azul = asignar moto a dedo · violeta = ofertar a todos
+// ámbar = ajustes de tiempo · rojo = problemas/cancelar
+function Boton({ children, onClick, color = 'dewan', disabled, full, grande }) {
   const cls = {
-    dewan: 'bg-dewan text-black',
-    encamino: 'bg-encamino text-white',
-    nuevo: 'bg-nuevo/15 text-nuevo border border-nuevo/30',
-    preparando: 'bg-preparando/15 text-preparando border border-preparando/30',
-    gris: 'bg-bg3 text-gray-300 border border-borde',
+    dewan: 'bg-dewan text-black shadow-lg shadow-dewan/20',
+    azul: 'bg-buscando text-white shadow-lg shadow-buscando/25',
+    encamino: 'bg-encamino text-white shadow-lg shadow-encamino/25',
+    nuevo: 'bg-nuevo/15 text-nuevo border-2 border-nuevo/40',
+    preparando: 'bg-preparando/15 text-preparando border-2 border-preparando/40',
+    gris: 'bg-bg3 text-gray-200 border-2 border-borde',
   }[color];
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${cls} ${full ? 'flex-1' : ''} text-xs font-bold py-2 px-3 rounded-lg active:scale-95 transition-transform disabled:opacity-50`}
+      className={`${cls} ${full ? 'flex-1' : ''} ${grande ? 'min-h-[46px] text-sm' : 'min-h-[38px] text-xs'} font-black px-3 rounded-xl active:scale-95 transition-transform disabled:opacity-40 leading-tight`}
     >
       {children}
     </button>
@@ -284,12 +303,12 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   const silenciar = () => stopAlertLoop(p.id);
 
   return (
-    <div className={`bg-tarjeta border ${borderColor} ${bgExtra} ${cargando ? 'opacity-60 pointer-events-none' : ''} rounded-xl p-3 space-y-2`}>
+    <div className={`bg-tarjeta border border-l-4 ${borderColor} ${rechazado || colgado ? 'border-l-alerta' : ESTADO_BORDE[p.estado_pedido] || 'border-l-borde'} ${bgExtra} ${cargando ? 'opacity-60 pointer-events-none' : ''} rounded-xl p-3 space-y-2`}>
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-base">{ICONO_INTENCION[p.intencion] || '📋'}</span>
-          <span className="text-xs font-bold text-gray-300">#{p.id}</span>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${ESTADO_COLOR[p.estado_pedido] || 'bg-gray-500/20 text-gray-300'}`}>
+          <span className="text-lg">{ICONO_INTENCION[p.intencion] || '📋'}</span>
+          <span className="text-sm font-black text-white">#{p.id}</span>
+          <span className={`text-[11px] font-black px-2.5 py-1 rounded-lg ${ESTADO_COLOR[p.estado_pedido] || 'bg-gray-500/20 text-gray-300'}`}>
             {ESTADO_LABEL[p.estado_pedido] || p.estado_pedido}
           </span>
         </div>
@@ -329,7 +348,7 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
         </div>
       )}
 
-      {p.restaurante && <div className="text-sm font-bold text-white leading-tight">{p.restaurante}</div>}
+      {p.restaurante && <div className="text-base font-black text-white leading-tight">🏪 {p.restaurante}</div>}
       {p.detalle_pedido && <div className="text-xs text-gray-300 line-clamp-2">{p.detalle_pedido}</div>}
 
       {(p.estado_pedido === 'pendiente_restaurante' || p.estado_pedido === 'preparando') && sucursales.length > 1 && (
@@ -371,37 +390,57 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
           pedido fue escalado o rechazado. fix 2026-06-16: + locales silencioso/cliente_paga
           (operadoraTier), que se gestionan por operadora y no confirman por app. */}
       {p.estado_pedido === 'pendiente_restaurante' && (gestionadoOperadora || p.escalado_operadora || rechazado) && !colgado && (
-        <div className="flex gap-1.5 pt-1 flex-wrap">
-          {[5, 10, 15, 20].map((min) => (
-            <Boton
-              key={min}
-              color="dewan"
-              onClick={() => seleccionarTiempo(min)}
-              disabled={cargando || requiereSucursal}
-            >
-              {min}'
+        <div className="pt-1 space-y-1.5">
+          <div className="text-[11px] font-bold text-gray-300">1️⃣ ⏱ ¿En cuántos minutos está la comida?</div>
+          <div className="grid grid-cols-4 gap-1.5">
+            {[5, 10, 15, 20].map((min) => (
+              <Boton
+                key={min}
+                grande
+                color="dewan"
+                onClick={() => seleccionarTiempo(min)}
+                disabled={cargando || requiereSucursal}
+              >
+                {min} min
+              </Boton>
+            ))}
+          </div>
+          <div className="text-[11px] font-bold text-gray-300 pt-0.5">2️⃣ 🛵 O manda la carrera de una vez:</div>
+          <div className="flex gap-1.5">
+            <Boton grande color="azul" full onClick={() => setModalAsignar(true)} disabled={cargando || requiereSucursal}>
+              👤 Asignar moto directo
             </Boton>
-          ))}
-          {!p.escalado_operadora && !operadoraTier && (
-            <Boton color="nuevo" onClick={escalarOperadora} disabled={cargando}>❌ No puede</Boton>
-          )}
+            {!p.escalado_operadora && !operadoraTier && (
+              <Boton grande color="nuevo" onClick={escalarOperadora} disabled={cargando}>❌ Local no puede</Boton>
+            )}
+          </div>
         </div>
       )}
 
       {p.estado_pedido === 'preparando' && (
-        <div className="flex gap-1.5 pt-1">
-          <Boton color="encamino" full onClick={() => lanzarAhora(false)} disabled={cargando || requiereSucursal}>🚀 Lanzar ahora</Boton>
-          <Boton color="gris" onClick={() => setModalAsignar(true)} disabled={cargando || requiereSucursal}>👤 Asignar</Boton>
-          <Boton color="preparando" onClick={agregar5} disabled={cargando}>+5'</Boton>
+        <div className="pt-1 space-y-1.5">
+          <div className="text-[11px] font-bold text-gray-300">🛵 ¿Cómo mandamos la carrera?</div>
+          <div className="flex gap-1.5">
+            <Boton grande color="encamino" full onClick={() => lanzarAhora(false)} disabled={cargando || requiereSucursal}>
+              🚀 Ofertar a TODOS
+            </Boton>
+            <Boton grande color="azul" full onClick={() => setModalAsignar(true)} disabled={cargando || requiereSucursal}>
+              👤 Asignar a dedo
+            </Boton>
+          </div>
+          <Boton color="preparando" onClick={agregar5} disabled={cargando}>＋5 min más de cocina</Boton>
         </div>
       )}
 
       {p.estado_pedido === 'confirmado' && !p.motorizado_id && (
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <div className="text-[11px] text-buscando font-semibold">
-            🔍 Buscando moto ({tiempoEspera.texto})
+        <div className="pt-1 space-y-1.5">
+          <div className="flex items-center gap-2 text-[11px] text-buscando font-bold">
+            <span className="w-2 h-2 rounded-full bg-buscando animate-ping-strong" />
+            Ofertada a los motos — nadie la toma aún ({tiempoEspera.texto})
           </div>
-          <Boton color="gris" onClick={() => setModalAsignar(true)} disabled={cargando}>👤 Asignar moto</Boton>
+          <Boton grande color="azul" full onClick={() => setModalAsignar(true)} disabled={cargando}>
+            👤 Asignar moto a dedo
+          </Boton>
         </div>
       )}
 
@@ -409,15 +448,19 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
       {p.motorizado_id && !terminal && (
         <div className="flex gap-1.5 pt-1">
           <Boton color="nuevo" full onClick={quitarMotoYRelanzar} disabled={cargando}>
-            🔄 Quitar moto y relanzar
+            🔄 Quitarle la carrera a {p.nombre_moto?.trim().split(' ')[0] || 'la moto'} y re-ofertar
           </Boton>
         </div>
       )}
 
       {p.estado_pedido === 'pendiente_restaurante' && colgado && (
-        <div className="flex gap-1.5 pt-1">
-          <Boton color="encamino" full onClick={() => lanzarAhora(false)} disabled={cargando}>🚀 Forzar lanzar</Boton>
-          <Boton color="preparando" onClick={escalarOperadora} disabled={cargando}>📞 Operadora</Boton>
+        <div className="pt-1 space-y-1.5">
+          <div className="text-[11px] font-bold text-alerta">⚠️ El local no contesta — decide tú:</div>
+          <div className="flex gap-1.5">
+            <Boton grande color="encamino" full onClick={() => lanzarAhora(false)} disabled={cargando}>🚀 Lanzar igual</Boton>
+            <Boton grande color="azul" onClick={() => setModalAsignar(true)} disabled={cargando}>👤 A dedo</Boton>
+            <Boton grande color="preparando" onClick={escalarOperadora} disabled={cargando}>📞 Yo lo gestiono</Boton>
+          </div>
         </div>
       )}
 
@@ -438,9 +481,9 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
             <button
               onClick={cancelar}
               disabled={cargando}
-              className="text-[11px] font-bold text-alerta border border-alerta/40 rounded-lg px-2 py-1 active:scale-95 transition-transform disabled:opacity-50"
+              className="text-xs font-black text-alerta bg-alerta/10 border-2 border-alerta/40 rounded-xl px-3 py-2 active:scale-95 transition-transform disabled:opacity-50"
             >
-              ✕ Cancelar
+              ✕ Cancelar pedido
             </button>
           )}
         </div>

@@ -22,12 +22,12 @@ export default function TabsBar({ tab, setTab, alertasRest, rol }) {
         <button
           key={t.id}
           onClick={() => setTab(t.id)}
-          className={`relative flex-1 min-w-[64px] py-2 px-3 text-xs font-semibold transition-colors ${
-            tab === t.id ? 'text-dewan border-b-2 border-dewan' : 'text-gray-400'
+          className={`relative flex-1 min-w-[64px] py-2.5 px-3 text-[11px] font-bold transition-colors ${
+            tab === t.id ? 'text-dewan border-b-[3px] border-dewan bg-dewan/5' : 'text-gray-400'
           }`}
         >
-          <div className="text-base leading-none">{t.icon}</div>
-          <div className="mt-0.5">{t.label}</div>
+          <div className="text-xl leading-none">{t.icon}</div>
+          <div className="mt-1">{t.label}</div>
           {t.id === 'restaurantes' && alertasRest > 0 && (
             <span className="absolute top-1 right-2 bg-alerta text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center">
               {alertasRest}
