@@ -38,3 +38,38 @@ export async function actualizarPerfil({ logo_url = null, horario = null, telefo
   if (error) throw error;
   return data;
 }
+
+// ── CIERRE MANUAL (2026-07-16) ─────────────────────────────────────────
+// "Se acabó el producto antes de hora": el local se cierra desde la app y
+// los clientes lo ven Cerrado al instante. Se REABRE SOLO a medianoche
+// (cerrado_hasta), o antes si el local toca "Reabrir ahora".
+
+// Lee el estado actual de cierre manual. Devuelve la fecha (string) o null.
+export async function estadoCierre(restauranteId) {
+  const { data, error } = await supabase
+    .from('restaurantes')
+    .select('cerrado_hasta')
+    .eq('id', restauranteId)
+    .maybeSingle();
+  if (error) throw error;
+  const hasta = data?.cerrado_hasta || null;
+  return hasta && new Date(hasta) > new Date() ? hasta : null;
+}
+
+// Cierra (true) o reabre (false) el local. Devuelve cerrado_hasta o null.
+export async function cerrarReabrirLocal(cerrar) {
+  const token = localStorage.getItem(STORAGE_TOKEN);
+  if (!token) throw new Error('Sesión expirada');
+
+  const { data, error } = await supabase.rpc('cerrar_reabrir_local', {
+    p_token: token,
+    p_cerrar: cerrar,
+  });
+  if (error) throw error;
+  if (data && data.ok === false) {
+    throw new Error(data.error === 'sesion_invalida'
+      ? 'Sesión expirada: cierra y vuelve a ingresar'
+      : 'No se pudo cambiar el estado del local');
+  }
+  return data?.cerrado_hasta || null;
+}

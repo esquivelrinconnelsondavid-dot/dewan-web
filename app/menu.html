@@ -1182,6 +1182,18 @@
                 if(!raw.length){showError('Sin datos','No pudimos cargar los restaurantes.');return}
                 if(sess&&sess.expira_at&&new Date(sess.expira_at)<new Date()){sess=null}
 
+                // CIERRE MANUAL (boton en la app del restaurante, 2026-07-16): si cerrado_hasta
+                // esta vigente, se antepone el prefijo al horario -> isRestOpen da false en TODOS
+                // los puntos (tarjetas, carril, orden, carrito y candados de pedido) sin tocarlos.
+                raw.forEach(function(r){
+                    try{
+                        if(r&&r.cerrado_hasta&&new Date(r.cerrado_hasta)>new Date()){
+                            r._cierreManual=true;
+                            r.horario='Cerrado por hoy'+(r.horario?' · '+r.horario:'');
+                        }
+                    }catch(e){}
+                });
+
                 // Indexar almuerzos_hoy por restaurante_id para lookup rápido
                 window._almuerzosHoy={};
                 alm.forEach(function(a){if(a.restaurante_id) window._almuerzosHoy[a.restaurante_id]=a});
@@ -4472,24 +4484,53 @@
             return ranges;
         }
         var _hCache={};
+        // v2 (2026-07-16): horario DISTINTO por dia — "Lun a Vie 16:00 a 22:00, Sab y Dom 12:00 a 23:00".
+        // Se corta en segmentos por ; / salto de linea, o coma seguida de un dia; cada segmento trae
+        // SUS dias y SUS horas. Compat total: sin segmentos por dia se comporta exactamente como antes.
+        var _HSEG=/;|\/|\n|,(?=\s*(?:doming|lunes|martes|miercol|jueves|viernes|sabad|dom\b|lun\b|mar\b|mie\b|jue\b|vie\b|sab\b|todos|diario))/;
         function _hParse(horario){
             var k=String(horario);
             if(_hCache[k]) return _hCache[k];
             var sn=_hNorm(horario);
+            var segs=sn.split(_HSEG).filter(function(s){return s&&s.trim();});
+            if(segs.length>1){
+                var partes=[],conDia=0,conHora=0;
+                segs.forEach(function(seg){
+                    var d=_hParseDays(seg),r=_hRanges(seg);
+                    if(d)conDia++; if(r.length)conHora++;
+                    partes.push({days:d,ranges:r});
+                });
+                if(conDia>=1&&conHora>=2){ // horario por dia de verdad (2+ bloques con hora)
+                    return (_hCache[k]={multi:partes,days:_hParseDays(sn),ranges:_hRanges(sn)});
+                }
+            }
             return (_hCache[k]={days:_hParseDays(sn),ranges:_hRanges(sn)});
         }
-        function _hNowEc(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'})); }
-        function isRestOpen(horario){
-            if(!horario||!String(horario).trim()) return null;
-            var pr=_hParse(horario),now=_hNowEc(),dow=now.getDay(),nowMin=now.getHours()*60+now.getMinutes();
-            if(pr.days&&pr.days.indexOf(dow)===-1) return false; // hoy cerrado por dia de la semana
-            if(!pr.ranges.length) return null; // no se pudo leer la hora -> permitir
-            for(var i=0;i<pr.ranges.length;i++){
-                var o=pr.ranges[i][0],c=pr.ranges[i][1];
+        function _hEnRango(ranges,nowMin){
+            for(var i=0;i<ranges.length;i++){
+                var o=ranges[i][0],c=ranges[i][1];
                 if(c<=o){ if(nowMin>=o||nowMin<c) return true; } // cruza medianoche
                 else { if(nowMin>=o&&nowMin<c) return true; }
             }
             return false;
+        }
+        function _hNowEc(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'})); }
+        // Prefijo que agrega el CIERRE MANUAL (boton del local en su app): manda sobre el horario.
+        var _H_CERRADO_MANUAL=/^cerrado por hoy/;
+        function isRestOpen(horario){
+            if(!horario||!String(horario).trim()) return null;
+            if(_H_CERRADO_MANUAL.test(_hNorm(horario))) return false; // cierre manual del local
+            var pr=_hParse(horario),now=_hNowEc(),dow=now.getDay(),nowMin=now.getHours()*60+now.getMinutes();
+            if(pr.multi){ // horario por dia: solo cuentan los segmentos de HOY
+                var hoy=pr.multi.filter(function(p){return !p.days||p.days.indexOf(dow)!==-1;});
+                if(!hoy.length) return false; // hoy no atiende
+                var sinHora=false,abierto=false;
+                hoy.forEach(function(p){ if(!p.ranges.length){sinHora=true;} else if(_hEnRango(p.ranges,nowMin)){abierto=true;} });
+                return abierto?true:(sinHora?null:false);
+            }
+            if(pr.days&&pr.days.indexOf(dow)===-1) return false; // hoy cerrado por dia de la semana
+            if(!pr.ranges.length) return null; // no se pudo leer la hora -> permitir
+            return _hEnRango(pr.ranges,nowMin)?true:false;
         }
         function openBadge(horario){
             var st=isRestOpen(horario);
@@ -4499,7 +4540,12 @@
         // Hora de apertura legible (am/pm). Prefiere el proximo turno de HOY; si no, el 1er rango. null si no hay hora.
         function proximaApertura(horario){
             if(!horario||!String(horario).trim()) return null;
-            var ranges=_hParse(horario).ranges;
+            var pr=_hParse(horario),ranges=pr.ranges;
+            if(pr.multi){ // horario por dia: preferir los rangos que aplican HOY
+                var dow=_hNowEc().getDay();
+                var hoy=pr.multi.filter(function(p){return (!p.days||p.days.indexOf(dow)!==-1)&&p.ranges.length;});
+                if(hoy.length){ ranges=[]; hoy.forEach(function(p){ranges=ranges.concat(p.ranges);}); }
+            }
             if(!ranges.length) return null;
             var now=_hNowEc(),nowMin=now.getHours()*60+now.getMinutes(),next=null,first=null;
             ranges.forEach(function(r){ var o=r[0]; if(first===null||o<first)first=o; if(o>nowMin&&(next===null||o<next))next=o; });
@@ -4516,8 +4562,13 @@
             window._toastTimer=setTimeout(function(){t.classList.remove('show');},ms||2800);
         }
         function avisarCerrado(restObj){
-            var ap=restObj?proximaApertura(restObj.horario):null;
             var nombre=(restObj&&restObj.nombre)?restObj.nombre:'Este local';
+            if(restObj&&restObj._cierreManual){ // cerro antes de hora (se le acabo el producto)
+                _toast('🔴 <strong>'+esc(nombre)+'</strong> cerró por hoy<br><span style="opacity:.85;font-size:.9em">Vuelve a atender mañana en su horario normal</span>');
+                try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
+                return;
+            }
+            var ap=restObj?proximaApertura(restObj.horario):null;
             _toast('🔴 <strong>'+esc(nombre)+'</strong> está cerrado ahora'+(ap?' · abre '+esc(ap):'')+'<br><span style="opacity:.85;font-size:.9em">No se puede pedir hasta que abra</span>');
             try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
         }

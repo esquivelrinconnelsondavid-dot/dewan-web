@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { subirLogo, actualizarPerfil } from '../lib/perfilLocal';
+import { useEffect, useRef, useState } from 'react';
+import { subirLogo, actualizarPerfil, estadoCierre, cerrarReabrirLocal } from '../lib/perfilLocal';
 
 function Campo({ label, value }) {
   return (
@@ -71,8 +71,63 @@ export default function MiLocal({ restaurante, onActualizado }) {
     }
   };
 
+  // ── Cierre manual: "se acabó el producto" → cerrar por hoy / reabrir ──
+  const [cerradoHasta, setCerradoHasta] = useState(null);
+  const [cambiandoCierre, setCambiandoCierre] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    estadoCierre(restaurante?.restaurante_id)
+      .then((h) => { if (vivo) setCerradoHasta(h); })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, [restaurante?.restaurante_id]);
+
+  const toggleCierre = async () => {
+    const cerrar = !cerradoHasta;
+    if (cerrar && !window.confirm(
+      '¿Cerrar el local por HOY?\n\nLos clientes te verán como Cerrado y no podrán pedirte. ' +
+      'Mañana se reabre solo (o tócalo de nuevo para reabrir antes).'
+    )) return;
+    setError('');
+    setCambiandoCierre(true);
+    try {
+      const hasta = await cerrarReabrirLocal(cerrar);
+      setCerradoHasta(hasta);
+    } catch (e) {
+      setError(e?.message || 'No se pudo cambiar el estado');
+    }
+    setCambiandoCierre(false);
+  };
+
   return (
     <div className="px-3 pt-3 pb-8 space-y-4">
+      <div className={`rounded-xl border p-4 ${cerradoHasta ? 'bg-nuevo/10 border-nuevo/40' : 'bg-tarjeta border-borde'}`}>
+        <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Estado del local</p>
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <p className={`text-base font-black ${cerradoHasta ? 'text-nuevo' : 'text-dewan'}`}>
+              {cerradoHasta ? '🔴 Cerrado por hoy' : '🟢 Recibiendo pedidos'}
+            </p>
+            <p className="text-[11px] text-gray-400 mt-0.5">
+              {cerradoHasta
+                ? 'Los clientes te ven Cerrado. Mañana se reabre solo.'
+                : '¿Se acabó el producto? Cierra por hoy y los clientes lo verán al instante.'}
+            </p>
+          </div>
+          <button
+            onClick={toggleCierre}
+            disabled={cambiandoCierre}
+            className={`text-sm font-bold py-2.5 px-4 rounded-lg border active:scale-95 transition-transform whitespace-nowrap ${
+              cerradoHasta
+                ? 'bg-dewan/15 text-dewan border-dewan/30'
+                : 'bg-nuevo/15 text-nuevo border-nuevo/30'
+            }`}
+          >
+            {cambiandoCierre ? '…' : cerradoHasta ? 'Reabrir ahora' : 'Cerrar por hoy'}
+          </button>
+        </div>
+      </div>
+
       <div className="bg-tarjeta rounded-xl border border-borde p-4">
         <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">Logo del local</p>
         <div className="flex items-center gap-4">
