@@ -64,7 +64,8 @@
       "shortcutName": "DEWAN Restaurante",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
-      "include": "build/installer.nsh"
+      "include": "build/installer.nsh",
+      "artifactName": "DEWAN-Restaurante-${version}.exe"
     }
   },
   "author": "DEWAN SAS"
