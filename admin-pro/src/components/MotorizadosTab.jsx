@@ -42,6 +42,9 @@ function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onTogg
   const carreras = Number(deuda?.monto_carreras || 0);
   const comisiones = Number(deuda?.monto_comisiones || 0);
   const markup = Number(deuda?.monto_markup || 0);
+  const deudaHoy = Number(deuda?.deuda_hoy || 0);
+  const deudaAtrasada = Number(deuda?.deuda_atrasada || 0);
+  const fechasAtrasadas = deuda?.fechas_atrasadas || [];
   const pagado = !!deuda?.pagado;
   const marcando = marcandoId === m.id;
   const det = detalle || {};
@@ -116,6 +119,21 @@ function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onTogg
               {money(totalDeuda)} {pagado && '✓'}
             </span>
           </div>
+
+          {/* HOY vs ATRASADO: la deuda vieja sin pagar se etiqueta (antes se sumaba
+              en silencio y parecía que "salían carreras del día anterior" por error) */}
+          {deudaAtrasada > 0 && (
+            <div className="text-[10px] space-y-0.5 mb-1.5 px-0.5">
+              <div className="flex justify-between text-gray-400">
+                <span>Hoy</span>
+                <span className="font-semibold text-gray-300">{money(deudaHoy)}</span>
+              </div>
+              <div className="flex justify-between text-encamino">
+                <span>⏰ Atrasado — no pagó el {fechasAtrasadas.map((f) => `${f.slice(8, 10)}/${f.slice(5, 7)}`).join(', ')}</span>
+                <span className="font-bold">{money(deudaAtrasada)}</span>
+              </div>
+            </div>
+          )}
 
           {/* Desglose de la deuda: las 3 partes (carreras + comisiones + markup del local) */}
           {(carreras + comisiones + markup) > 0 && (
@@ -209,8 +227,13 @@ export default function MotorizadosTab({ data }) {
       .select('motorizado_id, fecha, cantidad_carreras, monto_carreras, monto_comisiones, monto_markup, monto_deuda, pagado')
       .eq('pagado', false);
     if (error) { console.warn('[deudas]', error); return; }
+    // separar HOY vs ATRASADO (queja real: "salen carreras del día anterior" —
+    // era deuda vieja sin pagar sumada en silencio al total; ahora se etiqueta)
+    const hoyEC = fechaEcHoy();
     const mapa = {};
     (data || []).forEach((d) => {
+      const monto = Number(d.monto_deuda || 0);
+      const esHoy = d.fecha === hoyEC;
       const ex = mapa[d.motorizado_id];
       if (!ex) {
         mapa[d.motorizado_id] = {
@@ -219,8 +242,11 @@ export default function MotorizadosTab({ data }) {
           monto_carreras: Number(d.monto_carreras || 0),
           monto_comisiones: Number(d.monto_comisiones || 0),
           monto_markup: Number(d.monto_markup || 0),
-          monto_deuda: Number(d.monto_deuda || 0),
+          monto_deuda: monto,
+          deuda_hoy: esHoy ? monto : 0,
+          deuda_atrasada: esHoy ? 0 : monto,
           fechas: d.fecha ? [d.fecha] : [],
+          fechas_atrasadas: !esHoy && d.fecha ? [d.fecha] : [],
           pagado: false,
         };
       } else {
@@ -228,8 +254,11 @@ export default function MotorizadosTab({ data }) {
         ex.monto_carreras += Number(d.monto_carreras || 0);
         ex.monto_comisiones += Number(d.monto_comisiones || 0);
         ex.monto_markup += Number(d.monto_markup || 0);
-        ex.monto_deuda += Number(d.monto_deuda || 0);
+        ex.monto_deuda += monto;
+        ex.deuda_hoy += esHoy ? monto : 0;
+        ex.deuda_atrasada += esHoy ? 0 : monto;
         if (d.fecha && !ex.fechas.includes(d.fecha)) ex.fechas.push(d.fecha);
+        if (!esHoy && d.fecha && !ex.fechas_atrasadas.includes(d.fecha)) ex.fechas_atrasadas.push(d.fecha);
       }
     });
     setDeudas(mapa);
