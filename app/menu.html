@@ -1105,8 +1105,8 @@
         // Adicionales / porciones / proteínas sueltas: son complementos, NO platos. No van en el carril de comida.
         function esAdicional(categoria,nombre){
             var c=categoria||'', n=nombre||'';
-            if(/adicional|porci[oó]n|prote[ií]nas? suelta|t[oó]pping|aderezo|acompa[ñn]/i.test(c)) return true;
-            if(/\(adicional\)|sin prote[ií]na/i.test(n)) return true;
+            if(/adicional|porci[oó]n|prote[ií]nas? suelta|t[oó]pping|aderezo|acompa[ñn]|\bextras?\b/i.test(c)) return true;
+            if(/\(adicional\)|sin prote[ií]na|\bporci[oó]n\b/i.test(n)) return true;
             return false;
         }
         // Precio que el cliente PAGA. Aliados y silenciosos tienen markup_pct=0 -> precio del local.
