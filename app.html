@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEWAN — El delivery de Riobamba</title>
+<meta name="robots" content="noindex">
+<script>
+/* Destino de los QR IMPRESOS (tarjetas/afiches): pedir.dewansas.com/app.html?ref=CODIGO
+   HOY: redirige al menú web conservando el ?ref (atribución).
+   CUANDO LA APP ESTÉ EN PLAY STORE: pegar la URL de la ficha en PLAY_URL —
+   Android irá a la tienda y iPhone/PC seguirán al menú web. */
+var PLAY_URL = '';
+var q = location.search || '';
+if (PLAY_URL && /Android/i.test(navigator.userAgent)) {
+    location.replace(PLAY_URL);
+} else {
+    location.replace('/' + q);
+}
+</script>
+</head>
+<body style="font-family:sans-serif;background:#F3ECE0;text-align:center;padding-top:40vh">
+<a href="/" style="color:#3B2417">Ir al menú de DEWAN 🛵</a>
+</body>
+</html>
