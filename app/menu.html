@@ -3514,7 +3514,7 @@
                         var catIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',bebida:'☕',postre:'🍰'};
                         var catOrder=['entrada','sopa','segundo','guarnicion','jugo','bebida','postre'];
                         catOrder.forEach(function(cat){
-                            if(c.almuerzoChoices[cat]) choicesH+='<div>'+(catIcons[cat]||'▸')+' '+c.almuerzoChoices[cat]+'</div>';
+                            if(c.almuerzoChoices[cat]) choicesH+='<div>'+almTitleIcon((c.almuerzoTitulos||{})[cat]||null,cat)+' '+c.almuerzoChoices[cat]+'</div>';
                         });
                         h+='<div class="cart-item" style="flex-wrap:wrap">'+
                             (c.foto_url?'<div class="cart-item-emoji" style="padding:0"><img src="'+esc(thumb(c.foto_url,300))+'" alt="'+esc(c.nombre)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentNode.innerHTML=\'🍱\'"></div>':'<div class="cart-item-emoji">🍱</div>')+
@@ -4222,7 +4222,10 @@
                         var catOrder=['entrada','sopa','segundo','guarnicion','jugo','bebida','postre'];
                         var catLabels={entrada:'Entrada',sopa:'Sopa',segundo:'Segundo',guarnicion:'Guarnición',jugo:'Jugo',bebida:'Bebida caliente',postre:'Postre'};
                         catOrder.forEach(function(cat){
-                            if(c.almuerzoChoices[cat]) msg+='    ▸ '+(catLabels[cat]||cat)+': '+c.almuerzoChoices[cat]+'\n';
+                            var valA=c.almuerzoChoices[cat];
+                            if(!valA)return;
+                            var titA=(c.almuerzoTitulos||{})[cat];
+                            msg+='    ▸ '+(titA?(String(valA).indexOf(titA+':')===0?valA:titA+': '+valA):(catLabels[cat]||cat)+': '+valA)+'\n';
                         });
                         if(parsePrice(c.cargo_envase)>0) msg+='    📦 Envase: $'+parsePrice(c.cargo_envase).toFixed(2)+'\n';
                     }
@@ -4629,6 +4632,43 @@
         }
         var almCatIcons={entrada:'🧆',sopa:'🍲',segundo:'🍽️',guarnicion:'🥗',jugo:'🥤',bebida:'☕',postre:'🍰'};
         var almCatOrder=['entrada','sopa','segundo','guarnicion','jugo','bebida','postre'];
+        // Títulos de grupo SIN palabras de almuerzo (postres/snacks/desayunos): 1) el JSON
+        // puede traer "titulos":{cat:"1ª fruta"}; 2) si TODAS las opciones del grupo
+        // comparten prefijo "Título: X" se deriva solo; 3) fallback = nombre de la categoría.
+        function almGroupPrefix(nombres){
+            if(!nombres||nombres.length<2)return null;
+            var m=String(nombres[0]).match(/^([^:]{1,30}):\s+/);
+            if(!m)return null;
+            var p=m[1];
+            for(var i=1;i<nombres.length;i++){if(String(nombres[i]).indexOf(p+':')!==0)return null}
+            return p;
+        }
+        function almTituloCat(data,cat,nombres){
+            if(data&&data.titulos&&data.titulos[cat])return String(data.titulos[cat]);
+            return almGroupPrefix(nombres);
+        }
+        function almOptLabel(nombre,titulo){
+            if(titulo&&String(nombre).indexOf(titulo+':')===0)return String(nombre).substring(titulo.length+1).replace(/^\s+/,'');
+            return nombre;
+        }
+        function almTitleIcon(titulo,cat){
+            if(!titulo)return almCatIcons[cat]||'▸';
+            var t=titulo.toLowerCase();
+            if(t.indexOf('fruta')!==-1)return'🍓';
+            if(t.indexOf('topping')!==-1)return'✨';
+            if(t.indexOf('jalea')!==-1)return'🍯';
+            if(t.indexOf('helado')!==-1||t.indexOf('crema')!==-1)return'🍦';
+            if(t.indexOf('prote')!==-1)return'🍗';
+            if(t.indexOf('empanada')!==-1||t.indexOf('relleno')!==-1)return'🥟';
+            if(t.indexOf('sanduche')!==-1)return'🥪';
+            if(t.indexOf('dorito')!==-1)return'🌮';
+            if(t.indexOf('lonchy')!==-1)return'🍜';
+            if(t.indexOf('salsa')!==-1)return'🌶️';
+            if(t.indexOf('sabor')!==-1)return'😋';
+            if(t.indexOf('base')!==-1)return'🧇';
+            if(t.indexOf('incluye')!==-1)return'✅';
+            return'🔸';
+        }
         function buildAlmuerzoDesc(data){
             var grouped={};
             (data.opciones||[]).forEach(function(o){
@@ -4639,7 +4679,9 @@
             var parts=[];
             almCatOrder.forEach(function(cat){
                 if(grouped[cat]){
-                    parts.push((almCatIcons[cat]||'')+' '+cat.charAt(0).toUpperCase()+cat.slice(1)+': '+grouped[cat].join(' / '));
+                    var tD=almTituloCat(data,cat,grouped[cat]);
+                    var names=grouped[cat].map(function(n){return almOptLabel(n,tD)});
+                    parts.push(almTitleIcon(tD,cat)+' '+(tD||cat.charAt(0).toUpperCase()+cat.slice(1))+': '+names.join(' / '));
                 }
             });
             return parts.join(' | ');
@@ -4658,8 +4700,11 @@
             var parts=[];
             almCatOrder.forEach(function(cat){
                 if(!grouped[cat])return;
+                var tH=almTituloCat(data,cat,grouped[cat]);
                 if(grouped[cat].length===1){
-                    parts.push((almCatIcons[cat]||'')+' '+grouped[cat][0]);
+                    parts.push(almTitleIcon(tH,cat)+' '+almOptLabel(grouped[cat][0],tH));
+                }else if(tH){
+                    parts.push('👉 Elige '+(/^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]/.test(tH)?tH.charAt(0).toLowerCase()+tH.slice(1):tH));
                 }else{
                     parts.push('👉 Elige 1 '+(almCatSingular[cat]||cat));
                 }
@@ -4700,24 +4745,27 @@
                 '</div>';
 
             var needsSelection=[];
+            var titulosSel={};
             almCatOrder.forEach(function(cat){
                 if(!grouped[cat])return;
                 var opts=grouped[cat];
                 var isSingle=opts.length===1;
+                var tG=almTituloCat(data,cat,opts.map(function(o){return o.nombre}));
+                if(tG)titulosSel[cat]=tG;
                 h+='<div class="almuerzo-cat">'+
-                    '<div class="almuerzo-cat-title">'+(almCatIcons[cat]||'')+' '+cat.charAt(0).toUpperCase()+cat.slice(1)+
+                    '<div class="almuerzo-cat-title">'+almTitleIcon(tG,cat)+' '+(tG||cat.charAt(0).toUpperCase()+cat.slice(1))+
                     (isSingle?' <span class="almuerzo-cat-badge incluido">Incluido</span>':' <span class="almuerzo-cat-badge elige">ELIGE UNA</span>')+
                     '</div>';
                 opts.forEach(function(o){
                     if(isSingle){
                         h+='<div class="almuerzo-opt single" data-cat="'+cat+'" data-val="'+esc(o.nombre)+'">'+
                             '<div class="almuerzo-radio"></div>'+
-                            '<div class="almuerzo-opt-name">'+esc(o.nombre)+'</div>'+
+                            '<div class="almuerzo-opt-name">'+esc(almOptLabel(o.nombre,tG))+'</div>'+
                         '</div>';
                     }else{
                         h+='<div class="almuerzo-opt" data-cat="'+cat+'" data-val="'+esc(o.nombre)+'" onclick="selectAlmOpt(this)">'+
                             '<div class="almuerzo-radio"></div>'+
-                            '<div class="almuerzo-opt-name">'+esc(o.nombre)+'</div>'+
+                            '<div class="almuerzo-opt-name">'+esc(almOptLabel(o.nombre,tG))+'</div>'+
                         '</div>';
                     }
                 });
@@ -4729,7 +4777,7 @@
                 '<button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancelar</button>'+
             '</div>';
 
-            window._almPending={rest:rest,nombre:nombre,precio:precio,delivery:delivery,needsSelection:needsSelection,foto:fotoM,envase:envaseM};
+            window._almPending={rest:rest,nombre:nombre,precio:precio,delivery:delivery,needsSelection:needsSelection,foto:fotoM,envase:envaseM,titulos:titulosSel};
 
             document.getElementById('modal-content').innerHTML=h;
 
@@ -4771,6 +4819,7 @@
                 delivery:p.delivery,
                 qty:1,
                 almuerzoChoices:choices,
+                almuerzoTitulos:p.titulos||null,
                 cargo_envase:p.envase||0,
                 foto_url:p.foto||null
             });
