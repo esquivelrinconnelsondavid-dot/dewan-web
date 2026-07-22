@@ -34,7 +34,9 @@
           for(var k in seen){if(Date.now()-seen[k]>172800000)delete seen[k]}
           try{localStorage.setItem('dewan_fbq_seen',JSON.stringify(seen))}catch(e){}
         }
-        fbq('track','Purchase',{value:Number(r.total)||0,currency:'USD',num_items:r.items||1});
+        // Purchase oficial ahora lo manda el CAPI (n8n) solo con pedidos ENTREGADOS de la BD;
+        // la confirmación web queda como evento custom para no duplicar compras en el panel.
+        fbq('trackCustom','ConfirmoPedidoWeb',{value:Number(r.total)||0,currency:'USD',num_items:r.items||1});
       }catch(e){}
     };
     </script>
