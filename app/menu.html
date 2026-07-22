@@ -20,12 +20,20 @@
     fbq('init', '1924288741457770');
     fbq('track', 'PageView');
     window._purchasedTokens=window._purchasedTokens||{};
+    // Dedupe REAL del Purchase: el guard viejo dependía de r.token (casi siempre null) y el
+    // pixel reportaba ~2x compras vs pedidos. Ahora cada confirmación trae un uid propio y
+    // se persiste en localStorage (48h) para sobrevivir recargas/webview muerto.
     window.dewanTrackPurchase=function(r){
       try{
         if(!r||typeof fbq!=='function')return;
-        var tk=r.token||'';
-        if(tk&&window._purchasedTokens[tk])return;
-        if(tk)window._purchasedTokens[tk]=1;
+        var tk=r.uid||r.token||'';
+        var seen={};try{seen=JSON.parse(localStorage.getItem('dewan_fbq_seen')||'{}')}catch(e){}
+        if(tk&&(window._purchasedTokens[tk]||seen[tk]))return;
+        if(tk){
+          window._purchasedTokens[tk]=1;seen[tk]=Date.now();
+          for(var k in seen){if(Date.now()-seen[k]>172800000)delete seen[k]}
+          try{localStorage.setItem('dewan_fbq_seen',JSON.stringify(seen))}catch(e){}
+        }
         fbq('track','Purchase',{value:Number(r.total)||0,currency:'USD',num_items:r.items||1});
       }catch(e){}
     };
@@ -4292,7 +4300,7 @@
             }
             var waUrl='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
             var totalBaseRes=window._clientGPS?t.total:(t.subtotal+t.serviceFee+t.envases);
-            var resumen={items:t.items,total:totalBaseRes,conGPS:!!window._clientGPS,token:token};
+            var resumen={items:t.items,total:totalBaseRes,conGPS:!!window._clientGPS,token:token,uid:Date.now().toString(36)+Math.random().toString(36).slice(2,6)};
             // FIX carrito persistente: el pedido ya quedó armado en waUrl. Guardarlo para los
             // botones de reintento y VACIAR el carrito ahora, para que el próximo pedido arranque
             // limpio aunque el cliente no toque "Hacer otro pedido" (vuelva por atrás/reabra la PWA).
