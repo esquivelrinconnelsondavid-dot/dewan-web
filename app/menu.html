@@ -4201,6 +4201,8 @@
             if(window._enviando) return;
             window._enviando=true;
             setTimeout(function(){window._enviando=false},4000);
+            // Píxel: tocó "Confirmar" → se abre WhatsApp. Mide el 2º hueco del embudo (el salto a WhatsApp).
+            try{if(typeof fbq==='function')fbq('trackCustom','AbreWhatsApp');}catch(e){}
             // [8-jul] Envío EXACTO al confirmar: la cotización real (cotizarEnvioReal) es asíncrona; si el
             // cliente movía el pin y tocaba Enviar antes de que Google respondiera, el mensaje salía con el
             // envío ANTERIOR (dif ±$0.30 vs la carrera real, ej. #514/#515). Regla: lo que ve el cliente ES
