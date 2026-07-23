@@ -2567,7 +2567,7 @@
                 ?(deliveryPrice>0
                     ?'<span class="rest-pill is-neutral"><span>🛵</span> Envío $'+deliveryPrice.toFixed(2)+'</span>'
                     :'<span class="rest-pill"><span>🛵</span> Envío gratis</span>')
-                :'<span class="rest-pill is-neutral"><span>🛵</span> Envío al ubicar</span>';
+                :'<span class="rest-pill is-neutral"><span>🛵</span> Envío desde $2</span>';
             var distPill=r.distancia_km?'<span class="rest-pill is-neutral"><span>📍</span> '+r.distancia_km+' km</span>':'';
             // GUARDA: "Precio del local" SOLO aliado real (nunca cliente_paga, que lleva markup oculto).
             var precioLocalPill=(r.tipo_acuerdo==='aliado'&&(Number(r.markup_pct)||0)===0)?'<span class="rest-pill rest-pill-aliado">✓ Mismo precio que en el local</span>':'';
@@ -3591,7 +3591,7 @@
                 (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Envío'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Pagas</span><span class="cart-total-val">$'+totalPagar.toFixed(2)+'</span></div>'+
-                (window._clientGPS?'':'<div class="cart-total-sub">+ envío · se confirma con tu ubicación 🛵</div>')+
+                (window._clientGPS?'':'<div class="cart-total-sub">🛵 Envío desde $2 · se confirma con tu ubicación</div>')+
             '</div>';
 
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
