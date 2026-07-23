@@ -890,7 +890,7 @@
         window._opTel='';      // WhatsApp del cliente (solo OP_MODE, NO persiste)
         window._opGpsRaw='';   // texto crudo del pin pegado (solo OP_MODE)
         window._opGpsApplied=null; // 'lat,lng' ya aplicado (evita re-render redundante)
-        var currentSort='precio'; // CAMBIO 1: default "precio" en vez de "distancia"
+        var currentSort='recomendado'; // Vitrina justa (2026-07-22): default = híbrido rotativo (antes 'precio')
         var sessionData=null;
         var currentView='home'; // home | rest | cart
         var currentRestIdx=null;
@@ -1004,8 +1004,7 @@
                 if(st){st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';}
                 // Si viene del banner, actualizar la vista
                 if(sessionData){
-                    currentSort='distancia';
-                    renderHome();
+                    renderHome(); // mantiene 'recomendado'; la cercanía ya entra como desempate del híbrido
                 } else {
                     setTimeout(function(){document.getElementById('gps-welcome').style.display='none';app.style.display='block';loadSession()},500);
                 }
@@ -1026,8 +1025,7 @@
             getBestPosition(function(pos){
                 if(!gpsEnZona(pos)){banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">Tu GPS te ubicó fuera de la ciudad. Marca tu casa en el mapa del carrito.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';return;}
                 window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};guardarUbic();
-                currentSort='distancia';
-                renderHome();
+                renderHome(); // mantiene 'recomendado'; la cercanía entra como desempate del híbrido
             },function(){
                 banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">No se pudo obtener GPS. Puedes seguir sin ubicación.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';
             });
@@ -1077,7 +1075,9 @@
                 categoria_canonica:r.categoria_canonica,
                 top_semana:r.top_semana===true,
                 // Pricing v2 (2026-05-28): markup por tier para colchón de cupones
-                markup_pct:Number(r.markup_pct)||0
+                markup_pct:Number(r.markup_pct)||0,
+                // Vitrina justa (2026-07-22): antigüedad para el bono "nuevo"
+                created_at:r.created_at
             };
         }
 
@@ -1818,6 +1818,31 @@
             return recalcDistances(rests);
         }
 
+        // ── VITRINA JUSTA (2026-07-22) — "recomendado" híbrido: explotación + exploración ──
+        // El orden fijo por precio/ventas clavaba los mismos locales arriba (los nuevos/menos
+        // vistos nunca se veían). Las grandes apps (DoorDash/UberEats) lo resuelven mezclando
+        // explotación (lo que ya funciona: foto, aliado) + exploración (rotación diaria + bono a
+        // los nuevos). Acá va la versión ligera: dentro del grupo "abiertos", puntaje por local =
+        //   foto/logo (+1000, domina: los que se ven bien arriba)
+        // + rotación diaria 0..100 (el mover principal: el tope cambia cada día)
+        // + bono "nuevo" ≤21d (+45) + aliado (+25) + distancia como desempate menor.
+        // Estable durante el día (semilla = fecha), así en ~1 semana todos los aliados con foto
+        // pasan por arriba. Los otros sorts (📍/💰/🚚) siguen deterministas si el user los toca.
+        function _daySeed(){var d=new Date();return d.getFullYear()*372+(d.getMonth()+1)*31+d.getDate();}
+        // Mezcla multiplicativa (Math.imul): la semilla arranca el hash y se propaga por cada char,
+        // así un cambio de +1 en la fecha reordena TODO (si se pega al final el hash casi no se movía).
+        function _dayHash(id){var h=_daySeed()>>>0,str=String(id);for(var i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),2654435761)>>>0;}h^=h>>>15;return h%101;} // 0..100
+        function _esNuevoRest(r){if(!r||!r.created_at)return false;var t=Date.parse(r.created_at);if(isNaN(t))return false;return (Date.now()-t)<21*86400000;}
+        function _tieneFotoRest(r){return !!(r&&(r.logo_url||r.foto_url||r.imagen_url));}
+        function _scoreRecomendado(r){
+            var s=0;
+            if(_tieneFotoRest(r)) s+=1000;                       // vitrina: los que se ven bien, arriba
+            s+=_dayHash(r.id);                                   // rotación diaria (0..100) — mover principal
+            if(_esNuevoRest(r)) s+=45;                           // exploración: empujón a locales nuevos
+            if(r.tipo_acuerdo==='aliado') s+=25;                 // objetivo comercial: aliados sobre cliente_paga
+            s+=Math.max(0,(50-(r.distancia_km||50)))*0.2;        // desempate menor por cercanía (0..10)
+            return s;
+        }
         function sortRests(list,key){
             var s=list.slice();
             // Abiertos primero SIEMPRE, luego sin-horario, cerrados al final; dentro de cada grupo, el criterio elegido.
@@ -1826,7 +1851,8 @@
             var cmp;
             if(key==='distancia') cmp=function(a,b){return(a.distancia_km||999)-(b.distancia_km||999)};
             else if(key==='delivery') cmp=function(a,b){return(a.precio_delivery||999)-(b.precio_delivery||999)};
-            else cmp=function(a,b){var pa=a.productos&&a.productos[0]?a.productos[0].precio:999;var pb=b.productos&&b.productos[0]?b.productos[0].precio:999;return pa-pb};
+            else if(key==='precio') cmp=function(a,b){var pa=a.productos&&a.productos[0]?a.productos[0].precio:999;var pb=b.productos&&b.productos[0]?b.productos[0].precio:999;return pa-pb};
+            else cmp=function(a,b){return _scoreRecomendado(b)-_scoreRecomendado(a)}; // 'recomendado' (default): puntaje DESC
             s.sort(function(a,b){var d=ab(a)-ab(b);return d!==0?d:cmp(a,b);});
             return s;
         }
@@ -2237,7 +2263,7 @@
             // Sort pills (solo si no hay filtro de categoría activo, para no abarrotar)
             if(!window._activeCat){
                 h+='<div class="sort-bar">'+
-                    pillBtn('distancia','📍 Mas cerca',!hasGPS)+pillBtn('precio','💰 Menor precio',false)+pillBtn('delivery','🚚 Menor delivery',false)+
+                    pillBtn('recomendado','✨ Recomendado',false)+pillBtn('distancia','📍 Mas cerca',!hasGPS)+pillBtn('precio','💰 Menor precio',false)+pillBtn('delivery','🚚 Menor delivery',false)+
                 '</div>';
             }
 
