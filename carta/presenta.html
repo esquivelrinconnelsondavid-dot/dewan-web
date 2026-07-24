@@ -209,7 +209,9 @@
     /* ===================== EDITA AQUÍ ===================== */
     var TEMA        = "claro";          // "claro" (fondo blanco) u "oscuro" (fondo negro premium)
     var VENDEDOR_WA = "593962223600";   // ⚠️ TU WhatsApp (David)
-    var TRIAL_DIAS  = "15";             // días de prueba gratis
+    var PRECIO      = "120";            // precio único en USD (cámbielo aquí y cambia en toda la página)
+    var GARANTIA_DIAS = "15";           // días de garantía: si no le sirve, se le devuelve
+    var ENTREGA     = "24 horas";       // en cuánto queda lista
     var IG = "@dewanriobamba";
     /* ===================================================== */
 
@@ -251,7 +253,7 @@
       function lbl(t){ return (T[t] && T[t].label) || t; }
       function wa(msg){ return "https://wa.me/" + VENDEDOR_WA + "?text=" + encodeURIComponent(msg); }
       function qr(u){ return "https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=4&data=" + encodeURIComponent(u); }
-      function msg(){ return "Hola David! Vi la carta digital de " + N + " (me gustó el diseño \"" + lbl(sel) + "\") y quiero probarla " + TRIAL_DIAS + " días gratis. ¿Cómo arrancamos?"; }
+      function msg(){ return "Hola David! Vi la carta digital de " + N + " (me gustó el diseño \"" + lbl(sel) + "\") y la quiero. ¿Cómo arrancamos?"; }
       function customMsg(){ return "Hola David! Vi la carta digital de " + N + ". Me interesa, pero la quiero con un diseño a mi manera (mi propio estilo, colores y orden). ¿La pueden personalizar?"; }
 
       /* platos de muestra del menú del config para el chat */
@@ -268,7 +270,7 @@
           (R.logo ? '<img class="blogo" src="' + R.logo + '">' : '') +
           '<div class="bn">' + N + '<small>su carta digital</small></div>' +
         '</div>' +
-        '<a class="hcta" id="h-cta" href="#probar">Probar ' + TRIAL_DIAS + ' días</a>' +
+        '<a class="hcta" id="h-cta" href="#probar">La quiero</a>' +
       '</div>' +
 
       /* HERO = EL PRODUCTO */
@@ -362,27 +364,28 @@
 
       '<div class="divider"></div>' +
 
-      /* TRIAL */
+      /* OFERTA */
       '<section class="pad" id="probar">' +
         '<div class="eyebrow">El riesgo lo ponemos nosotros</div>' +
         '<div class="trial">' +
-          '<div class="free">' + TRIAL_DIAS + ' días gratis</div>' +
-          '<div class="sub">Sin tarjeta · sin compromiso · $0 de instalación</div>' +
+          '<div class="free">$' + PRECIO + '</div>' +
+          '<div class="sub">Pago único · sin mensualidad · lista en ' + ENTREGA + '</div>' +
           '<ul>' +
-            '<li><span class="ck">✓</span> Su carta queda lista con su menú y su marca</li>' +
-            '<li><span class="ck">✓</span> Le enseñamos a compartirla (link, QR, estados)</li>' +
+            '<li><span class="ck">✓</span> Su carta con su logo, sus colores y su menú completo</li>' +
+            '<li><span class="ck">✓</span> Su link y su código QR para imprimir</li>' +
+            '<li><span class="ck">✓</span> Los pedidos le llegan ordenados a su WhatsApp</li>' +
+            '<li><span class="ck">✓</span> Le enseñamos a compartirla (estados, mesas, redes)</li>' +
             '<li><span class="ck">✓</span> Soporte directo por WhatsApp</li>' +
-            '<li><span class="ck">✓</span> La probamos con sus pedidos reales</li>' +
           '</ul>' +
-          '<a class="cta block" id="trial-cta" href="#">Quiero mi carta · ' + TRIAL_DIAS + ' días gratis →</a>' +
-          '<div class="cta-mini">Si no le convence, la apagamos y no pasó nada.</div>' +
+          '<a class="cta block" id="trial-cta" href="#">Quiero mi carta →</a>' +
+          '<div class="cta-mini">Garantía de ' + GARANTIA_DIAS + ' días: si no le sirve, le devolvemos su dinero.</div>' +
         '</div>' +
       '</section>' +
 
       /* CIERRE */
       '<section class="pad close">' +
         '<h2>Su menú merece verse <span class="mk">así de bien.</span></h2>' +
-        '<p class="body">La carta de ' + N + ' ya está diseñada — solo falta que usted la vea funcionando con sus clientes. Después de la prueba conversamos el plan según su volumen.</p>' +
+        '<p class="body">Así se vería la carta de ' + N + ' — solo falta que la vea funcionando con sus clientes. Queda lista en ' + ENTREGA + ' y es suya, sin mensualidad.</p>' +
         '<div style="margin-top:22px"><a class="cta block" id="close-cta" href="#"><span style="font-size:19px">📲</span> Hablar con DEWAN ahora</a></div>' +
         '<div class="urg">Equipo de aquí, de Riobamba. Le respondemos hoy mismo.</div>' +
         '<div class="contact"><span>📱 WhatsApp</span><span>🌐 dewansas.com</span><span>📷 ' + IG + '</span></div>' +
