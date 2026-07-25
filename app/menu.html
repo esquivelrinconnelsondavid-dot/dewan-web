@@ -1349,6 +1349,50 @@
             });
         }
 
+        // ── Portada del local: la foto que MEJOR lo representa ──────────────────────────────
+        // Paridad con la app nativa: la cabecera del local muestra COMIDA, no el logo estirado.
+        // Prioridad: 1) su especialidad (plato que coincide con la categoría del local:
+        // Pizzería→pizza), 2) el más vendido 30d, 3) plato fuerte antes que entrada/postre.
+        // Nunca bebidas (salvo cafeterías/fraperías) ni adicionales. Empates: rotación diaria.
+        // Nace de La Hoguera: es PIZZERÍA y de portada salían las alitas.
+        function _raizLocal(rest){
+            var c=removeAccents(((rest&&(rest.categoria_canonica||rest.categoria))||'').toLowerCase());
+            var w=(c.split(/[^a-z]+/)[0]||'').replace(/(erias|eria|as|os|es|a|s)$/,'');
+            return w.length>=4?w:null; // "pizzeria"→"pizz", "hamburguesas"→"hamburgues"
+        }
+        function _esEspecialidad(raiz,nombre,categoria){
+            if(!raiz) return false;
+            return removeAccents(((nombre||'')+' '+(categoria||'')).toLowerCase()).indexOf(raiz)!==-1;
+        }
+        function _catRankFoto(cat){
+            var n=removeAccents((cat||'').toLowerCase());
+            if(/entrada|aperitivo|picadita|sopa|ensalada/.test(n)) return 3;
+            if(esBebida(cat)) return 4;   // en una cafetería con comida, el bolón antes que el batido
+            if(/postre|helado|dulce/.test(n)) return 6;
+            return 0; // platos fuertes, combos y promos
+        }
+        function _scoreFotoLocal(raiz,nombre,categoria){
+            // el nombre pesa más que la categoría: en "Hamburguesas y Papas" gana la hamburguesa, no las papas
+            return (_esEspecialidad(raiz,nombre,'')?2000000:0)+(_esEspecialidad(raiz,'',categoria)?1000000:0)
+                +_ventasPlato(nombre)*100+(9-_catRankFoto(categoria));
+        }
+        function heroFotoLocal(rest,prods){
+            if(!rest||!prods||!prods.length) return null;
+            var raiz=_raizLocal(rest);
+            var cand=prods.filter(function(p){
+                if(!(p.foto_url&&String(p.foto_url).trim())) return false;
+                if(esAdicional(p.categoria,p.nombre)) return false;
+                if(esBebida(p.categoria)&&!esLocalBebidas(rest)) return false;
+                var w=parseAlmuerzo(p.descripcion)?null:parseWings(p.descripcion);
+                if(w&&w.dia!=null&&new Date().getDay()!==w.dia) return false; // promo de otro día
+                return true;
+            });
+            if(!cand.length) return null;
+            var arr=_dayShuffle(cand,function(p){return String(p.foto_url)});
+            arr.sort(function(a,b){return _scoreFotoLocal(raiz,b.nombre,b.categoria)-_scoreFotoLocal(raiz,a.nombre,a.categoria)});
+            return arr[0].foto_url;
+        }
+
         // ── Home food rail: platos con FOTO de aliados (cross-restaurant) ──
         // Muestra COMIDA real apenas entra el cliente (no solo logos). window._destHome:
         // undefined=no cargado · []=cargó vacío/falló · [..]=platos. Se inyecta por id sin re-render global.
@@ -1376,7 +1420,7 @@
                             window._fotoRestCand=window._fotoRestCand||{};
                             var _fc=(window._fotoRestCand[rest.id]=window._fotoRestCand[rest.id]||[]);
                             var _dup=false;for(var _i=0;_i<_fc.length;_i++){if(_fc[_i].url===it.foto_url){_dup=true;break;}}
-                            if(!_dup) _fc.push({url:it.foto_url,nombre:it.nombre_item});
+                            if(!_dup) _fc.push({url:it.foto_url,nombre:it.nombre_item,cat:it.categoria_menu||''});
                         }
                         if(rest.tipo_acuerdo!=='aliado'&&rest.tipo_acuerdo!=='cliente_paga') return; // aliados + cliente_paga (excluye silenciosos como Rodri Pollos)
                         // Bebidas NO van en el carril de comida... EXCEPTO en locales de bebidas (frappería/cafetería/
@@ -1441,7 +1485,10 @@
                     window._fotoRest={};
                     Object.keys(window._fotoRestCand||{}).forEach(function(rid){
                         var arr=_dayShuffle(window._fotoRestCand[rid],function(x){return x.url});
-                        arr.sort(function(a,b){return _ventasPlato(b.nombre)-_ventasPlato(a.nombre)});
+                        // La ESPECIALIDAD del local encabeza (una pizzería se anuncia con una pizza),
+                        // luego lo más vendido 30d — mismo criterio que la portada del detalle.
+                        var _rz=_raizLocal(getRestById(rid));
+                        arr.sort(function(a,b){return _scoreFotoLocal(_rz,b.nombre,b.cat)-_scoreFotoLocal(_rz,a.nombre,a.cat)});
                         window._fotoRest[rid]=arr.slice(0,3).map(function(x){return x.url});
                     });
                     window._destHomeLoading=false;
@@ -2560,8 +2607,11 @@
                 if(!prods.length) prods=allProds;
             }
 
-            var hasImg=!!(r.imagen_url||r.logo_url||r.foto_url);
-            var heroBg=hasImg?'background-image:url('+esc(thumb(r.imagen_url||r.logo_url||r.foto_url,1080))+')':'';
+            // Portada = FOTO DE PLATO (paridad app nativa). El logo queda solo en el avatar:
+            // estirado a lo ancho se ve mal y no da hambre. Sin fotos de plato → cae al logo.
+            var _heroFoto=heroFotoLocal(r,allProds)||r.imagen_url||r.logo_url||r.foto_url||'';
+            var hasImg=!!_heroFoto;
+            var heroBg=hasImg?'background-image:url('+esc(thumb(_heroFoto,1080))+')':'';
             var deliveryPrice=parsePrice(r.precio_delivery);
             var deliveryPill=window._clientGPS
                 ?(deliveryPrice>0
@@ -2625,16 +2675,32 @@
             // ── Destacados carousel (SOLO platos con foto real; sin foto no se muestra) ──
             var _destConFoto=prods.filter(function(p){
                 if(!(p.foto_url&&String(p.foto_url).trim())) return false;
-                if(esBebida(p.categoria)) return false; // bebidas NO van en destacados
+                if(esBebida(p.categoria)&&!esLocalBebidas(r)) return false; // bebidas NO van en destacados (salvo cafetería/frappería)
+                if(esAdicional(p.categoria,p.nombre)) return false;         // porciones/adicionales tampoco (paridad nativa)
                 var _w=parseAlmuerzo(p.descripcion)?null:parseWings(p.descripcion);
                 if(_w&&_w.dia!=null&&new Date().getDay()!==_w.dia) return false; // promo de otro día: no contar
                 return true;
             });
+            // Orden del carril = mismo criterio que la portada (especialidad del local + más vendido 30d),
+            // así lo primero que ve el cliente es lo que el local realmente vende. Paridad app nativa.
+            var _rzLocal=_raizLocal(r);
+            _destConFoto=_dayShuffle(_destConFoto,function(p){return String(p.foto_url)});
+            _destConFoto.sort(function(a,b){return _scoreFotoLocal(_rzLocal,b.nombre,b.categoria)-_scoreFotoLocal(_rzLocal,a.nombre,a.categoria)});
+            // Una foto = una tarjeta: las variantes de tamaño comparten la misma imagen y el
+            // carril se veía con el mismo plato repetido 4 veces (La Hoguera: la Especialidad
+            // en Familiar/Gigante/Mediana/Personal). Queda la mejor puntuada de cada foto.
+            var _fotoVista={};
+            _destConFoto=_destConFoto.filter(function(p){
+                var k=String(p.foto_url);
+                if(_fotoVista[k]) return false;
+                _fotoVista[k]=1; return true;
+            });
             if(_destConFoto.length>=2){
                 var destacados=_destConFoto.slice(0,8);
+                var _destPopular=_ventasPlato(destacados[0].nombre)>0;
                 h+='<section class="destacados">'+
                     '<div class="destacados-head">'+
-                        '<span class="destacados-title">✨ Destacados</span>'+
+                        '<span class="destacados-title">'+(_destPopular?'🔥 Los más pedidos aquí':'✨ Destacados')+'</span>'+
                         '<span class="destacados-sub">Del menú</span>'+
                     '</div>'+
                     '<div class="destacados-scroll">';
