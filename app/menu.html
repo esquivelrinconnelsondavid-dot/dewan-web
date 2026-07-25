@@ -3804,8 +3804,11 @@
         // dias: 1=Lun,2=Mar,3=Mié (Date.getDay, hora local del dispositivo).
         // Solo socios (aliado|cliente_paga, vía esSocioPromo), envíos cercanos (base ≤ $2) y subtotal ≥ $10. El moto SIEMPRE
         // cobra su tarifa completa; DEWAN absorbe la diferencia (cubierta por el markup de la comida).
-        var PROMO_ENVIO={dias:[1,2,3],minSubtotal:10,precio:1.00,baseMax:2.00};
-        function promoEnvioDiaActivo(){return PROMO_ENVIO.dias.indexOf(new Date().getDay())!==-1}
+        // ⛔ APAGADA 2026-07-25 (David) al entrar la tarifa por TRAMOS: el envío corto ya baja a
+        // $1.30 todos los días, el descuento quedaba en $0.30 y DEWAN (que en ≤2 km se lleva $0)
+        // tendría que reponerlo. Reactivar = activa:true (vuelven banner, badges, nudge y descuento).
+        var PROMO_ENVIO={activa:false,dias:[1,2,3],minSubtotal:10,precio:1.00,baseMax:2.00};
+        function promoEnvioDiaActivo(){return PROMO_ENVIO.activa&&PROMO_ENVIO.dias.indexOf(new Date().getDay())!==-1}
         // ── Promo "Envío GRATIS durante el partido" (Mundial 2026) ──
         // Ventana puntual fijada en UTC (NO depende de la zona del celular del cliente).
         // 14-jun-2026 17:30–20:30 Ecuador (UTC-5) = 22:30–01:30 UTC. Para apagarla: poner end en el pasado.
