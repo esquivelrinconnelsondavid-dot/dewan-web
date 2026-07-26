@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es-EC">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Planes · DEWAN para restaurantes</title>
+<meta name="description" content="Carta digital, bot que atiende y entregas. Precios claros, sin comisión por pedido.">
+<meta property="og:title" content="Planes · DEWAN para restaurantes">
+<meta property="og:description" content="Su carta, su bot y sus entregas. Precios claros, sin comisión por pedido.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F5F2; --card:#FFFFFF; --ink:#171412; --ink2:#5E574F; --ink3:#938A80;
+    --line:#E6E0D8; --line2:#D2C9BE;
+    --marca:#DC2D22; --marca-ink:#C22318; --on-marca:#FFFFFF; --marca-soft:#FCEDEB;
+    --ok:#1C6B45; --oro:#8A6A1F; --oro-soft:#FBF2DC;
+    --sh:0 1px 2px rgba(23,20,18,.04), 0 10px 28px -18px rgba(23,20,18,.30);
+    --r:16px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#131110; --card:#1D1A18; --ink:#F2EEE9; --ink2:#A79E94; --ink3:#7B7267;
+      --line:#2C2825; --line2:#3B3630;
+      --marca:#E8493C; --marca-ink:#F5776A; --on-marca:#171412; --marca-soft:#2B1815;
+      --ok:#5CBB8A; --oro:#D6AE55; --oro-soft:#2A2214;
+      --sh:0 1px 2px rgba(0,0,0,.4), 0 12px 30px -20px rgba(0,0,0,.8);
+    }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Plus Jakarta Sans',system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:16px; line-height:1.55;
+  }
+  .wrap{max-width:1120px; margin:0 auto; padding:0 20px}
+  h1,h2,h3{margin:0; text-wrap:balance; letter-spacing:-.025em; line-height:1.1}
+  .num{font-variant-numeric:tabular-nums}
+  .eyebrow{font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--ink3)}
+
+  /* header */
+  header{border-bottom:1px solid var(--line); background:var(--card); position:sticky; top:0; z-index:20}
+  .hd{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0}
+  .logo{display:flex; align-items:center; gap:9px; font-weight:800; font-size:18px; letter-spacing:-.02em}
+  .bell{width:26px; height:26px; border-radius:50%; background:var(--marca); display:grid; place-items:center; color:var(--on-marca); font-size:14px}
+  .hd .go{font-size:13.5px; font-weight:700; color:var(--on-marca); background:var(--marca); border-radius:99px; padding:9px 16px; text-decoration:none; white-space:nowrap}
+
+  /* hero */
+  .hero{padding:52px 0 34px; text-align:center}
+  .hero h1{font-size:clamp(30px,6vw,50px); font-weight:800}
+  .hero h1 span{color:var(--marca-ink)}
+  .hero p{color:var(--ink2); font-size:clamp(15px,2.4vw,18px); max-width:56ch; margin:16px auto 0}
+  .sellos{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:22px}
+  .sello{font-size:12.5px; font-weight:600; color:var(--ink2); background:var(--card); border:1px solid var(--line); border-radius:99px; padding:7px 14px}
+
+  /* planes */
+  .planes{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px; padding:24px 0 10px; align-items:stretch}
+  .plan{background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:26px 22px 24px; box-shadow:var(--sh); position:relative; display:flex; flex-direction:column; gap:16px; height:100%}
+  .plan.destacado{border:2px solid var(--marca); box-shadow:0 1px 2px rgba(23,20,18,.05), 0 22px 46px -26px rgba(220,45,34,.55)}
+  .cinta{position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--marca); color:var(--on-marca); font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:5px 14px; border-radius:99px; white-space:nowrap}
+  .plan h2{font-size:20px; font-weight:800}
+  .plan .para{font-size:13.5px; color:var(--ink3); margin-top:5px}
+  .precio{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+  .precio b{font-size:40px; font-weight:800; letter-spacing:-.035em; line-height:1}
+  .precio i{font-style:normal; font-size:13.5px; color:var(--ink2)}
+  .mensual{background:var(--marca-soft); border-radius:11px; padding:11px 14px; font-size:14px}
+  .mensual b{color:var(--marca-ink); font-weight:800}
+  .mensual span{display:block; font-size:12.5px; color:var(--ink2); margin-top:2px}
+  ul.chk{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; flex:1}
+  ul.chk li{display:flex; gap:9px; font-size:14.5px; color:var(--ink2); line-height:1.45}
+  ul.chk li b{color:var(--ink); font-weight:700}
+  .ck{color:var(--ok); font-weight:800; flex:none}
+  .cta{display:block; text-align:center; text-decoration:none; font-weight:700; font-size:15px; padding:14px 18px; border-radius:12px; background:var(--card); color:var(--ink); border:1.5px solid var(--line2); transition:.15s}
+  .cta:hover{border-color:var(--ink3)}
+  .cta.full{background:var(--marca); border-color:var(--marca); color:var(--on-marca)}
+  .cta.full:hover{filter:brightness(1.08)}
+  .cta:focus-visible{outline:2px solid var(--marca); outline-offset:3px}
+  .zona{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--oro); background:var(--oro-soft); border-radius:6px; padding:4px 9px; align-self:flex-start}
+
+  /* tramos */
+  .bloque{padding:46px 0}
+  .bloque h2{font-size:clamp(22px,3.6vw,30px); font-weight:800}
+  .bloque > .wrap > p{color:var(--ink2); max-width:62ch; margin:12px 0 0}
+  .tramos{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-top:22px}
+  .tramo{background:var(--card); border:1px solid var(--line); border-radius:13px; padding:18px 20px; box-shadow:var(--sh)}
+  .tramo .t{font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink3)}
+  .tramo .v{font-size:30px; font-weight:800; letter-spacing:-.03em; margin-top:6px}
+  .tramo .v small{font-size:14px; font-weight:600; color:var(--ink2); letter-spacing:0}
+  .tramo p{font-size:13.5px; color:var(--ink2); margin:6px 0 0}
+
+  /* motos fuera de zona */
+  .aviso{background:var(--card); border:1px dashed var(--line2); border-radius:var(--r); padding:22px 24px; margin-top:22px}
+  .aviso h3{font-size:17px; font-weight:800; margin-bottom:6px}
+  .aviso p{font-size:14.5px; color:var(--ink2); margin:0; max-width:64ch}
+
+  /* faq */
+  .faq{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:22px}
+  .q{background:var(--card); border:1px solid var(--line); border-radius:13px; padding:18px 20px; box-shadow:var(--sh)}
+  .q h3{font-size:15.5px; font-weight:700; margin-bottom:7px}
+  .q p{font-size:14px; color:var(--ink2); margin:0}
+
+  /* cierre */
+  .cierre{text-align:center; padding:52px 0 60px}
+  .cierre h2{font-size:clamp(24px,4.4vw,36px); font-weight:800}
+  .cierre h2 span{color:var(--marca-ink)}
+  .cierre p{color:var(--ink2); margin:14px auto 24px; max-width:52ch}
+  .cierre .cta{display:inline-block; padding:16px 34px; font-size:16px}
+  .garantia{font-size:13px; color:var(--ink3); margin-top:14px}
+  footer{border-top:1px solid var(--line); padding:22px 0 34px; color:var(--ink3); font-size:12.5px; display:flex; flex-wrap:wrap; gap:6px 18px; justify-content:center}
+  footer a{color:var(--ink3)}
+  @media (max-width:700px){ .hero{padding:38px 0 26px} .plan{padding:24px 20px} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hd">
+    <div class="logo"><span class="bell">🔔</span> DEWAN</div>
+    <a class="go" href="#planes">Ver planes</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <p class="eyebrow">Para restaurantes de todo el Ecuador</p>
+    <h1>Su carta, su bot y sus entregas.<br><span>Elija hasta dónde llegar.</span></h1>
+    <p>Empiece con una carta digital hecha para su local. Suba al sistema que atiende el WhatsApp por usted cuando lo necesite. Precios claros y sin comisión por pedido.</p>
+    <div class="sellos">
+      <span class="sello">Sin comisión por pedido</span>
+      <span class="sello">Lista en 24 horas</span>
+      <span class="sello">15 días de garantía</span>
+    </div>
+  </section>
+
+  <section class="wrap planes" id="planes">
+
+    <!-- CARTA -->
+    <article class="plan">
+      <div>
+        <h2>Carta</h2>
+        <p class="para">Para el local que ya vende por WhatsApp y quiere dejar de mandar fotos del menú.</p>
+      </div>
+      <div class="precio"><b class="num">$120</b><i>una sola vez</i></div>
+      <div class="mensual">
+        <b class="num">+ $12 al mes</b> de mantenimiento
+        <span>El primer mes va incluido.</span>
+      </div>
+      <ul class="chk">
+        <li><span class="ck">✓</span><span>Su carta con <b>su logo, sus colores y su menú completo</b></span></li>
+        <li><span class="ck">✓</span><span>Su link y su código QR para imprimir</span></li>
+        <li><span class="ck">✓</span><span>El cliente arma el pedido y le llega <b>ordenado a su WhatsApp</b></span></li>
+        <li><span class="ck">✓</span><span>Cambios de platos y precios ilimitados, los hacemos nosotros</span></li>
+        <li><span class="ck">✓</span><span>Lista en 24 horas</span></li>
+      </ul>
+      <a class="cta" href="#" data-plan="Carta">Quiero mi carta</a>
+    </article>
+
+    <!-- SISTEMA -->
+    <article class="plan destacado">
+      <span class="cinta">El más completo</span>
+      <div>
+        <h2>Sistema</h2>
+        <p class="para">Para el local al que se le llena el WhatsApp en hora pico y pierde pedidos por el desorden.</p>
+      </div>
+      <div class="precio"><b class="num">$199</b><i>instalación</i></div>
+      <div class="mensual">
+        <b class="num">+ desde $49 al mes</b> según sus pedidos
+        <span>Paga por el tamaño de su local, no una tarifa pareja para todos.</span>
+      </div>
+      <ul class="chk">
+        <li><span class="ck">✓</span><span><b>Todo lo de la Carta</b>, incluido</span></li>
+        <li><span class="ck">✓</span><span>Un <b>bot que atiende su WhatsApp</b> y arma el pedido solo</span></li>
+        <li><span class="ck">✓</span><span><b>Lee el comprobante de transferencia</b> y confirma el pago</span></li>
+        <li><span class="ck">✓</span><span>El pedido <b>suena en la app de su cocina</b> — sin comprar equipos</span></li>
+        <li><span class="ck">✓</span><span>Calcula el envío por GPS con la ubicación del cliente</span></li>
+        <li><span class="ck">✓</span><span>Comanda impresa en cocina, si usted la quiere</span></li>
+      </ul>
+      <a class="cta full" href="#" data-plan="Sistema">Quiero el sistema</a>
+    </article>
+
+    <!-- SISTEMA + MOTOS -->
+    <article class="plan">
+      <span class="zona">Por ahora en Riobamba</span>
+      <div>
+        <h2>Sistema + Motos</h2>
+        <p class="para">Para el local que además no quiere ocuparse de entregar.</p>
+      </div>
+      <div class="precio"><b class="num">$199</b><i>instalación</i></div>
+      <div class="mensual">
+        <b class="num">+ $89 al mes</b> y las entregas por carrera
+        <span>Sin sueldos de repartidor ni motos paradas.</span>
+      </div>
+      <ul class="chk">
+        <li><span class="ck">✓</span><span><b>Todo lo del Sistema</b>, incluido</span></li>
+        <li><span class="ck">✓</span><span><b>Nuestros motorizados entregan</b> sus pedidos</span></li>
+        <li><span class="ck">✓</span><span>El pedido sale a la moto apenas usted lo acepta</span></li>
+        <li><span class="ck">✓</span><span>El cliente ve por dónde va su pedido</span></li>
+        <li><span class="ck">✓</span><span>Usted se queda solo con la cocina</span></li>
+      </ul>
+      <a class="cta" href="#" data-plan="Sistema + Motos">Consultar disponibilidad</a>
+    </article>
+  </section>
+
+  <!-- TRAMOS -->
+  <section class="bloque">
+    <div class="wrap">
+      <p class="eyebrow">Mensualidad del Sistema</p>
+      <h2>Paga según lo que trabaja su local</h2>
+      <p>Un local de diez pedidos al día no debería pagar lo mismo que uno de cuarenta. La mensualidad se define por sus pedidos y se ajusta cuando su local crece.</p>
+      <div class="tramos">
+        <div class="tramo">
+          <div class="t">Hasta 15 pedidos al día</div>
+          <div class="v num">$49 <small>/ mes</small></div>
+          <p>Locales que están empezando con el delivery.</p>
+        </div>
+        <div class="tramo">
+          <div class="t">De 15 a 35 al día</div>
+          <div class="v num">$89 <small>/ mes</small></div>
+          <p>El local promedio que ya vive del pedido por WhatsApp.</p>
+        </div>
+        <div class="tramo">
+          <div class="t">Más de 35 al día</div>
+          <div class="v num">$149 <small>/ mes</small></div>
+          <p>Locales de alto volumen y varios turnos en hora pico.</p>
+        </div>
+      </div>
+
+      <div class="aviso">
+        <h3>¿Su local no está en Riobamba?</h3>
+        <p>La Carta y el Sistema funcionan en cualquier ciudad del país; se instalan a distancia y quedan listos el mismo día. Las motos por ahora son solo de Riobamba — pero si en su ciudad hay varios locales interesados, llevamos la flota. Escríbanos y le contamos cómo va eso.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="bloque" style="padding-top:0">
+    <div class="wrap">
+      <p class="eyebrow">Antes de decidir</p>
+      <h2>Lo que más nos preguntan</h2>
+      <div class="faq">
+        <div class="q">
+          <h3>¿Tengo que comprar algún equipo?</h3>
+          <p>No. El pedido le llega y suena en un celular o una tablet que ya tenga. Si prefiere la comanda impresa en cocina, también se puede.</p>
+        </div>
+        <div class="q">
+          <h3>¿Me cobran por cada pedido?</h3>
+          <p>No. Ni comisión sobre sus ventas ni cargo por pedido. Solo la instalación y la mensualidad de su tramo.</p>
+        </div>
+        <div class="q">
+          <h3>¿Para qué sirve el pago mensual?</h3>
+          <p>Para que su carta no se muera. Nosotros le cambiamos los platos y los precios cuando usted quiera y nos aseguramos de que siempre esté en línea y funcionando.</p>
+        </div>
+        <div class="q">
+          <h3>¿Y si no manejo tecnología?</h3>
+          <p>No tiene que manejar nada. Nosotros cargamos su menú y dejamos todo andando. Usted recibe el pedido como siempre, pero ya ordenado.</p>
+        </div>
+        <div class="q">
+          <h3>¿Cuánto demora?</h3>
+          <p>La carta queda lista en 24 horas. El sistema completo se instala el mismo día, por videollamada, y hacemos un pedido de prueba juntos.</p>
+        </div>
+        <div class="q">
+          <h3>¿Y si no me sirve?</h3>
+          <p>Tiene 15 días. Si en ese tiempo decide que no le sirve, le devolvemos su dinero. Sin vueltas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cierre wrap">
+    <h2>Cuéntenos de su local y le decimos <span>cuál le conviene.</span></h2>
+    <p>Nos dice qué vende y cuántos pedidos maneja, y le respondemos con el plan que le calza. Sin compromiso.</p>
+    <a class="cta full" href="#" data-plan="Consulta">📲 Escribirnos por WhatsApp</a>
+    <div class="garantia">15 días de garantía · Sin comisión por pedido · Equipo de Riobamba</div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span>DEWAN · Riobamba, Ecuador</span>
+  <a href="https://dewansas.com">dewansas.com</a>
+  <span>@dewanriobamba</span>
+</footer>
+
+<script>
+  var WA = "593962223600";
+  var TEXTOS = {
+    "Carta": "Buenas, vi los planes en su página. Me interesa la Carta de $120. Mi local es ",
+    "Sistema": "Buenas, vi los planes en su página. Me interesa el Sistema completo. Mi local es ",
+    "Sistema + Motos": "Buenas, vi los planes en su página. Me interesa el Sistema con las motos. Mi local es ",
+    "Consulta": "Buenas, vi los planes en su página y quisiera saber cuál me conviene. Mi local es "
+  };
+  document.querySelectorAll("[data-plan]").forEach(function (a) {
+    var t = TEXTOS[a.dataset.plan] || TEXTOS["Consulta"];
+    a.href = "https://wa.me/" + WA + "?text=" + encodeURIComponent(t);
+    a.target = "_blank";
+    a.rel = "noopener";
+  });
+</script>
+</body>
+</html>
