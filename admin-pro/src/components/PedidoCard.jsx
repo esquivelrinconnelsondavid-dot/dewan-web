@@ -349,6 +349,13 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
       )}
 
       {p.restaurante && <div className="text-base font-black text-white leading-tight">🏪 {p.restaurante}</div>}
+      {/* Carrera gratis (premio de sellos): el cliente no paga envío y DEWAN le repone
+          al moto en el cierre. Se marca aquí para que cuadre no se sorprenda del corte negativo. */}
+      {/CARRERA GRATIS/i.test(p.detalle_pedido || '') && (
+        <div className="text-xs font-black text-emerald-300 bg-emerald-900/40 rounded px-2 py-1">
+          🎁 Carrera GRATIS (premio de sellos) — la cubre DEWAN, el moto cobra completo
+        </div>
+      )}
       {p.detalle_pedido && <div className="text-xs text-gray-300 line-clamp-2">{p.detalle_pedido}</div>}
 
       {(p.estado_pedido === 'pendiente_restaurante' || p.estado_pedido === 'preparando') && sucursales.length > 1 && (
