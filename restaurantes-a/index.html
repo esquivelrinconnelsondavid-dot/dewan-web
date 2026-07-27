@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es-EC">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DEWAN · El sistema que atiende el WhatsApp de su restaurante</title>
+<meta name="description" content="Carta digital y bot que toma pedidos, cobra, valida transferencias y manda la orden a cocina. Hecho en Riobamba, funcionando hoy.">
+<meta property="og:title" content="DEWAN · Su WhatsApp deja de ser un cuello de botella">
+<meta property="og:description" content="Carta digital desde $120 y sistema completo desde $199. Ábralo y pruébelo desde su celular.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --tinta:#0E0C0B; --papel:#F7F4EF; --carbon:#16130F; --carbon2:#1F1B16;
+    --hueso:#EDE7DE; --gris:#9C948A; --gris2:#6E675F;
+    --rojo:#DC2D22; --rojo-cl:#F4564A; --brasa:#E8843A;
+    --ok:#4FBE84; --linea:rgba(237,231,222,.12);
+    --sp:clamp(20px,5vw,28px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--tinta); color:var(--hueso); overflow-x:hidden;
+    font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+    font-size:16px; line-height:1.55;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 var(--sp)}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  h1,h2,h3{letter-spacing:-.035em;line-height:1.02;text-wrap:balance;font-weight:800}
+  h1{font-size:clamp(34px,8.2vw,72px)}
+  h2{font-size:clamp(27px,5.6vw,46px)}
+  h3{font-size:clamp(19px,2.6vw,23px);letter-spacing:-.02em}
+  .rojo{color:var(--rojo-cl)}
+  p{color:var(--gris)}
+  .lead{font-size:clamp(15.5px,2.2vw,18.5px);line-height:1.6;max-width:60ch}
+  section{padding:clamp(56px,10vw,104px) 0;position:relative}
+
+  /* etiqueta tipo comanda */
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--rojo-cl);
+    display:flex;align-items:center;gap:9px;margin-bottom:18px;
+  }
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--rojo);flex:none}
+
+  /* header */
+  header{position:sticky;top:0;z-index:60;background:rgba(14,12,11,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--linea)}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0}
+  .marca{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.02em;color:var(--hueso);text-decoration:none}
+  .campana{width:28px;height:28px;border-radius:50%;background:var(--rojo);display:grid;place-items:center;font-size:14px}
+  .nav .links{display:none;gap:26px}
+  .nav .links a{color:var(--gris);text-decoration:none;font-size:14px;font-weight:600}
+  .nav .links a:hover{color:var(--hueso)}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    background:var(--rojo);color:#fff;font-weight:700;font-size:15px;
+    border:none;border-radius:12px;padding:14px 22px;text-decoration:none;cursor:pointer;
+    transition:transform .12s,filter .12s;
+  }
+  .btn:hover{filter:brightness(1.1)}
+  .btn:active{transform:scale(.98)}
+  .btn.sm{font-size:13.5px;padding:10px 16px;border-radius:10px}
+  .btn.ghost{background:transparent;color:var(--hueso);border:1.5px solid var(--linea)}
+  .btn.ghost:hover{border-color:var(--rojo)}
+  .btn:focus-visible{outline:2px solid var(--rojo-cl);outline-offset:3px}
+
+  /* HERO */
+  .hero{padding-top:clamp(34px,7vw,64px);overflow:hidden}
+  .hero-grid{display:grid;gap:clamp(30px,6vw,54px);align-items:center}
+  .hero h1 em{font-style:normal;color:var(--rojo-cl)}
+  .hero .lead{margin-top:20px}
+  .acciones{display:flex;flex-wrap:wrap;gap:11px;margin-top:28px}
+  .datitos{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;padding-top:22px;border-top:1px solid var(--linea)}
+  .datito b{display:block;font-size:23px;font-weight:800;letter-spacing:-.03em;color:var(--hueso)}
+  .datito span{font-size:11.5px;color:var(--gris2);letter-spacing:.04em}
+
+  /* teléfono demo */
+  .fono{position:relative;justify-self:center;width:min(310px,80vw)}
+  .fono .cuerpo{background:#000;border-radius:38px;padding:9px;border:1px solid rgba(237,231,222,.16);box-shadow:0 40px 90px rgba(0,0,0,.7)}
+  .fono .pantalla{position:relative;width:100%;aspect-ratio:9/18.5;border-radius:30px;overflow:hidden;background:#fff}
+  .fono iframe{position:absolute;inset:0;width:166.7%;height:166.7%;border:0;transform:scale(.6);transform-origin:top left}
+  .fono .toca{position:absolute;top:-12px;right:-8px;background:var(--hueso);color:var(--tinta);font-size:11px;font-weight:800;border-radius:99px;padding:7px 13px;box-shadow:0 10px 24px rgba(0,0,0,.5)}
+  .cambiar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:18px}
+  .cambiar button{
+    font-family:inherit;font-size:12.5px;font-weight:700;color:var(--gris);
+    background:var(--carbon2);border:1px solid var(--linea);border-radius:9px;padding:7px 12px;cursor:pointer;transition:.15s;
+  }
+  .cambiar button:hover{color:var(--hueso)}
+  .cambiar button[aria-pressed="true"]{background:var(--rojo);border-color:var(--rojo);color:#fff}
+  .pie-demo{text-align:center;font-size:12.5px;color:var(--gris2);margin-top:12px}
+
+  /* PRODUCTOS */
+  .dos{display:grid;gap:14px;margin-top:34px}
+  .prod{background:var(--carbon);border:1px solid var(--linea);border-radius:20px;padding:clamp(24px,4vw,34px);position:relative;overflow:hidden}
+  .prod.foco{border-color:rgba(220,45,34,.45);background:linear-gradient(165deg,rgba(220,45,34,.09),var(--carbon) 55%)}
+  .prod .tipo{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gris2)}
+  .prod h3{margin:9px 0 10px}
+  .prod .desde{display:flex;align-items:baseline;gap:8px;margin:18px 0 6px}
+  .prod .desde b{font-size:38px;font-weight:800;letter-spacing:-.04em;color:var(--hueso)}
+  .prod .desde span{font-size:13.5px;color:var(--gris2)}
+  .prod .mes{font-size:13.5px;color:var(--rojo-cl);font-weight:700}
+  .prod ul{list-style:none;margin:20px 0 24px;display:flex;flex-direction:column;gap:10px}
+  .prod li{display:flex;gap:10px;font-size:14.5px;color:var(--gris);line-height:1.45}
+  .prod li b{color:var(--hueso);font-weight:700}
+  .tick{color:var(--ok);font-weight:800;flex:none}
+
+  /* PASOS */
+  .pasos{display:grid;gap:12px;margin-top:34px;counter-reset:p}
+  .paso{display:flex;gap:18px;background:var(--carbon);border:1px solid var(--linea);border-radius:16px;padding:22px 24px}
+  .paso .n{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--rojo-cl);flex:none;padding-top:3px}
+  .paso p{font-size:14.5px;margin-top:6px}
+
+  /* TICKET (motivo gráfico propio) */
+  .ticket{background:#F2EDE4;color:#1a1713;border-radius:6px;padding:20px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;max-width:300px;box-shadow:0 30px 60px rgba(0,0,0,.5);position:relative}
+  .ticket::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;background:repeating-linear-gradient(90deg,#F2EDE4 0 10px,transparent 10px 20px);clip-path:polygon(0 0,100% 0,100% 40%,95% 100%,90% 40%,85% 100%,80% 40%,75% 100%,70% 40%,65% 100%,60% 40%,55% 100%,50% 40%,45% 100%,40% 40%,35% 100%,30% 40%,25% 100%,20% 40%,15% 100%,10% 40%,5% 100%,0 40%)}
+  .ticket .c{text-align:center}
+  .ticket .b{font-weight:700}
+  .ticket hr{border:0;border-top:1px dashed #9d958a;margin:10px 0}
+  .ticket .tot{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+
+  /* OBRAS */
+  .vivos{display:grid;gap:12px;margin-top:26px}
+  .vivo{display:block;text-decoration:none;background:var(--carbon);border:1px solid var(--linea);border-radius:16px;padding:22px;transition:.15s}
+  .vivo:hover{border-color:var(--rojo);transform:translateY(-2px)}
+  .vivo .l{display:flex;align-items:center;gap:9px}
+  .vivo .pulso{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(79,190,132,.6);animation:pulso 2.4s infinite}
+  @keyframes pulso{70%{box-shadow:0 0 0 9px rgba(79,190,132,0)}100%{box-shadow:0 0 0 0 rgba(79,190,132,0)}}
+  .vivo .nm{font-weight:800;font-size:19px;color:var(--hueso);letter-spacing:-.02em}
+  .vivo p{font-size:13.5px;margin-top:8px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .tg{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rojo-cl);background:rgba(220,45,34,.12);border-radius:5px;padding:4px 8px}
+  .cartas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:20px}
+  .carta{display:flex;align-items:center;justify-content:space-between;gap:8px;text-decoration:none;background:var(--carbon);border:1px solid var(--linea);border-radius:11px;padding:12px 14px;transition:.15s}
+  .carta:hover{border-color:var(--rojo);background:var(--carbon2)}
+  .carta span{font-size:13.5px;font-weight:700;color:var(--hueso);letter-spacing:-.01em}
+  .carta em{font-style:normal;color:var(--gris2);font-size:12px}
+  .nota{font-size:12.5px;color:var(--gris2);margin-top:18px;font-style:italic;max-width:64ch}
+
+  /* VIDEO */
+  #vid-sec{display:none}
+  .video-box{border-radius:20px;overflow:hidden;border:1px solid var(--linea);background:#000;margin-top:26px}
+  .video-box video{width:100%;display:block}
+
+  /* PLANES */
+  .tabla{margin-top:30px;border:1px solid var(--linea);border-radius:18px;overflow:hidden;background:var(--carbon)}
+  .fila{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px;padding:15px 18px;border-bottom:1px solid var(--linea);font-size:13.5px;align-items:center}
+  .fila:last-child{border-bottom:0}
+  .fila.head{background:var(--carbon2);font-weight:800;color:var(--hueso);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  .fila .c{color:var(--gris)}
+  .fila .si{color:var(--ok);font-weight:800}
+  .fila .no{color:var(--gris2)}
+  .precio-fila{background:rgba(220,45,34,.08);font-weight:700;color:var(--hueso)}
+
+  /* EMPRESA */
+  .empresa{display:grid;gap:14px;margin-top:30px}
+  .dato{background:var(--carbon);border:1px solid var(--linea);border-radius:14px;padding:20px 22px}
+  .dato .k{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris2)}
+  .dato .v{font-size:16px;font-weight:700;color:var(--hueso);margin-top:7px;line-height:1.4}
+  .dato .v a{color:var(--rojo-cl);text-decoration:none}
+
+  /* CIERRE */
+  .cierre{text-align:center;border-top:1px solid var(--linea)}
+  .cierre h2{max-width:18ch;margin:0 auto}
+  .cierre .lead{margin:18px auto 0}
+  .redes{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:30px}
+  .red{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:13.5px;font-weight:600;color:var(--gris);background:var(--carbon);border:1px solid var(--linea);border-radius:99px;padding:9px 16px;transition:.15s}
+  .red:hover{border-color:var(--rojo);color:var(--hueso)}
+  .red svg{width:16px;height:16px;fill:currentColor}
+  footer{padding:26px 0 40px;border-top:1px solid var(--linea);text-align:center;color:var(--gris2);font-size:12.5px}
+
+  /* aparición */
+  .rv{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.3,1),transform .6s cubic-bezier(.2,.7,.3,1)}
+  .rv.on{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important}.vivo .pulso{animation:none}}
+  @media (min-width:860px){
+    .nav .links{display:flex}
+    .hero-grid{grid-template-columns:1.05fr .95fr}
+    .dos{grid-template-columns:1fr 1fr}
+    .pasos{grid-template-columns:repeat(3,1fr)}
+    .paso{flex-direction:column;gap:10px}
+    .vivos{grid-template-columns:1fr 1fr}
+    .empresa{grid-template-columns:repeat(3,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="marca" href="#top"><span class="campana">🔔</span> DEWAN</a>
+    <nav class="links">
+      <a href="#productos">Qué ofrecemos</a>
+      <a href="#como">Cómo funciona</a>
+      <a href="#obras">Trabajo hecho</a>
+      <a href="#precios">Precios</a>
+    </nav>
+    <a class="btn sm" href="#cierre">Hablar con nosotros</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- 1. HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Para restaurantes del Ecuador</div>
+        <h1>Su WhatsApp no da abasto.<br><em>Nosotros sí.</em></h1>
+        <p class="lead">En hora pico, el mensaje que no alcanzó a contestar es un pedido que se fue. DEWAN le arma la carta digital y, si lo necesita, el sistema que atiende, cobra y manda la orden a cocina — solo.</p>
+        <div class="acciones">
+          <a class="btn" href="#cierre">Quiero verlo en mi local</a>
+          <a class="btn ghost" href="#obras">Ver lo que hemos hecho</a>
+        </div>
+        <div class="datitos">
+          <div class="datito"><b class="mono">3.006</b><span>pedidos atendidos en 4 meses</span></div>
+          <div class="datito"><b class="mono">16</b><span>cartas construidas</span></div>
+          <div class="datito"><b class="mono">61</b><span>pedidos en un solo día</span></div>
+        </div>
+      </div>
+
+      <div class="fono">
+        <span class="toca">Tóquelo, funciona</span>
+        <div class="cuerpo"><div class="pantalla">
+          <iframe id="demo" title="Carta digital de ejemplo" loading="lazy"
+                  src="https://dewansas.com/carta/index.html?r=baltimore&live=1"></iframe>
+        </div></div>
+        <div class="cambiar" id="cambiar">
+          <button data-r="baltimore" aria-pressed="true">Baltimore</button>
+          <button data-r="monaco" aria-pressed="false">Mónaco</button>
+          <button data-r="aidita" aria-pressed="false">Aidita</button>
+          <button data-r="mammamia" aria-pressed="false">Mamma Mia</button>
+        </div>
+        <p class="pie-demo">Cartas reales, con el menú real de cada local.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. PRODUCTOS -->
+  <section id="productos">
+    <div class="wrap">
+      <div class="rv">
+        <div class="eyebrow">Dos maneras de empezar</div>
+        <h2>Elija hasta dónde<br>quiere llegar.</h2>
+        <p class="lead" style="margin-top:16px">Puede empezar solo con la carta y sumar el sistema cuando el volumen se lo pida. Nadie le va a vender lo que no necesita.</p>
+      </div>
+
+      <div class="dos">
+        <article class="prod rv">
+          <div class="tipo">Producto 01</div>
+          <h3>La Carta</h3>
+          <p style="font-size:14.5px">Para el local que ya vende por WhatsApp y sigue mandando fotos del menú.</p>
+          <div class="desde"><b class="mono">$120</b><span>una sola vez</span></div>
+          <div class="mes">+ $12 al mes · primer mes incluido</div>
+          <ul>
+            <li><span class="tick">✓</span><span>Su carta con <b>su logo, sus colores y su menú completo</b></span></li>
+            <li><span class="tick">✓</span><span>Su link y su código QR para imprimir</span></li>
+            <li><span class="tick">✓</span><span>El cliente arma el pedido y le llega <b>ordenado</b></span></li>
+            <li><span class="tick">✓</span><span>Cambios de platos y precios, los hacemos nosotros</span></li>
+            <li><span class="tick">✓</span><span>Lista en 24 horas, en cualquier ciudad</span></li>
+          </ul>
+          <a class="btn ghost" href="#cierre" style="width:100%">Quiero mi carta</a>
+        </article>
+
+        <article class="prod foco rv">
+          <div class="tipo">Producto 02</div>
+          <h3>El Sistema</h3>
+          <p style="font-size:14.5px">Para el local que se ahoga en hora pico y sabe que está perdiendo pedidos.</p>
+          <div class="desde"><b class="mono">$199</b><span>instalación</span></div>
+          <div class="mes">+ desde $49 al mes, según sus pedidos</div>
+          <ul>
+            <li><span class="tick">✓</span><span><b>Todo lo de la Carta</b>, incluido</span></li>
+            <li><span class="tick">✓</span><span>Un <b>bot que atiende su WhatsApp</b> y arma el pedido</span></li>
+            <li><span class="tick">✓</span><span><b>Lee el comprobante</b> de transferencia y confirma el pago</span></li>
+            <li><span class="tick">✓</span><span>El pedido <b>suena en la app de su cocina</b>, sin comprar equipos</span></li>
+            <li><span class="tick">✓</span><span>Calcula el envío por GPS, sin discusiones</span></li>
+          </ul>
+          <a class="btn" href="#cierre" style="width:100%">Quiero el sistema</a>
+        </article>
+      </div>
+      <p class="nota">En Riobamba además entregamos con nuestras motos. Si su local está en otra ciudad y hay varios interesados, llevamos la flota.</p>
+    </div>
+  </section>
+
+  <!-- 3. CÓMO FUNCIONA -->
+  <section id="como">
+    <div class="wrap">
+      <div class="rv">
+        <div class="eyebrow">Cómo funciona</div>
+        <h2>Tres pasos, y usted<br>solo <span class="rojo">cocina</span>.</h2>
+      </div>
+      <div class="pasos">
+        <div class="paso rv"><div class="n">01</div><div>
+          <h3>El cliente pide</h3>
+          <p>Escribe a su WhatsApp de siempre o abre su carta desde el mismo chat. No descarga ninguna app.</p>
+        </div></div>
+        <div class="paso rv"><div class="n">02</div><div>
+          <h3>El sistema atiende y cobra</h3>
+          <p>Arma el pedido, valida que el combo exista, calcula el envío por GPS y recibe el pago. Si es transferencia, lee el comprobante y lo manda a aprobar.</p>
+        </div></div>
+        <div class="paso rv"><div class="n">03</div><div>
+          <h3>La orden entra a cocina</h3>
+          <p>Suena en la app de su cocina, en un celular o tablet que ya tiene. Y si trabaja con papel, también sale impresa.</p>
+        </div></div>
+      </div>
+
+      <div style="display:flex;justify-content:center;margin-top:44px" class="rv">
+        <div class="ticket">
+          <div class="c b">SUPER HAPPY</div>
+          <div class="c">Pedido #A-0428</div>
+          <hr>
+          <div>1x COMBO #2</div>
+          <div>&nbsp;&nbsp;+ Papas</div>
+          <div>&nbsp;&nbsp;+ Gaseosa 500ml</div>
+          <hr>
+          <div>Carlos M.</div>
+          <div>Av. Lizarzaburu y</div>
+          <div>García Moreno · 2.8 km</div>
+          <hr>
+          <div class="tot"><span>TOTAL</span><span>$6.50</span></div>
+          <div style="text-align:right">PAGADO · PICHINCHA</div>
+        </div>
+      </div>
+      <p class="nota" style="text-align:center;margin-left:auto;margin-right:auto">Así llega el pedido a la cocina: completo, con la dirección y el pago ya confirmado.</p>
+    </div>
+  </section>
+
+  <!-- 4. TRABAJO HECHO -->
+  <section id="obras">
+    <div class="wrap">
+      <div class="rv">
+        <div class="eyebrow">Trabajo hecho</div>
+        <h2>No le pedimos<br>que <span class="rojo">nos crea</span>.</h2>
+        <p class="lead" style="margin-top:16px">Ábralos desde su celular ahora mismo. Todo lo que está acá funciona con menús y precios reales.</p>
+      </div>
+
+      <div class="vivos">
+        <a class="vivo rv" href="https://superhappy-menu.bqspdc.easypanel.host" target="_blank" rel="noopener">
+          <div class="l"><span class="pulso"></span><span class="nm">Super Happy</span></div>
+          <p>Pollo y combos en Riobamba. El sistema completo lleva <b style="color:var(--hueso)">3.006 pedidos en cuatro meses</b>, con picos de 61 en un solo domingo.</p>
+          <div class="tags"><span class="tg">Bot</span><span class="tg">Carta</span><span class="tg">Transferencias</span><span class="tg">Cocina</span></div>
+        </a>
+        <a class="vivo rv" href="https://happypollo.dewansas.com" target="_blank" rel="noopener">
+          <div class="l"><span class="pulso"></span><span class="nm">Happy Pollo</span></div>
+          <p>Asadero en Riobamba. El pedido suena en la app de la cocina — sin impresora y sin equipos que comprar.</p>
+          <div class="tags"><span class="tg">Bot</span><span class="tg">Carta</span><span class="tg">App de cocina</span></div>
+        </a>
+      </div>
+
+      <div class="rv" style="margin-top:40px">
+        <div class="eyebrow" style="margin-bottom:12px">Cartas que hemos diseñado</div>
+        <div class="cartas" id="cartas"></div>
+        <p class="nota">Diseños hechos para locales de Riobamba, cada uno con su menú real cargado. La carta de su restaurante se ve así, con su marca y sus productos.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. VIDEO (aparece solo cuando exista el archivo) -->
+  <section id="vid-sec">
+    <div class="wrap">
+      <div class="rv">
+        <div class="eyebrow">En vivo</div>
+        <h2>El pedido entrando,<br>sin edición.</h2>
+        <p class="lead" style="margin-top:16px">Grabado en Super Happy: llega el mensaje, el sistema contesta y la orden suena en la cocina.</p>
+      </div>
+      <div class="video-box rv">
+        <video id="vid" controls playsinline preload="none" poster="pedido.jpg">
+          <source src="pedido.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. PRECIOS -->
+  <section id="precios">
+    <div class="wrap">
+      <div class="rv">
+        <div class="eyebrow">Precios</div>
+        <h2>Sin comisión<br>por pedido. Nunca.</h2>
+        <p class="lead" style="margin-top:16px">Usted paga la instalación y una mensualidad según el tamaño de su local. Lo que venda es suyo, completo.</p>
+      </div>
+
+      <div class="tabla rv">
+        <div class="fila head"><div>&nbsp;</div><div>Carta</div><div>Sistema</div></div>
+        <div class="fila precio-fila"><div class="c">Instalación</div><div class="mono">$120</div><div class="mono">$199</div></div>
+        <div class="fila precio-fila"><div class="c">Al mes</div><div class="mono">$12</div><div class="mono">$49 · $89 · $149</div></div>
+        <div class="fila"><div class="c">Carta con su marca</div><div class="si">✓</div><div class="si">✓</div></div>
+        <div class="fila"><div class="c">Pedido ordenado a su WhatsApp</div><div class="si">✓</div><div class="si">✓</div></div>
+        <div class="fila"><div class="c">Bot que atiende y cobra</div><div class="no">—</div><div class="si">✓</div></div>
+        <div class="fila"><div class="c">Valida transferencias</div><div class="no">—</div><div class="si">✓</div></div>
+        <div class="fila"><div class="c">Suena en la app de cocina</div><div class="no">—</div><div class="si">✓</div></div>
+        <div class="fila"><div class="c">Envío calculado por GPS</div><div class="no">—</div><div class="si">✓</div></div>
+      </div>
+      <p class="nota">La mensualidad del sistema depende de sus pedidos: hasta 15 al día $49 · de 15 a 35 $89 · más de 35 $149. Todos los planes tienen 15 días de garantía: si no le sirve, le devolvemos su dinero.</p>
+      <div style="margin-top:24px" class="rv"><a class="btn ghost" href="https://dewansas.com/planes" target="_blank" rel="noopener">Ver los planes en detalle →</a></div>
+    </div>
+  </section>
+
+  <!-- 7. EMPRESA -->
+  <section id="quienes">
+    <div class="wrap">
+      <div class="rv">
+        <div class="eyebrow">Quiénes somos</div>
+        <h2>Gente de Riobamba,<br>no un software de afuera.</h2>
+        <p class="lead" style="margin-top:16px">DEWAN nació operando delivery en Riobamba con motos propias. El sistema que le ofrecemos es el mismo que usamos todos los días para no perder pedidos. Por eso sabemos dónde duele.</p>
+      </div>
+      <div class="empresa">
+        <div class="dato rv"><div class="k">Empresa</div><div class="v">DEWAN S.A.S.<br>Riobamba, Ecuador</div></div>
+        <div class="dato rv"><div class="k">Quién le responde</div><div class="v">David Esquivel<br><a href="https://wa.me/593939647069" target="_blank" rel="noopener">+593 93 964 7069</a></div></div>
+        <div class="dato rv"><div class="k">Operando desde</div><div class="v">2025 · delivery propio,<br>bots y cartas digitales</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. CIERRE -->
+  <section class="cierre" id="cierre">
+    <div class="wrap">
+      <div class="rv">
+        <div class="eyebrow" style="justify-content:center">Empecemos</div>
+        <h2>Cuéntenos de su local y le decimos <span class="rojo">qué le conviene</span>.</h2>
+        <p class="lead">Nos dice qué vende y cuántos pedidos maneja en un día normal, y le respondemos con el plan que le calza. Sin compromiso y sin vueltas.</p>
+        <div style="margin-top:30px"><a class="btn" id="cta-final" href="#" style="font-size:16.5px;padding:17px 32px">Escribirnos por WhatsApp</a></div>
+        <p style="font-size:12.5px;color:var(--gris2);margin-top:16px">15 días de garantía · Sin comisión por pedido · Le respondemos hoy mismo</p>
+
+        <div class="redes">
+          <a class="red" id="red-wa" href="#">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 004.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15h-.01a8.2 8.2 0 01-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23a8.23 8.23 0 018.23 8.24c0 4.54-3.69 8.23-8.23 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37.99 2.53c.12.16 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.22-.17-.47-.29z"/></svg>
+            WhatsApp
+          </a>
+          <a class="red" href="https://instagram.com/dewanriobamba" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0 5.99a3.85 3.85 0 100 7.7 3.85 3.85 0 000-7.7zm0 6.35a2.5 2.5 0 110-5 2.5 2.5 0 010 5zm4.91-6.5a.9.9 0 11-1.8 0 .9.9 0 011.8 0z"/></svg>
+            @dewanriobamba
+          </a>
+          <a class="red" href="https://www.facebook.com/DeWanRiobamba" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.77-3.91 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94z"/></svg>
+            Facebook
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">DEWAN S.A.S. · Riobamba, Ecuador · <a href="https://dewansas.com" style="color:var(--gris)">dewansas.com</a></div>
+</footer>
+
+<script>
+(function(){
+  var WA = "593939647069";
+  var MSG = "Buenas. Vi la página de DEWAN y quiero saber qué plan le conviene a mi local.";
+  var link = "https://wa.me/" + WA + "?text=" + encodeURIComponent(MSG);
+  ["cta-final","red-wa"].forEach(function(id){
+    var a = document.getElementById(id);
+    if(a){ a.href = link; a.target = "_blank"; a.rel = "noopener"; }
+  });
+
+  // cartas construidas
+  var LOCALES = [
+    ["srmoro","Sr. Moro"],["papazota","Papazota Cheese"],["baltimore","Baltimore"],["monaco","Mónaco"],
+    ["tenaza","La Tenaza"],["gitano","El Gitano"],["bellavista","Bellavista"],["texas","Texas"],
+    ["ales","Ales"],["andaluza","La Andaluza"],["corcel","El Corcel"],["aidita","Ceviches Aidita"],
+    ["bogati","Bogati"],["prinfresa","Prinfresa"],["verdebolon","Verde Bolón"],["mammamia","Mamma Mia"]
+  ];
+  var cont = document.getElementById("cartas");
+  if(cont){
+    cont.innerHTML = LOCALES.map(function(l){
+      return '<a class="carta" href="https://dewansas.com/carta/index.html?r=' + l[0] +
+             '&live=1" target="_blank" rel="noopener"><span>' + l[1] + '</span><em>→</em></a>';
+    }).join("");
+  }
+
+  // cambiar la carta del teléfono
+  var demo = document.getElementById("demo");
+  var cambiar = document.getElementById("cambiar");
+  if(cambiar && demo){
+    cambiar.addEventListener("click", function(e){
+      var b = e.target.closest("button[data-r]");
+      if(!b) return;
+      demo.src = "https://dewansas.com/carta/index.html?r=" + b.dataset.r + "&live=1";
+      cambiar.querySelectorAll("button").forEach(function(o){
+        o.setAttribute("aria-pressed", String(o === b));
+      });
+    });
+  }
+
+  // el bloque de video aparece solo si el archivo existe
+  var v = document.getElementById("vid");
+  if(v){
+    v.addEventListener("loadedmetadata", function(){
+      document.getElementById("vid-sec").style.display = "block";
+    });
+    v.load();
+  }
+
+  // aparición al hacer scroll
+  var io = new IntersectionObserver(function(items){
+    items.forEach(function(it){ if(it.isIntersecting){ it.target.classList.add("on"); io.unobserve(it.target); } });
+  }, {rootMargin:"0px 0px -8% 0px", threshold:.06});
+  document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
+})();
+</script>
+</body>
+</html>

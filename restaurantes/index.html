@@ -2,502 +2,736 @@
 <html lang="es-EC">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>DEWAN · El sistema que atiende el WhatsApp de su restaurante</title>
-<meta name="description" content="Carta digital y bot que toma pedidos, cobra, valida transferencias y manda la orden a cocina. Hecho en Riobamba, funcionando hoy.">
-<meta property="og:title" content="DEWAN · Su WhatsApp deja de ser un cuello de botella">
-<meta property="og:description" content="Carta digital desde $120 y sistema completo desde $199. Ábralo y pruébelo desde su celular.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>DEWAN — Cartas digitales y sistema de pedidos para restaurantes · Riobamba, Ecuador</title>
+<meta name="description" content="Su carta digital con su marca y un sistema que atiende el WhatsApp de su restaurante: arma el pedido, confirma el pago por transferencia y suena en la cocina. Sin comisión por pedido. DEWAN S.A.S., Riobamba.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_EC">
+<meta property="og:site_name" content="DEWAN S.A.S.">
+<meta property="og:title" content="DEWAN — El pedido le llega hecho">
+<meta property="og:description" content="Carta digital con su marca y un sistema que atiende el WhatsApp de su restaurante: arma el pedido, confirma el pago y suena en cocina. Sin comisión por pedido. Riobamba, para todo el Ecuador.">
+<meta property="og:url" content="https://dewansas.com/restaurantes/">
+<meta name="theme-color" content="#FBF7F0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23DC2D22'/%3E%3Ccircle cx='16' cy='9.5' r='2.4' fill='%23FBF7F0'/%3E%3Cpath d='M4.5 22.4C5 15.9 10 11 16 11s11 4.9 11.5 11.4Z' fill='%23FBF7F0'/%3E%3Crect x='3.5' y='24.2' width='25' height='2.8' rx='1.4' fill='%23FBF7F0'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&amp;display=swap" rel="stylesheet">
 <style>
-  :root{
-    --tinta:#0E0C0B; --papel:#F7F4EF; --carbon:#16130F; --carbon2:#1F1B16;
-    --hueso:#EDE7DE; --gris:#9C948A; --gris2:#6E675F;
-    --rojo:#DC2D22; --rojo-cl:#F4564A; --brasa:#E8843A;
-    --ok:#4FBE84; --linea:rgba(237,231,222,.12);
-    --sp:clamp(20px,5vw,28px);
-  }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-  body{
-    background:var(--tinta); color:var(--hueso); overflow-x:hidden;
-    font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
-    font-size:16px; line-height:1.55;
-  }
-  .wrap{max-width:1080px;margin:0 auto;padding:0 var(--sp)}
-  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
-  h1,h2,h3{letter-spacing:-.035em;line-height:1.02;text-wrap:balance;font-weight:800}
-  h1{font-size:clamp(34px,8.2vw,72px)}
-  h2{font-size:clamp(27px,5.6vw,46px)}
-  h3{font-size:clamp(19px,2.6vw,23px);letter-spacing:-.02em}
-  .rojo{color:var(--rojo-cl)}
-  p{color:var(--gris)}
-  .lead{font-size:clamp(15.5px,2.2vw,18.5px);line-height:1.6;max-width:60ch}
-  section{padding:clamp(56px,10vw,104px) 0;position:relative}
+:root{
+  --papel:#FBF7F0;
+  --papel-2:#F3EDE0;
+  --blanco:#FFFDF8;
+  --tinta:#241C14;
+  --tinta-2:#6B6053;
+  --rojo:#DC2D22;
+  --rojo-2:#B02118;
+  --regla:#DCD2C0;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--papel);
+  color:var(--tinta);
+  font:400 1rem/1.65 var(--sans);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  overflow-x:clip;
+  padding-bottom:calc(4.4rem + env(safe-area-inset-bottom));
+}
+[hidden]{display:none!important}
+img,video{max-width:100%}
+h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.08;margin:0;letter-spacing:-.01em}
+p{margin:0 0 1rem}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--rojo);outline-offset:3px;border-radius:2px}
+.cont{max-width:64rem;margin:0 auto;padding-inline:1.25rem}
+.cont-angosta{max-width:44rem}
+section{padding-block:3.4rem}
+@media (min-width:760px){section{padding-block:5rem}}
 
-  /* etiqueta tipo comanda */
-  .eyebrow{
-    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
-    letter-spacing:.2em;text-transform:uppercase;color:var(--rojo-cl);
-    display:flex;align-items:center;gap:9px;margin-bottom:18px;
-  }
-  .eyebrow::before{content:"";width:22px;height:1px;background:var(--rojo);flex:none}
+/* ── Utilidades de texto ── */
+.kicker{
+  color:var(--rojo);font-weight:700;font-size:.72rem;
+  letter-spacing:.2em;text-transform:uppercase;margin:0 0 .9rem;
+}
+.lead{font-size:1.06rem;color:var(--tinta-2);max-width:38rem}
+.nota{
+  font-size:.92rem;color:var(--tinta-2);
+  border-left:3px solid var(--regla);padding-left:.9rem;max-width:36rem;
+}
+.enlace{
+  font-weight:600;color:var(--tinta);text-decoration:underline;
+  text-decoration-color:var(--rojo);text-decoration-thickness:2px;text-underline-offset:3px;
+}
+.enlace:hover{color:var(--rojo)}
 
-  /* header */
-  header{position:sticky;top:0;z-index:60;background:rgba(14,12,11,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--linea)}
-  .nav{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0}
-  .marca{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.02em;color:var(--hueso);text-decoration:none}
-  .campana{width:28px;height:28px;border-radius:50%;background:var(--rojo);display:grid;place-items:center;font-size:14px}
-  .nav .links{display:none;gap:26px}
-  .nav .links a{color:var(--gris);text-decoration:none;font-size:14px;font-weight:600}
-  .nav .links a:hover{color:var(--hueso)}
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:9px;
-    background:var(--rojo);color:#fff;font-weight:700;font-size:15px;
-    border:none;border-radius:12px;padding:14px 22px;text-decoration:none;cursor:pointer;
-    transition:transform .12s,filter .12s;
-  }
-  .btn:hover{filter:brightness(1.1)}
-  .btn:active{transform:scale(.98)}
-  .btn.sm{font-size:13.5px;padding:10px 16px;border-radius:10px}
-  .btn.ghost{background:transparent;color:var(--hueso);border:1.5px solid var(--linea)}
-  .btn.ghost:hover{border-color:var(--rojo)}
-  .btn:focus-visible{outline:2px solid var(--rojo-cl);outline-offset:3px}
+/* ── Línea de menú con puntos conductores (motivo de la página) ── */
+.menuline{display:flex;align-items:flex-end;gap:.55rem;padding:.55rem 0}
+.menuline .concepto{font-weight:500;font-size:.97rem}
+.menuline .concepto small{font-weight:400;color:var(--tinta-2)}
+.menuline .dots{
+  flex:1;min-width:1.6rem;margin-bottom:.42em;
+  border-bottom:2px dotted rgba(36,28,20,.38);
+}
+.menuline .precio,.menuline .cifra{
+  font-family:var(--serif);font-weight:600;font-size:1.3rem;line-height:1;
+  white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;
+  font-feature-settings:"tnum" 1,"lnum" 1;
+}
+.menuline .precio small{
+  font-family:var(--sans);font-weight:600;font-size:.7rem;color:var(--tinta-2);
+  letter-spacing:.02em;
+}
+.menuline .cifra{font-size:1.45rem;color:var(--rojo-2)}
 
-  /* HERO */
-  .hero{padding-top:clamp(34px,7vw,64px);overflow:hidden}
-  .hero-grid{display:grid;gap:clamp(30px,6vw,54px);align-items:center}
-  .hero h1 em{font-style:normal;color:var(--rojo-cl)}
-  .hero .lead{margin-top:20px}
-  .acciones{display:flex;flex-wrap:wrap;gap:11px;margin-top:28px}
-  .datitos{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;padding-top:22px;border-top:1px solid var(--linea)}
-  .datito b{display:block;font-size:23px;font-weight:800;letter-spacing:-.03em;color:var(--hueso)}
-  .datito span{font-size:11.5px;color:var(--gris2);letter-spacing:.04em}
+/* ── Reglas dobles de imprenta ── */
+hr.doble{
+  border:0;height:0;border-top:3px double var(--tinta);
+  max-width:64rem;margin:0 auto;width:calc(100% - 2.5rem);
+}
 
-  /* teléfono demo */
-  .fono{position:relative;justify-self:center;width:min(310px,80vw)}
-  .fono .cuerpo{background:#000;border-radius:38px;padding:9px;border:1px solid rgba(237,231,222,.16);box-shadow:0 40px 90px rgba(0,0,0,.7)}
-  .fono .pantalla{position:relative;width:100%;aspect-ratio:9/18.5;border-radius:30px;overflow:hidden;background:#fff}
-  .fono iframe{position:absolute;inset:0;width:166.7%;height:166.7%;border:0;transform:scale(.6);transform-origin:top left}
-  .fono .toca{position:absolute;top:-12px;right:-8px;background:var(--hueso);color:var(--tinta);font-size:11px;font-weight:800;border-radius:99px;padding:7px 13px;box-shadow:0 10px 24px rgba(0,0,0,.5)}
-  .cambiar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:18px}
-  .cambiar button{
-    font-family:inherit;font-size:12.5px;font-weight:700;color:var(--gris);
-    background:var(--carbon2);border:1px solid var(--linea);border-radius:9px;padding:7px 12px;cursor:pointer;transition:.15s;
-  }
-  .cambiar button:hover{color:var(--hueso)}
-  .cambiar button[aria-pressed="true"]{background:var(--rojo);border-color:var(--rojo);color:#fff}
-  .pie-demo{text-align:center;font-size:12.5px;color:var(--gris2);margin-top:12px}
+/* ── Botones ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+  padding:.95rem 1.35rem;min-height:48px;
+  font:600 .95rem/1 var(--sans);letter-spacing:.01em;text-decoration:none;
+  border:1.5px solid var(--tinta);border-radius:2px;
+  transition:background-color .15s,color .15s,border-color .15s;
+}
+.btn-rojo{background:var(--rojo);border-color:var(--rojo);color:#fff}
+.btn-rojo:hover{background:var(--rojo-2);border-color:var(--rojo-2)}
+.btn-linea{background:transparent;color:var(--tinta)}
+.btn-linea:hover{background:var(--tinta);color:var(--papel)}
+.btn-ancho{width:100%}
+.btn-grande{font-size:1.02rem;padding:1.1rem 1.5rem}
+.ico{width:1.15rem;height:1.15rem;flex:none;fill:currentColor}
 
-  /* PRODUCTOS */
-  .dos{display:grid;gap:14px;margin-top:34px}
-  .prod{background:var(--carbon);border:1px solid var(--linea);border-radius:20px;padding:clamp(24px,4vw,34px);position:relative;overflow:hidden}
-  .prod.foco{border-color:rgba(220,45,34,.45);background:linear-gradient(165deg,rgba(220,45,34,.09),var(--carbon) 55%)}
-  .prod .tipo{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gris2)}
-  .prod h3{margin:9px 0 10px}
-  .prod .desde{display:flex;align-items:baseline;gap:8px;margin:18px 0 6px}
-  .prod .desde b{font-size:38px;font-weight:800;letter-spacing:-.04em;color:var(--hueso)}
-  .prod .desde span{font-size:13.5px;color:var(--gris2)}
-  .prod .mes{font-size:13.5px;color:var(--rojo-cl);font-weight:700}
-  .prod ul{list-style:none;margin:20px 0 24px;display:flex;flex-direction:column;gap:10px}
-  .prod li{display:flex;gap:10px;font-size:14.5px;color:var(--gris);line-height:1.45}
-  .prod li b{color:var(--hueso);font-weight:700}
-  .tick{color:var(--ok);font-weight:800;flex:none}
+/* ── Portada (encabezado tipo carta impresa) ── */
+.portada{text-align:center;padding:0 1.25rem}
+.portada .regla{max-width:64rem;margin:0 auto;border-top:3px double var(--tinta)}
+.portada-int{padding:1.3rem 0 1.1rem}
+.portada-cloche{width:2.2rem;height:1.55rem;color:var(--rojo);fill:currentColor}
+.portada-marca{
+  font-family:var(--serif);font-weight:700;font-size:1.85rem;
+  letter-spacing:.34em;text-indent:.34em;margin:.15rem 0 .25rem;
+}
+.portada-sub{
+  font-size:.64rem;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--tinta-2);margin:0;
+}
 
-  /* PASOS */
-  .pasos{display:grid;gap:12px;margin-top:34px;counter-reset:p}
-  .paso{display:flex;gap:18px;background:var(--carbon);border:1px solid var(--linea);border-radius:16px;padding:22px 24px}
-  .paso .n{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--rojo-cl);flex:none;padding-top:3px}
-  .paso p{font-size:14.5px;margin-top:6px}
+/* ── Hero ── */
+.hero{padding-block:3.2rem 3.6rem}
+@media (min-width:760px){.hero{padding-block:5rem 5.4rem}}
+.hero h1{font-size:clamp(2.5rem,10vw,4.3rem);max-width:13ch}
+.hero h1 em{font-style:italic;font-weight:500;color:var(--rojo)}
+.hero .lead{margin-top:1.1rem}
+.hero-clave{
+  font-size:1rem;font-weight:500;max-width:36rem;
+  border-left:3px solid var(--rojo);padding-left:.9rem;
+}
+.botonera{display:flex;flex-wrap:wrap;gap:.7rem;margin:1.7rem 0 1.4rem}
+.hero-sello{
+  display:flex;gap:.6rem;align-items:flex-start;
+  font-size:.86rem;color:var(--tinta-2);max-width:34rem;margin:0;
+}
+.hero-sello .ico{color:var(--rojo);margin-top:.2rem;width:1.3rem;height:.95rem}
 
-  /* TICKET (motivo gráfico propio) */
-  .ticket{background:#F2EDE4;color:#1a1713;border-radius:6px;padding:20px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;max-width:300px;box-shadow:0 30px 60px rgba(0,0,0,.5);position:relative}
-  .ticket::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;background:repeating-linear-gradient(90deg,#F2EDE4 0 10px,transparent 10px 20px);clip-path:polygon(0 0,100% 0,100% 40%,95% 100%,90% 40%,85% 100%,80% 40%,75% 100%,70% 40%,65% 100%,60% 40%,55% 100%,50% 40%,45% 100%,40% 40%,35% 100%,30% 40%,25% 100%,20% 40%,15% 100%,10% 40%,5% 100%,0 40%)}
-  .ticket .c{text-align:center}
-  .ticket .b{font-weight:700}
-  .ticket hr{border:0;border-top:1px dashed #9d958a;margin:10px 0}
-  .ticket .tot{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+/* ── Demo ── */
+.demo-grid{display:grid;gap:2.4rem}
+@media (min-width:860px){.demo-grid{grid-template-columns:1.05fr .95fr;align-items:center;gap:3rem}}
+.demo-tabs{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.1rem}
+.demo-tab{
+  font:600 .84rem/1 var(--sans);letter-spacing:.01em;
+  padding:.62rem .9rem;border:1.5px solid var(--tinta);border-radius:2px;
+  background:transparent;color:var(--tinta);cursor:pointer;
+  transition:background-color .15s,color .15s;
+}
+.demo-tab:hover{background:var(--papel-2)}
+.demo-tab[aria-pressed="true"]{background:var(--tinta);color:var(--papel)}
+.demo-panel{display:flex;flex-direction:column;align-items:center}
+.telefono{
+  width:min(308px,84vw);
+  background:var(--tinta);border-radius:34px;padding:9px;
+  box-shadow:0 32px 60px -32px rgba(36,28,20,.55);
+}
+.pantalla{
+  position:relative;aspect-ratio:9/18.5;
+  border-radius:26px;overflow:hidden;background:#fff;
+}
+.pantalla iframe{
+  position:absolute;top:0;left:0;border:0;
+  width:166.7%;height:166.7%;max-width:none;
+  transform:scale(.6);transform-origin:top left;
+}
+.camara{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:9px;height:9px;border-radius:50%;background:rgba(0,0,0,.92);
+  pointer-events:none;
+}
+.demo-pie{font-size:.8rem;color:var(--tinta-2);margin:.8rem 0 0;text-align:center}
 
-  /* OBRAS */
-  .vivos{display:grid;gap:12px;margin-top:26px}
-  .vivo{display:block;text-decoration:none;background:var(--carbon);border:1px solid var(--linea);border-radius:16px;padding:22px;transition:.15s}
-  .vivo:hover{border-color:var(--rojo);transform:translateY(-2px)}
-  .vivo .l{display:flex;align-items:center;gap:9px}
-  .vivo .pulso{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(79,190,132,.6);animation:pulso 2.4s infinite}
-  @keyframes pulso{70%{box-shadow:0 0 0 9px rgba(79,190,132,0)}100%{box-shadow:0 0 0 0 rgba(79,190,132,0)}}
-  .vivo .nm{font-weight:800;font-size:19px;color:var(--hueso);letter-spacing:-.02em}
-  .vivo p{font-size:13.5px;margin-top:8px}
-  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
-  .tg{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rojo-cl);background:rgba(220,45,34,.12);border-radius:5px;padding:4px 8px}
-  .cartas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:20px}
-  .carta{display:flex;align-items:center;justify-content:space-between;gap:8px;text-decoration:none;background:var(--carbon);border:1px solid var(--linea);border-radius:11px;padding:12px 14px;transition:.15s}
-  .carta:hover{border-color:var(--rojo);background:var(--carbon2)}
-  .carta span{font-size:13.5px;font-weight:700;color:var(--hueso);letter-spacing:-.01em}
-  .carta em{font-style:normal;color:var(--gris2);font-size:12px}
-  .nota{font-size:12.5px;color:var(--gris2);margin-top:18px;font-style:italic;max-width:64ch}
+/* ── Video (opcional) ── */
+#video video{width:100%;border:1.5px solid var(--tinta);background:#000;aspect-ratio:16/9}
 
-  /* VIDEO */
-  #vid-sec{display:none}
-  .video-box{border-radius:20px;overflow:hidden;border:1px solid var(--linea);background:#000;margin-top:26px}
-  .video-box video{width:100%;display:block}
+/* ── Pasos ── */
+.pasos{list-style:none;margin:1.6rem 0 1.4rem;padding:0;max-width:44rem}
+.pasos li{
+  display:grid;grid-template-columns:3.3rem 1fr;gap:1rem;
+  padding:1.25rem 0;border-top:1px solid var(--regla);
+}
+.pasos li:last-child{border-bottom:1px solid var(--regla)}
+.paso-num{
+  font-family:var(--serif);font-style:italic;font-weight:500;
+  font-size:2.5rem;line-height:.9;color:var(--rojo);
+}
+.pasos h3{font-size:1.22rem;margin:0 0 .35rem}
+.pasos p{margin:0;color:var(--tinta-2);font-size:.97rem}
 
-  /* PLANES */
-  .tabla{margin-top:30px;border:1px solid var(--linea);border-radius:18px;overflow:hidden;background:var(--carbon)}
-  .fila{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px;padding:15px 18px;border-bottom:1px solid var(--linea);font-size:13.5px;align-items:center}
-  .fila:last-child{border-bottom:0}
-  .fila.head{background:var(--carbon2);font-weight:800;color:var(--hueso);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-  .fila .c{color:var(--gris)}
-  .fila .si{color:var(--ok);font-weight:800}
-  .fila .no{color:var(--gris2)}
-  .precio-fila{background:rgba(220,45,34,.08);font-weight:700;color:var(--hueso)}
+/* ── Calculadora de envío ── */
+#envio .demo-grid{align-items:start}
+.calc-label{display:block;font-weight:600;font-size:.9rem;margin:.2rem 0 0}
+.calc-rango{width:100%;height:2.4rem;margin:.1rem 0 0;accent-color:var(--rojo);cursor:pointer}
+.calc-escala{
+  display:flex;justify-content:space-between;
+  font-size:.72rem;color:var(--tinta-2);margin:0 0 .9rem;
+  font-variant-numeric:tabular-nums lining-nums;
+}
+.calc .menuline{border-top:1px solid var(--regla)}
+.calc .menuline:last-of-type{border-bottom:1px solid var(--regla)}
+.calc .menuline-total{border-top:2px solid var(--tinta)}
+.calc .menuline-total .precio{color:var(--rojo-2);font-size:1.55rem}
+.calc-cobertura{font-size:.8rem;color:var(--tinta-2);margin:.8rem 0 0}
 
-  /* EMPRESA */
-  .empresa{display:grid;gap:14px;margin-top:30px}
-  .dato{background:var(--carbon);border:1px solid var(--linea);border-radius:14px;padding:20px 22px}
-  .dato .k{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris2)}
-  .dato .v{font-size:16px;font-weight:700;color:var(--hueso);margin-top:7px;line-height:1.4}
-  .dato .v a{color:var(--rojo-cl);text-decoration:none}
+/* ── Productos (platos de la casa) ── */
+.platos{display:grid;gap:1.8rem;margin-top:2rem}
+@media (min-width:860px){.platos{grid-template-columns:1fr 1.12fr;align-items:start}}
+.plato{background:var(--blanco);border:1.5px solid var(--tinta);padding:1.6rem 1.4rem 1.7rem}
+.plato-casa{outline:1.5px solid var(--tinta);outline-offset:5px}
+.plato-tag{
+  font-size:.64rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--tinta-2);margin:0 0 .7rem;
+}
+.plato-tag-rojo{color:var(--rojo)}
+.plato h3{font-size:1.7rem;margin:0 0 .5rem}
+.plato-desc{color:var(--tinta-2);font-size:.97rem}
+.plato-puntos{list-style:none;margin:1.1rem 0 1.2rem;padding:0}
+.plato-puntos li{
+  position:relative;padding:.55rem 0 .55rem 1.2rem;
+  border-top:1px solid var(--regla);font-size:.94rem;
+}
+.plato-puntos li:last-child{border-bottom:1px solid var(--regla)}
+.plato-puntos li::before{content:"—";position:absolute;left:0;color:var(--rojo);font-weight:700}
+.plato .btn{margin-top:1.3rem}
 
-  /* CIERRE */
-  .cierre{text-align:center;border-top:1px solid var(--linea)}
-  .cierre h2{max-width:18ch;margin:0 auto}
-  .cierre .lead{margin:18px auto 0}
-  .redes{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:30px}
-  .red{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:13.5px;font-weight:600;color:var(--gris);background:var(--carbon);border:1px solid var(--linea);border-radius:99px;padding:9px 16px;transition:.15s}
-  .red:hover{border-color:var(--rojo);color:var(--hueso)}
-  .red svg{width:16px;height:16px;fill:currentColor}
-  footer{padding:26px 0 40px;border-top:1px solid var(--linea);text-align:center;color:var(--gris2);font-size:12.5px}
+/* ── Banda de garantía ── */
+.banda{background:var(--rojo);color:#FFF6F0;padding-block:2.7rem}
+.banda-grande{
+  font-family:var(--serif);font-weight:600;line-height:1.12;
+  font-size:clamp(1.65rem,6.4vw,2.5rem);margin:0 0 .6rem;max-width:22ch;
+}
+.banda-grande em{font-style:italic;font-weight:500}
+.banda-chica{margin:0;max-width:38rem;color:rgba(255,246,240,.88)}
+.banda :focus-visible{outline-color:#FFF6F0}
 
-  /* aparición */
-  .rv{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.3,1),transform .6s cubic-bezier(.2,.7,.3,1)}
-  .rv.on{opacity:1;transform:none}
-  @media (prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important}.vivo .pulso{animation:none}}
-  @media (min-width:860px){
-    .nav .links{display:flex}
-    .hero-grid{grid-template-columns:1.05fr .95fr}
-    .dos{grid-template-columns:1fr 1fr}
-    .pasos{grid-template-columns:repeat(3,1fr)}
-    .paso{flex-direction:column;gap:10px}
-    .vivos{grid-template-columns:1fr 1fr}
-    .empresa{grid-template-columns:repeat(3,1fr)}
-  }
+/* ── Resultados ── */
+.casos{display:grid;gap:2.4rem;margin-top:1.8rem}
+@media (min-width:860px){.casos{grid-template-columns:1.15fr .85fr;gap:3rem}}
+.caso h3{font-size:1.5rem;margin:0 0 .2rem}
+.caso-tipo{
+  display:block;font-family:var(--sans);font-weight:600;font-size:.72rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-2);
+  margin:0 0 .8rem;
+}
+.caso .cifras{margin:.4rem 0 1rem}
+.caso .menuline{border-top:1px solid var(--regla)}
+.caso .menuline:last-of-type{border-bottom:1px solid var(--regla)}
+
+/* ── Índice de cartas ── */
+.indice{display:grid;gap:0 2.6rem;margin-top:1.6rem;border-bottom:1px solid var(--regla)}
+@media (min-width:760px){.indice{grid-template-columns:1fr 1fr}}
+.indice a{
+  display:flex;align-items:flex-end;gap:.55rem;
+  padding:.62rem 0;border-top:1px solid var(--regla);text-decoration:none;
+}
+.indice a .nombre{font-weight:500;font-size:.97rem}
+.indice a .dots{flex:1;min-width:1.6rem;margin-bottom:.4em;border-bottom:2px dotted rgba(36,28,20,.38)}
+.indice a .abrir{
+  font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tinta-2);white-space:nowrap;transition:color .15s;
+}
+.indice a:hover .abrir,.indice a:focus-visible .abrir{color:var(--rojo)}
+
+/* ── Tarifas ── */
+.tarifa-grupo{margin-top:1.8rem}
+.tarifa-grupo h3{font-size:1.3rem;margin:0 0 .3rem}
+.tarifa-grupo .menuline{border-top:1px solid var(--regla)}
+.tarifa-grupo .menuline:last-of-type{border-bottom:1px solid var(--regla)}
+.tarifa-pie{margin-top:1.6rem;font-weight:500;max-width:38rem}
+
+/* ── Quiénes somos ── */
+.firma{
+  font-family:var(--serif);font-style:italic;font-size:1.15rem;
+  color:var(--tinta);margin-top:1.6rem;
+}
+
+/* ── Cierre ── */
+.cierre{background:var(--papel-2);border-top:3px double var(--tinta)}
+.cierre-cloche{width:2.6rem;height:1.85rem;color:var(--rojo);fill:currentColor;margin-bottom:1rem}
+.cierre h2{font-size:clamp(1.9rem,7vw,2.8rem)}
+.redes{list-style:none;display:flex;flex-wrap:wrap;gap:.4rem 1.6rem;margin:1.8rem 0 0;padding:0;font-size:.92rem}
+.redes a{text-decoration:underline;text-decoration-color:var(--rojo);text-decoration-thickness:2px;text-underline-offset:3px;font-weight:500}
+.redes a:hover{color:var(--rojo)}
+
+/* ── Pie ── */
+footer{border-top:1px solid var(--regla);padding:1.7rem 0 .8rem;font-size:.85rem;color:var(--tinta-2)}
+.footer-lema{font-family:var(--serif);font-style:italic;color:var(--tinta);font-size:1rem}
+
+/* ── Barra fija de contacto ── */
+#barra{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:var(--papel);border-top:1px solid var(--regla);
+  box-shadow:0 -12px 30px -18px rgba(36,28,20,.4);
+  padding-bottom:env(safe-area-inset-bottom);
+  transition:transform .3s ease;
+}
+#barra.fuera{transform:translateY(120%)}
+.barra-int{
+  max-width:64rem;margin:0 auto;padding:.55rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.barra-texto{display:flex;align-items:center;gap:.55rem;font-weight:600;font-size:.88rem}
+.barra-texto .ico{color:var(--rojo);width:1.35rem;height:.95rem}
+.btn-chico{padding:.6rem 1.05rem;min-height:40px;font-size:.88rem}
+@media (max-width:359px){.barra-texto span{display:none}}
+
+/* ── Encabezados de sección ── */
+section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
+
+/* ── Accesos rápidos ── */
+.salto{
+  position:absolute;left:-999px;top:0;z-index:100;
+  background:var(--tinta);color:var(--papel);padding:.7rem 1.1rem;text-decoration:none;
+}
+.salto:focus{left:0}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
+<a class="salto" href="#inicio">Ir al contenido</a>
 
-<header>
-  <div class="wrap nav">
-    <a class="marca" href="#top"><span class="campana">🔔</span> DEWAN</a>
-    <nav class="links">
-      <a href="#productos">Qué ofrecemos</a>
-      <a href="#como">Cómo funciona</a>
-      <a href="#obras">Trabajo hecho</a>
-      <a href="#precios">Precios</a>
-    </nav>
-    <a class="btn sm" href="#cierre">Hablar con nosotros</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="cloche" viewBox="0 0 32 22">
+      <circle cx="16" cy="3.1" r="2.3"/>
+      <path d="M3.4 16.2C3.9 9.6 9.3 4.6 16 4.6s12.1 5 12.6 11.6Z"/>
+      <rect x="1.2" y="18" width="29.6" height="2.6" rx="1.3"/>
+    </symbol>
+    <symbol id="wa" viewBox="0 0 24 24">
+      <path d="M12 2.6C6.9 2.6 2.8 6.7 2.8 11.8c0 1.7.5 3.4 1.3 4.8L2.7 21.4l4.9-1.3c1.4.8 2.9 1.2 4.4 1.2 5.1 0 9.2-4.1 9.2-9.2S17.1 2.6 12 2.6Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M9.1 7.7c.2-.4.4-.5.6-.5h.6c.2 0 .4 0 .6.4l.8 1.8c.1.2.1.5-.1.7l-.5.6c-.1.2-.2.4 0 .7.5.9 1.4 1.7 2.4 2.2.3.1.5.1.7-.1l.5-.6c.2-.2.4-.3.7-.2l1.8.8c.3.1.4.3.4.6-.1.9-.9 1.7-1.8 1.8-1.4.1-3.3-.7-4.8-2.1-1.5-1.4-2.3-3.2-2.2-4.6 0-.6.2-1.1.3-1.5Z" stroke="none"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="portada">
+  <div class="regla" aria-hidden="true"></div>
+  <div class="portada-int">
+    <svg class="portada-cloche" aria-hidden="true"><use href="#cloche"/></svg>
+    <p class="portada-marca">DEWAN</p>
+    <p class="portada-sub">Cartas digitales y sistemas de pedido · Riobamba — para todo el Ecuador</p>
   </div>
+  <div class="regla" aria-hidden="true"></div>
 </header>
 
-<main id="top">
+<main>
 
-  <!-- 1. HERO -->
-  <section class="hero">
-    <div class="wrap hero-grid">
+  <!-- 1 · HERO -->
+  <section class="hero" id="inicio">
+    <div class="cont">
+      <p class="kicker">Para dueños de restaurante</p>
+      <h1>El pedido le llega <em>hecho</em>.</h1>
+      <p class="lead">Su carta digital, con su marca, en el celular de sus clientes: escogen, arman el pedido y a usted le llega ordenado al WhatsApp. Y si quiere, nuestro sistema lo atiende solo, confirma el pago y lo hace sonar en la cocina.</p>
+      <p class="hero-clave"><strong>Sin comisión por pedido.</strong> Usted paga por el trabajo, no por sus ventas.</p>
+      <div class="botonera">
+        <a class="btn btn-rojo" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>Escríbanos por WhatsApp</a>
+        <a class="btn btn-linea" href="#demo">Pruebe una carta ↓</a>
+      </div>
+      <p class="hero-sello"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg><span>Somos una empresa de delivery de Riobamba. Con esta misma tecnología opera nuestro propio despacho, todos los días.</span></p>
+    </div>
+  </section>
+
+  <hr class="doble">
+
+  <!-- 2 · DEMO TOCABLE -->
+  <section id="demo">
+    <div class="cont demo-grid">
       <div>
-        <div class="eyebrow">Para restaurantes del Ecuador</div>
-        <h1>Su WhatsApp no da abasto.<br><em>Nosotros sí.</em></h1>
-        <p class="lead">En hora pico, el mensaje que no alcanzó a contestar es un pedido que se fue. DEWAN le arma la carta digital y, si lo necesita, el sistema que atiende, cobra y manda la orden a cocina — solo.</p>
-        <div class="acciones">
-          <a class="btn" href="#cierre">Quiero verlo en mi local</a>
-          <a class="btn ghost" href="#obras">Ver lo que hemos hecho</a>
-        </div>
-        <div class="datitos">
-          <div class="datito"><b class="mono">3.006</b><span>pedidos atendidos en 4 meses</span></div>
-          <div class="datito"><b class="mono">16</b><span>cartas construidas</span></div>
-          <div class="datito"><b class="mono">61</b><span>pedidos en un solo día</span></div>
-        </div>
+        <p class="kicker">Nº 1 · La prueba</p>
+        <h2>Tóquela. Es una carta de verdad.</h2>
+        <p class="lead">Escoja un local y navegue la carta como lo haría su cliente: categorías, platos, carrito. Corre aquí mismo, en vivo.</p>
+        <p class="nota">Estos diseños los hicimos para locales de Riobamba, cada uno con su menú real cargado. No son clientes: son muestras del terminado. Así se vería la suya, con su logo y sus platos.</p>
+        <p style="margin-top:1.3rem"><a class="enlace" href="https://wa.me/593939647069?text=Hola%20David%2C%20prob%C3%A9%20la%20carta%20de%20muestra%20y%20quiero%20ver%20c%C3%B3mo%20se%20ver%C3%ADa%20la%20de%20mi%20local.">Quiero ver la de mi local así →</a></p>
       </div>
-
-      <div class="fono">
-        <span class="toca">Tóquelo, funciona</span>
-        <div class="cuerpo"><div class="pantalla">
-          <iframe id="demo" title="Carta digital de ejemplo" loading="lazy"
-                  src="https://dewansas.com/carta/index.html?r=baltimore&live=1"></iframe>
-        </div></div>
-        <div class="cambiar" id="cambiar">
-          <button data-r="baltimore" aria-pressed="true">Baltimore</button>
-          <button data-r="monaco" aria-pressed="false">Mónaco</button>
-          <button data-r="aidita" aria-pressed="false">Aidita</button>
-          <button data-r="mammamia" aria-pressed="false">Mamma Mia</button>
+      <div class="demo-panel">
+        <div class="demo-tabs" role="group" aria-label="Cambiar la carta de muestra">
+          <button class="demo-tab" type="button" data-slug="srmoro" data-nombre="Sr. Moro" aria-pressed="true">Sr. Moro</button>
+          <button class="demo-tab" type="button" data-slug="verdebolon" data-nombre="Verde Bolón" aria-pressed="false">Verde Bolón</button>
+          <button class="demo-tab" type="button" data-slug="aidita" data-nombre="Ceviches Aidita" aria-pressed="false">Ceviches Aidita</button>
+          <button class="demo-tab" type="button" data-slug="mammamia" data-nombre="Mamma Mia" aria-pressed="false">Mamma Mia</button>
         </div>
-        <p class="pie-demo">Cartas reales, con el menú real de cada local.</p>
+        <div class="telefono">
+          <div class="pantalla">
+            <iframe id="demo-iframe" src="https://dewansas.com/carta/index.html?r=srmoro&amp;live=1" title="Carta digital de muestra, en vivo" loading="lazy"></iframe>
+            <span class="camara" aria-hidden="true"></span>
+          </div>
+        </div>
+        <p class="demo-pie" aria-live="polite">Viendo: <strong id="demo-nombre">Sr. Moro</strong> · diseño de muestra con menú real</p>
       </div>
     </div>
   </section>
 
-  <!-- 2. PRODUCTOS -->
+  <hr class="doble">
+
+  <!-- OPCIONAL · VIDEO (solo aparece si el archivo existe) -->
+  <section id="video" hidden>
+    <div class="cont cont-angosta">
+      <p class="kicker">La jugada completa</p>
+      <h2>Un pedido de verdad, en video.</h2>
+      <p class="lead">De la carta al WhatsApp y de ahí a la cocina, sin cortes.</p>
+      <video id="video-pedido" src="/restaurantes/pedido.mp4" controls playsinline preload="none"></video>
+    </div>
+  </section>
+
+  <!-- 3 · CÓMO FUNCIONA -->
+  <section id="como-funciona">
+    <div class="cont">
+      <p class="kicker">Nº 2 · El servicio</p>
+      <h2>Así corre un pedido.</h2>
+      <ol class="pasos">
+        <li>
+          <span class="paso-num" aria-hidden="true">1.</span>
+          <div>
+            <h3>El cliente pide</h3>
+            <p>Abre su carta desde un link — por WhatsApp, por sus redes o con un código QR en la mesa — y arma el pedido a su gusto. No descarga nada.</p>
+          </div>
+        </li>
+        <li>
+          <span class="paso-num" aria-hidden="true">2.</span>
+          <div>
+            <h3>El sistema atiende y cobra</h3>
+            <p>Responde el WhatsApp de su local, arma el pedido, lee el comprobante de la transferencia bancaria y confirma el pago. Si es a domicilio, calcula el envío por GPS.</p>
+          </div>
+        </li>
+        <li>
+          <span class="paso-num" aria-hidden="true">3.</span>
+          <div>
+            <h3>La orden entra a cocina</h3>
+            <p>El pedido suena en la app de cocina, en el celular o la tablet que su local ya tiene. Sin comprar equipos; la impresora térmica es opcional.</p>
+          </div>
+        </li>
+      </ol>
+      <p class="nota">Si elige solo La Carta, el paso 2 lo hace usted: el pedido le llega armado y ordenado a su WhatsApp, y usted lo confirma. Con El Sistema, se hace solo.</p>
+    </div>
+  </section>
+
+  <hr class="doble">
+
+  <!-- 4 · EL ENVÍO: CÓMO SE CALCULA -->
+  <section id="envio">
+    <div class="cont demo-grid">
+      <div>
+        <p class="kicker">Nº 3 · El envío</p>
+        <h2>El envío deja de ser una discusión.</h2>
+        <p class="lead">El precio no lo pone el ánimo de nadie: lo pone el GPS, al metro, con la tarifa que usted definió. Y el cliente lo ve antes de confirmar.</p>
+        <ul class="plato-puntos">
+          <li>El cliente manda su ubicación como pueda: el clip de WhatsApp, un link de Google Maps o la dirección escrita. El sistema entiende los tres.</li>
+          <li>¿Tiene varias sucursales? El sistema escoge solo la más cercana al cliente.</li>
+          <li>La distancia no se mide en línea recta: se corrige al trazado real de las calles, y sobre esa ruta se cobra.</li>
+        </ul>
+        <p style="max-width:36rem">A la misma distancia, el mismo precio — hoy, mañana y para todos. Usted no vuelve a negociar un envío por el chat.</p>
+        <p><a class="enlace" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20calculadora%20del%20env%C3%ADo%20y%20quiero%20una%20tarifa%20as%C3%AD%20para%20mi%20local.">Quiero una tarifa así para mi local →</a></p>
+      </div>
+      <div class="plato calc">
+        <p class="plato-tag plato-tag-rojo">Calcúlelo usted mismo</p>
+        <label class="calc-label" for="envio-rango">Distancia al cliente, por ruta</label>
+        <input class="calc-rango" id="envio-rango" type="range" min="0.5" max="15" step="0.1" value="5.2" list="envio-marcas" aria-valuetext="5,2 kilómetros — envío $2,60">
+        <datalist id="envio-marcas"><option value="3.5"></option></datalist>
+        <div class="calc-escala" aria-hidden="true"><span>0,5 km</span><span>15 km</span></div>
+        <div class="menuline"><span class="concepto">Distancia por ruta</span><span class="dots" aria-hidden="true"></span><span class="precio"><span id="envio-dist">5,2</span> <small>km</small></span></div>
+        <div class="menuline"><span class="concepto">Base · hasta 3,5 km</span><span class="dots" aria-hidden="true"></span><span class="precio">$1,60</span></div>
+        <div class="menuline"><span class="concepto" id="envio-bloques">+ 4 bloques de 500 m</span><span class="dots" aria-hidden="true"></span><span class="precio" id="envio-extra">$1,00</span></div>
+        <div class="menuline menuline-total"><span class="concepto"><strong>Total del envío</strong></span><span class="dots" aria-hidden="true"></span><span class="precio" id="envio-total">$2,60</span></div>
+        <div class="menuline"><span class="concepto">Tiempo estimado</span><span class="dots" aria-hidden="true"></span><span class="precio"><span id="envio-tiempo">31–41</span> <small>min</small></span></div>
+        <p class="calc-cobertura">Cobertura de este ejemplo: hasta 15 km. Más lejos, el sistema ofrece retiro en el local.</p>
+        <p class="nota" style="margin-top:1.1rem">Esta es la tarifa real de Super Happy, como ejemplo. Cada local define la suya — base, valor del bloque y cobertura — y el sistema la aplica igual de exacta.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="doble">
+
+  <!-- 5 · LOS DOS PRODUCTOS -->
   <section id="productos">
-    <div class="wrap">
-      <div class="rv">
-        <div class="eyebrow">Dos maneras de empezar</div>
-        <h2>Elija hasta dónde<br>quiere llegar.</h2>
-        <p class="lead" style="margin-top:16px">Puede empezar solo con la carta y sumar el sistema cuando el volumen se lo pida. Nadie le va a vender lo que no necesita.</p>
-      </div>
-
-      <div class="dos">
-        <article class="prod rv">
-          <div class="tipo">Producto 01</div>
+    <div class="cont">
+      <p class="kicker">Nº 4 · La carta de la casa</p>
+      <h2>Dos maneras de empezar.</h2>
+      <div class="platos">
+        <article class="plato">
+          <p class="plato-tag">Para empezar</p>
           <h3>La Carta</h3>
-          <p style="font-size:14.5px">Para el local que ya vende por WhatsApp y sigue mandando fotos del menú.</p>
-          <div class="desde"><b class="mono">$120</b><span>una sola vez</span></div>
-          <div class="mes">+ $12 al mes · primer mes incluido</div>
-          <ul>
-            <li><span class="tick">✓</span><span>Su carta con <b>su logo, sus colores y su menú completo</b></span></li>
-            <li><span class="tick">✓</span><span>Su link y su código QR para imprimir</span></li>
-            <li><span class="tick">✓</span><span>El cliente arma el pedido y le llega <b>ordenado</b></span></li>
-            <li><span class="tick">✓</span><span>Cambios de platos y precios, los hacemos nosotros</span></li>
-            <li><span class="tick">✓</span><span>Lista en 24 horas, en cualquier ciudad</span></li>
+          <p class="plato-desc">Su carta digital con su marca. El cliente escoge, arma el pedido y a usted le llega ordenado al WhatsApp, listo para despachar.</p>
+          <ul class="plato-puntos">
+            <li>Diseño con su logo, sus colores y su menú completo</li>
+            <li>El pedido llega armado y ordenado a su WhatsApp</li>
+            <li>Se comparte con un link: WhatsApp, redes o QR en la mesa</li>
+            <li>Cambios ilimitados de platos y precios: nos escribe y los hacemos nosotros</li>
+            <li>Lista en 24 horas, en cualquier ciudad del Ecuador</li>
           </ul>
-          <a class="btn ghost" href="#cierre" style="width:100%">Quiero mi carta</a>
+          <div class="menuline"><span class="concepto">Pago único</span><span class="dots" aria-hidden="true"></span><span class="precio">$120</span></div>
+          <div class="menuline"><span class="concepto">Mantenimiento <small>· primer mes incluido</small></span><span class="dots" aria-hidden="true"></span><span class="precio">$12<small>/mes</small></span></div>
+          <a class="btn btn-linea btn-ancho" href="https://wa.me/593939647069?text=Hola%20David%2C%20me%20interesa%20La%20Carta%20digital%20de%20%24120%20para%20mi%20restaurante.%20%C2%BFC%C3%B3mo%20empezamos%3F">Quiero La Carta</a>
         </article>
-
-        <article class="prod foco rv">
-          <div class="tipo">Producto 02</div>
+        <article class="plato plato-casa">
+          <p class="plato-tag plato-tag-rojo">La especialidad de la casa</p>
           <h3>El Sistema</h3>
-          <p style="font-size:14.5px">Para el local que se ahoga en hora pico y sabe que está perdiendo pedidos.</p>
-          <div class="desde"><b class="mono">$199</b><span>instalación</span></div>
-          <div class="mes">+ desde $49 al mes, según sus pedidos</div>
-          <ul>
-            <li><span class="tick">✓</span><span><b>Todo lo de la Carta</b>, incluido</span></li>
-            <li><span class="tick">✓</span><span>Un <b>bot que atiende su WhatsApp</b> y arma el pedido</span></li>
-            <li><span class="tick">✓</span><span><b>Lee el comprobante</b> de transferencia y confirma el pago</span></li>
-            <li><span class="tick">✓</span><span>El pedido <b>suena en la app de su cocina</b>, sin comprar equipos</span></li>
-            <li><span class="tick">✓</span><span>Calcula el envío por GPS, sin discusiones</span></li>
+          <p class="plato-desc">Todo lo de La Carta, más el que atiende: el pedido se arma solo, se cobra y suena en su cocina.</p>
+          <ul class="plato-puntos">
+            <li>Bot que atiende su WhatsApp y arma el pedido, sin que usted conteste</li>
+            <li>Lee el comprobante de la transferencia bancaria y confirma el pago</li>
+            <li>La orden suena en la app de cocina, en el equipo que ya tiene — sin comprar equipos; impresora térmica opcional</li>
+            <li>Cálculo del envío por GPS</li>
+            <li>Instalado el mismo día, por videollamada</li>
           </ul>
-          <a class="btn" href="#cierre" style="width:100%">Quiero el sistema</a>
+          <div class="menuline"><span class="concepto">Instalación</span><span class="dots" aria-hidden="true"></span><span class="precio">$199</span></div>
+          <div class="menuline"><span class="concepto">Hasta 15 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$49<small>/mes</small></span></div>
+          <div class="menuline"><span class="concepto">De 15 a 35 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$89<small>/mes</small></span></div>
+          <div class="menuline"><span class="concepto">Más de 35 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$149<small>/mes</small></span></div>
+          <a class="btn btn-rojo btn-ancho" href="https://wa.me/593939647069?text=Hola%20David%2C%20me%20interesa%20El%20Sistema%20que%20atiende%20el%20WhatsApp.%20Quiero%20la%20instalaci%C3%B3n%20por%20videollamada%20para%20mi%20local.">Quiero El Sistema</a>
         </article>
       </div>
-      <p class="nota">En Riobamba además entregamos con nuestras motos. Si su local está en otra ciudad y hay varios interesados, llevamos la flota.</p>
     </div>
   </section>
 
-  <!-- 3. CÓMO FUNCIONA -->
-  <section id="como">
-    <div class="wrap">
-      <div class="rv">
-        <div class="eyebrow">Cómo funciona</div>
-        <h2>Tres pasos, y usted<br>solo <span class="rojo">cocina</span>.</h2>
-      </div>
-      <div class="pasos">
-        <div class="paso rv"><div class="n">01</div><div>
-          <h3>El cliente pide</h3>
-          <p>Escribe a su WhatsApp de siempre o abre su carta desde el mismo chat. No descarga ninguna app.</p>
-        </div></div>
-        <div class="paso rv"><div class="n">02</div><div>
-          <h3>El sistema atiende y cobra</h3>
-          <p>Arma el pedido, valida que el combo exista, calcula el envío por GPS y recibe el pago. Si es transferencia, lee el comprobante y lo manda a aprobar.</p>
-        </div></div>
-        <div class="paso rv"><div class="n">03</div><div>
-          <h3>La orden entra a cocina</h3>
-          <p>Suena en la app de su cocina, en un celular o tablet que ya tiene. Y si trabaja con papel, también sale impresa.</p>
-        </div></div>
-      </div>
-
-      <div style="display:flex;justify-content:center;margin-top:44px" class="rv">
-        <div class="ticket">
-          <div class="c b">SUPER HAPPY</div>
-          <div class="c">Pedido #A-0428</div>
-          <hr>
-          <div>1x COMBO #2</div>
-          <div>&nbsp;&nbsp;+ Papas</div>
-          <div>&nbsp;&nbsp;+ Gaseosa 500ml</div>
-          <hr>
-          <div>Carlos M.</div>
-          <div>Av. Lizarzaburu y</div>
-          <div>García Moreno · 2.8 km</div>
-          <hr>
-          <div class="tot"><span>TOTAL</span><span>$6.50</span></div>
-          <div style="text-align:right">PAGADO · PICHINCHA</div>
-        </div>
-      </div>
-      <p class="nota" style="text-align:center;margin-left:auto;margin-right:auto">Así llega el pedido a la cocina: completo, con la dirección y el pago ya confirmado.</p>
+  <!-- GARANTÍA -->
+  <section class="banda" aria-label="Garantía y condiciones">
+    <div class="cont">
+      <p class="banda-grande">Cobramos por el trabajo, <em>no por sus ventas.</em></p>
+      <p class="banda-chica">Ningún producto lleva comisión por pedido. Y los dos tienen garantía de 15 días: si no le sirve, le devolvemos su dinero.</p>
     </div>
   </section>
 
-  <!-- 4. TRABAJO HECHO -->
-  <section id="obras">
-    <div class="wrap">
-      <div class="rv">
-        <div class="eyebrow">Trabajo hecho</div>
-        <h2>No le pedimos<br>que <span class="rojo">nos crea</span>.</h2>
-        <p class="lead" style="margin-top:16px">Ábralos desde su celular ahora mismo. Todo lo que está acá funciona con menús y precios reales.</p>
-      </div>
-
-      <div class="vivos">
-        <a class="vivo rv" href="https://superhappy-menu.bqspdc.easypanel.host" target="_blank" rel="noopener">
-          <div class="l"><span class="pulso"></span><span class="nm">Super Happy</span></div>
-          <p>Pollo y combos en Riobamba. El sistema completo lleva <b style="color:var(--hueso)">3.006 pedidos en cuatro meses</b>, con picos de 61 en un solo domingo.</p>
-          <div class="tags"><span class="tg">Bot</span><span class="tg">Carta</span><span class="tg">Transferencias</span><span class="tg">Cocina</span></div>
-        </a>
-        <a class="vivo rv" href="https://happypollo.dewansas.com" target="_blank" rel="noopener">
-          <div class="l"><span class="pulso"></span><span class="nm">Happy Pollo</span></div>
-          <p>Asadero en Riobamba. El pedido suena en la app de la cocina — sin impresora y sin equipos que comprar.</p>
-          <div class="tags"><span class="tg">Bot</span><span class="tg">Carta</span><span class="tg">App de cocina</span></div>
-        </a>
-      </div>
-
-      <div class="rv" style="margin-top:40px">
-        <div class="eyebrow" style="margin-bottom:12px">Cartas que hemos diseñado</div>
-        <div class="cartas" id="cartas"></div>
-        <p class="nota">Diseños hechos para locales de Riobamba, cada uno con su menú real cargado. La carta de su restaurante se ve así, con su marca y sus productos.</p>
+  <!-- 6 · TRABAJO HECHO -->
+  <section id="resultados">
+    <div class="cont">
+      <p class="kicker">Nº 5 · Funcionando hoy</p>
+      <h2>Dos cocinas de Riobamba lo usan todos los días.</h2>
+      <div class="casos">
+        <article class="caso">
+          <h3>Super Happy</h3>
+          <p class="caso-tipo">Pollería · cliente con El Sistema</p>
+          <p>El sistema completo atiende su WhatsApp: el bot toma el pedido, confirma los pagos y la cocina despacha. Sus números, tal cual:</p>
+          <div class="cifras">
+            <div class="menuline"><span class="concepto">Pedidos atendidos en 4 meses</span><span class="dots" aria-hidden="true"></span><span class="cifra">3.006</span></div>
+            <div class="menuline"><span class="concepto">Promedio por día</span><span class="dots" aria-hidden="true"></span><span class="cifra">27</span></div>
+            <div class="menuline"><span class="concepto">Pico, un solo domingo</span><span class="dots" aria-hidden="true"></span><span class="cifra">61</span></div>
+            <div class="menuline"><span class="concepto">Pedidos a domicilio</span><span class="dots" aria-hidden="true"></span><span class="cifra">68,9%</span></div>
+          </div>
+          <p><a class="enlace" href="https://superhappy-menu.bqspdc.easypanel.host" target="_blank" rel="noopener">Abrir su app en vivo ↗</a></p>
+        </article>
+        <article class="caso">
+          <h3>Happy Pollo</h3>
+          <p class="caso-tipo">Asadero · cliente con El Sistema</p>
+          <p>En su cocina no hay impresora: cada pedido suena en la app, en la tablet del local, y sale. Puede abrir su app ahora mismo:</p>
+          <p><a class="enlace" href="https://happypollo.dewansas.com" target="_blank" rel="noopener">Abrir su app en vivo ↗</a></p>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- 5. VIDEO (aparece solo cuando exista el archivo) -->
-  <section id="vid-sec">
-    <div class="wrap">
-      <div class="rv">
-        <div class="eyebrow">En vivo</div>
-        <h2>El pedido entrando,<br>sin edición.</h2>
-        <p class="lead" style="margin-top:16px">Grabado en Super Happy: llega el mensaje, el sistema contesta y la orden suena en la cocina.</p>
+  <hr class="doble">
+
+  <!-- 16 CARTAS -->
+  <section id="cartas">
+    <div class="cont">
+      <p class="kicker">Nº 6 · El portafolio</p>
+      <h2>Dieciséis cartas hechas, dieciséis menús reales.</h2>
+      <p class="lead">Las diseñamos para locales de Riobamba, cada una con su menú real cargado, para que usted juzgue el terminado. No son clientes: son muestras de cómo entregamos. Ábralas — todas están en línea.</p>
+      <div class="indice">
+        <a href="https://dewansas.com/carta/index.html?r=srmoro&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Sr. Moro</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=papazota&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Papazota Cheese</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=baltimore&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Baltimore</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=monaco&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Mónaco</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=tenaza&amp;live=1" target="_blank" rel="noopener"><span class="nombre">La Tenaza</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=gitano&amp;live=1" target="_blank" rel="noopener"><span class="nombre">El Gitano</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=bellavista&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Bellavista</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=texas&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Texas</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=ales&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Ales</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=andaluza&amp;live=1" target="_blank" rel="noopener"><span class="nombre">La Andaluza</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=corcel&amp;live=1" target="_blank" rel="noopener"><span class="nombre">El Corcel</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=aidita&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Ceviches Aidita</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=bogati&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Bogati</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=prinfresa&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Prinfresa</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=verdebolon&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Verde Bolón</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
+        <a href="https://dewansas.com/carta/index.html?r=mammamia&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Mamma Mia</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
       </div>
-      <div class="video-box rv">
-        <video id="vid" controls playsinline preload="none" poster="pedido.jpg">
-          <source src="pedido.mp4" type="video/mp4">
-        </video>
-      </div>
+      <p class="nota" style="margin-top:1.4rem">La suya sería la número diecisiete: con su logo, sus fotos y sus platos.</p>
     </div>
   </section>
 
-  <!-- 6. PRECIOS -->
-  <section id="precios">
-    <div class="wrap">
-      <div class="rv">
-        <div class="eyebrow">Precios</div>
-        <h2>Sin comisión<br>por pedido. Nunca.</h2>
-        <p class="lead" style="margin-top:16px">Usted paga la instalación y una mensualidad según el tamaño de su local. Lo que venda es suyo, completo.</p>
-      </div>
+  <hr class="doble">
 
-      <div class="tabla rv">
-        <div class="fila head"><div>&nbsp;</div><div>Carta</div><div>Sistema</div></div>
-        <div class="fila precio-fila"><div class="c">Instalación</div><div class="mono">$120</div><div class="mono">$199</div></div>
-        <div class="fila precio-fila"><div class="c">Al mes</div><div class="mono">$12</div><div class="mono">$49 · $89 · $149</div></div>
-        <div class="fila"><div class="c">Carta con su marca</div><div class="si">✓</div><div class="si">✓</div></div>
-        <div class="fila"><div class="c">Pedido ordenado a su WhatsApp</div><div class="si">✓</div><div class="si">✓</div></div>
-        <div class="fila"><div class="c">Bot que atiende y cobra</div><div class="no">—</div><div class="si">✓</div></div>
-        <div class="fila"><div class="c">Valida transferencias</div><div class="no">—</div><div class="si">✓</div></div>
-        <div class="fila"><div class="c">Suena en la app de cocina</div><div class="no">—</div><div class="si">✓</div></div>
-        <div class="fila"><div class="c">Envío calculado por GPS</div><div class="no">—</div><div class="si">✓</div></div>
+  <!-- 7 · PRECIOS CLAROS -->
+  <section id="tarifas">
+    <div class="cont cont-angosta">
+      <p class="kicker">Nº 7 · Los precios, claros</p>
+      <h2>Todo lo que cuesta, sin letra pequeña.</h2>
+      <div class="tarifa-grupo">
+        <h3>La Carta</h3>
+        <div class="menuline"><span class="concepto">Pago único</span><span class="dots" aria-hidden="true"></span><span class="precio">$120</span></div>
+        <div class="menuline"><span class="concepto">Mantenimiento <small>· primer mes incluido, cambios ilimitados</small></span><span class="dots" aria-hidden="true"></span><span class="precio">$12<small>/mes</small></span></div>
       </div>
-      <p class="nota">La mensualidad del sistema depende de sus pedidos: hasta 15 al día $49 · de 15 a 35 $89 · más de 35 $149. Todos los planes tienen 15 días de garantía: si no le sirve, le devolvemos su dinero.</p>
-      <div style="margin-top:24px" class="rv"><a class="btn ghost" href="https://dewansas.com/planes" target="_blank" rel="noopener">Ver los planes en detalle →</a></div>
+      <div class="tarifa-grupo">
+        <h3>El Sistema</h3>
+        <div class="menuline"><span class="concepto">Instalación <small>· el mismo día, por videollamada</small></span><span class="dots" aria-hidden="true"></span><span class="precio">$199</span></div>
+        <div class="menuline"><span class="concepto">Hasta 15 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$49<small>/mes</small></span></div>
+        <div class="menuline"><span class="concepto">De 15 a 35 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$89<small>/mes</small></span></div>
+        <div class="menuline"><span class="concepto">Más de 35 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$149<small>/mes</small></span></div>
+      </div>
+      <p class="tarifa-pie">Sin comisión por pedido, en los dos. Y con garantía de 15 días: si no le sirve, le devolvemos su dinero.</p>
+      <p><a class="enlace" href="https://dewansas.com/planes" target="_blank" rel="noopener">El detalle completo está en dewansas.com/planes ↗</a></p>
     </div>
   </section>
 
-  <!-- 7. EMPRESA -->
-  <section id="quienes">
-    <div class="wrap">
-      <div class="rv">
-        <div class="eyebrow">Quiénes somos</div>
-        <h2>Gente de Riobamba,<br>no un software de afuera.</h2>
-        <p class="lead" style="margin-top:16px">DEWAN nació operando delivery en Riobamba con motos propias. El sistema que le ofrecemos es el mismo que usamos todos los días para no perder pedidos. Por eso sabemos dónde duele.</p>
-      </div>
-      <div class="empresa">
-        <div class="dato rv"><div class="k">Empresa</div><div class="v">DEWAN S.A.S.<br>Riobamba, Ecuador</div></div>
-        <div class="dato rv"><div class="k">Quién le responde</div><div class="v">David Esquivel<br><a href="https://wa.me/593939647069" target="_blank" rel="noopener">+593 93 964 7069</a></div></div>
-        <div class="dato rv"><div class="k">Operando desde</div><div class="v">2025 · delivery propio,<br>bots y cartas digitales</div></div>
-      </div>
+  <hr class="doble">
+
+  <!-- 8 · QUIÉNES SOMOS -->
+  <section id="quienes-somos">
+    <div class="cont cont-angosta">
+      <p class="kicker">Nº 8 · La casa</p>
+      <h2>Primero fuimos el delivery. Después, el sistema.</h2>
+      <p>DEWAN S.A.S. nació en Riobamba repartiendo pedidos con motos propias. El sistema que le ofrecemos no lo compramos hecho: lo construimos para operar nuestro propio despacho, y hoy lo instalamos en restaurantes.</p>
+      <p>Le atiende <strong>David Esquivel</strong>: la misma persona que arma su carta, instala El Sistema por videollamada y capacita a su equipo.</p>
+      <p>En Riobamba, además, entregamos con nuestras motos. ¿Está en otra ciudad? La carta y el sistema funcionan igual en todo el Ecuador — y si en su ciudad hay varios locales interesados, llevamos la flota.</p>
+      <p class="nota">Instalamos pocos locales por mes, porque cada uno lleva montaje y capacitación personal. Por eso conviene escribir con tiempo.</p>
+      <p class="firma">— David Esquivel, DEWAN S.A.S.</p>
     </div>
   </section>
 
-  <!-- 8. CIERRE -->
-  <section class="cierre" id="cierre">
-    <div class="wrap">
-      <div class="rv">
-        <div class="eyebrow" style="justify-content:center">Empecemos</div>
-        <h2>Cuéntenos de su local y le decimos <span class="rojo">qué le conviene</span>.</h2>
-        <p class="lead">Nos dice qué vende y cuántos pedidos maneja en un día normal, y le respondemos con el plan que le calza. Sin compromiso y sin vueltas.</p>
-        <div style="margin-top:30px"><a class="btn" id="cta-final" href="#" style="font-size:16.5px;padding:17px 32px">Escribirnos por WhatsApp</a></div>
-        <p style="font-size:12.5px;color:var(--gris2);margin-top:16px">15 días de garantía · Sin comisión por pedido · Le respondemos hoy mismo</p>
-
-        <div class="redes">
-          <a class="red" id="red-wa" href="#">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.86 9.86 0 004.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15h-.01a8.2 8.2 0 01-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23a8.23 8.23 0 018.23 8.24c0 4.54-3.69 8.23-8.23 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.53.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.65.31-.22.25-.85.84-.85 2.04s.87 2.37.99 2.53c.12.16 1.71 2.61 4.15 3.66.58.25 1.03.4 1.39.51.58.19 1.11.16 1.53.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.22-.17-.47-.29z"/></svg>
-            WhatsApp
-          </a>
-          <a class="red" href="https://instagram.com/dewanriobamba" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0 5.99a3.85 3.85 0 100 7.7 3.85 3.85 0 000-7.7zm0 6.35a2.5 2.5 0 110-5 2.5 2.5 0 010 5zm4.91-6.5a.9.9 0 11-1.8 0 .9.9 0 011.8 0z"/></svg>
-            @dewanriobamba
-          </a>
-          <a class="red" href="https://www.facebook.com/DeWanRiobamba" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.77-3.91 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94z"/></svg>
-            Facebook
-          </a>
-        </div>
+  <!-- 9 · CIERRE -->
+  <section class="cierre" id="contacto">
+    <div class="cont">
+      <svg class="cierre-cloche" aria-hidden="true"><use href="#cloche"/></svg>
+      <h2>Conversemos de su local.</h2>
+      <p class="lead" style="margin-top:.9rem">Escríbanos y le mostramos cómo se vería la carta de su restaurante. Sin compromiso — y con la garantía de 15 días si decide empezar.</p>
+      <div class="botonera">
+        <a class="btn btn-rojo btn-grande" href="https://wa.me/593939647069?text=Hola%20David%2C%20quiero%20conversar%20sobre%20DEWAN%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>Escribir al +593 93 964 7069</a>
       </div>
+      <ul class="redes">
+        <li><a href="https://instagram.com/dewanriobamba" target="_blank" rel="noopener">Instagram @dewanriobamba</a></li>
+        <li><a href="https://www.facebook.com/DeWanRiobamba" target="_blank" rel="noopener">Facebook</a></li>
+        <li><a href="https://dewansas.com" target="_blank" rel="noopener">dewansas.com</a></li>
+        <li><a href="https://dewansas.com/planes" target="_blank" rel="noopener">Planes en detalle</a></li>
+      </ul>
     </div>
   </section>
+
 </main>
 
 <footer>
-  <div class="wrap">DEWAN S.A.S. · Riobamba, Ecuador · <a href="https://dewansas.com" style="color:var(--gris)">dewansas.com</a></div>
+  <div class="cont">
+    <p class="footer-lema">El pedido llega hecho.</p>
+    <p>DEWAN S.A.S. · Riobamba, Ecuador · 2026</p>
+  </div>
 </footer>
 
+<nav id="barra" aria-label="Contacto rápido">
+  <div class="barra-int">
+    <p class="barra-texto" style="margin:0"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg><span>¿Hablamos de su local?</span></p>
+    <a class="btn btn-rojo btn-chico" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>WhatsApp</a>
+  </div>
+</nav>
+
 <script>
-(function(){
-  var WA = "593939647069";
-  var MSG = "Buenas. Vi la página de DEWAN y quiero saber qué plan le conviene a mi local.";
-  var link = "https://wa.me/" + WA + "?text=" + encodeURIComponent(MSG);
-  ["cta-final","red-wa"].forEach(function(id){
-    var a = document.getElementById(id);
-    if(a){ a.href = link; a.target = "_blank"; a.rel = "noopener"; }
-  });
+(function () {
+  'use strict';
 
-  // cartas construidas
-  var LOCALES = [
-    ["srmoro","Sr. Moro"],["papazota","Papazota Cheese"],["baltimore","Baltimore"],["monaco","Mónaco"],
-    ["tenaza","La Tenaza"],["gitano","El Gitano"],["bellavista","Bellavista"],["texas","Texas"],
-    ["ales","Ales"],["andaluza","La Andaluza"],["corcel","El Corcel"],["aidita","Ceviches Aidita"],
-    ["bogati","Bogati"],["prinfresa","Prinfresa"],["verdebolon","Verde Bolón"],["mammamia","Mamma Mia"]
-  ];
-  var cont = document.getElementById("cartas");
-  if(cont){
-    cont.innerHTML = LOCALES.map(function(l){
-      return '<a class="carta" href="https://dewansas.com/carta/index.html?r=' + l[0] +
-             '&live=1" target="_blank" rel="noopener"><span>' + l[1] + '</span><em>→</em></a>';
-    }).join("");
-  }
-
-  // cambiar la carta del teléfono
-  var demo = document.getElementById("demo");
-  var cambiar = document.getElementById("cambiar");
-  if(cambiar && demo){
-    cambiar.addEventListener("click", function(e){
-      var b = e.target.closest("button[data-r]");
-      if(!b) return;
-      demo.src = "https://dewansas.com/carta/index.html?r=" + b.dataset.r + "&live=1";
-      cambiar.querySelectorAll("button").forEach(function(o){
-        o.setAttribute("aria-pressed", String(o === b));
+  /* Demo: cambiar la carta de muestra */
+  var frame = document.getElementById('demo-iframe');
+  var nombre = document.getElementById('demo-nombre');
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.demo-tab'));
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      if (!frame) { return; }
+      var slug = tab.getAttribute('data-slug');
+      var nom = tab.getAttribute('data-nombre');
+      frame.src = 'https://dewansas.com/carta/index.html?r=' + slug + '&live=1';
+      if (nombre && nom) { nombre.textContent = nom; }
+      tabs.forEach(function (t) {
+        t.setAttribute('aria-pressed', t === tab ? 'true' : 'false');
       });
     });
-  }
+  });
 
-  // el bloque de video aparece solo si el archivo existe
-  var v = document.getElementById("vid");
-  if(v){
-    v.addEventListener("loadedmetadata", function(){
-      document.getElementById("vid-sec").style.display = "block";
+  /* Video opcional: la sección solo aparece si /restaurantes/pedido.mp4 existe */
+  var seccionVideo = document.getElementById('video');
+  var video = document.getElementById('video-pedido');
+  if (seccionVideo && video) {
+    video.addEventListener('loadedmetadata', function () {
+      seccionVideo.hidden = false;
     });
-    v.load();
+    video.preload = 'metadata';
+    video.load();
   }
 
-  // aparición al hacer scroll
-  var io = new IntersectionObserver(function(items){
-    items.forEach(function(it){ if(it.isIntersecting){ it.target.classList.add("on"); io.unobserve(it.target); } });
-  }, {rootMargin:"0px 0px -8% 0px", threshold:.06});
-  document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
+  /* Calculadora de envío — tarifa de ejemplo (Super Happy) */
+  function calcularEnvio(d) {
+    var bloques = d <= 3.5 ? 0 : Math.ceil(Math.round(((d - 3.5) / 0.5) * 1000000) / 1000000);
+    var total = Math.round(160 + bloques * 25) / 100;
+    var minutos = Math.round(15 + 3 * d);
+    return { bloques: bloques, total: total, tMin: minutos, tMax: minutos + 10 };
+  }
+  var rango = document.getElementById('envio-rango');
+  if (rango) {
+    var eDist = document.getElementById('envio-dist');
+    var eBloques = document.getElementById('envio-bloques');
+    var eExtra = document.getElementById('envio-extra');
+    var eTotal = document.getElementById('envio-total');
+    var eTiempo = document.getElementById('envio-tiempo');
+    var dinero = function (n) { return '$' + n.toFixed(2).replace('.', ','); };
+    var pintar = function () {
+      var d = parseFloat(rango.value);
+      if (isNaN(d)) { return; }
+      var r = calcularEnvio(d);
+      var km = d.toFixed(1).replace('.', ',');
+      if (eDist) { eDist.textContent = km; }
+      if (eBloques) { eBloques.textContent = '+ ' + r.bloques + (r.bloques === 1 ? ' bloque' : ' bloques') + ' de 500 m'; }
+      if (eExtra) { eExtra.textContent = dinero(r.bloques * 0.25); }
+      if (eTotal) { eTotal.textContent = dinero(r.total); }
+      if (eTiempo) { eTiempo.textContent = r.tMin + '–' + r.tMax; }
+      rango.setAttribute('aria-valuetext', km + ' kilómetros — envío ' + dinero(r.total));
+    };
+    rango.addEventListener('input', pintar);
+    pintar();
+  }
+
+  /* Barra fija: se guarda mientras el inicio está a la vista (sin JS queda siempre visible) */
+  var barra = document.getElementById('barra');
+  var inicio = document.getElementById('inicio');
+  if (barra && inicio && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entradas) {
+      barra.classList.toggle('fuera', entradas[0].isIntersecting);
+    }, { threshold: 0.2 });
+    io.observe(inicio);
+  }
 })();
 </script>
 </body>
