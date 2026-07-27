@@ -5335,6 +5335,12 @@
     <script>
     /* ===== Sellos DEWAN: cada 6 pedidos, envío gratis (widget autocontenido) ===== */
     (function(){
+        // El bloque principal declara SB_URL/SB_KEY DENTRO de su propio scope, así que
+        // aquí no son visibles: el widget tiraba "SB_URL is not defined" y el botón
+        // "Ver mis sellos" no hacía nada — roto desde que se creó (14-jul). Como este
+        // widget es autocontenido, lleva sus propias constantes (la anon key es pública).
+        var SB_URL='https://wfpdtjmmrhhfuxayvpzu.supabase.co';
+        var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
         var LS_TEL='dewan_sellos_tel';
         function telGuardado(){ try{return localStorage.getItem(LS_TEL)||''}catch(e){return''} }
         function pintarCirculos(n){
