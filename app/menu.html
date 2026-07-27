@@ -5407,17 +5407,55 @@
             if(tel.length<9){ if(i){i.style.borderColor='#D93A0B'; i.focus();} return; }
             consultar(tel, document.getElementById('dewan-sellos-body'));
         };
+        // Tira compacta ARRIBA para quien ya dejó su número (27-jul, pedido de David: al
+        // pie nadie los veía). Va FUERA de #app a propósito: el home se repinta con
+        // innerHTML y se la llevaría por delante.
+        function pintarTira(d){
+            var t=document.getElementById('dewan-sellos-tira');
+            if(!t) return;
+            var premio=d.premios_disponibles>0;
+            var puntos='';
+            for(var i=0;i<6;i++){
+                var on=premio||i<d.sellos;
+                puntos+='<span style="width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;'+
+                        (on?'background:#F59E0B;':'border:1.5px solid #EDE4D3;')+'"></span>';
+            }
+            t.style.cssText='display:flex;align-items:center;gap:9px;margin:10px 12px 0;padding:9px 12px;border-radius:14px;'+
+                'max-width:406px;margin-left:auto;margin-right:auto;font-family:inherit;'+
+                (premio?'background:#E8F6EE;border:1px solid #1F9D55;':'background:#fff;border:1px solid #EDE4D3;');
+            t.innerHTML='<span style="flex:0 0 auto;display:flex;align-items:center">'+puntos+'</span>'+
+                '<span style="flex:1;font-size:.8rem;font-weight:800;color:'+(premio?'#12703C':'#7a6a5d')+'">'+
+                (premio?'🎁 ¡Tienes un ENVÍO GRATIS! Úsalo en tu próximo pedido'
+                       :'🎟️ Llevas '+d.sellos+' de 6 — al 6º tu envío va gratis')+'</span>';
+        }
         function montar(){
             if(document.getElementById('dewan-sellos')) return;
+            var t=telGuardado();
+            if(t){
+                // ya lo conocemos -> tira arriba, sin formulario ni scroll
+                var tira=document.createElement('div');
+                tira.id='dewan-sellos-tira';
+                tira.style.display='none';
+                var app=document.getElementById('app');
+                if(app&&app.parentNode) app.parentNode.insertBefore(tira,app); else document.body.insertBefore(tira,document.body.firstChild);
+                consultarTira(t);
+                return;
+            }
             var card=document.createElement('div');
             card.id='dewan-sellos';
             card.style.cssText='margin:14px 12px;background:#fff;border-radius:14px;padding:14px;text-align:center;box-shadow:0 3px 12px rgba(74,44,23,.08);max-width:406px;margin-left:auto;margin-right:auto;';
             card.innerHTML='<div style="font-weight:900;color:#4A2C17;font-size:.98rem;margin-bottom:2px">🎟️ Sellos DEWAN</div><div id="dewan-sellos-body"></div>';
             var footer=document.querySelector('footer');
             if(footer) footer.parentNode.insertBefore(card,footer); else document.body.appendChild(card);
-            var body=card.querySelector('#dewan-sellos-body');
-            var t=telGuardado();
-            if(t) consultar(t, body); else pintarForm(body);
+            pintarForm(card.querySelector('#dewan-sellos-body'));
+        }
+        function consultarTira(tel){
+            fetch(SB_URL+'/rest/v1/rpc/sellos_estado',{method:'POST',
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+                body:JSON.stringify({tel:tel})})
+            .then(function(r){return r.json()})
+            .then(function(d){ if(d&&typeof d.sellos!=='undefined') pintarTira(d); })
+            .catch(function(){});
         }
         if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(montar,800)});
         else setTimeout(montar,800);
