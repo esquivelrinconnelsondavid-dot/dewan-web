@@ -2453,6 +2453,15 @@
                     h+=renderMasOpciones(homeBy.silenciosos,homeBy.socios.length,function(r){return 'openRest(\''+jsEsc(r.nombre)+'\')'},null,0);
                 }
             }
+            // Enlace FIJO a la app (el banner se puede cerrar o no llegar a salir).
+            // Solo en Android: en iPhone todavía no hay app y mandarlos a Play es un callejón.
+            if (/android/i.test(navigator.userAgent)) {
+                h+='<a href="https://play.google.com/store/apps/details?id=com.dewan.cliente" target="_blank" rel="noopener" '+
+                   'style="display:flex;align-items:center;gap:10px;justify-content:center;margin:18px 16px 0;padding:13px 16px;'+
+                   'background:#1f1a17;color:#fff;border-radius:14px;text-decoration:none;font-weight:800;font-size:.92rem">'+
+                   '<img src="/app/icons-cliente/icon-192.png" alt="" style="width:30px;height:30px;border-radius:8px">'+
+                   '<span>Descarga la app de DEWAN<br><span style="font-weight:600;font-size:.76rem;color:#cfc7bd">Gratis en Google Play</span></span></a>';
+            }
             h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
             app.innerHTML=h;
             bindSortEvents();
@@ -5264,6 +5273,7 @@
         var esInApp = /FBAN|FBAV|FB_IAB|Instagram|; wv\)/i.test(navigator.userAgent);
         var esAndroid = /android/i.test(navigator.userAgent);
         var deferredPrompt = null;
+        var URL_PLAY = 'https://play.google.com/store/apps/details?id=com.dewan.cliente';
 
         function pintarBanner(modo){
             if (document.getElementById('pwa-banner')) return;
@@ -5287,12 +5297,15 @@
                 '#pwa-ios-sheet button{width:100%;border:none;background:#FFB627;color:#1f1a17;font-weight:800;border-radius:12px;padding:13px;font-size:.95rem;cursor:pointer}'+
                 '</style>'+
                 '<img src="/app/icons-cliente/icon-192.png" alt="DEWAN">'+
-                '<div class="t"><b>Instala la app de DEWAN</b><span>'+(modo==='ios' ? 'Tenla en tu inicio y pide en 2 toques' : (modo==='chrome' ? 'Ábrela en Chrome y tenla en tu inicio' : 'Gratis, liviana y pides en 2 toques'))+'</span></div>'+
-                '<button class="ok" id="pwa-instalar">'+(modo==='ios' ? 'Ver cómo' : (modo==='chrome' ? 'Abrir' : 'Instalar'))+'</button>'+
+                '<div class="t"><b>'+(modo==='play' ? 'Descarga la app de DEWAN' : 'Instala la app de DEWAN')+'</b><span>'+(modo==='play' ? 'En Google Play — gratis, y sigues tu pedido en vivo' : (modo==='ios' ? 'Tenla en tu inicio y pide en 2 toques' : (modo==='chrome' ? 'Ábrela en Chrome y tenla en tu inicio' : 'Gratis, liviana y pides en 2 toques')))+'</span></div>'+
+                '<button class="ok" id="pwa-instalar">'+(modo==='play' ? 'Descargar' : (modo==='ios' ? 'Ver cómo' : (modo==='chrome' ? 'Abrir' : 'Instalar')))+'</button>'+
                 '<button class="no" id="pwa-cerrar" aria-label="cerrar">✕</button>';
             document.body.appendChild(b);
             document.getElementById('pwa-cerrar').onclick = function(){ b.remove(); dormir(7); };
             document.getElementById('pwa-instalar').onclick = function(){
+                // Android: la app NATIVA de Play manda sobre instalar la web (push, pedido
+                // en vivo, mejor rendimiento). La PWA queda para iPhone, que no tiene app.
+                if (modo === 'play') { b.remove(); dormir(30); window.open(URL_PLAY, '_blank'); return; }
                 if (modo === 'ios') { hojaIOS(); return; }
                 if (modo === 'chrome') { // salir del in-app browser hacia Chrome (ahí sí se puede instalar)
                     b.remove(); dormir(1);
@@ -5323,10 +5336,11 @@
             document.getElementById('pwa-ios-ok').onclick = function(){ s.remove(); dormir(14); var bb=document.getElementById('pwa-banner'); if(bb) bb.remove(); };
         }
 
+        // 27-jul: en Android ya NO se ofrece instalar la web. Hay app nativa en Play y es
+        // mejor (push, pedido en vivo). Se guarda el prompt por si acaso, pero no se usa.
         window.addEventListener('beforeinstallprompt', function(e){
             e.preventDefault();
             deferredPrompt = e;
-            setTimeout(function(){ pintarBanner('android'); }, 12000);
         });
         window.addEventListener('appinstalled', function(){
             try{ if(typeof fbq==='function') fbq('trackCustom','PWAInstall'); }catch(e){}
@@ -5335,6 +5349,9 @@
         });
         if (esIOS && !esInApp) setTimeout(function(){ pintarBanner('ios'); }, 15000);
         else if (esAndroid && esInApp) setTimeout(function(){ pintarBanner('chrome'); }, 12000);
+        // Android en navegador normal -> la app de Play (no depende de beforeinstallprompt,
+        // que en muchos navegadores ni dispara).
+        else if (esAndroid) setTimeout(function(){ pintarBanner('play'); }, 12000);
     })();
     </script>
     <script>
