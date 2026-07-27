@@ -1701,7 +1701,7 @@
         // Silencioso = tipo_acuerdo !== 'aliado' && !== 'cliente_paga'. Paga +$0.75
         // sobre la tarifa base (el que llama lo determina con esSil).
         function precioEnvioCliente(d, esSil){
-            var b = d<=2?1.30 : d<3?1.50 : 1.75 + Math.floor((d-3)/0.5)*0.25;
+            var b = d<=2?1.30 : d<3?1.50 : 1.75 + Math.ceil((d-3)/0.5)*0.25;
             b=r2(b); return esSil ? r2(b+0.75) : b;
         }
         // ── Recalcular distancias con GPS del cliente ──
