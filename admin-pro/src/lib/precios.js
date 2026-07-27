@@ -3,8 +3,11 @@
 // para que admin y moto muestren EXACTAMENTE los mismos números (cuánto paga al
 // local, cuánto cobra al cliente, comisión y markup). Si cambia una, cambiar la otra.
 
-// Cuota fija que el moto le paga a DEWAN por cada carrera (hoy $0.70).
+// FALLBACK: corte que el moto le paga a DEWAN por carrera en pedidos VIEJOS sin
+// `carrera_moto`. Hoy el corte YA NO es fijo: es precio_calculado − carrera_moto.
 export const COMISION_POR_ENTREGA = 0.70;
+
+const round2 = (x) => Math.round(x * 100) / 100;
 
 export function calcularDesglose(pedido) {
   const total = Number(pedido.monto_total) || 0;            // comida que ve el cliente (con markup)
@@ -31,9 +34,14 @@ export function calcularDesglose(pedido) {
   }
 
   const comisionPagaMoto = quien === 'motorizado' ? comision : 0;
-  // El moto SIEMPRE le entrega a DEWAN: cuota fija + comisión del local + markup.
-  const aPagarADewan = COMISION_POR_ENTREGA + comision + markup;
-  const gananciaMotorizado = Math.max(0, carrera - COMISION_POR_ENTREGA - comisionPagaMoto);
+  // Corte de DEWAN por carrera = precio_calculado − carrera_moto (columna nueva).
+  // Pedidos viejos sin carrera_moto: cuota fija fallback ($0.70).
+  const corte = pedido.carrera_moto != null
+    ? round2(carrera - (Number(pedido.carrera_moto) || 0))
+    : COMISION_POR_ENTREGA;
+  // El moto SIEMPRE le entrega a DEWAN: corte + comisión del local + markup.
+  const aPagarADewan = corte + comision + markup;
+  const gananciaMotorizado = Math.max(0, carrera - corte - comisionPagaMoto);
 
   return {
     precioBaseProductos: baseProductos,
@@ -43,7 +51,7 @@ export function calcularDesglose(pedido) {
     precioCarrera: carrera,
     comisionRestaurante: comision,
     comisionPagaMoto,
-    comisionDewan: COMISION_POR_ENTREGA,
+    comisionDewan: corte,
     markupDewan: markup,
     aPagarADewan,
     gananciaMotorizado,

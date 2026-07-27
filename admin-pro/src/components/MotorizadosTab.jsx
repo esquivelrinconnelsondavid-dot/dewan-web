@@ -139,7 +139,7 @@ function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onTogg
           {(carreras + comisiones + markup) > 0 && (
             <div className="text-[10px] text-gray-300 space-y-0.5 mb-2 bg-bg3/40 rounded-lg px-2.5 py-2">
               <div className="flex justify-between">
-                <span className="text-gray-400">🏍️ Carreras{cantCarreras ? ` (${cantCarreras} × $0.70)` : ''}</span>
+                <span className="text-gray-400">🏍️ Carreras{cantCarreras ? ` (${cantCarreras})` : ''}</span>
                 <span className="font-semibold">{money(carreras)}</span>
               </div>
               <div className="flex justify-between">
@@ -288,7 +288,7 @@ export default function MotorizadosTab({ data }) {
     if (yaCargado) return;
     const { data, error } = await supabase
       .from('pedidos_delivery')
-      .select('id, restaurante, monto_total, precio_base_productos, monto_comision, markup_dewan, comision_la_paga, precio_calculado, fecha_creacion')
+      .select('id, restaurante, monto_total, precio_base_productos, monto_comision, markup_dewan, comision_la_paga, precio_calculado, carrera_moto, fecha_creacion')
       .eq('motorizado_id', motoId)
       .eq('estado_pedido', 'entregado')
       .order('id', { ascending: false })
