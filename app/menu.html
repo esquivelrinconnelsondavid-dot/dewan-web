@@ -3524,6 +3524,7 @@
         window.showCart=function(){
             if(!_cartSheetOpen()){ window._prevView=currentView; window._prevRest=currentRestIdx; } // recordar a dónde volver al cerrar
             cotizarEnvioReal();
+            if(typeof refrescarPremioEnvio==='function') refrescarPremioEnvio();   // carrera gratis (premio de sellos)
             currentView='cart';
             syncHistory();
             if(window._cart.length) markEtapa('abrio_carrito');
@@ -3602,6 +3603,7 @@
                 (t.envases>0?'<div class="cart-row"><span class="cart-row-label">Envases</span><span class="cart-row-val">$'+t.envases.toFixed(2)+'</span></div>':'')+
                 (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Servicio DEWAN <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Envío'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
+                (window._clientGPS&&t.premio>0?'<div class="cart-row cart-row-ahorro"><span class="cart-row-label">🎁 Carrera GRATIS (tus sellos)</span><span class="cart-row-val">-$'+t.premio.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Pagas</span><span class="cart-total-val">$'+totalPagar.toFixed(2)+'</span></div>'+
                 (window._clientGPS?'':'<div class="cart-total-sub">🛵 Envío desde $1.30 · se confirma con tu ubicación</div>')+
@@ -3884,7 +3886,44 @@
                 }
             });
             serviceFee=Math.round(serviceFee*100)/100;
-            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,deliveryFull:delFull,promoEnvio:promoSavings>0,promoEnvioSavings:promoSavings,promoDiaActivo:promoEnvioDiaActivo(),tieneLocalCercano:tieneLocalCercano,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,total:sub+del+serviceFee+envases};
+            // CARRERA GRATIS (premio de sellos): se aplica a UN local, el del envío BASE
+            // más caro (misma regla que el servidor). El recargo silencioso ($0.75) nunca
+            // se cubre. window._premioCubierto lo llena refrescarPremioEnvio().
+            var premioBase=0;
+            Object.keys(dels).forEach(function(k){
+                var rec=isSilenciosoRest(k)?0.75:0;
+                var b=Math.round((dels[k]-rec)*100)/100;
+                if(b>premioBase) premioBase=b;
+            });
+            var premio=Math.min(Math.max(Number(window._premioCubierto)||0,0), del);
+            premio=Math.round(premio*100)/100;
+            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,deliveryFull:delFull,promoEnvio:promoSavings>0,promoEnvioSavings:promoSavings,promoDiaActivo:promoEnvioDiaActivo(),tieneLocalCercano:tieneLocalCercano,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,premioBase:premioBase,premio:premio,total:sub+del+serviceFee+envases-premio};
+        }
+
+        // Consulta si el cliente tiene carrera gratis para ESTE pedido (no la consume:
+        // el canje real lo hace el bot al crear el pedido). Necesita el teléfono, que
+        // solo lo sabemos si el cliente usó el widget de sellos — si no, no se muestra
+        // (pero el bot igual se la aplica, porque él sí conoce su WhatsApp).
+        window._premioCubierto=0;
+        function refrescarPremioEnvio(){
+            try{
+                // el widget de sellos guarda el número aquí (está en otro scope, se lee directo)
+                var tel=''; try{ tel=localStorage.getItem('dewan_sellos_tel')||''; }catch(e){}
+                var t=cartTotals();
+                if(!tel||!window._clientGPS||!(t.premioBase>0)){ window._premioCubierto=0; return; }
+                var rec=t.premioBase>0&&t.delivery>t.premioBase?Math.round((t.delivery-t.premioBase)*100)/100:0;
+                fetch(SB_URL+'/rest/v1/rpc/premio_envio_preview',{method:'POST',
+                    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+                    body:JSON.stringify({tel:tel,p_envio_base:t.premioBase,p_recargo:rec})})
+                .then(function(r){return r.json()})
+                .then(function(d){
+                    var row=Array.isArray(d)?d[0]:d;
+                    var nuevo=(row&&row.tiene_premio)?(Number(row.cubierto)||0):0;
+                    // solo re-pinta si cambió (si no, showCart se llamaría en bucle)
+                    if(nuevo!==window._premioCubierto){ window._premioCubierto=nuevo; if(currentView==='cart'&&typeof window.showCart==='function') window.showCart(); }
+                })
+                .catch(function(){});
+            }catch(e){}
         }
         // Animated count-up del total: anima de `from` a `to` con easeOutCubic
         function animateMoney(el,from,to,duration,suffix){
@@ -4304,6 +4343,7 @@
             if(t.serviceFee>0) msg+='ℹ️ Tarifa de servicio: $'+t.serviceFee.toFixed(2)+'\n';
             if(window._clientGPS&&t.delivery>0){
                 msg+='🛵 Envío: $'+t.delivery.toFixed(2)+(t.promoEnvio?' (promo Lun-Mié, antes $'+t.deliveryFull.toFixed(2)+')':'')+'\n';
+                if(t.premio>0) msg+='🎁 Carrera GRATIS (premio de sellos): -$'+t.premio.toFixed(2)+'\n';
                 msg+='💰 *Total: $'+t.total.toFixed(2)+'*\n\n';
             } else {
                 // [27-jun FIX envío $0] Sin GPS, o con GPS pero sin envío calculable: NUNCA mostrar "Envío $0"
