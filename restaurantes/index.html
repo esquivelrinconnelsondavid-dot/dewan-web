@@ -29,12 +29,15 @@
   --regla:#DCD2C0;
   --serif:"Fraunces",Georgia,"Times New Roman",serif;
   --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --sombra:0 1px 2px rgba(36,28,20,.05),0 6px 16px -6px rgba(36,28,20,.09),0 24px 48px -24px rgba(36,28,20,.15);
+  --sombra-alta:0 2px 4px rgba(36,28,20,.06),0 12px 26px -8px rgba(36,28,20,.13),0 34px 64px -26px rgba(36,28,20,.2);
 }
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
   margin:0;
   background:var(--papel);
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='140'%20height='140'%3E%3Cfilter%20id='g'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.85'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type='linear'%20slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect%20width='140'%20height='140'%20filter='url(%23g)'/%3E%3C/svg%3E");
   color:var(--tinta);
   font:400 1rem/1.65 var(--sans);
   -webkit-font-smoothing:antialiased;
@@ -68,6 +71,7 @@ section{padding-block:3.4rem}
   text-decoration-color:var(--rojo);text-decoration-thickness:2px;text-underline-offset:3px;
 }
 .enlace:hover{color:var(--rojo)}
+.cuenta{font-variant-numeric:tabular-nums lining-nums}
 
 /* ── Línea de menú con puntos conductores (motivo de la página) ── */
 .menuline{display:flex;align-items:flex-end;gap:.55rem;padding:.55rem 0}
@@ -100,10 +104,13 @@ hr.doble{
   padding:.95rem 1.35rem;min-height:48px;
   font:600 .95rem/1 var(--sans);letter-spacing:.01em;text-decoration:none;
   border:1.5px solid var(--tinta);border-radius:2px;
-  transition:background-color .15s,color .15s,border-color .15s;
+  box-shadow:0 1px 2px rgba(36,28,20,.08);
+  transition:background-color .16s,color .16s,border-color .16s,transform .16s,box-shadow .16s;
 }
+.btn:hover{transform:translateY(-2px);box-shadow:0 4px 8px -2px rgba(36,28,20,.12),0 12px 24px -8px rgba(36,28,20,.2)}
+.btn:active{transform:translateY(0);box-shadow:0 1px 2px rgba(36,28,20,.12)}
 .btn-rojo{background:var(--rojo);border-color:var(--rojo);color:#fff}
-.btn-rojo:hover{background:var(--rojo-2);border-color:var(--rojo-2)}
+.btn-rojo:hover{background:var(--rojo-2);border-color:var(--rojo-2);box-shadow:0 4px 10px -2px rgba(176,33,24,.3),0 14px 28px -10px rgba(176,33,24,.35)}
 .btn-linea{background:transparent;color:var(--tinta)}
 .btn-linea:hover{background:var(--tinta);color:var(--papel)}
 .btn-ancho{width:100%}
@@ -124,6 +131,27 @@ hr.doble{
   color:var(--tinta-2);margin:0;
 }
 
+/* ── Marca compacta al hacer scroll ── */
+#cima{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  background:rgba(251,247,240,.95);
+  border-bottom:1px solid var(--regla);
+  box-shadow:0 10px 26px -18px rgba(36,28,20,.3);
+  transform:translateY(-110%);
+  transition:transform .28s ease;
+}
+.js #cima.visible{transform:translateY(0)}
+.cima-int{
+  max-width:64rem;margin:0 auto;padding:.45rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.cima-marca{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:var(--serif);font-weight:700;font-size:1.02rem;letter-spacing:.22em;
+  text-decoration:none;
+}
+.cima-marca .ico{color:var(--rojo);width:1.5rem;height:1.05rem}
+
 /* ── Hero ── */
 .hero{padding-block:3.2rem 3.6rem}
 @media (min-width:760px){.hero{padding-block:5rem 5.4rem}}
@@ -141,7 +169,118 @@ hr.doble{
 }
 .hero-sello .ico{color:var(--rojo);margin-top:.2rem;width:1.3rem;height:.95rem}
 
-/* ── Demo ── */
+/* ── Entrada del hero (solo con JS) ── */
+@keyframes aparecer{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.js .portada-int{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) both}
+.js .hero .kicker{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) .04s both}
+.js .hero h1{animation:aparecer .34s cubic-bezier(.2,.7,.3,1) .09s both}
+.js .hero .lead{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) .14s both}
+.js .hero .hero-clave{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) .19s both}
+.js .hero .botonera{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) .24s both}
+.js .hero .hero-sello{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) .29s both}
+
+/* ── Apariciones por sección (solo con JS) ── */
+.js section.rv{
+  opacity:0;transform:translateY(16px);
+  transition:opacity .55s cubic-bezier(.2,.7,.3,1),transform .55s cubic-bezier(.2,.7,.3,1);
+}
+.js section.rv.in{opacity:1;transform:none}
+.js section.rv .dots{transform:scaleX(0);transform-origin:left center;transition:transform .7s ease .25s}
+.js section.rv.in .dots{transform:scaleX(1)}
+
+/* ── Simulador de pedido ── */
+#simulador .demo-grid,#envio .demo-grid{align-items:start}
+.sim-col{width:100%}
+.sim-etiqueta{
+  font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tinta-2);margin:0 0 .55rem;
+}
+.sim-marco{padding:.9rem .9rem 1.1rem}
+.sim-cab{display:flex;align-items:center;gap:.6rem;padding:.15rem .15rem .75rem;border-bottom:1px solid var(--regla)}
+.sim-avatar{
+  width:2.1rem;height:2.1rem;border-radius:50%;background:var(--rojo);
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+}
+.sim-avatar .ico{color:#fff;width:1.2rem;height:.85rem}
+.sim-quien{display:flex;flex-direction:column;line-height:1.3;flex:1;min-width:0}
+.sim-quien small{font-size:.68rem;color:var(--tinta-2)}
+.sim-mute{
+  font-size:1.05rem;background:transparent;border:1.5px solid var(--regla);border-radius:50%;
+  width:2.3rem;height:2.3rem;cursor:pointer;flex:none;line-height:1;padding:0;
+  transition:border-color .16s,transform .16s;
+}
+.sim-mute:hover{border-color:var(--tinta);transform:translateY(-1px)}
+.sim-chat{
+  background:var(--papel-2);border:1px solid var(--regla);border-radius:10px;
+  margin-top:.8rem;padding:.85rem .7rem;
+  display:flex;flex-direction:column;gap:.55rem;
+  min-height:300px;max-height:420px;overflow-y:auto;scroll-behavior:smooth;
+}
+.bur{
+  max-width:86%;padding:.5rem .65rem .3rem;border-radius:10px;
+  font-size:.865rem;line-height:1.45;box-shadow:0 1px 1.5px rgba(36,28,20,.14);
+  overflow-wrap:break-word;
+}
+.bur-local{background:#FFFFFF;align-self:flex-start;border-top-left-radius:3px}
+.bur-mio{background:#E3EFD8;align-self:flex-end;border-top-right-radius:3px}
+.bur-meta{display:block;text-align:right;font-size:.6rem;color:var(--tinta-2);margin-top:.2rem;letter-spacing:.02em}
+.bur-meta .check{color:#4FA3D8;letter-spacing:-.1em}
+.bur-tile{display:inline-flex;align-items:center;gap:.5rem;font-weight:600}
+.bur-tile .ico{width:1.15rem;height:1.15rem;color:var(--rojo-2)}
+.bur-cuenta{
+  display:block;background:var(--papel);border:1px solid var(--regla);border-radius:8px;
+  padding:.35rem .6rem;margin:.45rem 0;
+}
+.bur .menuline{padding:.18rem 0;gap:.45rem}
+.bur .menuline .concepto{font-size:.8rem}
+.bur .menuline .precio{font-size:.92rem}
+.escribiendo{display:inline-flex;gap:4px;align-items:center;min-height:1.2rem}
+.escribiendo span{width:6px;height:6px;border-radius:50%;background:var(--tinta-2);opacity:.3;animation:puntito 1s infinite}
+.escribiendo span:nth-child(2){animation-delay:.15s}
+.escribiendo span:nth-child(3){animation-delay:.3s}
+@keyframes puntito{0%,60%,100%{opacity:.25;transform:none}30%{opacity:.9;transform:translateY(-3px)}}
+.sim-chips{display:none}
+.js .sim-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.85rem}
+.chip{
+  font:600 .84rem/1.3 var(--sans);padding:.6rem .95rem;text-align:left;
+  border:1.5px solid var(--rojo);border-radius:999px;background:#fff;color:var(--rojo-2);
+  cursor:pointer;transition:background-color .16s,color .16s,transform .16s,box-shadow .16s;
+}
+.chip:hover{background:var(--rojo);color:#fff;transform:translateY(-1px);box-shadow:0 4px 10px -3px rgba(176,33,24,.35)}
+.chip:active{transform:none}
+.js .sim-oculto{display:none}
+.sim-impresion{
+  overflow:hidden;margin-top:.9rem;padding:.5rem .45rem 12px;
+  background:var(--papel-2);border-radius:10px;
+}
+.ticket{
+  background:var(--blanco);padding:.85rem .9rem 1rem;position:relative;
+  transform:rotate(-.5deg);
+  box-shadow:0 3px 6px rgba(36,28,20,.08),0 14px 28px -12px rgba(36,28,20,.35);
+}
+.js .ticket.imprimiendo{animation:imprimir .7s cubic-bezier(.2,.75,.25,1) both}
+@keyframes imprimir{from{transform:translateY(-108%) rotate(-.5deg)}to{transform:translateY(0) rotate(-.5deg)}}
+.ticket::after{
+  content:"";position:absolute;left:0;right:0;bottom:-7px;height:7px;
+  background-image:linear-gradient(45deg,var(--blanco) 3.5px,transparent 0),linear-gradient(-45deg,var(--blanco) 3.5px,transparent 0);
+  background-size:9px 7px;background-repeat:repeat-x;
+}
+.ticket-cab{
+  display:flex;align-items:center;gap:.45rem;margin:0 0 .3rem;
+  font-size:.66rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--rojo);
+}
+.ticket-cab .ico{width:1.25rem;height:.9rem}
+.ticket-linea{margin:0 0 .3rem;font-size:.78rem;font-weight:700;letter-spacing:.08em}
+.ticket .menuline{padding:.25rem 0;border-top:1px dashed var(--regla)}
+.ticket .menuline .precio{font-size:1.05rem}
+.ticket .menuline-total{border-top:2px solid var(--tinta)}
+.ticket .menuline-total .precio{color:var(--rojo-2);font-size:1.25rem}
+.ticket-pie{margin:.45rem 0 0;font-size:.72rem;color:var(--tinta-2)}
+.sim-final{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem}
+.sim-final .btn{flex:1 1 auto}
+.sim-aviso-campana{font-size:.85rem;color:var(--tinta-2)}
+
+/* ── Demo de la carta ── */
 .demo-grid{display:grid;gap:2.4rem}
 @media (min-width:860px){.demo-grid{grid-template-columns:1.05fr .95fr;align-items:center;gap:3rem}}
 .demo-tabs{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.1rem}
@@ -149,15 +288,16 @@ hr.doble{
   font:600 .84rem/1 var(--sans);letter-spacing:.01em;
   padding:.62rem .9rem;border:1.5px solid var(--tinta);border-radius:2px;
   background:transparent;color:var(--tinta);cursor:pointer;
-  transition:background-color .15s,color .15s;
+  transition:background-color .16s,color .16s,transform .16s,box-shadow .16s;
 }
-.demo-tab:hover{background:var(--papel-2)}
+.demo-tab:hover{background:var(--papel-2);transform:translateY(-1px);box-shadow:0 3px 8px -2px rgba(36,28,20,.18)}
+.demo-tab:active{transform:translateY(0)}
 .demo-tab[aria-pressed="true"]{background:var(--tinta);color:var(--papel)}
 .demo-panel{display:flex;flex-direction:column;align-items:center}
 .telefono{
   width:min(308px,84vw);
   background:var(--tinta);border-radius:34px;padding:9px;
-  box-shadow:0 32px 60px -32px rgba(36,28,20,.55);
+  box-shadow:0 2px 4px rgba(36,28,20,.08),0 18px 36px -14px rgba(36,28,20,.3),0 44px 80px -36px rgba(36,28,20,.45);
 }
 .pantalla{
   position:relative;aspect-ratio:9/18.5;
@@ -193,7 +333,6 @@ hr.doble{
 .pasos p{margin:0;color:var(--tinta-2);font-size:.97rem}
 
 /* ── Calculadora de envío ── */
-#envio .demo-grid{align-items:start}
 .calc-label{display:block;font-weight:600;font-size:.9rem;margin:.2rem 0 0}
 .calc-rango{width:100%;height:2.4rem;margin:.1rem 0 0;accent-color:var(--rojo);cursor:pointer}
 .calc-escala{
@@ -210,7 +349,7 @@ hr.doble{
 /* ── Productos (platos de la casa) ── */
 .platos{display:grid;gap:1.8rem;margin-top:2rem}
 @media (min-width:860px){.platos{grid-template-columns:1fr 1.12fr;align-items:start}}
-.plato{background:var(--blanco);border:1.5px solid var(--tinta);padding:1.6rem 1.4rem 1.7rem}
+.plato{background:var(--blanco);border:1.5px solid var(--tinta);padding:1.6rem 1.4rem 1.7rem;box-shadow:var(--sombra)}
 .plato-casa{outline:1.5px solid var(--tinta);outline-offset:5px}
 .plato-tag{
   font-size:.64rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
@@ -250,6 +389,13 @@ hr.doble{
 .caso .cifras{margin:.4rem 0 1rem}
 .caso .menuline{border-top:1px solid var(--regla)}
 .caso .menuline:last-of-type{border-bottom:1px solid var(--regla)}
+.vivo{display:inline-flex;align-items:center;gap:.4rem;margin-left:.6rem;color:var(--rojo-2)}
+.vivo-punto{width:7px;height:7px;border-radius:50%;background:var(--rojo);animation:latido 1.9s ease-out infinite}
+@keyframes latido{
+  0%{box-shadow:0 0 0 0 rgba(220,45,34,.4)}
+  70%{box-shadow:0 0 0 7px rgba(220,45,34,0)}
+  100%{box-shadow:0 0 0 0 rgba(220,45,34,0)}
+}
 
 /* ── Índice de cartas ── */
 .indice{display:grid;gap:0 2.6rem;margin-top:1.6rem;border-bottom:1px solid var(--regla)}
@@ -257,7 +403,9 @@ hr.doble{
 .indice a{
   display:flex;align-items:flex-end;gap:.55rem;
   padding:.62rem 0;border-top:1px solid var(--regla);text-decoration:none;
+  transition:background-color .16s;
 }
+.indice a:hover{background:var(--papel-2)}
 .indice a .nombre{font-weight:500;font-size:.97rem}
 .indice a .dots{flex:1;min-width:1.6rem;margin-bottom:.4em;border-bottom:2px dotted rgba(36,28,20,.38)}
 .indice a .abrir{
@@ -308,6 +456,7 @@ footer{border-top:1px solid var(--regla);padding:1.7rem 0 .8rem;font-size:.85rem
 .barra-texto .ico{color:var(--rojo);width:1.35rem;height:.95rem}
 .btn-chico{padding:.6rem 1.05rem;min-height:40px;font-size:.88rem}
 @media (max-width:359px){.barra-texto span{display:none}}
+@media (min-width:720px){#barra{display:none}body{padding-bottom:0}}
 
 /* ── Encabezados de sección ── */
 section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
@@ -321,9 +470,13 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
+  .sim-chat{scroll-behavior:auto}
   *,*::before,*::after{transition:none!important;animation:none!important}
+  .js section.rv{opacity:1;transform:none}
+  .js section.rv .dots{transform:none}
 }
 </style>
+<script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
 <a class="salto" href="#inicio">Ir al contenido</a>
@@ -352,6 +505,13 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <div class="regla" aria-hidden="true"></div>
 </header>
 
+<nav id="cima" aria-label="Acceso rápido">
+  <div class="cima-int">
+    <a class="cima-marca" href="#inicio"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg>DEWAN</a>
+    <a class="btn btn-rojo btn-chico" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>WhatsApp</a>
+  </div>
+</nav>
+
 <main>
 
   <!-- 1 · HERO -->
@@ -363,7 +523,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <p class="hero-clave"><strong>Sin comisión por pedido.</strong> Usted paga por el trabajo, no por sus ventas.</p>
       <div class="botonera">
         <a class="btn btn-rojo" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>Escríbanos por WhatsApp</a>
-        <a class="btn btn-linea" href="#demo">Pruebe una carta ↓</a>
+        <a class="btn btn-linea" href="#simulador">Viva la demostración ↓</a>
       </div>
       <p class="hero-sello"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg><span>Somos una empresa de delivery de Riobamba. Con esta misma tecnología opera nuestro propio despacho, todos los días.</span></p>
     </div>
@@ -371,11 +531,74 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 2 · DEMO TOCABLE -->
+  <!-- 2 · SIMULADOR DE PEDIDO -->
+  <section id="simulador">
+    <div class="cont demo-grid">
+      <div>
+        <p class="kicker">Nº 1 · La demostración</p>
+        <h2>Pida usted. El sistema hace el resto.</h2>
+        <p class="lead">Juegue el papel de su cliente: toque las respuestas del chat y mire cómo el sistema arma el pedido, calcula el envío, verifica el pago y lo manda a cocina.</p>
+        <p class="nota">Es una demostración con guion — no el bot en vivo conectado — pero los precios y la tarifa de envío son los reales de Super Happy, nuestro cliente en Riobamba.</p>
+        <p class="sim-aviso-campana">Al final suena la campana de cocina. Puede apagarla con el botón del chat.</p>
+      </div>
+      <div class="sim-col">
+        <p class="sim-etiqueta">Demostración guionizada · precios y tarifa reales de Super Happy</p>
+        <div class="plato sim-marco">
+          <div class="sim-cab">
+            <span class="sim-avatar" aria-hidden="true"><svg class="ico"><use href="#cloche"/></svg></span>
+            <span class="sim-quien"><strong>Super Happy</strong><small>guion de muestra · responde el sistema</small></span>
+            <button class="sim-mute" id="sim-mute" type="button" aria-pressed="false" title="Silenciar la campana de cocina">🔔</button>
+          </div>
+          <div class="sim-chat" id="sim-chat" aria-live="polite">
+            <div class="bur bur-local">¡Buenas tardes! Le atiende <strong>Super Happy</strong>. ¿Qué le provoca hoy?<span class="bur-meta">19:02</span></div>
+            <div class="bur bur-local">Hoy le recomiendo el <strong>Combo #2</strong> — con papas y cola — a <strong>$6,50</strong>.<span class="bur-meta">19:02</span></div>
+            <div class="bur bur-mio">Quiero un Combo #2 con papas y cola<span class="bur-meta">19:03 <span class="check" aria-hidden="true">✓✓</span></span></div>
+            <div class="bur bur-local">¡Buena elección! 1× Combo #2: <strong>$6,50</strong>. ¿Se lo enviamos a domicilio?<span class="bur-meta">19:03</span></div>
+            <div class="bur bur-mio"><span class="bur-tile"><svg class="ico" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.2c-3.9 0-7 3.1-7 7 0 5.2 7 12.6 7 12.6s7-7.4 7-12.6c0-3.9-3.1-7-7-7Zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2Z"/></svg>Ubicación enviada</span><span class="bur-meta">19:04 <span class="check" aria-hidden="true">✓✓</span></span></div>
+            <div class="bur bur-local">Recibido. Está a <strong>2,8 km</strong> por ruta.
+              <span class="bur-cuenta">
+                <span class="menuline"><span class="concepto">Combo #2</span><span class="dots" aria-hidden="true"></span><span class="precio">$6,50</span></span>
+                <span class="menuline"><span class="concepto">Envío · 2,8 km</span><span class="dots" aria-hidden="true"></span><span class="precio sim-dato-envio">$1,60</span></span>
+                <span class="menuline"><span class="concepto"><strong>Total</strong></span><span class="dots" aria-hidden="true"></span><span class="precio sim-dato-total">$8,10</span></span>
+              </span>
+              Le llega en <strong><span class="sim-dato-tiempo">23–33</span> min</strong>. ¿Cómo paga?<span class="bur-meta">19:04</span></div>
+            <div class="bur bur-mio">Pago por transferencia<span class="bur-meta">19:05 <span class="check" aria-hidden="true">✓✓</span></span></div>
+            <div class="bur bur-local">Perfecto. Le paso los datos de la cuenta por este mismo chat y quedo pendiente de su comprobante.<span class="bur-meta">19:05</span></div>
+            <div class="bur bur-mio"><span class="bur-tile"><svg class="ico" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 2.5h8.2L19.5 7.8V21.5H6Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.6 12h6.8M8.6 15h6.8M8.6 18h4.4" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>Comprobante de transferencia · imagen</span><span class="bur-meta">19:06 <span class="check" aria-hidden="true">✓✓</span></span></div>
+            <div class="bur bur-local">✓ Pago verificado · Pedido <strong>#A-0429</strong> enviado a cocina 🔔<span class="bur-meta">19:06</span></div>
+          </div>
+          <div class="sim-chips" id="sim-chips" role="group" aria-label="Sus respuestas">
+            <button class="chip" type="button" hidden>Quiero un Combo #2 con papas y cola</button>
+            <button class="chip" type="button" hidden>📍 Enviar mi ubicación</button>
+            <button class="chip" type="button" hidden>Pago por transferencia</button>
+            <button class="chip" type="button" hidden>📷 Enviar el comprobante</button>
+          </div>
+          <div class="sim-impresion" id="sim-impresion">
+            <div class="ticket" id="sim-ticket">
+              <p class="ticket-cab"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg>Comanda · cocina</p>
+              <p class="ticket-linea">SUPER HAPPY · PEDIDO #A-0429</p>
+              <div class="menuline"><span class="concepto">1× Combo #2</span><span class="dots" aria-hidden="true"></span><span class="precio">$6,50</span></div>
+              <div class="menuline"><span class="concepto">Envío · 2,8 km</span><span class="dots" aria-hidden="true"></span><span class="precio sim-dato-envio">$1,60</span></div>
+              <div class="menuline menuline-total"><span class="concepto"><strong>Total</strong></span><span class="dots" aria-hidden="true"></span><span class="precio sim-dato-total">$8,10</span></div>
+              <p class="ticket-pie">Pago: transferencia · verificado ✓ — Entrega estimada: <span class="sim-dato-tiempo">23–33</span> min</p>
+            </div>
+          </div>
+          <div class="sim-final" id="sim-final">
+            <a class="btn btn-rojo" href="https://wa.me/593939647069?text=Hola%20David%2C%20acabo%20de%20ver%20la%20demostraci%C3%B3n%20del%20pedido%20y%20quiero%20eso%20atendiendo%20el%20WhatsApp%20de%20mi%20restaurante.">Quiero esto atendiendo mi WhatsApp →</a>
+            <button class="btn btn-linea" id="sim-repetir" type="button">Repetir la demostración</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="doble">
+
+  <!-- 3 · DEMO TOCABLE DE LA CARTA -->
   <section id="demo">
     <div class="cont demo-grid">
       <div>
-        <p class="kicker">Nº 1 · La prueba</p>
+        <p class="kicker">Nº 2 · La carta</p>
         <h2>Tóquela. Es una carta de verdad.</h2>
         <p class="lead">Escoja un local y navegue la carta como lo haría su cliente: categorías, platos, carrito. Corre aquí mismo, en vivo.</p>
         <p class="nota">Estos diseños los hicimos para locales de Riobamba, cada uno con su menú real cargado. No son clientes: son muestras del terminado. Así se vería la suya, con su logo y sus platos.</p>
@@ -411,10 +634,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     </div>
   </section>
 
-  <!-- 3 · CÓMO FUNCIONA -->
+  <!-- 4 · CÓMO FUNCIONA -->
   <section id="como-funciona">
     <div class="cont">
-      <p class="kicker">Nº 2 · El servicio</p>
+      <p class="kicker">Nº 3 · El servicio</p>
       <h2>Así corre un pedido.</h2>
       <ol class="pasos">
         <li>
@@ -445,11 +668,11 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 4 · EL ENVÍO: CÓMO SE CALCULA -->
+  <!-- 5 · EL ENVÍO: CÓMO SE CALCULA -->
   <section id="envio">
     <div class="cont demo-grid">
       <div>
-        <p class="kicker">Nº 3 · El envío</p>
+        <p class="kicker">Nº 4 · El envío</p>
         <h2>El envío deja de ser una discusión.</h2>
         <p class="lead">El precio no lo pone el ánimo de nadie: lo pone el GPS, al metro, con la tarifa que usted definió. Y el cliente lo ve antes de confirmar.</p>
         <ul class="plato-puntos">
@@ -479,10 +702,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 5 · LOS DOS PRODUCTOS -->
+  <!-- 6 · LOS DOS PRODUCTOS -->
   <section id="productos">
     <div class="cont">
-      <p class="kicker">Nº 4 · La carta de la casa</p>
+      <p class="kicker">Nº 5 · La carta de la casa</p>
       <h2>Dos maneras de empezar.</h2>
       <div class="platos">
         <article class="plato">
@@ -529,27 +752,27 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     </div>
   </section>
 
-  <!-- 6 · TRABAJO HECHO -->
+  <!-- 7 · TRABAJO HECHO -->
   <section id="resultados">
     <div class="cont">
-      <p class="kicker">Nº 5 · Funcionando hoy</p>
+      <p class="kicker">Nº 6 · Funcionando hoy</p>
       <h2>Dos cocinas de Riobamba lo usan todos los días.</h2>
       <div class="casos">
         <article class="caso">
           <h3>Super Happy</h3>
-          <p class="caso-tipo">Pollería · cliente con El Sistema</p>
+          <p class="caso-tipo">Pollería · cliente con El Sistema <span class="vivo"><span class="vivo-punto" aria-hidden="true"></span>funcionando ahora</span></p>
           <p>El sistema completo atiende su WhatsApp: el bot toma el pedido, confirma los pagos y la cocina despacha. Sus números, tal cual:</p>
           <div class="cifras">
-            <div class="menuline"><span class="concepto">Pedidos atendidos en 4 meses</span><span class="dots" aria-hidden="true"></span><span class="cifra">3.006</span></div>
-            <div class="menuline"><span class="concepto">Promedio por día</span><span class="dots" aria-hidden="true"></span><span class="cifra">27</span></div>
-            <div class="menuline"><span class="concepto">Pico, un solo domingo</span><span class="dots" aria-hidden="true"></span><span class="cifra">61</span></div>
-            <div class="menuline"><span class="concepto">Pedidos a domicilio</span><span class="dots" aria-hidden="true"></span><span class="cifra">68,9%</span></div>
+            <div class="menuline"><span class="concepto">Pedidos atendidos en 4 meses</span><span class="dots" aria-hidden="true"></span><span class="cifra"><span class="cuenta" data-fin="3006">3.006</span></span></div>
+            <div class="menuline"><span class="concepto">Promedio por día</span><span class="dots" aria-hidden="true"></span><span class="cifra"><span class="cuenta" data-fin="27">27</span></span></div>
+            <div class="menuline"><span class="concepto">Pico, un solo domingo</span><span class="dots" aria-hidden="true"></span><span class="cifra"><span class="cuenta" data-fin="61">61</span></span></div>
+            <div class="menuline"><span class="concepto">Pedidos a domicilio</span><span class="dots" aria-hidden="true"></span><span class="cifra"><span class="cuenta" data-fin="68,9">68,9</span>%</span></div>
           </div>
           <p><a class="enlace" href="https://superhappy-menu.bqspdc.easypanel.host" target="_blank" rel="noopener">Abrir su app en vivo ↗</a></p>
         </article>
         <article class="caso">
           <h3>Happy Pollo</h3>
-          <p class="caso-tipo">Asadero · cliente con El Sistema</p>
+          <p class="caso-tipo">Asadero · cliente con El Sistema <span class="vivo"><span class="vivo-punto" aria-hidden="true"></span>funcionando ahora</span></p>
           <p>En su cocina no hay impresora: cada pedido suena en la app, en la tablet del local, y sale. Puede abrir su app ahora mismo:</p>
           <p><a class="enlace" href="https://happypollo.dewansas.com" target="_blank" rel="noopener">Abrir su app en vivo ↗</a></p>
         </article>
@@ -559,11 +782,11 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 16 CARTAS -->
+  <!-- 8 · 16 CARTAS -->
   <section id="cartas">
     <div class="cont">
-      <p class="kicker">Nº 6 · El portafolio</p>
-      <h2>Dieciséis cartas hechas, dieciséis menús reales.</h2>
+      <p class="kicker">Nº 7 · El portafolio</p>
+      <h2><span class="cuenta" data-fin="16">16</span> cartas hechas, <span class="cuenta" data-fin="16">16</span> menús reales.</h2>
       <p class="lead">Las diseñamos para locales de Riobamba, cada una con su menú real cargado, para que usted juzgue el terminado. No son clientes: son muestras de cómo entregamos. Ábralas — todas están en línea.</p>
       <div class="indice">
         <a href="https://dewansas.com/carta/index.html?r=srmoro&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Sr. Moro</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
@@ -589,10 +812,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 7 · PRECIOS CLAROS -->
+  <!-- 9 · PRECIOS CLAROS -->
   <section id="tarifas">
     <div class="cont cont-angosta">
-      <p class="kicker">Nº 7 · Los precios, claros</p>
+      <p class="kicker">Nº 8 · Los precios, claros</p>
       <h2>Todo lo que cuesta, sin letra pequeña.</h2>
       <div class="tarifa-grupo">
         <h3>La Carta</h3>
@@ -613,10 +836,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 8 · QUIÉNES SOMOS -->
+  <!-- 10 · QUIÉNES SOMOS -->
   <section id="quienes-somos">
     <div class="cont cont-angosta">
-      <p class="kicker">Nº 8 · La casa</p>
+      <p class="kicker">Nº 9 · La casa</p>
       <h2>Primero fuimos el delivery. Después, el sistema.</h2>
       <p>DEWAN S.A.S. nació en Riobamba repartiendo pedidos con motos propias. El sistema que le ofrecemos no lo compramos hecho: lo construimos para operar nuestro propio despacho, y hoy lo instalamos en restaurantes.</p>
       <p>Le atiende <strong>David Esquivel</strong>: la misma persona que arma su carta, instala El Sistema por videollamada y capacita a su equipo.</p>
@@ -626,7 +849,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     </div>
   </section>
 
-  <!-- 9 · CIERRE -->
+  <!-- 11 · CIERRE -->
   <section class="cierre" id="contacto">
     <div class="cont">
       <svg class="cierre-cloche" aria-hidden="true"><use href="#cloche"/></svg>
@@ -664,6 +887,8 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 (function () {
   'use strict';
 
+  var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
   /* Demo: cambiar la carta de muestra */
   var frame = document.getElementById('demo-iframe');
   var nombre = document.getElementById('demo-nombre');
@@ -692,13 +917,16 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     video.load();
   }
 
-  /* Calculadora de envío — tarifa de ejemplo (Super Happy) */
+  /* Fórmula del envío — tarifa de ejemplo (Super Happy) */
   function calcularEnvio(d) {
     var bloques = d <= 3.5 ? 0 : Math.ceil(Math.round(((d - 3.5) / 0.5) * 1000000) / 1000000);
     var total = Math.round(160 + bloques * 25) / 100;
     var minutos = Math.round(15 + 3 * d);
     return { bloques: bloques, total: total, tMin: minutos, tMax: minutos + 10 };
   }
+  function dinero(n) { return '$' + n.toFixed(2).replace('.', ','); }
+
+  /* Calculadora de envío */
   var rango = document.getElementById('envio-rango');
   if (rango) {
     var eDist = document.getElementById('envio-dist');
@@ -706,7 +934,6 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     var eExtra = document.getElementById('envio-extra');
     var eTotal = document.getElementById('envio-total');
     var eTiempo = document.getElementById('envio-tiempo');
-    var dinero = function (n) { return '$' + n.toFixed(2).replace('.', ','); };
     var pintar = function () {
       var d = parseFloat(rango.value);
       if (isNaN(d)) { return; }
@@ -721,6 +948,235 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     };
     rango.addEventListener('input', pintar);
     pintar();
+  }
+
+  /* Simulador de pedido (guion determinista) */
+  var simSeccion = document.getElementById('simulador');
+  if (simSeccion) {
+    var simChat = document.getElementById('sim-chat');
+    var simChips = Array.prototype.slice.call(document.querySelectorAll('#sim-chips .chip'));
+    var simMsgs = Array.prototype.slice.call(simChat.querySelectorAll('.bur'));
+    var simImpresion = document.getElementById('sim-impresion');
+    var simTicket = document.getElementById('sim-ticket');
+    var simFinal = document.getElementById('sim-final');
+    var simRepetir = document.getElementById('sim-repetir');
+    var simMute = document.getElementById('sim-mute');
+    var silencio = false;
+    var actx = null;
+    var simGen = 0;
+    var msgIdx = 0;
+    var chipIdx = 0;
+    var arrancado = false;
+
+    /* Los datos del guion salen de la misma fórmula de la calculadora */
+    var envioSim = calcularEnvio(2.8);
+    var totalSim = Math.round((6.5 + envioSim.total) * 100) / 100;
+    Array.prototype.forEach.call(document.querySelectorAll('.sim-dato-envio'), function (el) { el.textContent = dinero(envioSim.total); });
+    Array.prototype.forEach.call(document.querySelectorAll('.sim-dato-total'), function (el) { el.textContent = dinero(totalSim); });
+    Array.prototype.forEach.call(document.querySelectorAll('.sim-dato-tiempo'), function (el) { el.textContent = envioSim.tMin + '–' + envioSim.tMax; });
+
+    var campana = function () {
+      if (silencio) { return; }
+      try {
+        actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+        var t = actx.currentTime;
+        [1568, 2093].forEach(function (f, i) {
+          var o = actx.createOscillator();
+          var g = actx.createGain();
+          o.type = 'sine';
+          o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(i ? 0.1 : 0.22, t + 0.012);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+          o.connect(g);
+          g.connect(actx.destination);
+          o.start(t);
+          o.stop(t + 1);
+        });
+      } catch (e) { /* sin audio no pasa nada */ }
+    };
+
+    var espera = function (ms, fn) {
+      var g = simGen;
+      window.setTimeout(function () {
+        if (g === simGen) { fn(); }
+      }, reduceMotion ? 150 : ms);
+    };
+
+    var bajar = function () { simChat.scrollTop = simChat.scrollHeight; };
+
+    var revelar = function (el) {
+      el.classList.remove('sim-oculto');
+      bajar();
+    };
+
+    var escribir = function (fn) {
+      var burb = document.createElement('div');
+      burb.className = 'bur bur-local escribiendo';
+      burb.setAttribute('aria-hidden', 'true');
+      burb.innerHTML = '<span></span><span></span><span></span>';
+      simChat.appendChild(burb);
+      bajar();
+      espera(600 + Math.random() * 300, function () {
+        if (burb.parentNode) { burb.parentNode.removeChild(burb); }
+        fn();
+      });
+    };
+
+    var imprimir = function () {
+      simImpresion.classList.remove('sim-oculto');
+      simTicket.classList.add('imprimiendo');
+      espera(450, campana);
+      espera(700, function () {
+        simFinal.classList.remove('sim-oculto');
+        if (simFinal.scrollIntoView) {
+          simFinal.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+        }
+      });
+    };
+
+    var avanzar = function () {
+      if (msgIdx >= simMsgs.length) {
+        espera(350, imprimir);
+        return;
+      }
+      var m = simMsgs[msgIdx];
+      if (m.classList.contains('bur-mio')) {
+        var ch = simChips[chipIdx];
+        if (ch) {
+          ch.hidden = false;
+          if (ch.focus) { ch.focus({ preventScroll: true }); }
+        }
+        return; /* espera el toque del chip */
+      }
+      escribir(function () {
+        revelar(m);
+        msgIdx += 1;
+        espera(250, avanzar);
+      });
+    };
+
+    var reiniciar = function () {
+      simGen += 1;
+      msgIdx = 0;
+      chipIdx = 0;
+      simMsgs.forEach(function (m) { m.classList.add('sim-oculto'); });
+      Array.prototype.slice.call(simChat.querySelectorAll('.escribiendo')).forEach(function (n) {
+        if (n.parentNode) { n.parentNode.removeChild(n); }
+      });
+      simImpresion.classList.add('sim-oculto');
+      simTicket.classList.remove('imprimiendo');
+      simFinal.classList.add('sim-oculto');
+      simChips.forEach(function (c) { c.hidden = true; });
+      simChat.scrollTop = 0;
+    };
+
+    simChips.forEach(function (ch, i) {
+      ch.addEventListener('click', function () {
+        if (i !== chipIdx) { return; }
+        ch.hidden = true;
+        chipIdx += 1;
+        revelar(simMsgs[msgIdx]);
+        msgIdx += 1;
+        espera(300, avanzar);
+      });
+    });
+
+    if (simRepetir) {
+      simRepetir.addEventListener('click', function () {
+        reiniciar();
+        espera(200, avanzar);
+      });
+    }
+
+    if (simMute) {
+      simMute.addEventListener('click', function () {
+        silencio = !silencio;
+        simMute.setAttribute('aria-pressed', silencio ? 'true' : 'false');
+        simMute.textContent = silencio ? '🔕' : '🔔';
+        simMute.title = silencio ? 'Activar la campana de cocina' : 'Silenciar la campana de cocina';
+      });
+    }
+
+    var iniciarSim = function () {
+      if (arrancado) { return; }
+      arrancado = true;
+      espera(300, avanzar);
+    };
+
+    reiniciar();
+    if ('IntersectionObserver' in window) {
+      var ioSim = new IntersectionObserver(function (entradas) {
+        if (entradas[0].isIntersecting) {
+          iniciarSim();
+          ioSim.disconnect();
+        }
+      }, { threshold: 0.25 });
+      ioSim.observe(simSeccion);
+    } else {
+      iniciarSim();
+    }
+  }
+
+  /* Números que cuentan al entrar en pantalla */
+  var cuentas = Array.prototype.slice.call(document.querySelectorAll('.cuenta'));
+  if (cuentas.length && 'IntersectionObserver' in window && !reduceMotion) {
+    var formatoCuenta = function (patron, valor) {
+      if (patron.indexOf(',') >= 0) { return valor.toFixed(1).replace('.', ','); }
+      var n = Math.round(valor);
+      if (parseFloat(patron) >= 1000) {
+        if (n < 1000) { return String(n); }
+        return Math.floor(n / 1000) + '.' + ('00' + (n % 1000)).slice(-3);
+      }
+      return String(n);
+    };
+    var ioCuenta = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (ent) {
+        if (!ent.isIntersecting) { return; }
+        ioCuenta.unobserve(ent.target);
+        var el = ent.target;
+        var patron = el.getAttribute('data-fin') || '0';
+        var objetivo = parseFloat(patron.replace(',', '.'));
+        var textoFinal = el.textContent;
+        var t0 = null;
+        var paso = function (ts) {
+          if (t0 === null) { t0 = ts; }
+          var p = Math.min((ts - t0) / 800, 1);
+          var e = 1 - Math.pow(1 - p, 3);
+          el.textContent = formatoCuenta(patron, objetivo * e);
+          if (p < 1) { window.requestAnimationFrame(paso); } else { el.textContent = textoFinal; }
+        };
+        window.requestAnimationFrame(paso);
+      });
+    }, { threshold: 0.6 });
+    cuentas.forEach(function (c) { ioCuenta.observe(c); });
+  }
+
+  /* Apariciones por sección */
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    var reveladas = Array.prototype.slice.call(document.querySelectorAll('main > section')).filter(function (s) {
+      return s.id !== 'inicio' && !s.hidden;
+    });
+    reveladas.forEach(function (s) { s.classList.add('rv'); });
+    var ioSec = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (ent) {
+        if (ent.isIntersecting) {
+          ent.target.classList.add('in');
+          ioSec.unobserve(ent.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+    reveladas.forEach(function (s) { ioSec.observe(s); });
+  }
+
+  /* Marca compacta cuando la portada sale de pantalla */
+  var cima = document.getElementById('cima');
+  var portada = document.querySelector('.portada');
+  if (cima && portada && 'IntersectionObserver' in window) {
+    var ioCima = new IntersectionObserver(function (entradas) {
+      cima.classList.toggle('visible', !entradas[0].isIntersecting);
+    }, { threshold: 0 });
+    ioCima.observe(portada);
   }
 
   /* Barra fija: se guarda mientras el inicio está a la vista (sin JS queda siempre visible) */
