@@ -192,6 +192,21 @@ hr.doble{
 .pasos h3{font-size:1.22rem;margin:0 0 .35rem}
 .pasos p{margin:0;color:var(--tinta-2);font-size:.97rem}
 
+/* ── Calculadora de envío ── */
+#envio .demo-grid{align-items:start}
+.calc-label{display:block;font-weight:600;font-size:.9rem;margin:.2rem 0 0}
+.calc-rango{width:100%;height:2.4rem;margin:.1rem 0 0;accent-color:var(--rojo);cursor:pointer}
+.calc-escala{
+  display:flex;justify-content:space-between;
+  font-size:.72rem;color:var(--tinta-2);margin:0 0 .9rem;
+  font-variant-numeric:tabular-nums lining-nums;
+}
+.calc .menuline{border-top:1px solid var(--regla)}
+.calc .menuline:last-of-type{border-bottom:1px solid var(--regla)}
+.calc .menuline-total{border-top:2px solid var(--tinta)}
+.calc .menuline-total .precio{color:var(--rojo-2);font-size:1.55rem}
+.calc-cobertura{font-size:.8rem;color:var(--tinta-2);margin:.8rem 0 0}
+
 /* ── Productos (platos de la casa) ── */
 .platos{display:grid;gap:1.8rem;margin-top:2rem}
 @media (min-width:860px){.platos{grid-template-columns:1fr 1.12fr;align-items:start}}
@@ -430,10 +445,44 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 4 · LOS DOS PRODUCTOS -->
+  <!-- 4 · EL ENVÍO: CÓMO SE CALCULA -->
+  <section id="envio">
+    <div class="cont demo-grid">
+      <div>
+        <p class="kicker">Nº 3 · El envío</p>
+        <h2>El envío deja de ser una discusión.</h2>
+        <p class="lead">El precio no lo pone el ánimo de nadie: lo pone el GPS, al metro, con la tarifa que usted definió. Y el cliente lo ve antes de confirmar.</p>
+        <ul class="plato-puntos">
+          <li>El cliente manda su ubicación como pueda: el clip de WhatsApp, un link de Google Maps o la dirección escrita. El sistema entiende los tres.</li>
+          <li>¿Tiene varias sucursales? El sistema escoge solo la más cercana al cliente.</li>
+          <li>La distancia no se mide en línea recta: se corrige al trazado real de las calles, y sobre esa ruta se cobra.</li>
+        </ul>
+        <p style="max-width:36rem">A la misma distancia, el mismo precio — hoy, mañana y para todos. Usted no vuelve a negociar un envío por el chat.</p>
+        <p><a class="enlace" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20calculadora%20del%20env%C3%ADo%20y%20quiero%20una%20tarifa%20as%C3%AD%20para%20mi%20local.">Quiero una tarifa así para mi local →</a></p>
+      </div>
+      <div class="plato calc">
+        <p class="plato-tag plato-tag-rojo">Calcúlelo usted mismo</p>
+        <label class="calc-label" for="envio-rango">Distancia al cliente, por ruta</label>
+        <input class="calc-rango" id="envio-rango" type="range" min="0.5" max="15" step="0.1" value="5.2" list="envio-marcas" aria-valuetext="5,2 kilómetros — envío $2,60">
+        <datalist id="envio-marcas"><option value="3.5"></option></datalist>
+        <div class="calc-escala" aria-hidden="true"><span>0,5 km</span><span>15 km</span></div>
+        <div class="menuline"><span class="concepto">Distancia por ruta</span><span class="dots" aria-hidden="true"></span><span class="precio"><span id="envio-dist">5,2</span> <small>km</small></span></div>
+        <div class="menuline"><span class="concepto">Base · hasta 3,5 km</span><span class="dots" aria-hidden="true"></span><span class="precio">$1,60</span></div>
+        <div class="menuline"><span class="concepto" id="envio-bloques">+ 4 bloques de 500 m</span><span class="dots" aria-hidden="true"></span><span class="precio" id="envio-extra">$1,00</span></div>
+        <div class="menuline menuline-total"><span class="concepto"><strong>Total del envío</strong></span><span class="dots" aria-hidden="true"></span><span class="precio" id="envio-total">$2,60</span></div>
+        <div class="menuline"><span class="concepto">Tiempo estimado</span><span class="dots" aria-hidden="true"></span><span class="precio"><span id="envio-tiempo">31–41</span> <small>min</small></span></div>
+        <p class="calc-cobertura">Cobertura de este ejemplo: hasta 15 km. Más lejos, el sistema ofrece retiro en el local.</p>
+        <p class="nota" style="margin-top:1.1rem">Esta es la tarifa real de Super Happy, como ejemplo. Cada local define la suya — base, valor del bloque y cobertura — y el sistema la aplica igual de exacta.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="doble">
+
+  <!-- 5 · LOS DOS PRODUCTOS -->
   <section id="productos">
     <div class="cont">
-      <p class="kicker">Nº 3 · La carta de la casa</p>
+      <p class="kicker">Nº 4 · La carta de la casa</p>
       <h2>Dos maneras de empezar.</h2>
       <div class="platos">
         <article class="plato">
@@ -480,10 +529,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     </div>
   </section>
 
-  <!-- 5 · TRABAJO HECHO -->
+  <!-- 6 · TRABAJO HECHO -->
   <section id="resultados">
     <div class="cont">
-      <p class="kicker">Nº 4 · Funcionando hoy</p>
+      <p class="kicker">Nº 5 · Funcionando hoy</p>
       <h2>Dos cocinas de Riobamba lo usan todos los días.</h2>
       <div class="casos">
         <article class="caso">
@@ -513,7 +562,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <!-- 16 CARTAS -->
   <section id="cartas">
     <div class="cont">
-      <p class="kicker">Nº 5 · El portafolio</p>
+      <p class="kicker">Nº 6 · El portafolio</p>
       <h2>Dieciséis cartas hechas, dieciséis menús reales.</h2>
       <p class="lead">Las diseñamos para locales de Riobamba, cada una con su menú real cargado, para que usted juzgue el terminado. No son clientes: son muestras de cómo entregamos. Ábralas — todas están en línea.</p>
       <div class="indice">
@@ -540,10 +589,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 6 · PRECIOS CLAROS -->
+  <!-- 7 · PRECIOS CLAROS -->
   <section id="tarifas">
     <div class="cont cont-angosta">
-      <p class="kicker">Nº 6 · Los precios, claros</p>
+      <p class="kicker">Nº 7 · Los precios, claros</p>
       <h2>Todo lo que cuesta, sin letra pequeña.</h2>
       <div class="tarifa-grupo">
         <h3>La Carta</h3>
@@ -564,10 +613,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 7 · QUIÉNES SOMOS -->
+  <!-- 8 · QUIÉNES SOMOS -->
   <section id="quienes-somos">
     <div class="cont cont-angosta">
-      <p class="kicker">Nº 7 · La casa</p>
+      <p class="kicker">Nº 8 · La casa</p>
       <h2>Primero fuimos el delivery. Después, el sistema.</h2>
       <p>DEWAN S.A.S. nació en Riobamba repartiendo pedidos con motos propias. El sistema que le ofrecemos no lo compramos hecho: lo construimos para operar nuestro propio despacho, y hoy lo instalamos en restaurantes.</p>
       <p>Le atiende <strong>David Esquivel</strong>: la misma persona que arma su carta, instala El Sistema por videollamada y capacita a su equipo.</p>
@@ -577,7 +626,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     </div>
   </section>
 
-  <!-- 8 · CIERRE -->
+  <!-- 9 · CIERRE -->
   <section class="cierre" id="contacto">
     <div class="cont">
       <svg class="cierre-cloche" aria-hidden="true"><use href="#cloche"/></svg>
@@ -641,6 +690,37 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     });
     video.preload = 'metadata';
     video.load();
+  }
+
+  /* Calculadora de envío — tarifa de ejemplo (Super Happy) */
+  function calcularEnvio(d) {
+    var bloques = d <= 3.5 ? 0 : Math.ceil(Math.round(((d - 3.5) / 0.5) * 1000000) / 1000000);
+    var total = Math.round(160 + bloques * 25) / 100;
+    var minutos = Math.round(15 + 3 * d);
+    return { bloques: bloques, total: total, tMin: minutos, tMax: minutos + 10 };
+  }
+  var rango = document.getElementById('envio-rango');
+  if (rango) {
+    var eDist = document.getElementById('envio-dist');
+    var eBloques = document.getElementById('envio-bloques');
+    var eExtra = document.getElementById('envio-extra');
+    var eTotal = document.getElementById('envio-total');
+    var eTiempo = document.getElementById('envio-tiempo');
+    var dinero = function (n) { return '$' + n.toFixed(2).replace('.', ','); };
+    var pintar = function () {
+      var d = parseFloat(rango.value);
+      if (isNaN(d)) { return; }
+      var r = calcularEnvio(d);
+      var km = d.toFixed(1).replace('.', ',');
+      if (eDist) { eDist.textContent = km; }
+      if (eBloques) { eBloques.textContent = '+ ' + r.bloques + (r.bloques === 1 ? ' bloque' : ' bloques') + ' de 500 m'; }
+      if (eExtra) { eExtra.textContent = dinero(r.bloques * 0.25); }
+      if (eTotal) { eTotal.textContent = dinero(r.total); }
+      if (eTiempo) { eTiempo.textContent = r.tMin + '–' + r.tMax; }
+      rango.setAttribute('aria-valuetext', km + ' kilómetros — envío ' + dinero(r.total));
+    };
+    rango.addEventListener('input', pintar);
+    pintar();
   }
 
   /* Barra fija: se guarda mientras el inicio está a la vista (sin JS queda siempre visible) */
