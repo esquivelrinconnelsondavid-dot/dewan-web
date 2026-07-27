@@ -3668,7 +3668,10 @@
                 (t.subtotalRegular>t.subtotal?'<div class="cart-row cart-row-ahorro"><span class="cart-row-label">🎉 Ahorras</span><span class="cart-row-val">-$'+(t.subtotalRegular-t.subtotal).toFixed(2)+'</span></div>':'')+
                 (t.envases>0?'<div class="cart-row"><span class="cart-row-label">Envases</span><span class="cart-row-val">$'+t.envases.toFixed(2)+'</span></div>':'')+
                 (t.serviceFee>0?'<div class="cart-row"><span class="cart-row-label" style="display:inline-flex;align-items:center;gap:6px">Servicio DEWAN <span onclick="openServiceFeeInfo()" style="cursor:pointer;color:var(--gris);font-size:0.85rem;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;line-height:1">ⓘ</span></span><span class="cart-row-val">$'+t.serviceFee.toFixed(2)+'</span></div>':'')+
-                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Envío'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+t.delivery.toFixed(2)+'</span></div>':'')+
+                (window._clientGPS?'<div class="cart-row"><span class="cart-row-label">Envío'+(t.promoEnvio?' <span class="promo-envio-badge">🔥 Lun-Mié</span>':'')+'</span><span class="cart-row-val">'+(t.promoEnvio?'<span class="precio-tachado">$'+t.deliveryFull.toFixed(2)+'</span> ':'')+'$'+(t.promoEnvio?t.delivery:Math.max(0,t.delivery-t.recargoServicio)).toFixed(2)+'</span></div>':'')+
+                // El +$0.75 de los locales sin convenio iba escondido dentro del envio:
+                // el cliente veia un envio mas caro sin saber por que.
+                (window._clientGPS&&t.recargoServicio>0&&!t.promoEnvio?'<div class="cart-row"><span class="cart-row-label">Servicio (local sin convenio)</span><span class="cart-row-val">$'+t.recargoServicio.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS&&t.premio>0?'<div class="cart-row cart-row-ahorro"><span class="cart-row-label">🎁 Carrera GRATIS (tus sellos)</span><span class="cart-row-val">-$'+t.premio.toFixed(2)+'</span></div>':'')+
                 (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Pagas</span><span class="cart-total-val">$'+totalPagar.toFixed(2)+'</span></div>'+
@@ -3955,15 +3958,17 @@
             // CARRERA GRATIS (premio de sellos): se aplica a UN local, el del envío BASE
             // más caro (misma regla que el servidor). El recargo silencioso ($0.75) nunca
             // se cubre. window._premioCubierto lo llena refrescarPremioEnvio().
-            var premioBase=0;
+            var premioBase=0, recargoServicio=0;
             Object.keys(dels).forEach(function(k){
                 var rec=isSilenciosoRest(k)?0.75:0;
+                if(rec>0&&dels[k]>0) recargoServicio+=rec;   // se muestra en su propia linea
                 var b=Math.round((dels[k]-rec)*100)/100;
                 if(b>premioBase) premioBase=b;
             });
+            recargoServicio=Math.round(recargoServicio*100)/100;
             var premio=Math.min(Math.max(Number(window._premioCubierto)||0,0), del);
             premio=Math.round(premio*100)/100;
-            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,deliveryFull:delFull,promoEnvio:promoSavings>0,promoEnvioSavings:promoSavings,promoDiaActivo:promoEnvioDiaActivo(),tieneLocalCercano:tieneLocalCercano,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,premioBase:premioBase,premio:premio,total:sub+del+serviceFee+envases-premio};
+            return{items:items,subtotal:sub,subtotalRegular:subReg,envases:envases,delivery:del,deliveryFull:delFull,promoEnvio:promoSavings>0,promoEnvioSavings:promoSavings,promoDiaActivo:promoEnvioDiaActivo(),tieneLocalCercano:tieneLocalCercano,serviceFee:serviceFee,subtotalBase:Math.round(subBase*100)/100,premioBase:premioBase,premio:premio,recargoServicio:recargoServicio,total:sub+del+serviceFee+envases-premio};
         }
 
         // Consulta si el cliente tiene carrera gratis para ESTE pedido (no la consume:
