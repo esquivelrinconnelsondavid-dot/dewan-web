@@ -87,6 +87,10 @@ function Boton({ children, onClick, color = 'dewan', disabled, full, grande }) {
 export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   const [cargando, setCargando] = useState(false);
   const [modalAsignar, setModalAsignar] = useState(false);
+  // Pedidos que NO llegan por WhatsApp (los de la app y la web) dejaban a la operadora
+  // sin el texto que antes reenviaba al local. Aquí se arma ese texto y se copia.
+  const [copiado, setCopiado] = useState(false);
+  const [telLocal, setTelLocal] = useState(null);
   const lanzadoRef = useRef(false);
   const { expirado } = useTimer(p.timer_lanzamiento);
   const tiempoEspera = useTimerSubir(p.fecha_creacion);
@@ -97,6 +101,59 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   // → los maneja la operadora: botones de tiempo desde min 0 y SIN alarma "no responde".
   const operadoraTier = tipoAcuerdo === 'silencioso' || tipoAcuerdo === 'cliente_paga';
   const gestionadoOperadora = esNoAliado || operadoraTier;
+
+  // ── Orden para pasarle al local (locales que no confirman por la app) ──────────
+  // Antes el pedido llegaba por WhatsApp y la operadora reenviaba ese mismo mensaje.
+  // Los pedidos de la app/web entran directo a la base: sin esto, hay que transcribirlo
+  // a mano. El texto dice lo que el local necesita: qué cocinar y cuánto va a cobrar.
+  const textoParaLocal = [
+    `🔔 PEDIDO DEWAN #${p.id}`,
+    p.restaurante ? `🏪 ${p.restaurante}` : '',
+    '',
+    (p.detalle_pedido || '').trim(),
+    '',
+    p.precio_base_productos != null
+      ? `💵 A cobrar: ${money(p.precio_base_productos)} (los paga nuestro motorizado)`
+      : '',
+    '🛵 Lo retira nuestro motorizado',
+    '⏱️ ¿En cuántos minutos está listo?',
+  ].filter((l) => l !== '').join('\n');
+
+  const copiarPedido = async () => {
+    try {
+      await navigator.clipboard.writeText(textoParaLocal);
+    } catch {
+      // http (sin contexto seguro) no tiene clipboard: se copia con un textarea temporal
+      const ta = document.createElement('textarea');
+      ta.value = textoParaLocal;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch { /* ignorar */ }
+      document.body.removeChild(ta);
+    }
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+
+  const waLocal = telLocal
+    ? `https://wa.me/${String(telLocal).replace(/\D/g, '').replace(/^0/, '593')}?text=${encodeURIComponent(textoParaLocal)}`
+    : null;
+
+  // Teléfono del local, solo para los pedidos que la operadora tiene que encargar
+  useEffect(() => {
+    if (!gestionadoOperadora || !p.restaurante_id) return;
+    let vivo = true;
+    supabase
+      .from('restaurantes')
+      .select('telefono')
+      .eq('id', p.restaurante_id)
+      .maybeSingle()
+      .then(({ data }) => { if (vivo) setTelLocal(data?.telefono || null); })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, [p.restaurante_id, gestionadoOperadora]);
   const colgado =
     p.intencion === 'pedido_comida' &&
     p.estado_pedido === 'pendiente_restaurante' && // si ya avanzó (preparando) ya no está "colgado"
@@ -357,6 +414,35 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
         </div>
       )}
       {p.detalle_pedido && <div className="text-xs text-gray-300 line-clamp-2">{p.detalle_pedido}</div>}
+
+      {/* Orden lista para pasarle al local: solo en los que no confirman por la app y
+          mientras el pedido siga vivo (después ya no hay nada que encargar). */}
+      {gestionadoOperadora && !terminal && p.intencion === 'pedido_comida' && (
+        <div className="bg-bg3 border border-borde rounded-lg p-2 space-y-2">
+          <div className="text-[11px] font-black text-gray-300">📋 Pedido para el local</div>
+          <pre className="text-[11px] text-gray-200 whitespace-pre-wrap font-sans leading-snug max-h-32 overflow-y-auto">
+            {textoParaLocal}
+          </pre>
+          <div className="flex gap-2">
+            <button
+              onClick={copiarPedido}
+              className={`${copiado ? 'bg-dewan text-black' : 'bg-bg2 text-gray-200 border-2 border-borde'} flex-1 min-h-[38px] text-xs font-black px-3 rounded-xl active:scale-95 transition-transform`}
+            >
+              {copiado ? '✓ Copiado' : '📋 Copiar pedido'}
+            </button>
+            {waLocal && (
+              <a
+                href={waLocal}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-encamino text-white flex-1 min-h-[38px] text-xs font-black px-3 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+              >
+                📲 Enviar al local
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {(p.estado_pedido === 'pendiente_restaurante' || p.estado_pedido === 'preparando') && sucursales.length > 1 && (
         <SelectorSucursal
