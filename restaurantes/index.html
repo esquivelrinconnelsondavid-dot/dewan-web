@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>DEWAN — Apps web y sistema de pedidos para restaurantes · Riobamba, Ecuador</title>
-<meta name="description" content="La app web de su restaurante, con su marca, y un sistema que atiende el WhatsApp: arma el pedido, confirma el pago por transferencia y suena en la cocina. Sin comisión por pedido. DEWAN S.A.S., Riobamba.">
+<title>DEWAN — El Sistema de pedidos por WhatsApp para restaurantes · Ecuador</title>
+<meta name="description" content="El Sistema atiende el WhatsApp de su restaurante: el cliente pide desde su app web o con botones, el pago por transferencia se verifica solo y la orden suena en cocina. Sin comisión por pedido. DEWAN S.A.S., Riobamba.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_EC">
 <meta property="og:site_name" content="DEWAN S.A.S.">
 <meta property="og:title" content="DEWAN — El pedido le llega hecho">
-<meta property="og:description" content="App web con su marca y un sistema que atiende el WhatsApp de su restaurante: arma el pedido, confirma el pago y suena en cocina. Sin comisión por pedido. Riobamba, para todo el Ecuador.">
+<meta property="og:description" content="El Sistema atiende el WhatsApp de su restaurante: app web con su marca incluida, pedidos con botones, pago por transferencia verificado y la orden sonando en cocina. Sin comisión por pedido. Riobamba, para todo el Ecuador.">
 <meta property="og:url" content="https://dewansas.com/restaurantes/">
 <meta name="theme-color" content="#FBF7F0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23DC2D22'/%3E%3Ccircle cx='16' cy='9.5' r='2.4' fill='%23FBF7F0'/%3E%3Cpath d='M4.5 22.4C5 15.9 10 11 16 11s11 4.9 11.5 11.4Z' fill='%23FBF7F0'/%3E%3Crect x='3.5' y='24.2' width='25' height='2.8' rx='1.4' fill='%23FBF7F0'/%3E%3C/svg%3E">
@@ -227,6 +227,11 @@ hr.doble{
 .bur-meta .check{color:#4FA3D8;letter-spacing:-.1em}
 .bur-tile{display:inline-flex;align-items:center;gap:.5rem;font-weight:600}
 .bur-tile .ico{width:1.15rem;height:1.15rem;color:var(--rojo-2)}
+.bur-botones{display:flex;flex-direction:column;gap:.28rem;margin:.5rem -.15rem .15rem;border-top:1px solid var(--regla);padding-top:.45rem}
+.bur-boton{
+  display:block;text-align:center;font-weight:600;font-size:.8rem;
+  color:#2E7FBE;background:rgba(46,127,190,.07);border-radius:7px;padding:.32rem .5rem;
+}
 .bur-cuenta{
   display:block;background:var(--papel);border:1px solid var(--regla);border-radius:8px;
   padding:.35rem .6rem;margin:.45rem 0;
@@ -500,7 +505,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <div class="portada-int">
     <svg class="portada-cloche" aria-hidden="true"><use href="#cloche"/></svg>
     <p class="portada-marca">DEWAN</p>
-    <p class="portada-sub">Apps web y sistemas de pedido · Riobamba — para todo el Ecuador</p>
+    <p class="portada-sub">El sistema de pedidos por WhatsApp · Riobamba — para todo el Ecuador</p>
   </div>
   <div class="regla" aria-hidden="true"></div>
 </header>
@@ -519,7 +524,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     <div class="cont">
       <p class="kicker">Para dueños de restaurante</p>
       <h1>El pedido le llega <em>hecho</em>.</h1>
-      <p class="lead">Su app web, con su marca, en el celular de sus clientes: escogen, arman el pedido y a usted le llega ordenado al WhatsApp. Y si quiere, nuestro sistema lo atiende solo, confirma el pago y lo hace sonar en la cocina.</p>
+      <p class="lead">El Sistema atiende el WhatsApp de su restaurante. Su cliente no dicta el pedido: lo arma en la app web de su local — con su marca, incluida — o tocando botones en el chat. El pago por transferencia se verifica solo y la orden suena en su cocina.</p>
       <p class="hero-clave"><strong>Sin comisión por pedido.</strong> Usted paga por el trabajo, no por sus ventas.</p>
       <div class="botonera">
         <a class="btn btn-rojo" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>Escríbanos por WhatsApp</a>
@@ -537,7 +542,8 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <div>
         <p class="kicker">Nº 1 · La demostración</p>
         <h2>Pida usted. El sistema hace el resto.</h2>
-        <p class="lead">Juegue el papel de su cliente: toque las respuestas del chat y mire cómo el sistema arma el pedido, calcula el envío, verifica el pago y lo manda a cocina.</p>
+        <p class="lead">Juegue el papel de su cliente: toque los botones del chat y mire cómo el pedido se arma, el envío se calcula, el pago se verifica y la orden entra a cocina.</p>
+        <p>Fíjese en el detalle que importa: <strong>su cliente nunca dicta el pedido en texto</strong>. Escoge en la carta y toca botones. Por eso a su cocina llega exacto — sin interpretar la letra de nadie.</p>
         <p class="nota">Es una demostración con guion — no el bot en vivo conectado — pero los precios y la tarifa de envío son los reales de Super Happy, nuestro cliente en Riobamba.</p>
         <p class="sim-aviso-campana">Al final suena la campana de cocina. Puede apagarla con el botón del chat.</p>
       </div>
@@ -550,27 +556,35 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
             <button class="sim-mute" id="sim-mute" type="button" aria-pressed="false" title="Silenciar la campana de cocina">🔔</button>
           </div>
           <div class="sim-chat" id="sim-chat" aria-live="polite">
-            <div class="bur bur-local">¡Buenas tardes! Le atiende <strong>Super Happy</strong>. ¿Qué le provoca hoy?<span class="bur-meta">19:02</span></div>
-            <div class="bur bur-local">Hoy le recomiendo el <strong>Combo #2</strong> — con papas y cola — a <strong>$6,50</strong>.<span class="bur-meta">19:02</span></div>
-            <div class="bur bur-mio">Quiero un Combo #2 con papas y cola<span class="bur-meta">19:03 <span class="check" aria-hidden="true">✓✓</span></span></div>
-            <div class="bur bur-local">¡Buena elección! 1× Combo #2: <strong>$6,50</strong>. ¿Se lo enviamos a domicilio?<span class="bur-meta">19:03</span></div>
-            <div class="bur bur-mio"><span class="bur-tile"><svg class="ico" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.2c-3.9 0-7 3.1-7 7 0 5.2 7 12.6 7 12.6s7-7.4 7-12.6c0-3.9-3.1-7-7-7Zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2Z"/></svg>Ubicación enviada</span><span class="bur-meta">19:04 <span class="check" aria-hidden="true">✓✓</span></span></div>
+            <div class="bur bur-local">¡Buenas tardes! Le atiende <strong>Super Happy</strong>. Pida sin escribir — toque una opción:
+              <span class="bur-botones" aria-hidden="true"><span class="bur-boton">🍽️ Ver la carta y pedir</span><span class="bur-boton">📦 Estado de mi pedido</span></span>
+              <span class="bur-meta">19:02</span></div>
+            <div class="bur bur-mio">🍽️ Ver la carta y pedir<span class="bur-meta">19:02 <span class="check" aria-hidden="true">✓✓</span></span></div>
+            <div class="bur bur-local">Aquí tiene su carta 👉 <strong class="enlace">superhappy.app</strong> — escoja a su gusto y confirme. Su pedido me llega ya armado.<span class="bur-meta">19:02</span></div>
+            <div class="bur bur-mio"><span class="bur-tile"><svg class="ico" aria-hidden="true" viewBox="0 0 24 24"><path d="M4.4 4h2.1l.6 2.4h12.5l-1.8 8.2H8.1L6.3 6.9H4.4Zm4.6 12.6a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Zm8 0a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Z"/></svg>Pedido armado en la app · 1× Combo #2 — $6,50</span><span class="bur-meta">19:04 <span class="check" aria-hidden="true">✓✓</span></span></div>
+            <div class="bur bur-local">✓ Recibido: 1× Combo #2 — <strong>$6,50</strong>. ¿Cómo lo quiere?
+              <span class="bur-botones" aria-hidden="true"><span class="bur-boton">🏍️ A domicilio</span><span class="bur-boton">🏪 Retiro en el local</span></span>
+              <span class="bur-meta">19:04</span></div>
+            <div class="bur bur-mio"><span class="bur-tile"><svg class="ico" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.2c-3.9 0-7 3.1-7 7 0 5.2 7 12.6 7 12.6s7-7.4 7-12.6c0-3.9-3.1-7-7-7Zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2Z"/></svg>A domicilio · ubicación enviada</span><span class="bur-meta">19:04 <span class="check" aria-hidden="true">✓✓</span></span></div>
             <div class="bur bur-local">Recibido. Está a <strong>2,8 km</strong> por ruta.
               <span class="bur-cuenta">
                 <span class="menuline"><span class="concepto">Combo #2</span><span class="dots" aria-hidden="true"></span><span class="precio">$6,50</span></span>
                 <span class="menuline"><span class="concepto">Envío · 2,8 km</span><span class="dots" aria-hidden="true"></span><span class="precio sim-dato-envio">$1,60</span></span>
                 <span class="menuline"><span class="concepto"><strong>Total</strong></span><span class="dots" aria-hidden="true"></span><span class="precio sim-dato-total">$8,10</span></span>
               </span>
-              Le llega en <strong><span class="sim-dato-tiempo">23–33</span> min</strong>. ¿Cómo paga?<span class="bur-meta">19:04</span></div>
-            <div class="bur bur-mio">Pago por transferencia<span class="bur-meta">19:05 <span class="check" aria-hidden="true">✓✓</span></span></div>
+              Le llega en <strong><span class="sim-dato-tiempo">23–33</span> min</strong>. ¿Cómo paga?
+              <span class="bur-botones" aria-hidden="true"><span class="bur-boton">🏦 Transferencia</span><span class="bur-boton">💵 Efectivo</span></span>
+              <span class="bur-meta">19:04</span></div>
+            <div class="bur bur-mio">🏦 Transferencia<span class="bur-meta">19:05 <span class="check" aria-hidden="true">✓✓</span></span></div>
             <div class="bur bur-local">Perfecto. Le paso los datos de la cuenta por este mismo chat y quedo pendiente de su comprobante.<span class="bur-meta">19:05</span></div>
             <div class="bur bur-mio"><span class="bur-tile"><svg class="ico" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 2.5h8.2L19.5 7.8V21.5H6Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.6 12h6.8M8.6 15h6.8M8.6 18h4.4" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>Comprobante de transferencia · imagen</span><span class="bur-meta">19:06 <span class="check" aria-hidden="true">✓✓</span></span></div>
             <div class="bur bur-local">✓ Pago verificado · Pedido <strong>#A-0429</strong> enviado a cocina 🔔<span class="bur-meta">19:06</span></div>
           </div>
           <div class="sim-chips" id="sim-chips" role="group" aria-label="Sus respuestas">
-            <button class="chip" type="button" hidden>Quiero un Combo #2 con papas y cola</button>
-            <button class="chip" type="button" hidden>📍 Enviar mi ubicación</button>
-            <button class="chip" type="button" hidden>Pago por transferencia</button>
+            <button class="chip" type="button" hidden>🍽️ Ver la carta y pedir</button>
+            <button class="chip" type="button" hidden>🛒 Confirmar en la app: 1× Combo #2</button>
+            <button class="chip" type="button" hidden>🏍️ A domicilio · 📍 enviar mi ubicación</button>
+            <button class="chip" type="button" hidden>🏦 Pagar por transferencia</button>
             <button class="chip" type="button" hidden>📷 Enviar el comprobante</button>
           </div>
           <div class="sim-impresion" id="sim-impresion">
@@ -598,9 +612,9 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <section id="demo">
     <div class="cont demo-grid">
       <div>
-        <p class="kicker">Nº 2 · La app web</p>
+        <p class="kicker">Nº 2 · La app web, incluida</p>
         <h2>Tóquela. Es una app de verdad.</h2>
-        <p class="lead">Escoja un local y navegue la app como lo haría su cliente: categorías, platos, carrito. Corre aquí mismo, en vivo.</p>
+        <p class="lead">Aquí es donde su cliente arma el pedido: categorías, platos, carrito. El Sistema la incluye, diseñada con su marca. Corre aquí mismo, en vivo.</p>
         <p class="nota">Estos diseños los hicimos para locales de Riobamba, cada uno con su menú real cargado. No son clientes: son muestras del terminado. Así se vería la suya, con su logo y sus platos.</p>
         <p style="margin-top:1.3rem"><a class="enlace" href="https://wa.me/593939647069?text=Hola%20David%2C%20prob%C3%A9%20la%20app%20web%20de%20muestra%20y%20quiero%20ver%20c%C3%B3mo%20se%20ver%C3%ADa%20la%20de%20mi%20local.">Quiero ver la de mi local así →</a></p>
       </div>
@@ -644,14 +658,14 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
           <span class="paso-num" aria-hidden="true">1.</span>
           <div>
             <h3>El cliente pide</h3>
-            <p>Abre su app web desde un link — por WhatsApp, por sus redes o con un código QR en la mesa — y arma el pedido a su gusto. No descarga nada.</p>
+            <p>Escribe al WhatsApp de su local y el sistema le pasa la carta: abre su app web desde el link — o desde sus redes o un código QR en la mesa — y arma el pedido a su gusto. No descarga nada.</p>
           </div>
         </li>
         <li>
           <span class="paso-num" aria-hidden="true">2.</span>
           <div>
             <h3>El sistema atiende y cobra</h3>
-            <p>Responde el WhatsApp de su local, arma el pedido, lee el comprobante de la transferencia bancaria y confirma el pago. Si es a domicilio, calcula el envío por GPS.</p>
+            <p>Responde el WhatsApp de su local con botones: recibe el pedido ya armado, lee el comprobante de la transferencia bancaria y confirma el pago. Si es a domicilio, calcula el envío por GPS.</p>
           </div>
         </li>
         <li>
@@ -662,7 +676,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
           </div>
         </li>
       </ol>
-      <p class="nota">Si elige solo La App Web, el paso 2 lo hace usted: el pedido le llega armado y ordenado a su WhatsApp, y usted lo confirma. Con El Sistema, se hace solo.</p>
+      <p class="nota">Su cliente nunca dicta el pedido en texto libre: escoge en la app o toca botones. Por eso el pedido llega a cocina exacto, sin malentendidos ni idas y vueltas por el chat.</p>
     </div>
   </section>
 
@@ -706,39 +720,34 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <section id="productos">
     <div class="cont">
       <p class="kicker">Nº 5 · La carta de la casa</p>
-      <h2>Dos maneras de empezar.</h2>
+      <h2>Un solo plato: El Sistema.</h2>
+      <p class="lead">No vendemos piezas sueltas. El Sistema trae todo lo que vio arriba, junto y funcionando:</p>
+      <ul class="plato-puntos" style="max-width:38rem;margin-bottom:2rem">
+        <li>Su <strong>app web con su marca</strong> — logo, colores y menú completo; cambios ilimitados, los hacemos nosotros</li>
+        <li>El bot que <strong>atiende su WhatsApp con botones</strong> y recibe el pedido ya armado, sin que usted conteste</li>
+        <li><strong>Lee el comprobante</strong> de la transferencia bancaria y confirma el pago</li>
+        <li><strong>Cálculo del envío por GPS</strong>, con la tarifa que usted defina</li>
+        <li>La orden <strong>suena en la app de cocina</strong>, en el equipo que ya tiene — sin comprar nada; impresora térmica opcional</li>
+        <li><strong>Instalado el mismo día, por videollamada</strong>, con capacitación a su equipo</li>
+      </ul>
       <div class="platos">
-        <article class="plato">
-          <p class="plato-tag">Para empezar</p>
-          <h3>La App Web</h3>
-          <p class="plato-desc">La app web de su restaurante, con su marca. El cliente escoge, arma el pedido y a usted le llega ordenado al WhatsApp, listo para despachar.</p>
-          <ul class="plato-puntos">
-            <li>Diseño con su logo, sus colores y su menú completo</li>
-            <li>El pedido llega armado y ordenado a su WhatsApp</li>
-            <li>Se comparte con un link: WhatsApp, redes o QR en la mesa</li>
-            <li>Cambios ilimitados de platos y precios: nos escribe y los hacemos nosotros</li>
-            <li>Lista en 24 horas, en cualquier ciudad del Ecuador</li>
-          </ul>
-          <div class="menuline"><span class="concepto">Pago único</span><span class="dots" aria-hidden="true"></span><span class="precio">$120</span></div>
-          <div class="menuline"><span class="concepto">Mantenimiento <small>· primer mes incluido</small></span><span class="dots" aria-hidden="true"></span><span class="precio">$12<small>/mes</small></span></div>
-          <a class="btn btn-linea btn-ancho" href="https://wa.me/593939647069?text=Hola%20David%2C%20me%20interesa%20la%20App%20Web%20de%20%24120%20para%20mi%20restaurante.%20%C2%BFC%C3%B3mo%20empezamos%3F">Quiero La App Web</a>
-        </article>
         <article class="plato plato-casa">
           <p class="plato-tag plato-tag-rojo">La especialidad de la casa</p>
-          <h3>El Sistema</h3>
-          <p class="plato-desc">Todo lo de La App Web, más el que atiende: el pedido se arma solo, se cobra y suena en su cocina.</p>
-          <ul class="plato-puntos">
-            <li>Bot que atiende su WhatsApp y arma el pedido, sin que usted conteste</li>
-            <li>Lee el comprobante de la transferencia bancaria y confirma el pago</li>
-            <li>La orden suena en la app de cocina, en el equipo que ya tiene — sin comprar equipos; impresora térmica opcional</li>
-            <li>Cálculo del envío por GPS</li>
-            <li>Instalado el mismo día, por videollamada</li>
-          </ul>
-          <div class="menuline"><span class="concepto">Instalación</span><span class="dots" aria-hidden="true"></span><span class="precio">$199</span></div>
-          <div class="menuline"><span class="concepto">Hasta 15 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$49<small>/mes</small></span></div>
-          <div class="menuline"><span class="concepto">De 15 a 35 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$89<small>/mes</small></span></div>
-          <div class="menuline"><span class="concepto">Más de 35 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$149<small>/mes</small></span></div>
-          <a class="btn btn-rojo btn-ancho" href="https://wa.me/593939647069?text=Hola%20David%2C%20me%20interesa%20El%20Sistema%20que%20atiende%20el%20WhatsApp.%20Quiero%20la%20instalaci%C3%B3n%20por%20videollamada%20para%20mi%20local.">Quiero El Sistema</a>
+          <h3>Plan anual</h3>
+          <p class="plato-desc">Paga 10 meses y usa 12. Y la instalación — que en el plan mensual cuesta $199 — va por cuenta de la casa.</p>
+          <div class="menuline"><span class="concepto">Hasta 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$790<small>/año</small></span></div>
+          <div class="menuline"><span class="concepto">Más de 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$1.390<small>/año</small></span></div>
+          <div class="menuline"><span class="concepto">Instalación <small>· el mismo día, por videollamada</small></span><span class="dots" aria-hidden="true"></span><span class="precio">Gratis</span></div>
+          <a class="btn btn-rojo btn-ancho" href="https://wa.me/593939647069?text=Hola%20David%2C%20me%20interesa%20El%20Sistema%20con%20el%20plan%20anual.%20Quiero%20la%20instalaci%C3%B3n%20por%20videollamada%20para%20mi%20local.">Quiero El Sistema, plan anual</a>
+        </article>
+        <article class="plato">
+          <p class="plato-tag">Si prefiere ir mes a mes</p>
+          <h3>Plan mensual</h3>
+          <p class="plato-desc">El mismo Sistema completo, sin compromiso de año. La instalación se paga una sola vez.</p>
+          <div class="menuline"><span class="concepto">Hasta 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$79<small>/mes</small></span></div>
+          <div class="menuline"><span class="concepto">Más de 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$139<small>/mes</small></span></div>
+          <div class="menuline"><span class="concepto">Instalación <small>· el mismo día, por videollamada</small></span><span class="dots" aria-hidden="true"></span><span class="precio">$199</span></div>
+          <a class="btn btn-linea btn-ancho" href="https://wa.me/593939647069?text=Hola%20David%2C%20me%20interesa%20El%20Sistema%20con%20el%20plan%20mensual.%20%C2%BFC%C3%B3mo%20empezamos%3F">Quiero El Sistema, mensual</a>
         </article>
       </div>
     </div>
@@ -748,7 +757,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <section class="banda" aria-label="Garantía y condiciones">
     <div class="cont">
       <p class="banda-grande">Cobramos por el trabajo, <em>no por sus ventas.</em></p>
-      <p class="banda-chica">Ningún producto lleva comisión por pedido. Y los dos tienen garantía de 15 días: si no le sirve, le devolvemos su dinero.</p>
+      <p class="banda-chica">El Sistema no lleva comisión por pedido, venda lo que venda. Y tiene garantía de 15 días: si no le sirve, le devolvemos su dinero.</p>
     </div>
   </section>
 
@@ -787,7 +796,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     <div class="cont">
       <p class="kicker">Nº 7 · El portafolio</p>
       <h2><span class="cuenta" data-fin="16">16</span> apps web hechas, <span class="cuenta" data-fin="16">16</span> menús reales.</h2>
-      <p class="lead">Las diseñamos para locales de Riobamba, cada una con su menú real cargado, para que usted juzgue el terminado. No son clientes: son muestras de cómo entregamos. Ábralas — todas están en línea.</p>
+      <p class="lead">La app web es la cara visible de El Sistema: la que su cliente toca. Estas las diseñamos para locales de Riobamba, cada una con su menú real cargado, para que usted juzgue el terminado. No son clientes: son muestras de cómo entregamos. Ábralas — todas están en línea.</p>
       <div class="indice">
         <a href="https://dewansas.com/carta/index.html?r=srmoro&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Sr. Moro</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
         <a href="https://dewansas.com/carta/index.html?r=papazota&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Papazota Cheese</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
@@ -818,19 +827,18 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <p class="kicker">Nº 8 · Los precios, claros</p>
       <h2>Todo lo que cuesta, sin letra pequeña.</h2>
       <div class="tarifa-grupo">
-        <h3>La App Web</h3>
-        <div class="menuline"><span class="concepto">Pago único</span><span class="dots" aria-hidden="true"></span><span class="precio">$120</span></div>
-        <div class="menuline"><span class="concepto">Mantenimiento <small>· primer mes incluido, cambios ilimitados</small></span><span class="dots" aria-hidden="true"></span><span class="precio">$12<small>/mes</small></span></div>
+        <h3>El Sistema · plan anual <small style="font-family:var(--sans);font-weight:600;font-size:.72rem;color:var(--rojo)">— paga 10 meses, usa 12</small></h3>
+        <div class="menuline"><span class="concepto">Hasta 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$790<small>/año</small></span></div>
+        <div class="menuline"><span class="concepto">Más de 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$1.390<small>/año</small></span></div>
+        <div class="menuline"><span class="concepto">Instalación <small>· el mismo día, por videollamada</small></span><span class="dots" aria-hidden="true"></span><span class="precio">Gratis</span></div>
       </div>
       <div class="tarifa-grupo">
-        <h3>El Sistema</h3>
+        <h3>El Sistema · plan mensual</h3>
+        <div class="menuline"><span class="concepto">Hasta 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$79<small>/mes</small></span></div>
+        <div class="menuline"><span class="concepto">Más de 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$139<small>/mes</small></span></div>
         <div class="menuline"><span class="concepto">Instalación <small>· el mismo día, por videollamada</small></span><span class="dots" aria-hidden="true"></span><span class="precio">$199</span></div>
-        <div class="menuline"><span class="concepto">Hasta 15 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$49<small>/mes</small></span></div>
-        <div class="menuline"><span class="concepto">De 15 a 35 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$89<small>/mes</small></span></div>
-        <div class="menuline"><span class="concepto">Más de 35 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$149<small>/mes</small></span></div>
       </div>
-      <p class="tarifa-pie">Sin comisión por pedido, en los dos. Y con garantía de 15 días: si no le sirve, le devolvemos su dinero.</p>
-      <p><a class="enlace" href="https://dewansas.com/planes" target="_blank" rel="noopener">El detalle completo está en dewansas.com/planes ↗</a></p>
+      <p class="tarifa-pie">Todo incluido: app web con su marca, bot, verificación de pagos, envío por GPS, app de cocina y soporte. Sin comisión por pedido. Y con garantía de 15 días: si no le sirve, le devolvemos su dinero.</p>
     </div>
   </section>
 
@@ -843,7 +851,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <h2>Primero fuimos el delivery. Después, el sistema.</h2>
       <p>DEWAN S.A.S. nació en Riobamba repartiendo pedidos con motos propias. El sistema que le ofrecemos no lo compramos hecho: lo construimos para operar nuestro propio despacho, y hoy lo instalamos en restaurantes.</p>
       <p>Le atiende <strong>David Esquivel</strong>: la misma persona que arma su app web, instala El Sistema por videollamada y capacita a su equipo.</p>
-      <p>En Riobamba, además, entregamos con nuestras motos. ¿Está en otra ciudad? La app web y el sistema funcionan igual en todo el Ecuador — y si en su ciudad hay varios locales interesados, llevamos la flota.</p>
+      <p>En Riobamba, además, entregamos con nuestras motos. ¿Está en otra ciudad? El Sistema funciona igual en todo el Ecuador — la instalación es por videollamada — y si en su ciudad hay varios locales interesados, llevamos la flota.</p>
       <p class="nota">Instalamos pocos locales por mes, porque cada uno lleva montaje y capacitación personal. Por eso conviene escribir con tiempo.</p>
       <p class="firma">— David Esquivel, DEWAN S.A.S.</p>
     </div>
@@ -862,7 +870,6 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
         <li><a href="https://instagram.com/dewanriobamba" target="_blank" rel="noopener">Instagram @dewanriobamba</a></li>
         <li><a href="https://www.facebook.com/DeWanRiobamba" target="_blank" rel="noopener">Facebook</a></li>
         <li><a href="https://dewansas.com" target="_blank" rel="noopener">dewansas.com</a></li>
-        <li><a href="https://dewansas.com/planes" target="_blank" rel="noopener">Planes en detalle</a></li>
       </ul>
     </div>
   </section>
