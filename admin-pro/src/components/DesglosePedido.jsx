@@ -49,6 +49,19 @@ export default function DesglosePedido({ pedido, compact = false }) {
         <span>🛵 Envío (carrera)</span>
         <span>{money(d.precioCarrera)}</span>
       </div>
+      {/* Desglose de la carrera: cuánto es del moto y cuánto queda para DEWAN
+          (tramos: $0 / $0.20 / $0.45, +$0.75 en silencioso). Pedido viejo sin
+          carrera_moto → corte fijo $0.70 de la regla vigente cuando se creó. */}
+      <div className="flex justify-between text-gray-500">
+        <span className="pl-4">↳ del moto</span>
+        <span>{money(d.precioCarrera - d.comisionDewan)}</span>
+      </div>
+      <div className="flex justify-between text-gray-500">
+        <span className="pl-4">↳ DEWAN{pedido.carrera_moto == null ? ' (fijo, pedido viejo)' : ''}</span>
+        <span className={d.comisionDewan < 0 ? 'text-alerta/90 font-semibold' : 'font-semibold text-gray-300'}>
+          {money(d.comisionDewan)}
+        </span>
+      </div>
       {d.markupDewan > 0 && (
         <div className="flex justify-between text-gray-500">
           <span>📈 Markup DEWAN</span>
