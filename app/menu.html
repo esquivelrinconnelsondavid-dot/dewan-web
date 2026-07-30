@@ -4221,14 +4221,7 @@
                 if(window._opMap){try{window._opMap.remove()}catch(e){} window._opMap=null;}
                 window._opMapMarker=null;
                 var map=L.map(el,{dragging:true,scrollWheelZoom:true}).setView([-1.6635,-78.6547],14);
-                // Capa satélite (Esri, sin API key): en OSM Riobamba tiene poco detalle y el cliente
-                // no reconoce su casa (pedido #795: pin a 1.65km) — con el techo a la vista sí.
-                var _osmCapa=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'});
-                var _satCapa=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'&copy; Esri'});
-                var _capaPref='osm';try{_capaPref=localStorage.getItem('dewan_map_capa')||'osm'}catch(e){}
-                (_capaPref==='sat'?_satCapa:_osmCapa).addTo(map);
-                L.control.layers({'🗺️ Mapa':_osmCapa,'🛰️ Satélite':_satCapa},null,{position:'topright'}).addTo(map);
-                map.on('baselayerchange',function(e){try{localStorage.setItem('dewan_map_capa',e.name.indexOf('Sat')>-1?'sat':'osm')}catch(_e){}});
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
                 if(window._clientGPS){
                     var la=parseFloat(window._clientGPS.lat),lo=parseFloat(window._clientGPS.lng);
                     if(isFinite(la)&&isFinite(lo)){
