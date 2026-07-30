@@ -999,7 +999,7 @@
             if(!navigator.geolocation){if(st){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Ver restaurantes cerca de ti';}return}
             getBestPosition(function(pos){
                 if(!gpsEnZona(pos)){if(st){st.className='gps-status error';st.textContent='Tu GPS te ubicó fuera de la ciudad — puedes continuar y marcar tu casa en el mapa 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}return;}
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};guardarUbic();
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;guardarUbic();
                 markEtapa('eligio_gps');
                 if(st){st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';}
                 // Si viene del banner, actualizar la vista
@@ -1024,7 +1024,7 @@
             banner.innerHTML='<span style="font-size:0.88rem;font-weight:800;color:var(--texto)">🔎 Buscando tu ubicación...</span>';
             getBestPosition(function(pos){
                 if(!gpsEnZona(pos)){banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">Tu GPS te ubicó fuera de la ciudad. Marca tu casa en el mapa del carrito.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';return;}
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};guardarUbic();
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;guardarUbic();
                 renderHome(); // mantiene 'recomendado'; la cercanía entra como desempate del híbrido
             },function(){
                 banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">No se pudo obtener GPS. Puedes seguir sin ubicación.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';
@@ -3695,7 +3695,10 @@
                 // (ver tus calles) + ajuste del pin; y respaldo si el GPS no agarra.
                 if(window._clientGPS){
                     var _accUI=Number(window._clientGPS.acc)||0;
-                    if(_accUI>150){
+                    if(window._pinLejosKm&&window._opGpsApplied==='map'){
+                        h+='<div class="loc-gps-ok" style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E"><span>⚠️ Marcaste el pin a ~'+window._pinLejosKm.toFixed(1)+' km de donde te ubica el GPS. ¿Seguro que ahí es tu casa? Revisa el mapa 👇 o vuelve a usar tu GPS:</span></div>';
+                        h+='<button class="btn-gps-main" style="margin-top:8px" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
+                    } else if(_accUI>150){
                         h+='<div class="loc-gps-ok" style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E"><span>⚠️ Tu ubicación es APROXIMADA (±'+accTxt(_accUI)+'). Mueve el pin a tu casa para que el motorizado llegue bien 👇</span></div>';
                     } else {
                         h+='<div class="loc-gps-ok"><span>✅ ¡Te ubicamos! Mira el mapa: ¿el pin está en tu casa?</span></div>';
@@ -4114,7 +4117,7 @@
                     if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}
                     return;
                 }
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};guardarUbic();
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;guardarUbic();
                 trackUbicacionPixel();
                 // Recalcular delivery en el carrito con nueva ubicación
                 var rests=getFilteredRestaurantes();
@@ -4218,7 +4221,14 @@
                 if(window._opMap){try{window._opMap.remove()}catch(e){} window._opMap=null;}
                 window._opMapMarker=null;
                 var map=L.map(el,{dragging:true,scrollWheelZoom:true}).setView([-1.6635,-78.6547],14);
-                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+                // Capa satélite (Esri, sin API key): en OSM Riobamba tiene poco detalle y el cliente
+                // no reconoce su casa (pedido #795: pin a 1.65km) — con el techo a la vista sí.
+                var _osmCapa=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'});
+                var _satCapa=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'&copy; Esri'});
+                var _capaPref='osm';try{_capaPref=localStorage.getItem('dewan_map_capa')||'osm'}catch(e){}
+                (_capaPref==='sat'?_satCapa:_osmCapa).addTo(map);
+                L.control.layers({'🗺️ Mapa':_osmCapa,'🛰️ Satélite':_satCapa},null,{position:'topright'}).addTo(map);
+                map.on('baselayerchange',function(e){try{localStorage.setItem('dewan_map_capa',e.name.indexOf('Sat')>-1?'sat':'osm')}catch(_e){}});
                 if(window._clientGPS){
                     var la=parseFloat(window._clientGPS.lat),lo=parseFloat(window._clientGPS.lng);
                     if(isFinite(la)&&isFinite(lo)){
@@ -4235,7 +4245,16 @@
                         }
                     }
                 }
-                map.on('click',function(ev){opMapPick(ev.latlng.lat,ev.latlng.lng)});
+                map.on('click',function(ev){
+                    // Mapa alejado = un dedo tapa cuadras enteras (pedido #795). El primer toque
+                    // NO pone pin: solo acerca a nivel de casas y pide un segundo toque.
+                    if(map.getZoom()<16){
+                        map.setView(ev.latlng,16);
+                        L.popup({closeButton:false,autoClose:true}).setLatLng(ev.latlng).setContent('🔍 Acercamos el mapa — ahora toca justo sobre tu casa').openOn(map);
+                        return;
+                    }
+                    opMapPick(ev.latlng.lat,ev.latlng.lng);
+                });
                 window._opMap=map;
                 setTimeout(function(){try{map.invalidateSize()}catch(e){}},120); // por si el contenedor se midió tarde
             });
@@ -4255,6 +4274,14 @@
                 try{if(window._opMap.getZoom()<16) window._opMap.setView([lat,lng],17);}catch(e){}
             }
             window._clientGPS={lat:la,lng:lo,acc:0}; // strings: el mensaje WA los concatena tal cual; acc:0 = pin puesto A MANO (exacto)
+            // Pin manual lejos del GPS real (fresco) = probable error de toque (pedido #795: 1.65km).
+            // Umbral: 500m o 2× la imprecisión del fix, lo que sea mayor (GPS malo no debe dar falsa alarma).
+            window._pinLejosKm=null;
+            var _fx=window._lastGpsFix;
+            if(_fx&&(Date.now()-_fx.ts)<2*60*60*1000){
+                var _dk=haversine(parseFloat(la),parseFloat(lo),_fx.lat,_fx.lng);
+                if(_dk>Math.max(0.5,((_fx.acc||0)*2)/1000)) window._pinLejosKm=_dk;
+            }
             if(window._opMapCircle){try{window._opMap.removeLayer(window._opMapCircle)}catch(e){} window._opMapCircle=null;} // ya no hay incertidumbre
             window._opGpsApplied='map';
             guardarUbic(); // el pin del mapa también persiste (guardarUbic ya ignora OP_MODE)
