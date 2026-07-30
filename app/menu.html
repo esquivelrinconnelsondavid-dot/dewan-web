@@ -2728,7 +2728,7 @@
                     if(wingsData&&wingsData.dia!=null&&new Date().getDay()!==wingsData.dia){return;} // promo de otro día: ocultar
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
-                        window._almMenuData.push({desc:p.descripcion,foto:p.foto_url||null,envase:Number(p.cargo_envase)||0});
+                        window._almMenuData.push({desc:p.descripcion,foto:p.foto_url||null,envase:Number(p.cargo_envase)||0,base:Number(p.precio)||0});
                         var almQty=countAlmuerzoCart(r.nombre,p.nombre);
                         var precioDisp=almData.precio?'$'+Number(almData.precio).toFixed(2):'—';
                         h+='<div class="dest-card'+(almQty?' in-cart':'')+'" onclick="event.stopPropagation();openAlmuerzoModal(\''+jsEsc(r.nombre)+'\',\''+jsEsc(p.nombre)+'\','+almMenuIdx+','+(r.precio_delivery||0)+')">'+
@@ -2809,7 +2809,7 @@
                     if(wingsData&&wingsData.dia!=null&&new Date().getDay()!==wingsData.dia){return;} // promo de otro día: ocultar
                     if(almData){
                         var almMenuIdx=window._almMenuData.length;
-                        window._almMenuData.push({desc:p.descripcion,foto:p.foto_url||null,envase:Number(p.cargo_envase)||0});
+                        window._almMenuData.push({desc:p.descripcion,foto:p.foto_url||null,envase:Number(p.cargo_envase)||0,base:Number(p.precio)||0});
                         var almQty=countAlmuerzoCart(r.nombre,p.nombre);
                         var descLegible=buildAlmuerzoHint(almData);
                         var precioDisplay=almData.precio?'$'+Number(almData.precio).toFixed(2):'Consultar';
@@ -4919,9 +4919,14 @@
             var descRaw=window._almMenuData[almIdx].desc;
             var fotoM=window._almMenuData[almIdx].foto||null;
             var envaseM=Number(window._almMenuData[almIdx].envase)||0;
+            // precio_base = columna precio del menu_item (precio del LOCAL). El precio del JSON
+            // ya viene con markup en cliente_paga/aliado-con-markup (OPTS salta applyTierPricing),
+            // asi que sin esto el checkout contaba el precio final como base y el markup se perdia.
+            var baseM=Number(window._almMenuData[almIdx].base)||0;
             var data=parseAlmuerzo(descRaw);
             if(!data)return;
             var precio=data.precio||0;
+            if(!(baseM>0)||baseM>precio) baseM=precio;
             var grouped={};
             (data.opciones||[]).forEach(function(o){
                 var c=o.categoria||'otro';
@@ -4971,7 +4976,7 @@
                 '<button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancelar</button>'+
             '</div>';
 
-            window._almPending={rest:rest,nombre:nombre,precio:precio,delivery:delivery,needsSelection:needsSelection,foto:fotoM,envase:envaseM,titulos:titulosSel};
+            window._almPending={rest:rest,nombre:nombre,precio:precio,precio_base:baseM,delivery:delivery,needsSelection:needsSelection,foto:fotoM,envase:envaseM,titulos:titulosSel};
 
             document.getElementById('modal-content').innerHTML=h;
 
@@ -5010,6 +5015,7 @@
                 restaurante:p.rest,
                 nombre:p.nombre,
                 precio:p.precio,
+                precio_base:p.precio_base||0,
                 delivery:p.delivery,
                 qty:1,
                 almuerzoChoices:choices,
