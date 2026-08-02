@@ -326,13 +326,16 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
       ? `¿Cancelar pedido #${p.id}? Ya tiene motorizado asignado${p.nombre_moto ? ` (${p.nombre_moto})` : ''}.`
       : `¿Cancelar pedido #${p.id}?`;
     if (!confirm(aviso)) return;
+    // Motivo opcional: el cliente lo ve en el push y en la app (no culpa al local,
+    // eso solo pasa cuando el LOCAL rechaza desde su app con restaurante_rechazado)
+    const motivo = (prompt('¿Por qué se cancela? (opcional — el cliente lo verá, ej: "el local no tiene ese producto")') || '').trim();
     setCargando(true);
     try {
       await supabase
         .from('pedidos_delivery')
-        .update({ estado_pedido: 'cancelado' })
+        .update({ estado_pedido: 'cancelado', ...(motivo ? { restaurante_motivo_rechazo: motivo } : {}) })
         .eq('id', p.id);
-      await wCancelarPedido(p, 'Cancelado por admin').catch(() => {});
+      await wCancelarPedido(p, motivo || 'Cancelado por admin').catch(() => {});
       stopAlertLoop(p.id);
     } catch (e) {
       console.error(e); alert('No se pudo cancelar');
