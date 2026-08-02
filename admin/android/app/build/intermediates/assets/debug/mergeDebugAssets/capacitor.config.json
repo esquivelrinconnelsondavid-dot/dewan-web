@@ -1,0 +1,8 @@
+{
+	"appId": "com.dewan.admin",
+	"appName": "DEWAN Admin",
+	"webDir": "www",
+	"server": {
+		"androidScheme": "https"
+	}
+}

@@ -22,7 +22,7 @@
 /* ---- Config compartida Supabase / n8n ---- */
 const SUPA_URL  = "https://wfpdtjmmrhhfuxayvpzu.supabase.co";
 const SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s";
-const WEBHOOK_FOTO = "https://restaurante1-n8n.bqspdc.easypanel.host/webhook/subir-foto-vitrina";
+const WEBHOOK_FOTO = "https://n8n.dewansas.com/webhook/subir-foto-vitrina";
 
 const params = new URLSearchParams(location.search);
 const id = params.get("r") || "papazota";

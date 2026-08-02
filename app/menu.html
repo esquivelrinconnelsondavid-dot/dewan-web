@@ -3584,7 +3584,7 @@
                 window._envioReal[nombre]={pending:true,ts:Date.now(),gpsKey:gpsKey};
                 var ctl=('AbortController'in window)?new AbortController():null;
                 if(ctl)setTimeout(function(){ctl.abort()},8000);
-                fetch('https://restaurante1-n8n.bqspdc.easypanel.host/webhook/calcular-precio',{
+                fetch('https://n8n.dewansas.com/webhook/calcular-precio',{
                     method:'POST',headers:{'Content-Type':'application/json'},
                     body:JSON.stringify({origen_lat:r.restaurante_lat,origen_lng:r.restaurante_lng,destino_lat:window._clientGPS.lat,destino_lng:window._clientGPS.lng}),
                     signal:ctl?ctl.signal:undefined
