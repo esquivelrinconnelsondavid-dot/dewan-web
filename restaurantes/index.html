@@ -66,6 +66,15 @@ section{padding-block:3.4rem}
   font-size:.92rem;color:var(--tinta-2);
   border-left:3px solid var(--regla);padding-left:.9rem;max-width:36rem;
 }
+.foto{margin:1.9rem 0 0}
+.foto img{
+  display:block;width:100%;height:auto;border-radius:4px;
+  border:1px solid var(--regla);box-shadow:var(--sombra);
+}
+.foto figcaption{
+  font-size:.72rem;font-weight:600;color:var(--tinta-2);
+  letter-spacing:.12em;text-transform:uppercase;margin-top:.6rem;
+}
 .enlace{
   font-weight:600;color:var(--tinta);text-decoration:underline;
   text-decoration-color:var(--rojo);text-decoration-thickness:2px;text-underline-offset:3px;
@@ -131,26 +140,45 @@ hr.doble{
   color:var(--tinta-2);margin:0;
 }
 
-/* ── Marca compacta al hacer scroll ── */
-#cima{
-  position:fixed;top:0;left:0;right:0;z-index:60;
-  background:rgba(251,247,240,.95);
-  border-bottom:1px solid var(--regla);
-  box-shadow:0 10px 26px -18px rgba(36,28,20,.3);
-  transform:translateY(-110%);
-  transition:transform .28s ease;
+/* ── Menú del sitio (fijo bajo la portada) ── */
+#menu{
+  position:sticky;top:0;z-index:60;
+  background:rgba(251,247,240,.96);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  border-top:1px solid var(--regla);border-bottom:1px solid var(--regla);
 }
-.js #cima.visible{transform:translateY(0)}
-.cima-int{
-  max-width:64rem;margin:0 auto;padding:.45rem 1.25rem;
-  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+.menu-int{
+  max-width:64rem;margin:0 auto;padding:0 1.25rem;
+  display:flex;align-items:center;gap:.75rem;min-height:3.1rem;
 }
-.cima-marca{
-  display:inline-flex;align-items:center;gap:.5rem;
-  font-family:var(--serif);font-weight:700;font-size:1.02rem;letter-spacing:.22em;
+.menu-marca{
+  display:none;align-items:center;gap:.5rem;flex:none;
+  font-family:var(--serif);font-weight:700;font-size:1rem;letter-spacing:.22em;
   text-decoration:none;
 }
-.cima-marca .ico{color:var(--rojo);width:1.5rem;height:1.05rem}
+.menu-marca .ico{color:var(--rojo);width:1.5rem;height:1.05rem}
+.menu-links{
+  display:flex;align-items:stretch;gap:.15rem;flex:1;min-width:0;
+  overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;
+}
+.menu-links::-webkit-scrollbar{display:none}
+.menu-links a{
+  display:inline-flex;align-items:center;flex:none;
+  padding:.9rem .55rem;text-decoration:none;
+  font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tinta-2);border-bottom:3px solid transparent;
+  transition:color .16s,border-color .16s;
+}
+.menu-links a:hover{color:var(--tinta)}
+.menu-links a[aria-current="true"]{color:var(--rojo);border-bottom-color:var(--rojo)}
+.menu-wa{flex:none}
+@media (max-width:719px){.menu-wa{display:none}}
+@media (min-width:900px){
+  .menu-links{justify-content:safe center}
+  .menu-links a{padding-inline:.7rem}
+}
+@media (min-width:1200px){.menu-marca{display:inline-flex}}
+main section[id],section[id]{scroll-margin-top:4rem}
 
 /* ── Hero ── */
 .hero{padding-block:3.2rem 3.6rem}
@@ -514,10 +542,19 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <div class="regla" aria-hidden="true"></div>
 </header>
 
-<nav id="cima" aria-label="Acceso rápido">
-  <div class="cima-int">
-    <a class="cima-marca" href="#inicio"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg>DEWAN</a>
-    <a class="btn btn-rojo btn-chico" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>WhatsApp</a>
+<nav id="menu" aria-label="Secciones de la página">
+  <div class="menu-int">
+    <a class="menu-marca" href="#inicio"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg>DEWAN</a>
+    <div class="menu-links">
+      <a href="#simulador">La demo</a>
+      <a href="#demo">La app</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#productos">Planes</a>
+      <a href="#preguntas">Preguntas</a>
+      <a href="#quienes-somos">Quiénes somos</a>
+      <a href="#contacto">Contacto</a>
+    </div>
+    <a class="btn btn-rojo btn-chico menu-wa" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>WhatsApp</a>
   </div>
 </nav>
 
@@ -546,6 +583,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <p class="kicker">Antes de nada · ¿le suena?</p>
       <h2>La hora pico no perdona.</h2>
       <p class="lead">La cocina a full, el teléfono sonando y el WhatsApp lleno de mensajes que alguien tiene que contestar. Ahí se pierden pedidos — y ni se nota, porque el cliente que se cansa de esperar no reclama: pide en otro lado.</p>
+      <figure class="foto">
+        <img src="/restaurantes/img/cocina-caos.jpg" alt="Cocinero en plena hora pico contestando el teléfono con papelitos de pedidos pegados por toda la cocina" width="1400" height="788" loading="lazy">
+        <figcaption>La hora pico, en cualquier cocina · dramatización</figcaption>
+      </figure>
       <div class="platos">
         <article class="plato">
           <p class="plato-tag">Su WhatsApp hoy</p>
@@ -713,6 +754,10 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
         </li>
       </ol>
       <p class="nota">Su cliente nunca dicta el pedido en texto libre: escoge en la app o toca botones. Por eso el pedido llega a cocina exacto, sin malentendidos ni idas y vueltas por el chat.</p>
+      <figure class="foto">
+        <img src="/restaurantes/img/cocina-orden.jpg" alt="Cocinero concentrado emplatando mientras la impresora térmica saca la comanda sola" width="1400" height="788" loading="lazy">
+        <figcaption>La comanda sale sola y usted solo cocina · dramatización</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -773,7 +818,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <!-- 6 · LOS DOS PRODUCTOS -->
   <section id="productos">
     <div class="cont">
-      <p class="kicker">Nº 5 · La carta de la casa</p>
+      <p class="kicker">Nº 5 · Los planes</p>
       <h2>Un solo plato: El Sistema.</h2>
       <p class="lead">No vendemos piezas sueltas. El Sistema trae todo lo que vio arriba, junto y funcionando:</p>
       <ul class="plato-puntos" style="max-width:38rem;margin-bottom:2rem">
@@ -924,7 +969,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <!-- 10 · QUIÉNES SOMOS -->
   <section id="quienes-somos">
     <div class="cont cont-angosta">
-      <p class="kicker">Nº 10 · La casa</p>
+      <p class="kicker">Nº 10 · Quiénes somos</p>
       <h2>Primero fuimos el delivery. Después, el sistema.</h2>
       <p>DEWAN S.A.S. nació en Riobamba repartiendo pedidos con motos propias. El sistema que le ofrecemos no lo compramos hecho: lo construimos para operar nuestro propio despacho, y hoy lo instalamos en restaurantes.</p>
       <p>Le atiende <strong>David Esquivel</strong>: la misma persona que arma su app web, instala El Sistema por videollamada y capacita a su equipo.</p>
@@ -1253,14 +1298,28 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
     reveladas.forEach(function (s) { ioSec.observe(s); });
   }
 
-  /* Marca compacta cuando la portada sale de pantalla */
-  var cima = document.getElementById('cima');
-  var portada = document.querySelector('.portada');
-  if (cima && portada && 'IntersectionObserver' in window) {
-    var ioCima = new IntersectionObserver(function (entradas) {
-      cima.classList.toggle('visible', !entradas[0].isIntersecting);
-    }, { threshold: 0 });
-    ioCima.observe(portada);
+  /* Menú: subrayar la sección que se está leyendo */
+  var menuLinks = Array.prototype.slice.call(document.querySelectorAll('#menu .menu-links a[href^="#"]'));
+  if (menuLinks.length && 'IntersectionObserver' in window) {
+    var porSeccion = {};
+    menuLinks.forEach(function (a) { porSeccion[a.getAttribute('href').slice(1)] = a; });
+    var marcar = function (id) {
+      menuLinks.forEach(function (a) { a.removeAttribute('aria-current'); });
+      var a = porSeccion[id];
+      if (a) {
+        a.setAttribute('aria-current', 'true');
+        if (a.scrollIntoView) { a.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      }
+    };
+    var ioMenu = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (ent) {
+        if (ent.isIntersecting) { marcar(ent.target.id); }
+      });
+    }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
+    Object.keys(porSeccion).forEach(function (id) {
+      var sec = document.getElementById(id);
+      if (sec) { ioMenu.observe(sec); }
+    });
   }
 
   /* Barra fija: se guarda mientras el inicio está a la vista (sin JS queda siempre visible) */
