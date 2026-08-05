@@ -75,6 +75,21 @@ section{padding-block:3.4rem}
   font-size:.72rem;font-weight:600;color:var(--tinta-2);
   letter-spacing:.12em;text-transform:uppercase;margin-top:.6rem;
 }
+.rubros{
+  font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tinta-2);margin:0 0 1.4rem;max-width:44rem;
+}
+.sello-meta{
+  display:inline-flex;flex-direction:column;gap:.2rem;
+  border:2px solid var(--rojo-2);outline:1px solid var(--rojo-2);outline-offset:3px;
+  border-radius:3px;padding:.75rem 1.15rem;margin:.3rem 0 1.4rem;
+  color:var(--rojo-2);font-weight:700;font-size:.82rem;
+  letter-spacing:.15em;text-transform:uppercase;line-height:1.3;
+  transform:rotate(-1.4deg);
+}
+.sello-meta small{
+  font-weight:600;font-size:.6rem;letter-spacing:.13em;color:var(--tinta-2);
+}
 .enlace{
   font-weight:600;color:var(--tinta);text-decoration:underline;
   text-decoration-color:var(--rojo);text-decoration-thickness:2px;text-underline-offset:3px;
@@ -196,6 +211,21 @@ main section[id],section[id]{scroll-margin-top:4rem}
   font-size:.86rem;color:var(--tinta-2);max-width:34rem;margin:0;
 }
 .hero-sello .ico{color:var(--rojo);margin-top:.2rem;width:1.3rem;height:.95rem}
+.hero-cifras{
+  display:flex;flex-wrap:wrap;gap:.5rem 2rem;
+  margin:1.6rem 0 .35rem;padding:0;
+}
+.hero-cifras > span{display:flex;flex-direction:column;line-height:1.15}
+.hero-cifras .cuenta{display:inline}
+.hero-cifras strong{
+  font-family:var(--serif);font-weight:600;font-size:1.65rem;color:var(--rojo-2);
+  font-variant-numeric:tabular-nums lining-nums;
+}
+.hero-cifras small{
+  font-size:.68rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--tinta-2);
+}
+.hero-cifras-pie{font-size:.82rem;color:var(--tinta-2);margin:0 0 1.4rem}
 
 /* ── Entrada del hero (solo con JS) ── */
 @keyframes aparecer{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
@@ -567,6 +597,12 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <h1>El pedido le llega <em>hecho</em>.</h1>
       <p class="lead">El Sistema atiende el WhatsApp de su restaurante — <strong>en su mismo número de siempre, el que ya conocen sus clientes</strong>. Su cliente no dicta el pedido: lo arma en la app web de su local — con su marca, incluida — o tocando botones en el chat. El pago no se pierde en el chat: el comprobante de la transferencia le llega leído a su celular — monto y quién envía — para aprobarlo de un vistazo, o queda anotado el efectivo contra entrega. Y la orden suena en su cocina.</p>
       <p class="hero-clave"><strong>Sin comisión por pedido.</strong> Usted paga por el trabajo, no por sus ventas.</p>
+      <p class="hero-cifras" aria-label="Números medidos de Super Happy con El Sistema">
+        <span><strong><span class="cuenta" data-fin="3006">3.006</span></strong><small>pedidos atendidos</small></span>
+        <span><strong>$<span class="cuenta" data-fin="30223">30.223</span></strong><small>vendidos por el sistema</small></span>
+        <span><strong><span class="cuenta" data-fin="4">4</span></strong><small>meses medidos</small></span>
+      </p>
+      <p class="hero-cifras-pie">Los números de Super Happy, nuestro cliente en Riobamba — tomados de su registro de pedidos, no redondeados.</p>
       <div class="botonera">
         <a class="btn btn-rojo" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>Escríbanos por WhatsApp</a>
         <a class="btn btn-linea" href="#simulador">Viva la demostración ↓</a>
@@ -769,6 +805,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <p class="kicker">Antes de que pregunte · ¿y mi número?</p>
       <h2>Su WhatsApp, por el canal oficial.</h2>
       <p class="lead">Hay dos maneras de poner un sistema en WhatsApp. La casera: un programa que simula un celular — funciona hasta que WhatsApp lo detecta, y el número del local amanece bloqueado. Y la oficial: la <strong>API de WhatsApp Business de Meta</strong>, el canal construido para que las empresas atiendan a sus clientes. El Sistema corre por la oficial.</p>
+      <p class="sello-meta">Proveedor tecnológico de Meta<small>WhatsApp Business API · conexión oficial</small></p>
       <ul class="plato-puntos">
         <li><strong>Somos proveedor tecnológico de Meta.</strong> Conectamos su número por el canal oficial de WhatsApp Business — el mismo tipo de conexión con el que atienden bancos y aerolíneas.</li>
         <li><strong>Su número no corre riesgo.</strong> La conexión está autorizada por WhatsApp, no escondida de WhatsApp. Nada de celulares enchufados a programas raros.</li>
@@ -874,6 +911,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
           <p>El sistema completo atiende su WhatsApp: el bot toma el pedido, confirma los pagos y la cocina despacha. Sus números, tal cual:</p>
           <div class="cifras">
             <div class="menuline"><span class="concepto">Pedidos atendidos en 4 meses</span><span class="dots" aria-hidden="true"></span><span class="cifra"><span class="cuenta" data-fin="3006">3.006</span></span></div>
+            <div class="menuline"><span class="concepto">Venta gestionada por el sistema</span><span class="dots" aria-hidden="true"></span><span class="cifra">$<span class="cuenta" data-fin="30223">30.223</span></span></div>
             <div class="menuline"><span class="concepto">Promedio por día</span><span class="dots" aria-hidden="true"></span><span class="cifra"><span class="cuenta" data-fin="27">27</span></span></div>
             <div class="menuline"><span class="concepto">Pico, un solo domingo</span><span class="dots" aria-hidden="true"></span><span class="cifra"><span class="cuenta" data-fin="61">61</span></span></div>
             <div class="menuline"><span class="concepto">Pedidos a domicilio</span><span class="dots" aria-hidden="true"></span><span class="cifra"><span class="cuenta" data-fin="68,9">68,9</span>%</span></div>
@@ -898,6 +936,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <p class="kicker">Nº 7 · El portafolio</p>
       <h2><span class="cuenta" data-fin="16">16</span> apps web hechas, <span class="cuenta" data-fin="16">16</span> menús reales.</h2>
       <p class="lead">La app web es la cara visible de El Sistema: la que su cliente toca. Estas las diseñamos para locales de Riobamba, cada una con su menú real cargado, para que usted juzgue el terminado. No son clientes: son muestras de cómo entregamos. Ábralas — todas están en línea.</p>
+      <p class="rubros">Hamburguesas · Pizzerías · Pollerías y asaderos · Parrillas · Cevicherías · Comida típica · Cafeterías · Heladerías y postres</p>
       <div class="indice">
         <a href="https://dewansas.com/carta/index.html?r=srmoro&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Sr. Moro</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
         <a href="https://dewansas.com/carta/index.html?r=papazota&amp;live=1" target="_blank" rel="noopener"><span class="nombre">Papazota Cheese</span><span class="dots" aria-hidden="true"></span><span class="abrir">abrir ↗</span></a>
