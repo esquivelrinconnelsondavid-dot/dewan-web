@@ -5,12 +5,17 @@
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
-const CHANNEL_ID = 'pedidos-urgentes';
+// v2: Android CONGELA la config del canal al crearlo — si un empleado lo
+// silenció una vez desde Ajustes, quedaba mudo para siempre. Un id NUEVO llega
+// con config fresca (sonido + heads-up) a todos los teléfonos.
+const CHANNEL_ID = 'pedidos-urgentes-v2';
 let canalCreado = false;
 
 async function asegurarCanal() {
   if (!Capacitor.isNativePlatform() || canalCreado) return;
   try {
+    // Limpia el canal viejo para que no queden dos "Pedidos nuevos" en Ajustes.
+    try { await LocalNotifications.deleteChannel({ id: 'pedidos-urgentes' }); } catch (e) {}
     await LocalNotifications.createChannel({
       id: CHANNEL_ID,
       name: 'Pedidos nuevos',
@@ -129,7 +134,8 @@ async function notifNativa(pedidoId, idx, title, body) {
       }],
     });
     if (!notifIds.has(pedidoId)) notifIds.set(pedidoId, []);
-    notifIds.get(pedidoId).push(notifIdNum(pedidoId, idx));
+    const ids = notifIds.get(pedidoId);
+    if (!ids.includes(notifIdNum(pedidoId, idx))) ids.push(notifIdNum(pedidoId, idx));
   } catch (e) {
     console.warn('[notif native]', e);
   }
@@ -153,14 +159,20 @@ export function startAlertLoop(pedidoId, datosNotif = {}) {
   const title = datosNotif.title || `🔔 Nuevo pedido #${pedidoId}`;
   const body = datosNotif.body || 'Pedido entrante — abrir la app';
 
-  // Notificacion nativa UNA sola vez. La sirena Web Audio sigue cada 5s.
+  // Sirena Web Audio cada 5s + notificación nativa re-disparada cada 10s (mismo
+  // id → se reemplaza a sí misma y vuelve a sonar, sin apilar notificaciones).
+  // La sirena depende del volumen MULTIMEDIA (si está en 0 no se oye); la notif
+  // nativa suena por el canal de notificaciones → doble vía en cada tanda.
   playSirena().catch(() => {});
   vibrar();
   notifNativa(pedidoId, 0, title, body);
 
+  let tick = 0;
   const id = setInterval(() => {
     playSirena().catch(() => {});
     vibrar();
+    tick += 1;
+    if (tick % 2 === 0) notifNativa(pedidoId, 0, title, body);
   }, 5000);
   alertIntervals.set(pedidoId, id);
   // Tope de vida: si nunca llega el stop (ej. se perdió el UPDATE de aceptación por

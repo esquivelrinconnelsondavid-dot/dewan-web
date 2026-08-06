@@ -33,7 +33,10 @@ const ESTADOS_EN_PROCESO = [
 
 // Si un pedido pendiente tiene menos de esto, lo consideramos "fresco" y disparamos
 // alarma aunque venga de la carga inicial (caso: app cerrada cuando entró).
-const MS_FRESCO = 2 * 60 * 1000;
+// 10 min (antes 2): tras un bache de red >2min el pedido aparecía EN SILENCIO
+// por el poll de respaldo. Mientras siga sin aceptar debe sonar; a los 10 min
+// la operadora ya lo tiene y startAlertLoop tiene su propio tope de 10 min.
+const MS_FRESCO = 10 * 60 * 1000;
 
 function esPendienteFresco(p) {
   if (!p || p.estado_pedido !== 'pendiente_restaurante') return false;
@@ -101,6 +104,11 @@ export function usePedidosRestaurante(restaurante) {
     // conocidos (no alarmar) pero los frescos (<2min) sí disparan alarma,
     // porque significa que entraron mientras la app estaba cerrada.
     (data || []).forEach((p) => {
+      // Si la alarma quedó sonando pero el pedido ya avanzó (lo aceptó la
+      // operadora, o el UPDATE de realtime se perdió por socket zombi), apagarla.
+      if (p.estado_pedido !== 'pendiente_restaurante' || p.restaurante_aceptado) {
+        stopAlertLoop(p.id);
+      }
       if (conocidosRef.current.has(p.id)) return;
       conocidosRef.current.add(p.id);
       if (esPendienteFresco(p)) {

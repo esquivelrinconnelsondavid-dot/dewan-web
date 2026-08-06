@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from './supabase';
+import { startAlertLoop } from './notifications';
 
 // El token FCM es del DISPOSITIVO y NO cambia al cerrar sesión. Por eso, cuando
 // en el mismo teléfono se cambia de restaurante (logout → login en otro local),
@@ -64,10 +65,25 @@ export async function registrarPushRestaurante(restaurante) {
     }
 
     // Canal de alta prioridad para que suene/vibre con la app cerrada (Android 8+).
+    // OJO: Android CONGELA la config de un canal al crearlo; si el usuario lo
+    // silenció desde Ajustes queda mudo para siempre. Por eso se crea también
+    // 'pedidos-v2' (config fresca): cuando el emisor FCM del servidor cambie su
+    // channel_id a pedidos-v2, los teléfonos con el canal viejo silenciado
+    // vuelven a sonar. Mantener 'pedidos' mientras el servidor lo siga usando.
     try {
       await PushNotifications.createChannel({
         id: 'pedidos',
         name: 'Pedidos',
+        description: 'Avisos de pedidos para el restaurante',
+        importance: 5, // MAX
+        sound: 'default',
+        vibration: true,
+        visibility: 1,
+        lights: true,
+      });
+      await PushNotifications.createChannel({
+        id: 'pedidos-v2',
+        name: 'Pedidos (alarma)',
         description: 'Avisos de pedidos para el restaurante',
         importance: 5, // MAX
         sound: 'default',
@@ -88,9 +104,20 @@ export async function registrarPushRestaurante(restaurante) {
       console.warn('[push] registrationError', err);
     });
 
-    // En foreground el realtime ya maneja la alarma; acá solo log para no duplicar.
+    // En foreground el realtime debería alarmar, pero si el WebSocket quedó
+    // zombi el push es la ÚNICA señal que llega al teléfono: sonar la misma
+    // sirena insistente (startAlertLoop deduplica si el realtime ya la prendió)
+    // y forzar reconexión + recarga para que la tarjeta aparezca.
     PushNotifications.addListener('pushNotificationReceived', (n) => {
-      console.log('[push] recibido en foreground', n?.data?.evento, n?.data?.pedido_id);
+      const evento = n?.data?.evento || '';
+      const pedidoId = Number(n?.data?.pedido_id) || 0;
+      console.log('[push] recibido en foreground', evento, pedidoId);
+      if (!pedidoId || (evento !== 'rest_nuevo' && evento !== 'rest_recordatorio')) return;
+      startAlertLoop(pedidoId, {
+        title: n?.title || `🔔 Nuevo pedido #${pedidoId}`,
+        body: n?.body || 'Pedido entrante — tocá para aceptarlo',
+      });
+      try { window.dispatchEvent(new CustomEvent('dewan:abrir-desde-push')); } catch (e) {}
     });
 
     // Al TOCAR la notificacion (cold start / background) el WebSocket de realtime
