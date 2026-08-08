@@ -6,14 +6,35 @@
     <meta name="theme-color" content="#0D0D0D" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="manifest" href="/restaurante/manifest.json" />
+    <link rel="manifest" href="manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+    <!-- Fuentes SIN bloquear el primer pintado: media="print" hace que el navegador
+         no espere a fonts.googleapis.com para pintar (con red mala eso dejaba la
+         pantalla en negro un buen rato); al cargar, onload la activa. -->
+    <link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <title>DEWAN Restaurante</title>
   </head>
-  <body class="bg-fondo text-white">
-    <div id="root"></div>
+  <body class="bg-fondo text-white" style="background:#0D0D0D">
+    <!-- Contenido de emergencia: se ve MIENTRAS carga el JS y, si el JS no llega a
+         arrancar (bundle roto, red muerta, WebView enfermo), se queda visible con un
+         botón para reintentar. React lo reemplaza al montar. NUNCA más una pantalla
+         negra muda sin pistas. -->
+    <div id="root">
+      <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#0D0D0D;color:#fff;font-family:system-ui,sans-serif;text-align:center;padding:24px">
+        <div style="font-size:30px;font-weight:900;letter-spacing:1px;color:#0BFE9F">DEWAN</div>
+        <div id="dewan-arranque-msg" style="font-size:14px;color:#9ca3af">Cargando el panel…</div>
+        <button onclick="location.reload()" style="margin-top:14px;background:#0BFE9F;color:#000;font-weight:800;border:0;border-radius:12px;padding:14px 26px;font-size:15px">↻ Reintentar</button>
+        <div style="font-size:11px;color:#6b7280;max-width:280px;line-height:1.5">Si esta pantalla no avanza, toca <b>Reintentar</b>. Si sigue igual, cierra la app por completo y vuélvela a abrir.</div>
+      </div>
+    </div>
+    <script>
+      // Si a los 8s React no reemplazó esto, el arranque está fallando: decirlo.
+      setTimeout(function () {
+        var m = document.getElementById('dewan-arranque-msg');
+        if (m) m.textContent = 'La app no pudo arrancar. Toca Reintentar.';
+      }, 8000);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

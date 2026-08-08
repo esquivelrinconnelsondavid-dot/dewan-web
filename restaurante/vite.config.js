@@ -13,13 +13,17 @@ const isHpWeb = process.env.HP_WEB_BUILD === 'true';
 
 export default defineConfig({
   plugins: [react()],
-  base: isNativeBuild
-    ? './'
-    : isHpWeb
+  // ⚠️ El default (dist/) es base RELATIVA './'. dist/ solo lo consume la app
+  // NATIVA (Capacitor webDir) y Electron: con base absoluta '/restaurante/' el
+  // APK carga index.html pero jamás encuentra el JS → PANTALLA NEGRA en cada
+  // apertura (pasó con los AAB del 5-ago y 8-ago-2026: un `npm run build` a
+  // secas antes de `cap sync`). Las webs hosteadas usan sus flags (build:web /
+  // HP) con su base absoluta propia.
+  base: isHpWeb
     ? '/restaurante-hp/web/'
     : isWebHost
     ? '/restaurante/web/'
-    : '/restaurante/',
+    : './',
   build: {
     outDir: isHpWeb ? '../restaurante-hp/web' : isWebHost ? 'web' : 'dist',
     emptyOutDir: true,
