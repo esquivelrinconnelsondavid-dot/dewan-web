@@ -54,7 +54,7 @@ function Panel({ admin, onLogout }) {
     <div className="h-full flex flex-col">
       <Header admin={admin} onLogout={onLogout} alertas={data.colgados.length + data.rechazados.length} />
       <TabsBar tab={tab} setTab={setTab} alertasRest={data.colgados.length} rol={rol} />
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto lista-scroll">
         {tab === 'pedidos' && <PedidosTab data={data} />}
         {esAdmin && tab === 'dashboard' && <DashboardTab data={data} />}
         {esAdmin && tab === 'restaurantes' && <RestaurantesTab data={data} />}

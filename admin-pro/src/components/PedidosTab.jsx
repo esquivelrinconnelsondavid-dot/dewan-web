@@ -28,17 +28,16 @@ export default function PedidosTab({ data }) {
     return m;
   }, [restaurantes]);
 
-  let lista = pedidos;
-  if (filtro === 'activos') {
-    lista = pedidos.filter((p) => ESTADOS_ACTIVOS.has(p.estado_pedido));
-  } else if (filtro === 'alerta') {
-    const ids = new Set([...colgados, ...rechazados].map((p) => p.id));
-    lista = pedidos.filter((p) => ids.has(p.id));
-  } else if (filtro === 'entregado') {
-    lista = pedidos.filter((p) => p.estado_pedido === 'entregado');
-  } else if (filtro !== 'todos') {
-    lista = pedidos.filter((p) => p.intencion === filtro);
-  }
+  const lista = useMemo(() => {
+    if (filtro === 'activos') return pedidos.filter((p) => ESTADOS_ACTIVOS.has(p.estado_pedido));
+    if (filtro === 'alerta') {
+      const ids = new Set([...colgados, ...rechazados].map((p) => p.id));
+      return pedidos.filter((p) => ids.has(p.id));
+    }
+    if (filtro === 'entregado') return pedidos.filter((p) => p.estado_pedido === 'entregado');
+    if (filtro !== 'todos') return pedidos.filter((p) => p.intencion === filtro);
+    return pedidos;
+  }, [filtro, pedidos, colgados, rechazados]);
 
   return (
     <div className="p-3 space-y-3">

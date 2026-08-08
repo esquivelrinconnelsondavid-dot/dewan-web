@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { memo, useState, useRef, useEffect, useMemo } from 'react';
 import { supabase, MIN_NO_ACEPTA } from '../lib/supabase';
 import { fmtHora, hace, money, minutosDesde } from '../lib/time';
 import { useTimer, useTimerSubir } from '../hooks/useTimer';
@@ -60,6 +60,11 @@ const ESTADO_BORDE = {
 // expirar (cliente y cron server-side) se despacha a la app de motos.
 const LEAD_LANZAMIENTO_MIN = 10;
 
+// Teléfono del local cacheado a nivel de módulo (vive lo que vive la app).
+// Evita que N tarjetas del mismo restaurante disparen N consultas idénticas.
+const telCache = new Map();      // restaurante_id -> telefono | null
+const telPendientes = new Map(); // restaurante_id -> Promise en vuelo
+
 // Botones GRANDES y con color según lo que hacen (pedido de David 16-jul: la app
 // se veía genérica y las operadoras no encontraban las acciones):
 // verde = tiempo de cocina · azul = asignar moto a dedo · violeta = ofertar a todos
@@ -84,16 +89,21 @@ function Boton({ children, onClick, color = 'dewan', disabled, full, grande }) {
   );
 }
 
-export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
+function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   const [cargando, setCargando] = useState(false);
   const [modalAsignar, setModalAsignar] = useState(false);
   // Pedidos que NO llegan por WhatsApp (los de la app y la web) dejaban a la operadora
   // sin el texto que antes reenviaba al local. Aquí se arma ese texto y se copia.
   const [copiado, setCopiado] = useState(false);
-  const [telLocal, setTelLocal] = useState(null);
+  const [telLocal, setTelLocal] = useState(() => telCache.get(p.restaurante_id) ?? null);
   const lanzadoRef = useRef(false);
-  const { expirado } = useTimer(p.timer_lanzamiento);
-  const tiempoEspera = useTimerSubir(p.fecha_creacion);
+  // Los relojes de 1s SOLO se enganchan en las tarjetas que muestran un contador:
+  // 'preparando' (cuenta para lanzar) y 'confirmado sin moto' (cuánto lleva ofertada).
+  // El resto no se re-renderiza cada segundo → la lista deja de trabarse al hacer scroll.
+  const esPreparando = p.estado_pedido === 'preparando';
+  const esperandoMoto = p.estado_pedido === 'confirmado' && !p.motorizado_id;
+  const { expirado } = useTimer(p.timer_lanzamiento, esPreparando);
+  const tiempoEspera = useTimerSubir(p.fecha_creacion, esperandoMoto);
   const { sucursales, sucursalSeleccionada, setSucursalSeleccionada, requiereSucursal } = useSucursales(p);
 
   const esNoAliado = p.intencion === 'pedido_comida' && !p.restaurante_id;
@@ -106,7 +116,7 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   // Antes el pedido llegaba por WhatsApp y la operadora reenviaba ese mismo mensaje.
   // Los pedidos de la app/web entran directo a la base: sin esto, hay que transcribirlo
   // a mano. El texto dice lo que el local necesita: qué cocinar y cuánto va a cobrar.
-  const textoParaLocal = [
+  const textoParaLocal = useMemo(() => [
     `🔔 PEDIDO DEWAN #${p.id}`,
     p.restaurante ? `🏪 ${p.restaurante}` : '',
     '',
@@ -117,7 +127,7 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
       : '',
     '🛵 Lo retira nuestro motorizado',
     '⏱️ ¿En cuántos minutos está listo?',
-  ].filter((l) => l !== '').join('\n');
+  ].filter((l) => l !== '').join('\n'), [p.id, p.restaurante, p.detalle_pedido, p.precio_base_productos]);
 
   const copiarPedido = async () => {
     try {
@@ -141,17 +151,36 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
     ? `https://wa.me/${String(telLocal).replace(/\D/g, '').replace(/^0/, '593')}?text=${encodeURIComponent(textoParaLocal)}`
     : null;
 
-  // Teléfono del local, solo para los pedidos que la operadora tiene que encargar
+  // Teléfono del local, solo para los pedidos que la operadora tiene que encargar.
+  // Cacheado por restaurante: antes cada tarjeta disparaba SU consulta (10 pedidos
+  // del mismo local = 10 consultas) y ese chorro de fetches trababa la app.
   useEffect(() => {
-    if (!gestionadoOperadora || !p.restaurante_id) return;
+    if (!gestionadoOperadora || !p.restaurante_id) return undefined;
+    if (telCache.has(p.restaurante_id)) {
+      setTelLocal(telCache.get(p.restaurante_id));
+      return undefined;
+    }
     let vivo = true;
-    supabase
-      .from('restaurantes')
-      .select('telefono')
-      .eq('id', p.restaurante_id)
-      .maybeSingle()
-      .then(({ data }) => { if (vivo) setTelLocal(data?.telefono || null); })
-      .catch(() => {});
+    let pendiente = telPendientes.get(p.restaurante_id);
+    if (!pendiente) {
+      pendiente = supabase
+        .from('restaurantes')
+        .select('telefono')
+        .eq('id', p.restaurante_id)
+        .maybeSingle()
+        .then(({ data }) => {
+          const tel = data?.telefono || null;
+          telCache.set(p.restaurante_id, tel);
+          telPendientes.delete(p.restaurante_id);
+          return tel;
+        })
+        .catch(() => {
+          telPendientes.delete(p.restaurante_id);
+          return null;
+        });
+      telPendientes.set(p.restaurante_id, pendiente);
+    }
+    pendiente.then((tel) => { if (vivo) setTelLocal(tel); });
     return () => { vivo = false; };
   }, [p.restaurante_id, gestionadoOperadora]);
   const colgado =
@@ -363,7 +392,12 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   const silenciar = () => stopAlertLoop(p.id);
 
   return (
-    <div className={`bg-tarjeta border border-l-4 ${borderColor} ${rechazado || colgado ? 'border-l-alerta' : ESTADO_BORDE[p.estado_pedido] || 'border-l-borde'} ${bgExtra} ${cargando ? 'opacity-60 pointer-events-none' : ''} rounded-xl p-3 space-y-2`}>
+    <div
+      // `tarjeta-lista` hace que el navegador se salte layout/pintado de las tarjetas
+      // fuera de pantalla → con listas largas el scroll deja de trabarse. Se quita
+      // mientras el modal está abierto porque esa contención rompe el position:fixed.
+      className={`${modalAsignar ? '' : 'tarjeta-lista '}bg-tarjeta border border-l-4 ${borderColor} ${rechazado || colgado ? 'border-l-alerta' : ESTADO_BORDE[p.estado_pedido] || 'border-l-borde'} ${bgExtra} ${cargando ? 'opacity-60 pointer-events-none' : ''} rounded-xl p-3 space-y-2`}
+    >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-lg">{ICONO_INTENCION[p.intencion] || '📋'}</span>
@@ -596,3 +630,9 @@ export default function PedidoCard({ p, tipoAcuerdo, motorizados }) {
     </div>
   );
 }
+
+// Memo: el poll de respaldo recarga los pedidos cada 10s y las motos cada 30s.
+// Sin esto, cada recarga volvía a renderizar TODAS las tarjetas aunque no hubiera
+// cambiado nada. useAdminData ahora conserva la identidad de las filas que no
+// cambiaron, así que esta comparación por referencia basta y es exacta.
+export default memo(PedidoCard);

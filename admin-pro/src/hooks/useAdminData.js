@@ -7,6 +7,48 @@ import { notify, startAlertLoop, stopAlertLoop, stopAllAlerts, resumeAudio } fro
 
 const TERMINALES = new Set(['entregado', 'cancelado']);
 
+// ─── Identidad estable de las filas ──────────────────────────────────────────
+// El poll trae objetos NUEVOS cada 10s aunque los datos sean idénticos. Eso
+// cambiaba la referencia de cada pedido y React re-renderizaba la lista entera
+// (con 20-40 tarjetas, cada 10s, encima de los relojes) → app trabada.
+// Acá reusamos el objeto anterior cuando la fila no cambió, y hasta el ARRAY
+// anterior si no cambió ninguna: el render se salta por completo.
+function mismoValor(a, b) {
+  if (a === b) return true;
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; }
+  }
+  return false;
+}
+
+function mismaFila(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const ka = Object.keys(a);
+  if (ka.length !== Object.keys(b).length) return false;
+  for (const k of ka) {
+    if (!mismoValor(a[k], b[k])) return false;
+  }
+  return true;
+}
+
+// Devuelve `frescos` reusando las referencias de `prev` que no cambiaron.
+// Si NADA cambió devuelve `prev` tal cual (misma referencia de array).
+function estabilizar(prev, frescos, idKey = 'id') {
+  const previos = new Map((prev || []).map((r) => [r[idKey], r]));
+  let iguales = frescos.length === (prev || []).length;
+  const salida = frescos.map((r, i) => {
+    const viejo = previos.get(r[idKey]);
+    if (viejo && mismaFila(viejo, r)) {
+      if (prev[i] !== viejo) iguales = false; // mismo dato pero cambió de posición
+      return viejo;
+    }
+    iguales = false;
+    return r;
+  });
+  return iguales ? prev : salida;
+}
+
 // Merge en vez de reemplazo total al recargar (poll). Evita dos problemas:
 // 1) Que un snapshot viejo del poll pise un pedido recién actualizado por realtime.
 // 2) Que un pedido en curso creado antes de medianoche EC "desaparezca" al cruzar las 00:00
@@ -17,7 +59,7 @@ function fusionarPedidos(prev, frescos) {
   const extra = prev.filter((p) => !idsFrescos.has(p.id) && !TERMINALES.has(p.estado_pedido));
   const todos = [...frescos, ...extra];
   todos.sort((a, b) => new Date(b.fecha_creacion).getTime() - new Date(a.fecha_creacion).getTime());
-  return todos;
+  return estabilizar(prev, todos);
 }
 
 export function useAdminData() {
@@ -71,7 +113,7 @@ export function useAdminData() {
       .select('*')
       .order('nombre');
     if (error) { console.error('[restaurantes]', error); return; }
-    setRestaurantes(data || []);
+    setRestaurantes((prev) => estabilizar(prev, data || []));
   }, []);
 
   const cargarMotorizados = useCallback(async () => {
@@ -80,7 +122,7 @@ export function useAdminData() {
       .select('*')
       .order('nombre');
     if (error) { console.error('[motorizados]', error); return; }
-    setMotorizados(data || []);
+    setMotorizados((prev) => estabilizar(prev, data || []));
   }, []);
 
   const cargarTodo = useCallback(async () => {
