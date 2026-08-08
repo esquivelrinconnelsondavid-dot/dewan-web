@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
 import { PEDIDOS_TABLE } from '../lib/config';
-import { marcarDatosOk } from '../lib/conexion';
+import { marcarDatosOk, tiempoSinDatos } from '../lib/conexion';
 import { startAlertLoop, stopAlertLoop, showPushNotification } from '../lib/notifications';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
 
@@ -239,11 +239,28 @@ export function usePedidosRestaurante(restaurante) {
         return;
       }
       if (document.visibilityState !== 'visible') return;
-      // Si estuvo oculto mucho rato, Android pudo reciclar el WebView y dejar el
-      // frame negro/zombi: recarga dura para recuperar un render limpio.
+      // Si estuvo oculto mucho rato, primero intentamos la recuperación SUAVE
+      // (recrear el canal + recargar). Antes acá se hacía una recarga DURA
+      // siempre: como el local abre la app en cada pedido, eso significaba
+      // recargar la página varias veces por hora, y cada recarga es una ventana
+      // en la que el WebView puede quedarse en negro. Si este código corre es
+      // porque el JS está vivo (o sea, NO es el WebView zombi — de eso ya se
+      // encarga el watchdog nativo onRenderProcessGone/ping de MainActivity).
+      // La recarga dura queda solo como último recurso: si a los 8s siguen sin
+      // llegar datos frescos, ahí sí recargamos.
       if (ocultoDesde && Date.now() - ocultoDesde > 30000) {
         ocultoDesde = 0;
-        window.location.reload();
+        recrearYRecargar();
+        setTimeout(() => {
+          if (document.visibilityState !== 'visible') return;
+          if (tiempoSinDatos() <= 15000) return; // ya entraron datos: todo bien
+          let ult = 0;
+          try { ult = Number(localStorage.getItem('dewan_ultima_recarga_auto') || 0); } catch {}
+          if (Date.now() - ult < 90000) return;  // sin bucles de recarga
+          try { localStorage.setItem('dewan_ultima_recarga_auto', String(Date.now())); } catch {}
+          console.warn('[visibilidad] volvió sin datos frescos → recarga dura');
+          window.location.reload();
+        }, 8000);
         return;
       }
       ocultoDesde = 0;
