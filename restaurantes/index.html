@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>DEWAN — El Sistema de pedidos por WhatsApp para restaurantes · Ecuador</title>
-<meta name="description" content="El Sistema atiende el WhatsApp de su restaurante: el cliente pide desde su app web o con botones, paga por transferencia — el comprobante le llega leído a su celular — o en efectivo, y la orden suena en cocina. Sin comisión por pedido. DEWAN S.A.S., Riobamba.">
+<meta name="description" content="El Sistema atiende el WhatsApp de su restaurante en su mismo número: el cliente arma todo el pedido en una sola pantalla — platos, opciones y pago —, el comprobante le llega leído a su celular y la orden suena en cocina. Sin comisión por pedido. DEWAN S.A.S., Riobamba.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_EC">
 <meta property="og:site_name" content="DEWAN S.A.S.">
 <meta property="og:title" content="DEWAN — El pedido le llega hecho">
-<meta property="og:description" content="El Sistema atiende el WhatsApp de su restaurante: app web con su marca incluida, pedidos con botones, pago confirmado — transferencia o efectivo — y la orden sonando en cocina. Sin comisión por pedido. Riobamba, para todo el Ecuador.">
+<meta property="og:description" content="El Sistema atiende el WhatsApp de su restaurante: el pedido se arma en una sola pantalla dentro del chat, la app web va con su marca, el comprobante llega leído y la orden suena en cocina. Sin comisión por pedido. Riobamba, para todo el Ecuador.">
 <meta property="og:url" content="https://dewansas.com/restaurantes/">
 <meta name="theme-color" content="#FBF7F0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23DC2D22'/%3E%3Ccircle cx='16' cy='9.5' r='2.4' fill='%23FBF7F0'/%3E%3Cpath d='M4.5 22.4C5 15.9 10 11 16 11s11 4.9 11.5 11.4Z' fill='%23FBF7F0'/%3E%3Crect x='3.5' y='24.2' width='25' height='2.8' rx='1.4' fill='%23FBF7F0'/%3E%3C/svg%3E">
@@ -227,6 +227,110 @@ main section[id],section[id]{scroll-margin-top:4rem}
 }
 .hero-cifras-pie{font-size:.82rem;color:var(--tinta-2);margin:0 0 1.4rem}
 
+/* ── Hero: el producto a la vista (teléfono con el formulario real) ── */
+.hero-grid{display:grid;gap:3rem;align-items:center}
+@media (min-width:940px){.hero-grid{grid-template-columns:1.02fr .98fr;gap:2rem}}
+.hero-fono-col{position:relative;display:flex;flex-direction:column;align-items:center;padding-block:.4rem}
+.fono{
+  width:min(288px,82vw);flex:none;position:relative;z-index:1;
+  background:var(--tinta);border-radius:34px;padding:9px;
+  box-shadow:0 2px 4px rgba(36,28,20,.08),0 18px 36px -14px rgba(36,28,20,.3),0 44px 80px -36px rgba(36,28,20,.45);
+}
+.fono-pantalla{
+  position:relative;aspect-ratio:9/18.6;border-radius:26px;overflow:hidden;
+  background:#EBE3D6;display:flex;flex-direction:column;
+}
+.fono-cam{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:5;
+  width:9px;height:9px;border-radius:50%;background:rgba(0,0,0,.92);
+}
+.fono-cab{
+  display:flex;align-items:center;gap:.5rem;flex:none;
+  background:#fff;padding:.95rem .7rem .5rem;border-bottom:1px solid var(--regla);
+}
+.fono-quien{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.fono-quien strong{font-size:.78rem}
+.fono-quien small{font-size:.6rem;color:var(--tinta-2)}
+.fono-cab .sim-avatar{width:1.7rem;height:1.7rem}
+.fono-cab .sim-avatar .ico{width:1rem;height:.72rem}
+.fono-chat{flex:none;padding:.55rem .55rem .4rem;display:flex;flex-direction:column;gap:.4rem}
+.fono .bur{font-size:.7rem;max-width:88%;padding:.38rem .5rem .22rem;line-height:1.4}
+.fono .bur-meta{font-size:.54rem}
+.fono .bur-botones{margin:.35rem -.1rem .1rem;padding-top:.32rem;gap:.22rem}
+.fono .bur-boton{font-size:.68rem;padding:.26rem .4rem}
+/* La hoja del formulario (Flow de WhatsApp) */
+.flow-hoja{
+  margin-top:auto;flex:none;background:#fff;border-radius:16px 16px 0 0;
+  box-shadow:0 -10px 28px -12px rgba(36,28,20,.4);
+  padding:.6rem .7rem .7rem;display:flex;flex-direction:column;gap:.42rem;
+}
+.flow-cab{
+  display:flex;align-items:center;justify-content:space-between;margin:0;
+  font-weight:700;font-size:.7rem;letter-spacing:.02em;
+}
+.flow-cab .flow-x{color:var(--tinta-2);font-weight:600}
+.flow-campo{display:flex;flex-direction:column;gap:.18rem;margin:0}
+.flow-campo small{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-2)}
+.flow-select{
+  display:flex;align-items:center;justify-content:space-between;gap:.4rem;
+  border:1px solid var(--regla);border-radius:8px;padding:.34rem .5rem;
+  font-size:.7rem;font-weight:600;background:#FDFCF9;
+}
+.flow-select b{font-weight:600;color:var(--tinta-2)}
+.flow-fila2{display:grid;grid-template-columns:1fr 1.15fr;gap:.45rem}
+.flow-ops{display:flex;flex-wrap:wrap;gap:.28rem}
+.flow-op{
+  display:inline-flex;align-items:center;gap:.25rem;
+  font-size:.62rem;font-weight:600;color:var(--tinta-2);
+  border:1px solid var(--regla);border-radius:999px;padding:.2rem .48rem;background:#FDFCF9;
+}
+.flow-op.on{border-color:#0A8F5C;color:#0A6C49;background:rgba(10,143,92,.09);font-weight:700}
+.flow-enviar{
+  margin:.25rem 0 0;background:#0A8F5C;color:#fff;text-align:center;
+  border-radius:999px;padding:.48rem;font-weight:700;font-size:.74rem;letter-spacing:.01em;
+  box-shadow:0 4px 10px -4px rgba(10,143,92,.55);
+}
+/* Tarjetas flotantes de prueba alrededor del teléfono */
+.flota{
+  position:absolute;z-index:2;margin:0;
+  background:var(--blanco);border:1px solid var(--regla);border-radius:10px;
+  box-shadow:var(--sombra-alta);padding:.5rem .7rem;
+  font-size:.7rem;line-height:1.35;max-width:11.5rem;
+}
+.flota strong{display:flex;align-items:center;gap:.35rem;font-size:.74rem;letter-spacing:.01em}
+.flota small{display:block;color:var(--tinta-2);font-size:.65rem;margin-top:.1rem}
+.flota-1{top:9%;left:0;transform:rotate(-2deg)}
+.flota-2{top:41%;right:0;transform:rotate(1.6deg)}
+.flota-3{bottom:7%;left:.4rem;transform:rotate(-1.2deg)}
+.flota .vivo-punto{display:inline-block;margin-right:.1rem}
+.fono-pie{font-size:.74rem;color:var(--tinta-2);margin:.9rem 0 0;text-align:center;max-width:19rem}
+@media (max-width:939px){
+  .flota{display:none}
+  .fono{width:min(268px,80vw)}
+}
+
+/* ── Bento: el sistema de un vistazo ── */
+.bento{display:grid;gap:.8rem;margin:1.9rem 0 2.3rem;padding:0;list-style:none;max-width:none}
+@media (min-width:620px){.bento{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:980px){.bento{grid-template-columns:repeat(4,1fr)}}
+.bento li{
+  background:var(--blanco);border:1px solid var(--regla);border-radius:6px;
+  padding:1.05rem 1rem 1.15rem;box-shadow:var(--sombra);
+  display:flex;flex-direction:column;gap:.5rem;
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+}
+.bento li:hover{transform:translateY(-3px);box-shadow:var(--sombra-alta);border-color:var(--tinta)}
+.bento .b-ico{width:1.75rem;height:1.75rem;color:var(--rojo);flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.bento h3{font-size:1.05rem;line-height:1.18;margin:0}
+.bento p{margin:0;font-size:.84rem;color:var(--tinta-2);line-height:1.5}
+
+/* ── Ahorro del plan anual ── */
+.ahorro{
+  font-size:.85rem;background:var(--papel-2);border:1px dashed var(--regla);
+  border-radius:4px;padding:.55rem .75rem;margin:.2rem 0 1rem;
+}
+.ahorro strong{color:var(--rojo-2)}
+
 /* ── Entrada del hero (solo con JS) ── */
 @keyframes aparecer{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .js .portada-int{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) both}
@@ -236,6 +340,14 @@ main section[id],section[id]{scroll-margin-top:4rem}
 .js .hero .hero-clave{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) .19s both}
 .js .hero .botonera{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) .24s both}
 .js .hero .hero-sello{animation:aparecer .3s cubic-bezier(.2,.7,.3,1) .29s both}
+.js .hero .fono{animation:aparecer .5s cubic-bezier(.2,.7,.3,1) .18s both}
+@keyframes ap-f1{from{opacity:0;transform:rotate(-2deg) translateY(12px)}to{opacity:1;transform:rotate(-2deg)}}
+@keyframes ap-f2{from{opacity:0;transform:rotate(1.6deg) translateY(12px)}to{opacity:1;transform:rotate(1.6deg)}}
+@keyframes ap-f3{from{opacity:0;transform:rotate(-1.2deg) translateY(12px)}to{opacity:1;transform:rotate(-1.2deg)}}
+.js .hero .flota-1{animation:ap-f1 .4s cubic-bezier(.2,.7,.3,1) .55s both}
+.js .hero .flota-2{animation:ap-f2 .4s cubic-bezier(.2,.7,.3,1) .72s both}
+.js .hero .flota-3{animation:ap-f3 .4s cubic-bezier(.2,.7,.3,1) .89s both}
+.js .hero .fono-pie{animation:aparecer .4s cubic-bezier(.2,.7,.3,1) .5s both}
 
 /* ── Apariciones por sección (solo con JS) ── */
 .js section.rv{
@@ -559,6 +671,14 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <path d="M12 2.6C6.9 2.6 2.8 6.7 2.8 11.8c0 1.7.5 3.4 1.3 4.8L2.7 21.4l4.9-1.3c1.4.8 2.9 1.2 4.4 1.2 5.1 0 9.2-4.1 9.2-9.2S17.1 2.6 12 2.6Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
       <path d="M9.1 7.7c.2-.4.4-.5.6-.5h.6c.2 0 .4 0 .6.4l.8 1.8c.1.2.1.5-.1.7l-.5.6c-.1.2-.2.4 0 .7.5.9 1.4 1.7 2.4 2.2.3.1.5.1.7-.1l.5-.6c.2-.2.4-.3.7-.2l1.8.8c.3.1.4.3.4.6-.1.9-.9 1.7-1.8 1.8-1.4.1-3.3-.7-4.8-2.1-1.5-1.4-2.3-3.2-2.2-4.6 0-.6.2-1.1.3-1.5Z" stroke="none"/>
     </symbol>
+    <symbol id="b-form" viewBox="0 0 24 24"><rect x="4" y="2.8" width="16" height="18.4" rx="2.6"/><path d="M8 7.6h8M8 11.4h4.5"/><path d="M8.2 16.4l2 2 3.6-3.8"/></symbol>
+    <symbol id="b-brush" viewBox="0 0 24 24"><path d="M13.6 3.2 20.8 10.4 11.9 19.3c-1.3 1.3-3.3 1.4-4.7.2l-3.4-3 9.8-13.3Z"/><path d="M6.5 13.5c2.2 0 3.9 1.8 3.9 4v2.6"/></symbol>
+    <symbol id="b-num" viewBox="0 0 24 24"><rect x="6.4" y="2.6" width="11.2" height="18.8" rx="2.8"/><path d="M10.2 5.4h3.6"/><path d="M9.3 13.2l1.9 1.9 3.6-3.8"/></symbol>
+    <symbol id="b-shield" viewBox="0 0 24 24"><path d="M12 2.8 20 5.7v6.1c0 4.6-3.2 7.8-8 9.4-4.8-1.6-8-4.8-8-9.4V5.7Z"/><path d="M8.6 11.8l2.3 2.3 4.4-4.6"/></symbol>
+    <symbol id="b-doc" viewBox="0 0 24 24"><path d="M6 2.6h8.1l4 4.2V21.4H6Z"/><path d="M14 2.8V7h4"/><path d="M9 12.3h6M9 15.8h3.6"/></symbol>
+    <symbol id="b-pin" viewBox="0 0 24 24"><path d="M12 2.6c-3.8 0-6.9 3-6.9 6.9 0 5.1 6.9 12 6.9 12s6.9-6.9 6.9-12c0-3.8-3.1-6.9-6.9-6.9Z"/><circle cx="12" cy="9.4" r="2.4"/></symbol>
+    <symbol id="b-bell" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6c0 4.6-1.6 5.9-2.4 6.7h16.8C19.6 14.9 18 13.6 18 9a6 6 0 0 0-6-6Z"/><path d="M9.8 19.4a2.3 2.3 0 0 0 4.4 0"/></symbol>
+    <symbol id="b-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12.6" r="8.2"/><path d="M12 8v4.9l3.3 2M9.5 1.8h5"/></symbol>
   </defs>
 </svg>
 
@@ -592,22 +712,57 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <!-- 1 · HERO -->
   <section class="hero" id="inicio">
-    <div class="cont">
-      <p class="kicker">Para dueños de restaurante</p>
-      <h1>El pedido le llega <em>hecho</em>.</h1>
-      <p class="lead">El Sistema atiende el WhatsApp de su restaurante — <strong>en su mismo número de siempre, el que ya conocen sus clientes</strong>. Su cliente no dicta el pedido: lo arma en la app web de su local — con su marca, incluida — o tocando botones en el chat. El pago no se pierde en el chat: el comprobante de la transferencia le llega leído a su celular — monto y quién envía — para aprobarlo de un vistazo, o queda anotado el efectivo contra entrega. Y la orden suena en su cocina.</p>
-      <p class="hero-clave"><strong>Sin comisión por pedido.</strong> Usted paga por el trabajo, no por sus ventas.</p>
-      <p class="hero-cifras" aria-label="Números medidos de Super Happy con El Sistema">
-        <span><strong><span class="cuenta" data-fin="3006">3.006</span></strong><small>pedidos atendidos</small></span>
-        <span><strong>$<span class="cuenta" data-fin="30223">30.223</span></strong><small>vendidos por el sistema</small></span>
-        <span><strong><span class="cuenta" data-fin="4">4</span></strong><small>meses medidos</small></span>
-      </p>
-      <p class="hero-cifras-pie">Los números de Super Happy, nuestro cliente en Riobamba — tomados de su registro de pedidos, no redondeados.</p>
-      <div class="botonera">
-        <a class="btn btn-rojo" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>Escríbanos por WhatsApp</a>
-        <a class="btn btn-linea" href="#simulador">Viva la demostración ↓</a>
+    <div class="cont hero-grid">
+      <div class="hero-copy">
+        <p class="kicker">Para dueños de restaurante</p>
+        <h1>El pedido le llega <em>hecho</em>.</h1>
+        <p class="lead">El Sistema atiende el WhatsApp de su restaurante — <strong>en su mismo número de siempre</strong>. Su cliente arma todo el pedido en <strong>una sola pantalla</strong>: platos, cantidades, salsas y pago. A usted le llega exacto — con el comprobante leído y el envío calculado por GPS — y la orden suena en cocina.</p>
+        <p class="hero-clave"><strong>Sin comisión por pedido.</strong> Usted paga por el trabajo, no por sus ventas.</p>
+        <p class="hero-cifras" aria-label="Números medidos de Super Happy con El Sistema">
+          <span><strong><span class="cuenta" data-fin="3006">3.006</span></strong><small>pedidos atendidos</small></span>
+          <span><strong>$<span class="cuenta" data-fin="30223">30.223</span></strong><small>vendidos por el sistema</small></span>
+          <span><strong><span class="cuenta" data-fin="4">4</span></strong><small>meses medidos</small></span>
+        </p>
+        <p class="hero-cifras-pie">Los números de Super Happy, nuestro cliente en Riobamba — tomados de su registro de pedidos, no redondeados.</p>
+        <div class="botonera">
+          <a class="btn btn-rojo" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20para%20mi%20restaurante."><svg class="ico" aria-hidden="true"><use href="#wa"/></svg>Escríbanos por WhatsApp</a>
+          <a class="btn btn-linea" href="#simulador">Viva la demostración ↓</a>
+        </div>
+        <p class="hero-sello"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg><span>Somos una empresa de delivery de Riobamba. Con esta misma tecnología opera nuestro propio despacho, todos los días.</span></p>
       </div>
-      <p class="hero-sello"><svg class="ico" aria-hidden="true"><use href="#cloche"/></svg><span>Somos una empresa de delivery de Riobamba. Con esta misma tecnología opera nuestro propio despacho, todos los días.</span></p>
+      <div class="hero-fono-col">
+        <div class="fono" role="img" aria-label="El formulario de pedido dentro de WhatsApp: el cliente escoge platos, cantidades, término y salsas en una sola pantalla, y toca Enviar pedido">
+          <div class="fono-pantalla">
+            <span class="fono-cam" aria-hidden="true"></span>
+            <div class="fono-cab">
+              <span class="sim-avatar" aria-hidden="true"><svg class="ico"><use href="#cloche"/></svg></span>
+              <span class="fono-quien"><strong>Su Restaurante</strong><small>en línea</small></span>
+            </div>
+            <div class="fono-chat" aria-hidden="true">
+              <div class="bur bur-mio">Buenas 🙌 ¿me toma un pedido?<span class="bur-meta">19:02 <span class="check">✓✓</span></span></div>
+              <div class="bur bur-local">¡Al instante! Arme todo aquí 👇
+                <span class="bur-botones"><span class="bur-boton">⚡ Hacer mi pedido</span></span>
+                <span class="bur-meta">19:02</span></div>
+            </div>
+            <div class="flow-hoja" aria-hidden="true">
+              <p class="flow-cab"><span>Su pedido · Cherokee</span><span class="flow-x">✕</span></p>
+              <div class="flow-campo"><small>Plato 1</small><span class="flow-select">Cheese Burger — $3,50 <b>▾</b></span></div>
+              <div class="flow-fila2">
+                <div class="flow-campo"><small>Cantidad</small><span class="flow-select">2 <b>▾</b></span></div>
+                <div class="flow-campo"><small>Término</small><span class="flow-select">Jugosa <b>▾</b></span></div>
+              </div>
+              <div class="flow-campo"><small>Salsas · las que quiera</small>
+                <span class="flow-ops"><span class="flow-op on">✓ BBQ</span><span class="flow-op on">✓ Ají</span><span class="flow-op">Mayonesa</span><span class="flow-op">Mostaza</span></span>
+              </div>
+              <p class="flow-enviar">Enviar pedido</p>
+            </div>
+          </div>
+        </div>
+        <p class="flota flota-1"><strong>📍 Envío por GPS</strong><small>2,8 km por ruta · $1,60</small></p>
+        <p class="flota flota-2"><strong>✓ Comprobante leído</strong><small>$8,10 · le llega a su celular</small></p>
+        <p class="flota flota-3"><strong><span class="vivo-punto" aria-hidden="true"></span>🔔 Comanda #A-0429</strong><small>sonando en cocina</small></p>
+        <p class="fono-pie">El formulario oficial de WhatsApp, con el menú del local cargado · recreación fiel de la interfaz</p>
+      </div>
     </div>
   </section>
 
@@ -631,6 +786,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
             <li>Piden en audios y mensajes a medias, y alguien anota como entendió</li>
             <li>Los comprobantes de transferencia se revisan a ojo, uno por uno, en plena hora pico</li>
             <li>El envío se negocia en cada chat: "¿y cuánto me sale hasta acá?"</li>
+            <li>Dos personas contestan el mismo chat — y el cliente recibe dos respuestas distintas</li>
           </ul>
         </article>
         <article class="plato plato-casa">
@@ -640,6 +796,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
             <li>El pedido llega armado y exacto: platos, dirección y total, sin interpretar a nadie</li>
             <li>El comprobante le llega leído al celular — monto y remitente — listo para aprobarlo de un vistazo; el efectivo queda anotado y se cobra en la entrega</li>
             <li>El envío lo calcula el GPS con su tarifa: a la misma distancia, el mismo precio</li>
+            <li>¿Quiere contestar usted? Entre al chat: el sistema se hace a un lado y retoma solo</li>
           </ul>
           <a class="btn btn-rojo btn-ancho" href="#simulador">Véalo funcionando ↓</a>
         </article>
@@ -656,7 +813,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
         <p class="kicker">Nº 1 · La demostración</p>
         <h2>Pida usted. El sistema hace el resto.</h2>
         <p class="lead">Juegue el papel de su cliente: toque los botones del chat y mire cómo el pedido se arma, el envío se calcula, el comprobante se lee al instante y la orden entra a cocina.</p>
-        <p>Fíjese en el detalle que importa: <strong>su cliente nunca dicta el pedido en texto</strong>. Escoge en la carta y toca botones. Por eso a su cocina llega exacto — sin interpretar la letra de nadie.</p>
+        <p>Fíjese en el detalle que importa: <strong>su cliente nunca dicta el pedido en texto</strong>. Escoge en la carta y toca botones — o arma todo en el formulario de una sola pantalla, como el de la portada. Por eso a su cocina llega exacto — sin interpretar la letra de nadie.</p>
         <p class="nota">Es una demostración con guion — no el bot en vivo conectado — pero los precios y la tarifa de envío son los reales de Super Happy, nuestro cliente en Riobamba. Aquí el cliente paga por transferencia, que es el caso más difícil; si paga en efectivo, el pedido pasa a cocina igual y se cobra en la entrega.</p>
         <p class="sim-aviso-campana">Al final suena la campana de cocina. Puede apagarla con el botón del chat.</p>
       </div>
@@ -771,14 +928,14 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
           <span class="paso-num" aria-hidden="true">1.</span>
           <div>
             <h3>El cliente pide</h3>
-            <p>Escribe al WhatsApp de su local y el sistema le pasa la carta: abre su app web desde el link — o desde sus redes o un código QR en la mesa — y arma el pedido a su gusto. No descarga nada.</p>
+            <p>Escribe al WhatsApp de su local y el sistema le abre el pedido: un formulario de una sola pantalla dentro del mismo chat — platos, cantidades, opciones y pago — o su app web, desde el link, sus redes o un código QR en la mesa. No descarga nada.</p>
           </div>
         </li>
         <li>
           <span class="paso-num" aria-hidden="true">2.</span>
           <div>
             <h3>El sistema atiende y cobra</h3>
-            <p>Responde el WhatsApp de su local con botones y recibe el pedido ya armado. Si el cliente paga por transferencia, lee el comprobante — monto y quién envía — y se lo reenvía al instante a su celular para que usted lo apruebe de un vistazo; la comanda sale marcada para verificarlo. Si paga en efectivo, la orden pasa igual y se cobra en la entrega. Si es a domicilio, calcula el envío por GPS.</p>
+            <p>Responde el WhatsApp de su local al segundo y recibe el pedido ya armado. Si el cliente paga por transferencia, lee el comprobante — monto y quién envía — y se lo reenvía al instante a su celular para que usted lo apruebe de un vistazo; la comanda sale marcada para verificarlo. Si paga en efectivo, la orden pasa igual y se cobra en la entrega. Si es a domicilio, calcula el envío por GPS.</p>
           </div>
         </li>
         <li>
@@ -789,7 +946,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
           </div>
         </li>
       </ol>
-      <p class="nota">Su cliente nunca dicta el pedido en texto libre: escoge en la app o toca botones. Por eso el pedido llega a cocina exacto, sin malentendidos ni idas y vueltas por el chat.</p>
+      <p class="nota">Su cliente nunca dicta el pedido en texto libre: lo arma en el formulario o en la app. Por eso llega a cocina exacto, sin malentendidos ni idas y vueltas por el chat. Y si usted entra a responder un chat, el sistema se hace a un lado en esa conversación — y la retoma solo.</p>
       <figure class="foto">
         <img src="/restaurantes/img/cocina-orden.jpg" alt="Cocinero concentrado emplatando mientras la impresora térmica saca la comanda sola" width="1400" height="788" loading="lazy">
         <figcaption>La comanda sale sola y usted solo cocina · dramatización</figcaption>
@@ -858,21 +1015,22 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
       <p class="kicker">Nº 5 · Los planes</p>
       <h2>Un solo plato: El Sistema.</h2>
       <p class="lead">No vendemos piezas sueltas. El Sistema trae todo lo que vio arriba, junto y funcionando:</p>
-      <ul class="plato-puntos" style="max-width:38rem;margin-bottom:2rem">
-        <li>Su <strong>app web con su marca</strong> — logo, colores y menú completo; cambios ilimitados, los hacemos nosotros</li>
-        <li>El bot que <strong>atiende su WhatsApp con botones</strong> y recibe el pedido ya armado, sin que usted conteste</li>
-        <li><strong>En el número que su local ya tiene</strong> — el de sus volantes y su letrero; sus clientes no notan ningún cambio</li>
-        <li><strong>Conexión oficial de WhatsApp</strong> — somos proveedor tecnológico de Meta; su número protegido, sin riesgo de bloqueo</li>
-        <li><strong>Ningún pago se pierde en el chat</strong>: lee el comprobante de la transferencia y se lo manda digerido a su celular — monto y remitente — para que usted apruebe; el efectivo queda anotado para cobrarlo en la entrega</li>
-        <li><strong>Cálculo del envío por GPS</strong>, con la tarifa que usted defina</li>
-        <li>La orden <strong>suena en la app de cocina</strong>, en el equipo que ya tiene — sin comprar nada; impresora térmica opcional</li>
-        <li><strong>Instalado en 24 horas, por videollamada</strong>, con capacitación a su equipo</li>
+      <ul class="bento">
+        <li><svg class="b-ico" aria-hidden="true"><use href="#b-form"/></svg><h3>Pedido en una pantalla</h3><p>Su cliente arma platos, cantidades, opciones y pago en un solo formulario dentro del chat. Llega exacto.</p></li>
+        <li><svg class="b-ico" aria-hidden="true"><use href="#b-brush"/></svg><h3>Su app web, con su marca</h3><p>Logo, colores y menú completo. Los cambios, ilimitados — los hacemos nosotros.</p></li>
+        <li><svg class="b-ico" aria-hidden="true"><use href="#b-num"/></svg><h3>Su número de siempre</h3><p>El de sus volantes y su letrero. Usted sigue viendo todo y entra al chat cuando quiera.</p></li>
+        <li><svg class="b-ico" aria-hidden="true"><use href="#b-shield"/></svg><h3>Canal oficial de Meta</h3><p>Somos proveedor tecnológico de Meta. Su número protegido, sin riesgo de bloqueo.</p></li>
+        <li><svg class="b-ico" aria-hidden="true"><use href="#b-doc"/></svg><h3>Comprobante leído</h3><p>Monto y remitente a su celular, y queda pegado a su pedido. El efectivo, anotado para la entrega.</p></li>
+        <li><svg class="b-ico" aria-hidden="true"><use href="#b-pin"/></svg><h3>Envío por GPS</h3><p>Su tarifa, al metro, sobre la ruta real. El cliente ve el precio antes de confirmar.</p></li>
+        <li><svg class="b-ico" aria-hidden="true"><use href="#b-bell"/></svg><h3>Suena en cocina</h3><p>En el celular o la tablet que su local ya tiene. Impresora térmica opcional.</p></li>
+        <li><svg class="b-ico" aria-hidden="true"><use href="#b-reloj"/></svg><h3>Instalado en 24 horas</h3><p>Por videollamada, con su equipo capacitado. Y soporte directo con David.</p></li>
       </ul>
       <div class="platos">
         <article class="plato plato-casa">
           <p class="plato-tag plato-tag-rojo">La especialidad de la casa</p>
           <h3>Plan anual</h3>
           <p class="plato-desc">Paga 10 meses y usa 12. Y la instalación — que en el plan mensual cuesta $199 — va por cuenta de la casa.</p>
+          <p class="ahorro">Frente al mensual, el año le deja <strong>$357</strong> en el bolsillo en el primer tramo — y <strong>$477</strong> en el mayor.</p>
           <div class="menuline"><span class="concepto">Hasta 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$790<small>/año</small></span></div>
           <div class="menuline"><span class="concepto">Más de 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$1.390<small>/año</small></span></div>
           <div class="menuline"><span class="concepto">Instalación <small>· en 24 horas, por videollamada</small></span><span class="dots" aria-hidden="true"></span><span class="precio">Gratis</span></div>
@@ -961,42 +1119,20 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
 
   <hr class="doble">
 
-  <!-- 9 · PRECIOS CLAROS -->
-  <section id="tarifas">
-    <div class="cont cont-angosta">
-      <p class="kicker">Nº 8 · Los precios, claros</p>
-      <h2>Todo lo que cuesta, sin letra pequeña.</h2>
-      <div class="tarifa-grupo">
-        <h3>El Sistema · plan anual <small style="font-family:var(--sans);font-weight:600;font-size:.72rem;color:var(--rojo)">— paga 10 meses, usa 12</small></h3>
-        <div class="menuline"><span class="concepto">Hasta 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$790<small>/año</small></span></div>
-        <div class="menuline"><span class="concepto">Más de 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$1.390<small>/año</small></span></div>
-        <div class="menuline"><span class="concepto">Instalación <small>· en 24 horas, por videollamada</small></span><span class="dots" aria-hidden="true"></span><span class="precio">Gratis</span></div>
-      </div>
-      <div class="tarifa-grupo">
-        <h3>El Sistema · plan mensual</h3>
-        <div class="menuline"><span class="concepto">Hasta 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$79<small>/mes</small></span></div>
-        <div class="menuline"><span class="concepto">Más de 20 pedidos/día</span><span class="dots" aria-hidden="true"></span><span class="precio">$139<small>/mes</small></span></div>
-        <div class="menuline"><span class="concepto">Instalación <small>· en 24 horas, por videollamada</small></span><span class="dots" aria-hidden="true"></span><span class="precio">$199</span></div>
-      </div>
-      <p class="tarifa-pie">Todo incluido: app web con su marca, bot, lectura de comprobantes, envío por GPS, app de cocina y soporte. Sin comisión por pedido. Y con garantía de 15 días: si no le sirve, le devolvemos su dinero.</p>
-      <p class="nota">El tramo se mide con el promedio de pedidos por día del mes. Si su volumen crece, lo conversamos antes de cambiarle el plan — nunca un cobro sorpresa.</p>
-    </div>
-  </section>
-
-  <hr class="doble">
-
-  <!-- 9b · PREGUNTAS -->
+  <!-- 8 · PREGUNTAS -->
   <section id="preguntas">
     <div class="cont cont-angosta">
-      <p class="kicker">Nº 9 · Las preguntas de siempre</p>
+      <p class="kicker">Nº 8 · Las preguntas de siempre</p>
       <h2>Lo que todos preguntan antes de decidir.</h2>
       <div class="faq">
         <h3>¿Funciona en mi mismo número de WhatsApp?</h3>
         <p>Sí. Somos proveedor tecnológico de Meta y conectamos El Sistema al número que su local ya tiene — el de sus volantes, su letrero y sus clientes. No cambia de número, no imprime nada de nuevo, y sus clientes no notan la diferencia.</p>
+        <h3>¿Y las salsas, el término, el "sin cebolla"?</h3>
+        <p>El formulario pregunta las opciones de su menú — salsas, presas, términos, tamaños — y si el cliente pide dos, escoge la de cada una. Las indicaciones ("sin cebolla, bien cocido") tienen su propio campo. Todo llega escrito en la comanda, tal cual.</p>
         <h3>¿Cómo saben cuántos pedidos hago al día?</h3>
         <p>Por el promedio del mes, que usted mismo puede ver en su registro de pedidos. Si su volumen crece y le corresponde otro tramo, lo conversamos primero — nunca un cobro sorpresa. Y el plan mensual no tiene permanencia: puede salir cuando quiera.</p>
         <h3>¿Y si el cliente pide algo fuera de lo común?</h3>
-        <p>El chat sigue siendo suyo. Usted puede leerlo y responder en cualquier momento, como siempre — el sistema atiende, no le quita el teléfono. Si un cliente pide algo fuera del guion, usted lo ve y decide.</p>
+        <p>El chat sigue siendo suyo. Usted puede leerlo y responder en cualquier momento, como siempre — el sistema atiende, no le quita el teléfono. Y cuando usted responde en un chat, el sistema se hace a un lado en esa conversación y la retoma solo después. Si un cliente pide algo fuera del guion, usted lo ve y decide.</p>
         <h3>¿Y si algo falla un sábado en la noche?</h3>
         <p>Me escribe directo a mí, David, por WhatsApp. Y hay una red de seguridad que importa: como el sistema corre en su propio número, los mensajes de sus clientes siguen llegando a su teléfono — usted atiende como siempre mientras lo levantamos. Nunca se queda mudo.</p>
       </div>
@@ -1008,7 +1144,7 @@ section h2{font-size:clamp(1.75rem,6vw,2.5rem);max-width:24ch;margin:0 0 1rem}
   <!-- 10 · QUIÉNES SOMOS -->
   <section id="quienes-somos">
     <div class="cont cont-angosta">
-      <p class="kicker">Nº 10 · Quiénes somos</p>
+      <p class="kicker">Nº 9 · Quiénes somos</p>
       <h2>Primero fuimos el delivery. Después, el sistema.</h2>
       <p>DEWAN S.A.S. nació en Riobamba repartiendo pedidos con motos propias. El sistema que le ofrecemos no lo compramos hecho: lo construimos para operar nuestro propio despacho, y hoy lo instalamos en restaurantes.</p>
       <p>Le atiende <strong>David Esquivel</strong>: la misma persona que arma su app web, instala El Sistema por videollamada y capacita a su equipo.</p>
