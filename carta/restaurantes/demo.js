@@ -1,12 +1,17 @@
 window.RESTAURANTES = window.RESTAURANTES || {};
 /* DEMO premium con fotos reales (mockup para mostrar el nivel con fotografía).
-   Las fotos son de TheMealDB (reemplazar por las reales del local). */
+   Las fotos son de TheMealDB (reemplazar por las reales del local).
+   [13-ago] Esta carta es la que enlaza el BOT DEMO (0986777146, botón "Ver la
+   app web") cuando le mostramos el sistema a un prospecto. Por eso el pedido
+   de prueba va al WhatsApp de VENTAS (093 964 7069) y no al local real:
+   un prospecto que toca "Enviar pedido" se convierte en lead, no en un pedido
+   falso para Baltimore. */
 window.RESTAURANTES["demo"] = {
   nombre: "Baltimore",
   slogan: "Food & Drinks · hamburguesas a la parrilla",
   direccion: "C.C. Multiplaza · Riobamba",
   marca: "#E05B19", tinta: "#16181D", crema: "#F6F6F4", acento: "#E05B19",
-  whatsapp: "593963506665",
+  whatsapp: "593939647069",
   logo: "assets/baltimore.jpeg",
   heroFoto: "assets/demo/food9.jpg",
   emojiDefault: "🍔",
