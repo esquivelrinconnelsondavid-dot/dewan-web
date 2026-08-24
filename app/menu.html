@@ -481,6 +481,15 @@
         .loc-gps-ok span{color:var(--green);font-weight:800;font-size:0.85rem}
         .loc-ref-label{font-size:0.75rem;color:var(--gris);font-weight:700;margin-bottom:6px}
 
+        /* Aviso "local sin convenio": el precio del menu es referencial y se paga contra recibo.
+           Motivo (24-ago): los locales sin convenio suben precios o cobran envase por su cuenta;
+           el moto cobraba distinto de lo que mostraba la app y el cliente se molestaba. */
+        .sinconv-note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:#FEF3C7;border:1px solid #F59E0B;border-radius:12px;margin:14px var(--pad-x) 0}
+        .sinconv-note-icon{font-size:1.1rem;line-height:1.25;flex-shrink:0}
+        .sinconv-note-title{font-size:0.87rem;font-weight:900;color:#92400E;letter-spacing:-0.01em;line-height:1.25}
+        .sinconv-note-text{font-size:0.8rem;font-weight:600;color:#92400E;opacity:0.92;line-height:1.35;margin-top:3px}
+        .cart-summary-box .sinconv-note{margin:12px 0 0}
+
         /* Almuerzo selector modal */
         .almuerzo-modal{max-height:85vh;overflow-y:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom,20px)}
         .almuerzo-header{text-align:center;margin-bottom:18px}
@@ -1704,6 +1713,32 @@
             var b = d<=2?1.30 : d<3?1.50 : 1.75 + Math.ceil((d-3)/0.5)*0.25;
             b=r2(b); return esSil ? r2(b+0.75) : b;
         }
+        // MISMO criterio que el recargo $0.75 de arriba: quien paga "sin convenio" es
+        // quien ve el aviso de precio referencial. No usar isSilenciosoRest() aca (es
+        // estricto ==='silencioso' y dejaria fuera cualquier tipo_acuerdo nuevo/NULL).
+        function esSinConvenio(r){
+            return !!(r && r.tipo_acuerdo!=='aliado' && r.tipo_acuerdo!=='cliente_paga');
+        }
+        // Aviso reutilizable (menu del local y carrito). compact=true -> sin bajada larga.
+        function avisoSinConvenioHTML(compact){
+            return '<div class="sinconv-note">'+
+                '<span class="sinconv-note-icon">🧾</span>'+
+                '<div>'+
+                    '<div class="sinconv-note-title">Local sin convenio · el precio puede variar</div>'+
+                    '<div class="sinconv-note-text">'+(compact
+                        ?'Los precios son referenciales. El motorizado te entrega el recibo del local y pagas lo que marque.'
+                        :'Los precios que ves son referenciales. El motorizado te entrega el recibo del local y pagas lo que marque.')+'</div>'+
+                '</div>'+
+            '</div>';
+        }
+        // ¿hay algun local sin convenio en el carrito? (getRestByName esta hoisted)
+        function cartTieneSinConvenio(){
+            var hay=false;
+            (window._cart||[]).forEach(function(c){
+                if(esSinConvenio(getRestByName(c.restaurante))) hay=true;
+            });
+            return hay;
+        }
         // ── Recalcular distancias con GPS del cliente ──
         function recalcDistances(rests){
             if(!window._clientGPS) return rests;
@@ -2668,7 +2703,9 @@
                         '<span class="rest-pill is-rating"><span>🍽</span> '+prods.length+' platos</span>'+
                     '</div>'+
                 '</div>'+
-            '</div>';
+            '</div>'+
+            // Antes de que arme el pedido: si el local no tiene convenio, el precio es referencial.
+            (esSinConvenio(r)?avisoSinConvenioHTML(false):'');
 
             window._almMenuData=[];
             window._wingsMenuData=[];
@@ -3685,6 +3722,8 @@
                 (window._clientGPS&&t.promoDiaActivo&&t.tieneLocalCercano&&t.subtotal<PROMO_ENVIO.minSubtotal?'<div class="promo-nudge">🔥 Te '+((PROMO_ENVIO.minSubtotal-t.subtotal)>=1?'faltan':'falta')+' $'+(PROMO_ENVIO.minSubtotal-t.subtotal).toFixed(2)+' para envío a $1 (Lun-Mié)</div>':'')+
                 '<div class="cart-total-row"><span class="cart-total-label">Pagas</span><span class="cart-total-val">$'+totalPagar.toFixed(2)+'</span></div>'+
                 (window._clientGPS?'':'<div class="cart-total-sub">🛵 Envío desde $1.30 · se confirma con tu ubicación</div>')+
+                // Ultimo aviso antes de confirmar: el total de arriba puede no ser el final.
+                (cartTieneSinConvenio()?avisoSinConvenioHTML(true):'')+
             '</div>';
 
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
@@ -4450,6 +4489,9 @@
                 // (se lee como envío gratis). El bot calcula el envío real al confirmar la ubicación.
                 msg+='💰 *Total parcial: $'+(t.subtotal+t.serviceFee+t.envases).toFixed(2)+'* + envío (se calcula al confirmar tu ubicación)\n\n';
             }
+            // Aviso de precio referencial. SIN cifras ni "$": el bot parsea montos de este
+            // mensaje (Subtotal/Envases/Total) y una linea con $ podria confundir al regex.
+            if(cartTieneSinConvenio()) msg+='🧾 Local sin convenio: el precio de los platos es referencial, se entrega recibo del local.\n\n';
             // Capturar valor actual del campo de dirección/referencia
             var addrInput=document.getElementById('loc-addr');
             if(addrInput) window._clientAddr=addrInput.value;
