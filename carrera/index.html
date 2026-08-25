@@ -388,11 +388,17 @@
         .then(function (pp) {
           pedido = (pp && pp[0]) || null;
           if (pedido && pedido.motorizado_id) {
-            return sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at&id=eq.' + pedido.motorizado_id + '&limit=1')
+            return sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + pedido.motorizado_id + '&limit=1')
               .then(function (mm) {
-                if (mm && mm[0]) {
-                  var fresco = mm[0].last_seen_at && (Date.now() - new Date(mm[0].last_seen_at).getTime()) < 10 * 60 * 1000;
-                  if (fresco) { pedido.moto_lat = mm[0].ubicacion_lat; pedido.moto_lng = mm[0].ubicacion_lng; }
+                if (!mm || !mm[0]) return;
+                // La app escribe la posicion cada 5s/10m (eso mueve updated_at) y
+                // el latido cada 60s (last_seen_at). Vale el mas reciente de los dos:
+                // si el latido falla pero el GPS sigue llegando, la moto igual se ve.
+                var edad = function (x) { return x ? (Date.now() - new Date(x).getTime()) : Infinity; };
+                var frescura = Math.min(edad(mm[0].last_seen_at), edad(mm[0].updated_at));
+                if (frescura < 10 * 60 * 1000) {
+                  pedido.moto_lat = mm[0].ubicacion_lat;
+                  pedido.moto_lng = mm[0].ubicacion_lng;
                 }
               });
           }
