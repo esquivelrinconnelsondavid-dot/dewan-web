@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#DC2D22">
+<title>Mi carrera · DEWAN</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --rojo:#DC2D22; --kraft:#F4EDE2; --tinta:#2B2118; --gris:#7A6A58;
+    --linea:#EDE3D4; --verde:#25D366;
+  }
+  html,body{height:100%}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--kraft);color:var(--tinta);overflow:hidden}
+
+  /* ---------- mapa a pantalla completa ---------- */
+  #mapa{position:fixed;inset:0;bottom:58vh;background:#E9E2D6;z-index:1}
+  .leaflet-control-attribution{font-size:9px;opacity:.55}
+  .pin{display:flex;align-items:center;justify-content:center;border-radius:50%;
+       box-shadow:0 3px 10px rgba(0,0,0,.28);border:2.5px solid #fff;font-size:17px}
+  .pin-local{width:38px;height:38px;background:var(--tinta);color:#fff}
+  .pin-casa{width:38px;height:38px;background:var(--rojo);color:#fff}
+  .pin-moto{width:46px;height:46px;background:#fff;font-size:24px;border-color:var(--rojo)}
+  .halo{animation:lat 2s infinite}
+  @keyframes lat{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+  /* ---------- marca flotante ---------- */
+  .marca{position:fixed;top:calc(env(safe-area-inset-top) + 12px);left:12px;z-index:5;
+    display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;
+    padding:7px 14px 7px 8px;box-shadow:0 3px 14px rgba(43,33,24,.18)}
+  .logo{width:28px;height:28px;border-radius:9px;background:var(--rojo);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:15px}
+  .marca b{font-size:14px;letter-spacing:.4px}.marca b span{color:var(--rojo)}
+  .cod{position:fixed;top:calc(env(safe-area-inset-top) + 12px);right:12px;z-index:5;
+    background:#fff;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700;
+    color:var(--gris);box-shadow:0 3px 14px rgba(43,33,24,.18)}
+
+  /* ---------- hoja inferior ---------- */
+  .hoja{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;
+    border-radius:22px 22px 0 0;box-shadow:0 -6px 26px rgba(43,33,24,.16);
+    padding:8px 18px calc(env(safe-area-inset-bottom) + 16px);
+    height:58vh;overflow-y:auto;overscroll-behavior:contain}
+  .asa{width:42px;height:4px;border-radius:99px;background:#E3D9C9;margin:2px auto 12px}
+
+  .eta b{display:block;font-size:23px;font-weight:800;letter-spacing:-.4px;line-height:1.15}
+  .eta i{display:block;font-style:normal;font-size:14px;color:var(--rojo);font-weight:700;margin-top:3px}
+  .sub{font-size:13.5px;color:var(--gris);margin-bottom:14px}
+
+  .barra{display:flex;gap:5px;margin:14px 0 6px}
+  .tramo{flex:1;height:5px;border-radius:99px;background:#EDE3D4;overflow:hidden}
+  .tramo i{display:block;height:100%;width:0;background:var(--rojo);border-radius:99px;transition:width .6s}
+  .tramo.on i{width:100%}
+  .tramo.now i{width:55%;animation:pulso 1.6s infinite}
+  @keyframes pulso{0%,100%{opacity:.55}50%{opacity:1}}
+  .pasos{display:flex;justify-content:space-between;font-size:10.5px;color:#A2917C;margin-bottom:16px}
+  .pasos span.on{color:var(--tinta);font-weight:700}
+
+  .moto{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid var(--linea);
+    border-radius:16px;margin-bottom:12px}
+  .av{width:48px;height:48px;border-radius:50%;background:var(--tinta);color:#fff;flex:0 0 48px;
+    display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+  .moto .nom{font-size:16.5px;font-weight:800;line-height:1.2}
+  .moto .rol{font-size:12px;color:var(--gris)}
+  .acc{display:flex;gap:8px;margin-left:auto}
+  .ico{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:19px;text-decoration:none}
+  .ico.tel{background:var(--rojo);color:#fff}
+  .ico.wa{background:var(--verde);color:#fff}
+
+  .buscando{display:flex;align-items:center;gap:11px;padding:14px;border:1px dashed #E0D3BE;
+    border-radius:16px;margin-bottom:12px;font-size:14px;color:var(--gris)}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--rojo);flex:0 0 10px;animation:pulso 1.1s infinite}
+
+  .fila{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #F4EFE6;font-size:14.5px}
+  .fila:last-of-type{border-bottom:0}
+  .fila .ic{width:20px;flex:0 0 20px}
+  .fila b{font-weight:600}
+  .precio{display:flex;justify-content:space-between;align-items:center;background:#FFF7EC;
+    border:1px solid #F1DFC2;border-radius:14px;padding:12px 14px;margin:10px 0 4px}
+  .precio b{color:var(--rojo);font-size:19px}
+
+  .btns{display:flex;gap:9px;margin-top:14px}
+  .btn{flex:1;text-align:center;text-decoration:none;padding:14px 10px;border-radius:14px;
+    font-weight:800;font-size:14.5px;border:0;cursor:pointer;font-family:inherit}
+  .b-rojo{background:var(--rojo);color:#fff}
+  .b-verde{background:var(--verde);color:#fff}
+  .b-linea{background:#fff;color:var(--tinta);border:1.5px solid #E3D9C9}
+
+  .fin{text-align:center;padding:6px 0 2px}
+  .fin .emo{font-size:44px;line-height:1}
+  .fin h2{font-size:22px;margin:6px 0 4px}
+  .estrellas{display:flex;justify-content:center;gap:6px;margin:12px 0 6px}
+  .est{font-size:31px;cursor:pointer;filter:grayscale(1);opacity:.45;transition:.15s}
+  .est.on{filter:none;opacity:1;transform:scale(1.08)}
+  .gracias{font-size:13.5px;color:var(--gris);margin-top:6px}
+  .oculto{display:none !important}
+  .pie{text-align:center;font-size:11px;color:#A2917C;margin-top:14px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div id="mapa"></div>
+<div class="marca"><div class="logo">🔔</div><b>DE<span>WAN</span></b></div>
+<div class="cod" id="cod">…</div>
+
+<div class="hoja">
+  <div class="asa"></div>
+
+  <div id="cargando" class="sub" style="padding:18px 0;text-align:center">Cargando su carrera…</div>
+
+  <div id="contenido" class="oculto">
+    <!-- estado + eta -->
+    <div id="cabecera">
+      <div class="eta"><b id="titulo">Carrera recibida</b><i id="etaTxt"></i></div>
+      <div class="sub" id="subtitulo">Estamos buscando un motorizado disponible.</div>
+      <div class="barra">
+        <div class="tramo" id="t0"><i></i></div>
+        <div class="tramo" id="t1"><i></i></div>
+        <div class="tramo" id="t2"><i></i></div>
+        <div class="tramo" id="t3"><i></i></div>
+      </div>
+      <div class="pasos">
+        <span id="p0">Recibida</span><span id="p1">Motorizado</span>
+        <span id="p2">En camino</span><span id="p3">Entregada</span>
+      </div>
+    </div>
+
+    <!-- entregada -->
+    <div id="entregada" class="fin oculto">
+      <div class="emo">🎉</div>
+      <h2>¡Su carrera fue entregada!</h2>
+      <div class="sub" id="fraseFin">Gracias por pedir con DEWAN.</div>
+      <div id="califBloque">
+        <div class="sub" style="margin-bottom:0">¿Cómo estuvo el servicio?</div>
+        <div class="estrellas" id="estrellas">
+          <span class="est" data-v="1">⭐</span><span class="est" data-v="2">⭐</span>
+          <span class="est" data-v="3">⭐</span><span class="est" data-v="4">⭐</span>
+          <span class="est" data-v="5">⭐</span>
+        </div>
+      </div>
+      <div class="gracias oculto" id="graciasCalif">¡Gracias! Su opinión nos ayuda a mejorar 💛</div>
+    </div>
+
+    <!-- motorizado -->
+    <div id="motoCard"></div>
+
+    <!-- detalle -->
+    <div id="detalle"></div>
+    <div id="precioBox"></div>
+
+    <div class="btns" id="botones"></div>
+    <div class="btns" style="margin-top:9px">
+      <a class="btn b-linea" id="btnMapa" target="_blank" rel="noopener">🗺️ Ver en el mapa</a>
+      <button class="btn b-linea" id="btnCompartir">🔗 Compartir</button>
+    </div>
+
+    <div class="pie">DEWAN · Riobamba<br>Esta página se actualiza sola</div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+  var WA = '593986777146';
+  var token = new URLSearchParams(location.search).get('t') || '';
+
+  var mapa, capaMoto, capaLocal, capaCasa, capaRuta, yaCentrado = false;
+  var estadoPrev = '', carrera = null, pedido = null;
+
+  function sb(path) {
+    return fetch(SB + path, { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY } })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .catch(function () { return []; });
+  }
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+  function num(v) { var n = Number(v); return isFinite(n) && n !== 0 ? n : null; }
+  function sinLink(s) {
+    s = String(s || '').trim();
+    var i = s.indexOf('http');
+    var limpio = (i === -1 ? s : s.slice(0, i)).replace(/pin/i, '').trim();
+    // quita emojis sueltos que quedan al cortar el link
+    limpio = limpio.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
+    return limpio || 'Ubicación exacta compartida 📍';
+  }
+  function km(a, b, c, d) {
+    var R = 6371, r = Math.PI / 180;
+    var x = Math.sin((c - a) * r / 2) * Math.sin((c - a) * r / 2) +
+            Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) * Math.sin((d - b) * r / 2);
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+  function icono(clase, emoji) {
+    return L.divIcon({ html: '<div class="pin ' + clase + '">' + emoji + '</div>', className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
+  }
+
+  // ---------- mapa ----------
+  function iniciarMapa() {
+    mapa = L.map('mapa', { zoomControl: false, attributionControl: true }).setView([-1.6650, -78.6540], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap'
+    }).addTo(mapa);
+  }
+
+  function pintarMapa() {
+    mapa.invalidateSize(false); // el contenedor cambia de alto con la hoja
+    var pts = [];
+    var lr = num(carrera.lat_recogida), gr = num(carrera.lng_recogida);
+    var le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
+    if (lr && gr) {
+      if (!capaLocal) capaLocal = L.marker([lr, gr], { icon: icono('pin-local', '🏪') }).addTo(mapa);
+      pts.push([lr, gr]);
+    }
+    if (le && ge) {
+      if (!capaCasa) capaCasa = L.marker([le, ge], { icon: icono('pin-casa', '🏠') }).addTo(mapa);
+      pts.push([le, ge]);
+    }
+    var lm = pedido && num(pedido.moto_lat), gm = pedido && num(pedido.moto_lng);
+    if (lm && gm) {
+      if (!capaMoto) capaMoto = L.marker([lm, gm], { icon: icono('pin-moto halo', '🛵') }).addTo(mapa);
+      else capaMoto.setLatLng([lm, gm]);
+      pts.push([lm, gm]);
+    }
+    if (pts.length > 1) {
+      var ruta = (lm && gm && le && ge) ? [[lm, gm], [le, ge]] : pts;
+      if (capaRuta) mapa.removeLayer(capaRuta);
+      capaRuta = L.polyline(ruta, { color: '#DC2D22', weight: 3, opacity: .55, dashArray: '7 8' }).addTo(mapa);
+    }
+    if (!yaCentrado && pts.length) {
+      yaCentrado = true;
+      if (pts.length === 1) mapa.setView(pts[0], 16);
+      else mapa.fitBounds(L.latLngBounds(pts), { padding: [50, 50], maxZoom: 17 });
+    } else if (lm && gm && capaMoto) {
+      mapa.panTo([lm, gm], { animate: true, duration: .8 });
+    }
+  }
+
+  // ---------- estado ----------
+  var MAPA_EST = {
+    confirmado: 0, buscando_motorizado: 0, pendiente: 0, pendiente_restaurante: 0,
+    asignado: 1, aceptado: 1, en_camino_recogida: 1, llego_recogida: 1, llegado: 1,
+    recogido: 2, en_camino: 2, en_camino_entrega: 2,
+    entregado: 3, cancelado: -1
+  };
+  var MAPA_CARRERA = { recibida: 0, asignada: 1, en_camino: 2, entregada: 3, cancelada: -1 };
+
+  var TITULOS = ['Buscando motorizado', 'Motorizado asignado', 'Su carrera va en camino', '¡Entregada!'];
+  var SUBS = [
+    'Le estamos asignando un motorizado disponible.',
+    'Ya va en camino a recoger su pedido.',
+    'El motorizado va hacia el punto de entrega.',
+    'Gracias por pedir con DEWAN.'
+  ];
+
+  function pintar() {
+    var ix = pedido ? (MAPA_EST[pedido.estado_pedido] != null ? MAPA_EST[pedido.estado_pedido] : 0)
+                    : (MAPA_CARRERA[carrera.estado] != null ? MAPA_CARRERA[carrera.estado] : 0);
+
+    $('cod').textContent = carrera.codigo || '';
+    $('cargando').classList.add('oculto');
+    $('contenido').classList.remove('oculto');
+
+    if (ix === -1) {
+      $('titulo').textContent = 'Carrera cancelada';
+      $('subtitulo').textContent = 'Si fue un error, escríbanos y la volvemos a crear.';
+      $('etaTxt').textContent = '';
+      for (var k = 0; k < 4; k++) $('t' + k).className = 'tramo';
+      pintarBotones(true);
+      return;
+    }
+
+    var entregada = ix >= 3;
+    $('cabecera').classList.toggle('oculto', entregada);
+    $('entregada').classList.toggle('oculto', !entregada);
+
+    if (!entregada) {
+      $('titulo').textContent = TITULOS[ix];
+      $('subtitulo').textContent = SUBS[ix];
+      for (var i = 0; i < 4; i++) {
+        var el = $('t' + i);
+        el.className = 'tramo' + (i < ix ? ' on' : (i === ix ? ' now' : ''));
+        $('p' + i).className = i <= ix ? 'on' : '';
+      }
+      $('etaTxt').textContent = calcularEta(ix);
+    }
+
+    pintarMoto();
+    pintarDetalle();
+    pintarBotones(false);
+    pintarMapa();
+  }
+
+  function calcularEta(ix) {
+    var lm = pedido && num(pedido.moto_lat), gm = pedido && num(pedido.moto_lng);
+    var le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
+    if (ix >= 1 && lm && gm && le && ge) {
+      var d = km(lm, gm, le, ge) * 1.3;
+      var min = Math.max(3, Math.round((d / 18) * 60) + (ix === 1 ? 5 : 0));
+      return '· llega en ~' + min + ' min';
+    }
+    if (ix === 0) return '· en 1-3 min le asignamos';
+    return '';
+  }
+
+  function pintarMoto() {
+    var nom = (pedido && pedido.nombre_moto) || carrera.moto_nombre;
+    var tel = String((pedido && pedido.telefono_moto) || carrera.moto_telefono || '').replace(/[^0-9]/g, '');
+    var cont = $('motoCard');
+    if (!nom) {
+      cont.innerHTML = '<div class="buscando"><div class="dot"></div>' +
+        '<div>Buscando el motorizado más cercano…</div></div>';
+      return;
+    }
+    var telInt = (tel.length === 10 && tel[0] === '0') ? '593' + tel.slice(1) : tel;
+    var ini = nom.trim().charAt(0).toUpperCase();
+    cont.innerHTML =
+      '<div class="moto"><div class="av">' + esc(ini) + '</div>' +
+      '<div><div class="nom">' + esc(nom.split(' ').slice(0, 2).join(' ')) + '</div>' +
+      '<div class="rol">Su motorizado DEWAN 🛵</div></div>' +
+      (tel ? '<div class="acc">' +
+        '<a class="ico tel" href="tel:' + esc(tel) + '" aria-label="Llamar">📞</a>' +
+        '<a class="ico wa" href="https://wa.me/' + esc(telInt) + '" aria-label="WhatsApp">💬</a>' +
+        '</div>' : '') +
+      '</div>';
+  }
+
+  function pintarDetalle() {
+    var f = [];
+    function fila(ic, txt) { if (txt) f.push('<div class="fila"><div class="ic">' + ic + '</div><div>' + txt + '</div></div>'); }
+    var ICO = { moto_local: '🏪', compra: '🛒', comida: '🍽️', encomienda: '📦' };
+    fila(ICO[carrera.tipo] || '📦', '<b>' + esc(carrera.titulo || 'Carrera') + '</b>');
+    if (carrera.recogida) fila('📍', '<b>Recogemos en:</b><br>' + esc(sinLink(carrera.recogida)));
+    if (carrera.entrega) fila('🏠', '<b>Entregamos en:</b><br>' + esc(sinLink(carrera.entrega)));
+    if (carrera.cobrar_cliente) fila('💵', '<b>La moto cobra:</b> ' + esc(carrera.cobrar_cliente));
+    $('detalle').innerHTML = f.join('');
+    var p = Number(carrera.precio);
+    $('precioBox').innerHTML = (isFinite(p) && p > 0)
+      ? '<div class="precio"><span>Valor de la carrera</span><b>$' + p.toFixed(2) + '</b></div>' : '';
+  }
+
+  function pintarBotones(cancelada) {
+    var texto = encodeURIComponent('Hola, sobre mi carrera ' + (carrera.codigo || ''));
+    var otra = encodeURIComponent('carrera');
+    $('botones').innerHTML =
+      (cancelada ? '' : '<a class="btn b-rojo" href="https://wa.me/' + WA + '?text=' + otra + '">🛵 Pedir otra carrera</a>') +
+      '<a class="btn b-verde" href="https://wa.me/' + WA + '?text=' + texto + '">💬 Necesito ayuda</a>';
+    var le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
+    var bm = $('btnMapa');
+    if (le && ge) { bm.href = 'https://maps.google.com/?q=' + le + ',' + ge; bm.classList.remove('oculto'); }
+    else bm.classList.add('oculto');
+  }
+
+  // ---------- calificación (se guarda con el bot por WhatsApp) ----------
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('.est');
+    if (!el) return;
+    var v = Number(el.dataset.v);
+    document.querySelectorAll('.est').forEach(function (s) { s.classList.toggle('on', Number(s.dataset.v) <= v); });
+    $('graciasCalif').classList.remove('oculto');
+    setTimeout(function () {
+      var msg = encodeURIComponent('Califico mi carrera ' + (carrera.codigo || '') + ' con ' + v + ' estrella' + (v > 1 ? 's' : ''));
+      location.href = 'https://wa.me/' + WA + '?text=' + msg;
+    }, 700);
+  });
+
+  $('btnCompartir').addEventListener('click', function () {
+    var url = location.href;
+    if (navigator.share) navigator.share({ title: 'Mi carrera DEWAN', text: 'Siga mi carrera ' + (carrera && carrera.codigo || ''), url: url });
+    else { navigator.clipboard.writeText(url); this.textContent = '✅ Link copiado'; }
+  });
+
+  // ---------- datos ----------
+  function cargar() {
+    if (!token) { $('cargando').textContent = 'Enlace incompleto. Escríbanos por WhatsApp.'; return; }
+    sb('/carreras?select=*&token=eq.' + encodeURIComponent(token) + '&limit=1').then(function (rows) {
+      if (!rows || !rows.length) {
+        $('cargando').innerHTML = 'No encontramos esa carrera.<br><br>' +
+          '<a class="btn b-verde" style="display:inline-block" href="https://wa.me/' + WA + '">Escribirnos</a>';
+        return;
+      }
+      carrera = rows[0];
+      if (!carrera.pedido_id) { pedido = null; pintar(); return; }
+      sb('/pedidos_delivery?select=estado_pedido,nombre_moto,telefono_moto,motorizado_id&id=eq.' + carrera.pedido_id + '&limit=1')
+        .then(function (pp) {
+          pedido = (pp && pp[0]) || null;
+          if (pedido && pedido.motorizado_id) {
+            return sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at&id=eq.' + pedido.motorizado_id + '&limit=1')
+              .then(function (mm) {
+                if (mm && mm[0]) {
+                  var fresco = mm[0].last_seen_at && (Date.now() - new Date(mm[0].last_seen_at).getTime()) < 10 * 60 * 1000;
+                  if (fresco) { pedido.moto_lat = mm[0].ubicacion_lat; pedido.moto_lng = mm[0].ubicacion_lng; }
+                }
+              });
+          }
+        })
+        .then(pintar);
+    });
+  }
+
+  iniciarMapa();
+  cargar();
+  setInterval(cargar, 12000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) cargar(); });
+})();
+</script>
+</body>
+</html>
