@@ -183,10 +183,10 @@
   function sinLink(s) {
     s = String(s || '').trim();
     var i = s.indexOf('http');
-    var limpio = (i === -1 ? s : s.slice(0, i)).replace(/pin/i, '').trim();
-    // quita emojis sueltos que quedan al cortar el link
-    limpio = limpio.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
-    return limpio || 'Ubicación exacta compartida 📍';
+    var limpio = (i === -1 ? s : s.slice(0, i)).replace(/pin/i, '');
+    // fuera emojis y marcas invisibles que quedan al cortar el link
+    limpio = limpio.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '').trim();
+    return limpio.length >= 3 ? limpio : 'Ubicación exacta (pin en el mapa) 📍';
   }
   function km(a, b, c, d) {
     var R = 6371, r = Math.PI / 180;
