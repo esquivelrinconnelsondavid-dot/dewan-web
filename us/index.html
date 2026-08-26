@@ -365,12 +365,13 @@
   @media(max-width:800px){.story-body{grid-template-columns:1fr}}
   .story-body p{font-size:15.5px;line-height:1.7;color:var(--soft)}
   .story-body p b{color:#fff}
-  .story-stats{margin-top:48px;display:flex;gap:12px;flex-wrap:wrap}
+  .story-origin{margin-top:34px;font-size:clamp(20px,2.4vw,27px);font-weight:800;letter-spacing:-.03em;line-height:1.2;text-wrap:balance}
+  .story-stats{margin-top:44px;display:flex;gap:12px;flex-wrap:wrap}
   .s-chip{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line-2);border-radius:30px;padding:10px 17px;color:var(--soft)}
   .s-chip b{color:var(--lime)}
 
   /* ---------- pricing ---------- */
-  .bill-toggle{display:flex;align-items:center;gap:14px;margin:-28px 0 44px;flex-wrap:wrap}
+  .bill-toggle{display:flex;align-items:center;gap:14px;margin:0 0 34px;flex-wrap:wrap}
   .bill-switch{display:flex;background:rgba(255,255,255,.035);border:1px solid var(--line-2);border-radius:13px;padding:4px;font-size:13.5px;font-weight:700}
   .bill-switch button{padding:10px 20px;border-radius:9px;color:var(--muted);transition:background .2s,color .2s}
   .bill-switch button.on{background:var(--lime);color:#000}
@@ -385,6 +386,7 @@
   .plan .p-name{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
   .plan .p-price{margin-top:16px;font-size:44px;font-weight:900;letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1}
   .plan .p-price span{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:-.01em}
+  .plan .p-price span.pr{font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit}
   .plan .p-bill{margin-top:7px;font-family:"JetBrains Mono",monospace;font-size:9.8px;letter-spacing:.06em;color:var(--dim);text-transform:uppercase;min-height:14px}
   .plan .p-vol{margin-top:14px;font-size:14.5px;font-weight:700}
   .plan .p-vol-sub{font-family:"JetBrains Mono",monospace;font-size:9.8px;color:var(--muted);margin-top:4px;letter-spacing:.05em;text-transform:uppercase}
@@ -416,6 +418,65 @@
   .founding a:hover{transform:translateY(-2px)}
   .usage-mini{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:24px 28px;font-size:13.8px;color:var(--muted);line-height:1.65}
   .usage-mini b{color:var(--soft)}
+
+  /* ---------- how pricing works + plan calculator ---------- */
+  .scale{margin:-28px 0 34px;border:1px solid var(--line);border-radius:22px;padding:32px;background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008))}
+  @media(max-width:560px){.scale{padding:26px 22px}}
+  .scale h3{font-size:clamp(21px,2.5vw,28px);letter-spacing:-.03em;line-height:1.08}
+  .scale>p{margin-top:11px;font-size:14.5px;color:var(--muted);line-height:1.6;max-width:660px}
+  .calc{margin-top:28px;display:grid;grid-template-columns:1fr minmax(240px,300px);gap:24px 32px;align-items:end}
+  @media(max-width:820px){.calc{grid-template-columns:1fr}}
+  .calc-q{font-size:14.5px;font-weight:600;color:var(--soft)}
+  .calc-val{margin-top:12px;display:flex;align-items:baseline;gap:9px;font-family:"JetBrains Mono",monospace}
+  .calc-val b{font-size:clamp(30px,3.4vw,40px);font-weight:800;color:var(--lime);letter-spacing:-.035em}
+  .calc-val span{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .calc input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;background:rgba(255,255,255,.11);margin-top:16px;outline:none}
+  .calc input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--lime);border:3px solid #0A0A0A;box-shadow:0 0 0 1px var(--lime),0 5px 16px rgba(170,255,0,.35);cursor:pointer}
+  .calc input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--lime);border:3px solid #0A0A0A;box-shadow:0 0 0 1px var(--lime);cursor:pointer}
+  .calc-side{border:1px solid var(--lime-line);border-radius:18px;padding:20px 22px;background:linear-gradient(180deg,rgba(170,255,0,.07),rgba(170,255,0,.012))}
+  .calc-lbl{font-family:"JetBrains Mono",monospace;font-size:9.8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .calc-plan{margin-top:8px;font-size:26px;font-weight:900;letter-spacing:-.035em;line-height:1}
+  .calc-price{margin-top:6px;font-size:14.5px;font-weight:600;color:var(--lime)}
+  .calc-side .p-cta{display:block;margin-top:16px;text-align:center;font-weight:800;font-size:14px;border-radius:12px;padding:13px;background:var(--lime);color:#000;transition:transform .15s}
+  .calc-side .p-cta:hover{transform:translateY(-2px)}
+  .ladder{margin-top:26px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:820px){.ladder{grid-template-columns:1fr 1fr}}
+  @media(max-width:440px){.ladder{grid-template-columns:1fr}}
+  .rung{border:1px solid var(--line);border-radius:15px;padding:16px 18px;transition:border-color .3s,background .3s}
+  .rung.on{border-color:var(--lime-line);background:var(--lime-soft)}
+  .rung .r-vol{font-family:"JetBrains Mono",monospace;font-size:9.8px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+  .rung.on .r-vol{color:var(--lime)}
+  .rung .r-plan{margin-top:7px;font-size:16.5px;font-weight:800;letter-spacing:-.02em}
+  .rung .r-price{margin-top:3px;font-size:12.8px;color:var(--muted)}
+  .scale-foot{margin-top:20px;font-size:13.8px;color:var(--muted);line-height:1.65;max-width:760px}
+  .scale-foot b{color:var(--soft)}
+
+  /* ---------- direct vs third-party ---------- */
+  .econ{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  @media(max-width:900px){.econ{grid-template-columns:1fr}}
+  .e-card{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:22px;padding:32px;display:flex;flex-direction:column;gap:9px}
+  .e-card .e-lbl{font-family:"JetBrains Mono",monospace;font-size:9.8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .e-card .e-num{font-size:clamp(34px,4.2vw,50px);font-weight:900;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums}
+  .e-card .e-sub{font-size:13.8px;color:var(--muted);line-height:1.6}
+  .e-card.lose .e-num{color:#8A8D82}
+  .e-card.win{border-color:var(--lime-line);background:linear-gradient(180deg,rgba(170,255,0,.08),rgba(170,255,0,.015) 55%)}
+  .e-card.win .e-num{color:var(--lime)}
+  .e-card.win .e-lbl{color:var(--lime)}
+  .econ-note{margin-top:22px;font-size:13px;color:var(--dim);line-height:1.65;max-width:820px}
+
+  /* ---------- why restaurants choose dewan ---------- */
+  .why{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:900px){.why{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.why{grid-template-columns:1fr}}
+  .why-item{display:flex;gap:13px;align-items:flex-start;border:1px solid var(--line);border-radius:18px;padding:24px;background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));transition:border-color .25s}
+  .why-item:hover{border-color:var(--line-2)}
+  .why-item .c{flex:none;width:22px;height:22px;border-radius:50%;background:var(--lime);color:#000;display:grid;place-items:center;font-size:11px;font-weight:900;margin-top:1px}
+  .why-item b{font-size:15.2px;font-weight:700;line-height:1.4;letter-spacing:-.015em}
+
+  /* ---------- fit CTA after pricing ---------- */
+  .fit{margin-top:34px;padding-top:36px;border-top:1px solid var(--line);text-align:center}
+  .fit h3{font-size:clamp(22px,2.8vw,32px);letter-spacing:-.032em;line-height:1.08}
+  .fit .btn{margin-top:22px}
 
   /* ---------- guarantee ---------- */
   .g-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -839,7 +900,7 @@
     <div class="usage reveal">
       <h3><svg class="ic" viewBox="0 0 24 24"><path d="M13 2L4.5 14H11l-1 8L18.5 10H12l1-8z"/></svg><span data-es="Una nota honesta sobre lo “ilimitado”">An honest note about "unlimited"</span></h3>
       <p data-es="En la plataforma oficial de WhatsApp, cada mensaje que un negocio envía tiene un costo real — así que quien le venda <b>“WhatsApp ilimitado”</b> está recortando esquinas o planeando sorprenderlo después. Nosotros no hacemos ninguna de las dos.">On the official WhatsApp platform, every message a business sends has a real cost — so anyone selling you <b>"unlimited WhatsApp"</b> is either cutting corners or planning to surprise you later. We do neither.</p>
-      <p data-es="Su plan cubre la mensajería operativa que su volumen de pedidos necesita. Las campañas de marketing son opcionales y se facturan aparte por volumen — y usted aprueba el presupuesto antes de que salga un solo mensaje. <b>Lo que prometemos en vez de “ilimitado”: sus pedidos nunca se cortan y nunca hay sorpresas en su factura.</b>">Your plan covers the operational messaging your order volume needs. Marketing campaigns are optional and billed separately by volume — and you approve any budget before a single message goes out. <b>What we promise instead of "unlimited": your orders are never cut off, and you're never surprised by a bill.</b></p>
+      <p data-es="Su plan incluye el uso operativo de WhatsApp que su volumen de pedidos necesita. Los restaurantes de alto volumen pueden requerir un plan superior que soporte más mensajería — y si su negocio crece, simplemente lo pasamos al plan que corresponde a su operación. Las campañas de marketing son opcionales y se facturan aparte por volumen, y usted aprueba el presupuesto antes de que salga un solo mensaje. <b>Lo que prometemos en vez de “ilimitado”: un plan a la medida de su operación y ninguna sorpresa en su factura.</b>">Your plan includes the operational WhatsApp usage needed for your order volume. High-volume restaurants may require a higher plan to support additional messaging volume — and if your business grows, we simply move you to the plan that fits your operation. Marketing campaigns are optional and billed separately by volume, and you approve any budget before a single message goes out. <b>What we promise instead of "unlimited": a plan sized to your operation, and no surprises on your bill.</b></p>
     </div>
   </div>
 </section>
@@ -851,9 +912,10 @@
     <div class="eyebrow reveal"><span class="dot"></span><span data-es="Por qué Dewan es distinto">Why Dewan is different</span></div>
     <h2 class="story-quote reveal" data-es="No empezamos con software.<br><span class='lime'>Empezamos con delivery.</span>">We didn't start with software.<br><span class="lime">We started with delivery.</span></h2>
     <div class="story-body reveal">
-      <p data-es="Dewan es una empresa real de delivery en Ecuador. Durante años tomamos pedidos exactamente como usted lo hace hoy — un teléfono lleno de chats de WhatsApp, comandas escritas a mano, repartidores coordinados por notas de voz y clientes preguntando “¿dónde está mi pedido?” toda la noche.">Dewan is a real delivery company in Ecuador. For years we took orders exactly the way you do today — a phone full of WhatsApp chats, hand-written tickets, drivers coordinated over voice notes, and customers asking "where's my order?" all night long.</p>
-      <p data-es="Construimos este sistema porque <b>lo necesitábamos para sobrevivir nuestras propias horas pico.</b> Cada función existe porque un pedido perdido, una dirección errada o un repartidor extraviado nos enseñó que tenía que existir. Después, los restaurantes a los que les entregamos empezaron a pedirlo — y ahora lo traemos a EEUU.">We built this system because <b>we needed it to survive our own rush hours.</b> Every feature exists because a missed order, a wrong address or a lost driver taught us it had to. Then the restaurants we deliver for started asking to use it — and now we're bringing it to the U.S.</p>
+      <p data-es="Dewan empezó como una empresa real de delivery y logística en Ecuador. Durante años tomamos pedidos exactamente como usted lo hace hoy — un teléfono lleno de chats de WhatsApp, comandas escritas a mano, repartidores coordinados por notas de voz y clientes preguntando “¿dónde está mi pedido?” toda la noche.">Dewan started as a real delivery and logistics company in Ecuador. For years we took orders exactly the way you do today — a phone full of WhatsApp chats, hand-written tickets, drivers coordinated over voice notes, and customers asking "where's my order?" all night long.</p>
+      <p data-es="Construimos el software porque <b>vivimos los problemas que un restaurante enfrenta todos los días:</b> pedidos perdidos, conversaciones de WhatsApp escritas a mano, la cocina que no se entera, el delivery sin coordinar y el cliente sin novedades. Cada función existe porque un pedido perdido, una dirección errada o un repartidor extraviado nos enseñó que tenía que existir. Después, los restaurantes a los que les entregamos empezaron a pedirlo — y ahora lo traemos a EEUU.">We built our software because <b>we experienced the problems restaurants face every day:</b> missed orders, manual WhatsApp conversations, kitchen communication, delivery coordination and customer updates. Every feature exists because a missed order, a wrong address or a lost driver taught us it had to. Then the restaurants we deliver for started asking to use it — and now we're bringing it to the U.S.</p>
     </div>
+    <p class="story-origin reveal" data-es="Construido en Ecuador. <span class='lime'>Ahora disponible para restaurantes de EEUU.</span>">Built in Ecuador. <span class="lime">Now available for U.S. restaurants.</span></p>
     <div class="story-stats reveal">
       <span class="s-chip"><b>~180</b>&nbsp;<span data-es="pedidos/día en pico">orders/day at peak</span></span>
       <span class="s-chip"><b>14</b>&nbsp;<span data-es="repartidores propios">drivers in our fleet</span></span>
@@ -864,6 +926,39 @@
   </div>
 </section>
 
+<div class="hairline"></div>
+
+<!-- ============ DIRECT VS THIRD-PARTY ============ -->
+<section id="economics">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="eyebrow"><span class="dot"></span><span data-es="Sus pedidos directos">Your direct orders</span></div>
+      <h2 class="h-big" data-es="Quédese con sus clientes. Y con más de cada venta.">Keep your customers. Keep more of every sale.</h2>
+      <p class="sub" data-es="Use DoorDash, Uber Eats y Grubhub para que lo descubran. Use Dewan para sus clientes directos.">Use DoorDash, Uber Eats and Grubhub for discovery. Use Dewan for your direct customers.</p>
+    </div>
+    <div class="econ">
+      <div class="e-card reveal">
+        <div class="e-lbl" data-es="Ventas directas al mes">Monthly direct sales</div>
+        <div class="e-num">$30,000</div>
+        <div class="e-sub" data-es="Los pedidos que sus propios clientes ya le hacen — por WhatsApp, por teléfono o en la puerta.">The orders your own customers already place with you — on WhatsApp, by phone or at the door.</div>
+      </div>
+      <div class="e-card lose reveal">
+        <div class="e-lbl" data-es="En una app de terceros al 15%">On a third-party platform at 15%</div>
+        <div class="e-num">≈ $4,500</div>
+        <div class="e-sub" data-es="Cobrado como comisión sobre esas mismas ventas, cada mes. Y el cliente es de la app, no suyo.">Taken as commission on those same sales, every month. And the customer belongs to the app, not to you.</div>
+      </div>
+      <div class="e-card win reveal">
+        <div class="e-lbl">Dewan Growth</div>
+        <div class="e-num">$179<span style="font-size:.4em;font-weight:600;letter-spacing:-.01em;color:var(--muted)" data-es="/mes">/mo</span></div>
+        <div class="e-sub" data-es="Tarifa plana. Sin comisión sobre sus ventas, sin importar cuánto venda ese mes.">A flat price. No commission on your sales, no matter how much you sell that month.</div>
+      </div>
+    </div>
+    <p class="econ-note reveal" data-es="<b style='color:var(--soft)'>Ejemplo ilustrativo.</b> Las tarifas reales de terceros varían según la plataforma, la ciudad y el plan que usted tenga con ellos. El punto no es el porcentaje exacto: es que su costo con Dewan es fijo y no crece con sus ventas."><b style="color:var(--soft)">Example only.</b> Actual third-party fees vary by platform, market and the plan you're on with them. The point isn't the exact percentage — it's that your cost with Dewan is fixed and doesn't grow with your sales.</p>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
 <!-- ============ PRICING ============ -->
 <section id="pricing">
   <div class="container">
@@ -871,6 +966,34 @@
       <div class="eyebrow"><span class="dot"></span><span data-es="Precios">Pricing</span></div>
       <h2 class="h-big" data-es="Tarifa plana mensual. <span class='lime'>Sin comisión. Nunca.</span>">Flat monthly price. <span class="lime">No commission. Ever.</span></h2>
       <p class="sub" data-es="Cada plan incluye el sistema completo — pedidos, cocina, delivery, seguimiento. Usted solo elige su volumen de pedidos.">Every plan includes the complete system — ordering, kitchen, delivery, tracking. You only choose your order volume.</p>
+    </div>
+
+    <div class="scale reveal">
+      <h3 data-es="Un precio simple que crece con su restaurante.">Simple pricing that scales with your restaurant.</h3>
+      <p data-es="Sin comisión sobre sus ventas. Su plan mensual se define por su volumen de pedidos y el uso operativo de WhatsApp que ese volumen necesita.">No commission on your sales. Your monthly plan is based on your order volume and the operational WhatsApp usage that volume needs.</p>
+
+      <div class="calc">
+        <div>
+          <label class="calc-q" for="ordr" data-es="¿Cuántos pedidos recibe al día?">How many orders do you receive per day?</label>
+          <div class="calc-val"><b id="ordr-v">30</b><span data-es="pedidos / día">orders / day</span></div>
+          <input id="ordr" type="range" min="5" max="150" step="5" value="30" aria-label="Orders per day" oninput="calcPlan(this.value)">
+        </div>
+        <div class="calc-side">
+          <div class="calc-lbl" data-es="Plan recomendado">Recommended plan</div>
+          <div class="calc-plan" id="calc-plan">Growth</div>
+          <div class="calc-price" id="calc-price">$179/month</div>
+          <a class="p-cta" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant" data-es="Reservar demo gratis" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20para%20mi%20restaurante">Book a Demo</a>
+        </div>
+      </div>
+
+      <div class="ladder">
+        <div class="rung" id="rung-starter"><div class="r-vol" data-es="20 pedidos/día">20 orders/day</div><div class="r-plan">Starter</div><div class="r-price">$99<span data-es="/mes">/mo</span></div></div>
+        <div class="rung on" id="rung-growth"><div class="r-vol" data-es="50 pedidos/día">50 orders/day</div><div class="r-plan">Growth</div><div class="r-price">$179<span data-es="/mes">/mo</span></div></div>
+        <div class="rung" id="rung-scale"><div class="r-vol" data-es="100 pedidos/día">100 orders/day</div><div class="r-plan">Scale</div><div class="r-price">$299<span data-es="/mes">/mo</span></div></div>
+        <div class="rung" id="rung-enterprise"><div class="r-vol" data-es="100+ pedidos/día">100+ orders/day</div><div class="r-plan">Enterprise</div><div class="r-price" data-es="A medida">Custom</div></div>
+      </div>
+
+      <p class="scale-foot" data-es="Mientras más crece su restaurante, más capacidad operativa puede necesitar. Simplemente lo pasamos al plan que corresponde a su volumen. <b>Nunca cobramos por pedido ni un porcentaje de sus ventas.</b>">The more your restaurant grows, the more operational capacity you may need. We simply move you to the plan that fits your volume. <b>We never charge per order or a percentage of your sales.</b></p>
     </div>
 
     <div class="bill-toggle reveal">
@@ -972,7 +1095,12 @@
       </div>
     </div>
 
-    <div class="usage-mini reveal" data-es="<b>Sobre el uso de WhatsApp:</b> los planes incluyen la mensajería operativa que un restaurante de ese volumen necesita — menús, confirmaciones, estados y seguimiento. Las campañas de marketing son opcionales y se facturan aparte por volumen, siempre con su aprobación previa. Si su volumen supera su plan, sus pedidos nunca se detienen: simplemente lo pasamos al plan correcto, con aviso y prorrateado. Sin cobros por pedido. Sin comisión. Sin sorpresas en la factura."><b>About WhatsApp usage:</b> plans include the operational messaging a restaurant of that order volume needs — menus, confirmations, status updates and tracking. Marketing campaigns are optional and billed separately by volume, always with your approval first. If you outgrow your plan, your orders never stop: we simply move you to the right plan, with notice, prorated. No per-order fees. No commission. No surprise bills.</div>
+    <div class="usage-mini reveal" data-es="<b>Sobre el uso de WhatsApp:</b> los planes incluyen el uso operativo de WhatsApp adecuado para el volumen de pedidos de cada plan — menús, confirmaciones, estados y seguimiento. Un volumen de mensajería muy alto o las campañas de marketing pueden requerir costos adicionales de mensajería o un plan superior. Su plan está diseñado alrededor del volumen de pedidos de su restaurante: si su negocio crece de forma significativa, simplemente lo pasamos al plan que corresponde a su operación, con aviso y prorrateado. Sin cobros por pedido. Sin comisión sobre sus ventas."><b>About WhatsApp usage:</b> plans include operational WhatsApp usage appropriate for the order volume of each plan — menus, confirmations, status updates and tracking. High-volume messaging or marketing campaigns may require additional messaging costs or a higher plan. Your plan is designed around your restaurant's order volume: if your business grows significantly, we simply move you to the plan that fits your operation — with notice, prorated. No per-order fees. No commission on your sales.</div>
+
+    <div class="fit reveal">
+      <h3 data-es="Veamos si Dewan encaja con su restaurante.">Let's see if Dewan fits your restaurant.</h3>
+      <a class="btn" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20para%20mi%20restaurante"><span data-es="Reservar demo gratis">Book a Free Demo</span> <span class="arrow">→</span></a>
+    </div>
   </div>
 </section>
 
@@ -1014,7 +1142,7 @@
       <details><summary><span data-es="¿Tengo que cambiar mi número de WhatsApp?">Do I need to change my WhatsApp number?</span><span class="pl">+</span></summary><div class="a" data-es="No. Usted conserva el número que sus clientes ya conocen. Lo migramos a la plataforma oficial de WhatsApp Business — y en la mayoría de los casos puede seguir usando su app de WhatsApp Business junto a Dewan durante la transición.">No. You keep the number your customers already know. We upgrade it to the official WhatsApp Business Platform — and in most cases you can keep using your WhatsApp Business app alongside Dewan during the transition.</div></details>
       <details><summary><span data-es="¿Funciona con WhatsApp Business?">Does it work with WhatsApp Business?</span><span class="pl">+</span></summary><div class="a" data-es="Sí. Dewan corre sobre la plataforma oficial de WhatsApp Business — la versión profesional de WhatsApp Business operada por Meta. El mismo número y los mismos chats que sus clientes conocen, con un sistema completo detrás.">Yes. Dewan runs on the official WhatsApp Business Platform — Meta's professional-grade version of WhatsApp Business. Same number, same chats your customers know, with a full system behind it.</div></details>
       <details><summary><span data-es="¿WhatsApp está incluido en el precio?">Is WhatsApp included in the price?</span><span class="pl">+</span></summary><div class="a" data-es="Sí. El acceso a la plataforma y la mensajería operativa para el volumen de pedidos de su plan — menús, confirmaciones, estados, seguimiento — están incluidos en su precio mensual.">Yes. Platform access and the operational messaging for your plan's order volume — menus, confirmations, status updates, tracking — are included in your monthly price.</div></details>
-      <details><summary><span data-es="¿Hay límites de mensajes?">Are there message limits?</span><span class="pl">+</span></summary><div class="a" data-es="No hay topes duros de mensajes en la operación diaria — los planes se dimensionan por <b>volumen de pedidos</b>, y cada uno incluye la mensajería que un restaurante de ese tamaño normalmente necesita. Las campañas de marketing van aparte y usted las pre-aprueba. No va a encontrar la palabra “ilimitado” en esta página: en la plataforma oficial cada mensaje tiene un costo real, y fingir lo contrario es como otros proveedores lo sorprenden después.">There are no hard message caps in day-to-day operation — plans are sized by <b>order volume</b>, and each includes the messaging a restaurant of that size normally needs. Marketing campaigns are separate and pre-approved by you. You won't find the word "unlimited" anywhere on this page: on the official platform every message has a real cost, and pretending otherwise is how other vendors surprise you later.</div></details>
+      <details><summary><span data-es="¿Los mensajes de WhatsApp son ilimitados?">Are WhatsApp messages unlimited?</span><span class="pl">+</span></summary><div class="a" data-es="Dewan usa la plataforma oficial de WhatsApp Business. Cada plan está diseñado alrededor del volumen de mensajería que requiere su volumen de pedidos. Los restaurantes con más necesidad de mensajería pueden pasar a un plan superior. Las campañas de marketing y los volúmenes de mensajería inusualmente altos pueden implicar costos adicionales de WhatsApp. No va a encontrar la palabra “ilimitado” en esta página: en la plataforma oficial cada mensaje tiene un costo real, y fingir lo contrario es como otros proveedores lo sorprenden después.">Dewan uses the official WhatsApp Business Platform. Each plan is designed around the messaging volume required for its order volume. Restaurants with higher messaging needs can move to a higher plan. Marketing campaigns and unusually high messaging volumes may involve additional WhatsApp costs. You won't find the word "unlimited" anywhere on this page: on the official platform every message has a real cost, and pretending otherwise is how other vendors surprise you later.</div></details>
       <details><summary><span data-es="¿Cobran comisión sobre mis ventas?">Do you charge commission on my sales?</span><span class="pl">+</span></summary><div class="a" data-es="No. Nunca. Paga una tarifa plana mensual. Sea un pedido de $15 o de $500, su venta es 100% suya.">No. Never. You pay a flat monthly price. Whether an order is $15 or $500, your sale is 100% yours.</div></details>
       <details><summary><span data-es="¿Puedo usar mis propios repartidores?">Can I use my own delivery drivers?</span><span class="pl">+</span></summary><div class="a" data-es="Sí — es la configuración por defecto. Sus repartidores reciben una app simple con el pedido, la dirección, la ruta y la tarifa, y usted asigna entregas con un toque.">Yes — that's the default setup. Your drivers get a simple app with the order, address, route and delivery fee, and you assign deliveries in one tap.</div></details>
       <details><summary><span data-es="¿Puedo seguir usando DoorDash / Uber Eats / Grubhub?">Can I keep using DoorDash / Uber Eats / Grubhub?</span><span class="pl">+</span></summary><div class="a" data-es="Por supuesto. Dewan opera su <b>canal directo</b> — donde usted se queda con el 100% de la venta y es dueño de la relación con el cliente. La mayoría de los restaurantes mantiene las apps para que los descubran, mientras mueve a sus clientes frecuentes a WhatsApp.">Of course. Dewan runs your <b>direct channel</b> — the one where you keep 100% of the sale and own the customer relationship. Most restaurants keep third-party apps for discovery while moving their regulars to WhatsApp.</div></details>
@@ -1023,9 +1151,26 @@
       <details><summary><span data-es="¿Ustedes configuran todo?">Do you set everything up?</span><span class="pl">+</span></summary><div class="a" data-es="Sí, todo: conexión de WhatsApp, menú, flujo de pedidos, impresión en cocina, configuración de delivery, cuentas de usuarios, capacitación del personal y pedidos de prueba supervisados. La instalación es un servicio, no una lista de tareas que le entregamos.">Yes, all of it: WhatsApp connection, menu, order flow, kitchen printing, delivery settings, user accounts, staff training and supervised test orders. Setup is a service, not a to-do list we hand you.</div></details>
       <details><summary><span data-es="¿Cuánto tarda la implementación?">How long does implementation take?</span><span class="pl">+</span></summary><div class="a" data-es="Normalmente de 1 a 2 semanas desde el arranque hasta su primer pedido en vivo — depende sobre todo del tamaño del menú y de qué tan rápido recibamos su información.">Typically 1–2 weeks from kickoff to your first live order — depending mostly on menu size and how quickly we get your information.</div></details>
       <details><summary><span data-es="¿Puedo tener varios locales?">Can I have multiple locations?</span><span class="pl">+</span></summary><div class="a" data-es="Sí. Cada local corre con su propia línea de WhatsApp, su menú y su configuración de delivery. Para múltiples locales, hablemos de precios Enterprise — y un panel consolidado multi-local está en nuestro roadmap.">Yes. Each location runs its own WhatsApp line, menu and delivery setup. For multiple locations, talk to us about Enterprise pricing — and a consolidated multi-location dashboard is on our roadmap.</div></details>
-      <details><summary><span data-es="¿Qué pasa si recibo más pedidos que mi plan?">What happens if I get more orders than my plan?</span><span class="pl">+</span></summary><div class="a" data-es="<b>Sus pedidos nunca se detienen.</b> Si supera su plan de forma consistente dos meses seguidos, lo pasamos al siguiente plan — con aviso y prorrateado. No hay cobros por pedido, jamás. Crecer más que su plan es un buen problema, y no vamos a castigarlo por eso."><b>Your orders never stop.</b> If you're consistently above your plan for two months in a row, we move you to the next plan — with notice, prorated. There are no per-order charges, ever. Outgrowing your plan is a good problem, and we won't punish it.</div></details>
+      <details><summary><span data-es="¿Qué pasa si mi restaurante crece?">What happens if my restaurant grows?</span><span class="pl">+</span></summary><div class="a" data-es="Simplemente lo pasamos al plan que corresponde a su nuevo volumen de pedidos. Si supera su plan de forma consistente dos meses seguidos, se lo avisamos y hacemos el cambio prorrateado. <b>No hay cobros por pedido ni comisión sobre sus ventas</b>, así que crecer nunca se castiga: solo lo mueve un escalón en la tabla de planes.">We simply move you to the plan that fits your new order volume. If you're consistently above your plan for two months in a row, we let you know and make the change prorated. <b>There are no per-order charges and no commission on your sales</b>, so growing is never penalized — it just moves you one step up the plan ladder.</div></details>
       <details><summary><span data-es="¿Qué pasa con los costos de WhatsApp?">What happens with WhatsApp costs?</span><span class="pl">+</span></summary><div class="a" data-es="Meta cobra a los negocios por mensaje en la plataforma oficial; su plan ya cubre el uso operativo normal para su volumen de pedidos. Si Meta cambia sus tarifas de forma significativa, o su uso está muy fuera de la operación típica de un restaurante, hablamos con usted <b>antes</b> de que algo cambie en su factura. Sin sorpresas — ese es el trato.">Meta charges businesses per message on the official platform; your plan already covers normal operational usage for your order volume. If Meta significantly changes its fees, or your usage is far outside typical restaurant operation, we'll talk with you <b>before</b> anything changes on your bill. No surprises — that's the deal.</div></details>
       <details><summary><span data-es="¿Puedo subir o bajar de plan?">Can I upgrade or downgrade my plan?</span><span class="pl">+</span></summary><div class="a" data-es="Cuando quiera, prorrateado, sin multas. La mayoría de los restaurantes arranca en Starter o Growth y sube a medida que crecen sus pedidos directos.">Anytime, prorated, no penalties. Most restaurants start on Starter or Growth and move up as their direct orders grow.</div></details>
+    </div>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
+<!-- ============ WHY DEWAN ============ -->
+<section id="why" style="padding:88px 0">
+  <div class="container">
+    <div class="section-head reveal" style="margin-bottom:38px">
+      <h2 class="h-big" style="font-size:clamp(28px,3.6vw,44px)" data-es="Por qué los restaurantes eligen Dewan">Why restaurants choose Dewan</h2>
+    </div>
+    <div class="why">
+      <div class="why-item reveal"><span class="c">✓</span><b data-es="Sin comisión sobre sus ventas">No commission on sales</b></div>
+      <div class="why-item reveal"><span class="c">✓</span><b data-es="Nosotros configuramos todo por usted">We configure everything for you</b></div>
+      <div class="why-item reveal"><span class="c">✓</span><b data-es="Construido desde una operación real de delivery">Built from real delivery experience</b></div>
+      <div class="why-item reveal"><span class="c">✓</span><b data-es="Diseñado para crecer con su volumen de pedidos">Designed to scale with your order volume</b></div>
     </div>
   </div>
 </section>
@@ -1085,6 +1230,31 @@
   document.getElementById('yr').textContent = new Date().getFullYear();
   const _tr = document.getElementById('tickrow'); _tr.innerHTML += _tr.innerHTML;
 
+  /* ---------- plan calculator (recommends a plan; never computes WhatsApp costs) ---------- */
+  const PLAN_TIERS = [
+    { max: 20,       key: 'starter',    name: 'Starter',    m: 99,   y: 82  },
+    { max: 50,       key: 'growth',     name: 'Growth',     m: 179,  y: 149 },
+    { max: 100,      key: 'scale',      name: 'Scale',      m: 299,  y: 249 },
+    { max: Infinity, key: 'enterprise', name: 'Enterprise', m: null, y: null }
+  ];
+  const CALC_TXT = {
+    en: { mo: '/month', yr: '/month, billed annually', custom: 'Custom pricing' },
+    es: { mo: '/mes',   yr: '/mes, facturado anual',   custom: 'Precio a medida' }
+  };
+  function calcPlan(v){
+    const out = document.getElementById('calc-plan');
+    if (!out) return;
+    const n = +v, t = PLAN_TIERS.find(p => n <= p.max), txt = CALC_TXT[lang] || CALC_TXT.en;
+    document.getElementById('ordr-v').textContent = n;
+    out.textContent = t.name;
+    document.getElementById('calc-price').textContent =
+      t.m === null ? txt.custom : '$' + (billing === 'y' ? t.y : t.m) + (billing === 'y' ? txt.yr : txt.mo);
+    PLAN_TIERS.forEach(p => {
+      const r = document.getElementById('rung-' + p.key);
+      if (r) r.classList.toggle('on', p.key === t.key);
+    });
+  }
+
   /* ---------- i18n (EN default, ES via data-es attributes) ---------- */
   const META_ES = {
     title: 'Dewan — Convierta WhatsApp en el sistema de pedidos completo de su restaurante',
@@ -1125,6 +1295,8 @@
     document.getElementById('bill-y').classList.toggle('on', b === 'y');
     document.querySelectorAll('.pr').forEach(p => { p.textContent = b === 'm' ? p.dataset.m : p.dataset.y; });
     document.querySelectorAll('.bill-note').forEach(n => { n.textContent = BILL_TXT[b][lang]; });
+    const o = document.getElementById('ordr');
+    if (o) calcPlan(o.value);
   }
   setBilling('m');
 
