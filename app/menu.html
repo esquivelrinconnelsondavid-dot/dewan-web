@@ -4665,8 +4665,17 @@
         // Miniatura vía CDN de Supabase. SOLO fotos de platos del bucket menu-fotos (son 1280px+,
         // siempre se ACHICAN). Logos (bucket restaurantes) y URLs externas pasan intactos:
         // agrandar un logo chico fue lo que dejó las imágenes borrosas en el intento de jul-2026.
+        // [27-ago-2026] Image Transformation quedo DESACTIVADO en el proyecto Supabase
+        // (el endpoint /render/image devuelve 403 {"error":"FeatureNotEnabled"}) tras el
+        // incidente de facturacion. Con la transformacion apagada TODAS las fotos de la app
+        // se caian al onerror y salia el emoji. Fail-open: servimos el original del bucket.
+        // Para volver a las miniaturas cuando la transformacion este activa otra vez:
+        // poner IMG_TRANSFORM_ON=true (verificar antes con
+        //   /storage/v1/render/image/public/menu-fotos/<rid>/<archivo>.jpg?width=480 -> 200).
+        var IMG_TRANSFORM_ON=false;
         function thumb(u,w){
             if(!u||String(u).indexOf('/storage/v1/object/public/menu-fotos/')===-1) return u;
+            if(!IMG_TRANSFORM_ON) return u;
             // resize=contain OBLIGATORIO: sin él, Supabase encoge el ancho pero deja el ALTO
             // original (320x1080 de una foto 1080x1080) = imagen deformada "con zoom".
             // width = 3x la caja CSS (pantallas 3x DPR) y quality 85: nítido en cualquier celular.
