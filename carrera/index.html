@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#DC2D22">
 <title>Mi carrera · DEWAN</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   :root{
@@ -17,15 +16,12 @@
   body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--kraft);color:var(--tinta);overflow:hidden}
 
   /* ---------- mapa a pantalla completa ---------- */
-  #mapa{position:fixed;inset:0;bottom:58vh;background:#E9E2D6;z-index:1}
-  .leaflet-control-attribution{font-size:9px;opacity:.55}
-  .pin{display:flex;align-items:center;justify-content:center;border-radius:50%;
-       box-shadow:0 3px 10px rgba(0,0,0,.28);border:2.5px solid #fff;font-size:17px}
-  .pin-local{width:38px;height:38px;background:var(--tinta);color:#fff}
-  .pin-casa{width:38px;height:38px;background:var(--rojo);color:#fff}
-  .pin-moto{width:46px;height:46px;background:#fff;font-size:24px;border-color:var(--rojo)}
-  .halo{animation:lat 2s infinite}
-  @keyframes lat{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+  /* Mapa = imagen de Google (Static Maps): se ve SIEMPRE, hasta en el
+     navegador de WhatsApp; sin WebGL ni JS de Google (fail-open) */
+  #mapa{position:fixed;top:0;left:0;right:0;height:42vh;background:#E9E2D6;z-index:1}
+  #mapa a{display:block;width:100%;height:100%}
+  #mapa img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s}
+  #mapa img.lista{opacity:1}
 
   /* ---------- marca flotante ---------- */
   .marca{position:fixed;top:calc(env(safe-area-inset-top) + 12px);left:12px;z-index:5;
@@ -102,7 +98,7 @@
 </head>
 <body>
 
-<div id="mapa"></div>
+<div id="mapa"><a id="mapaLink" target="_blank" rel="noopener"><img id="mapaImg" alt="Mapa de su carrera"></a></div>
 <div class="marca"><div class="logo">🔔</div><b>DE<span>WAN</span></b></div>
 <div class="cod" id="cod">…</div>
 
@@ -161,7 +157,6 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -169,7 +164,6 @@
   var WA = '593986777146';
   var token = new URLSearchParams(location.search).get('t') || '';
 
-  var mapa, capaMoto, capaLocal, capaCasa, capaRuta, yaCentrado = false;
   var estadoPrev = '', carrera = null, pedido = null;
 
   function sb(path) {
@@ -183,9 +177,11 @@
   function sinLink(s) {
     s = String(s || '').trim();
     var i = s.indexOf('http');
-    var limpio = (i === -1 ? s : s.slice(0, i)).replace(/pin/i, '');
+    var limpio = (i === -1 ? s : s.slice(0, i))
+      .replace(/\(donde la vez pasada\)/i, '').replace(/\(pin\)/i, '').replace(/\bpin\b/i, '');
     // fuera emojis y marcas invisibles que quedan al cortar el link
-    limpio = limpio.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '').trim();
+    limpio = limpio.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, '')
+      .replace(/\(\s*\)/g, '').replace(/\s+/g, ' ').trim();
     return limpio.length >= 3 ? limpio : 'Ubicación exacta (pin en el mapa) 📍';
   }
   function km(a, b, c, d) {
@@ -194,49 +190,42 @@
             Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) * Math.sin((d - b) * r / 2);
     return 2 * R * Math.asin(Math.sqrt(x));
   }
-  function icono(clase, emoji) {
-    return L.divIcon({ html: '<div class="pin ' + clase + '">' + emoji + '</div>', className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
-  }
+  // ---------- mapa (Google Static Maps: una IMAGEN, se ve siempre) ----------
+  var KEY_MAPS = 'AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs';
 
-  // ---------- mapa ----------
-  function iniciarMapa() {
-    mapa = L.map('mapa', { zoomControl: false, attributionControl: true }).setView([-1.6650, -78.6540], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '&copy; OpenStreetMap'
-    }).addTo(mapa);
+  function urlMapa() {
+    var lr = num(carrera.lat_recogida), gr = num(carrera.lng_recogida);
+    var le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
+    var lm = pedido && num(pedido.moto_lat), gm = pedido && num(pedido.moto_lng);
+    var u = 'https://maps.googleapis.com/maps/api/staticmap?size=640x560&scale=2&language=es&maptype=roadmap';
+    // R = recogida (negro) · E = entrega (rojo) · M = la moto (verde, en vivo)
+    if (lr && gr) u += '&markers=' + encodeURIComponent('size:mid|color:0x2B2118|label:R|' + lr + ',' + gr);
+    if (le && ge) u += '&markers=' + encodeURIComponent('color:0xDC2D22|label:E|' + le + ',' + ge);
+    if (lm && gm) u += '&markers=' + encodeURIComponent('color:0x25D366|label:M|' + lm + ',' + gm);
+    var ruta = (lm && gm && le && ge) ? (lm + ',' + gm + '|' + le + ',' + ge)
+             : ((lr && gr && le && ge) ? (lr + ',' + gr + '|' + le + ',' + ge) : '');
+    if (ruta) u += '&path=' + encodeURIComponent('color:0xDC2D22AA|weight:4|' + ruta);
+    else {
+      var la = (le != null ? le : lr), ga = (ge != null ? ge : gr);
+      if (la != null && ga != null) u += '&zoom=16&center=' + la + ',' + ga;
+    }
+    return u + '&key=' + KEY_MAPS;
   }
 
   function pintarMapa() {
-    mapa.invalidateSize(false); // el contenedor cambia de alto con la hoja
-    var pts = [];
-    var lr = num(carrera.lat_recogida), gr = num(carrera.lng_recogida);
-    var le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
-    if (lr && gr) {
-      if (!capaLocal) capaLocal = L.marker([lr, gr], { icon: icono('pin-local', '🏪') }).addTo(mapa);
-      pts.push([lr, gr]);
-    }
-    if (le && ge) {
-      if (!capaCasa) capaCasa = L.marker([le, ge], { icon: icono('pin-casa', '🏠') }).addTo(mapa);
-      pts.push([le, ge]);
-    }
+    var img = $('mapaImg');
+    if (!img || !carrera) return;
+    var u = urlMapa();
+    if (img.getAttribute('data-u') === u) return; // nada se movio
+    img.setAttribute('data-u', u);
+    var pre = new Image(); // precargar: la imagen vieja se queda hasta que llegue la nueva
+    pre.onload = function () { img.src = u; img.classList.add('lista'); };
+    pre.src = u;
+    // tocar el mapa abre Google Maps de verdad (con la moto si ya esta en la calle)
     var lm = pedido && num(pedido.moto_lat), gm = pedido && num(pedido.moto_lng);
-    if (lm && gm) {
-      if (!capaMoto) capaMoto = L.marker([lm, gm], { icon: icono('pin-moto halo', '🛵') }).addTo(mapa);
-      else capaMoto.setLatLng([lm, gm]);
-      pts.push([lm, gm]);
-    }
-    if (pts.length > 1) {
-      var ruta = (lm && gm && le && ge) ? [[lm, gm], [le, ge]] : pts;
-      if (capaRuta) mapa.removeLayer(capaRuta);
-      capaRuta = L.polyline(ruta, { color: '#DC2D22', weight: 3, opacity: .55, dashArray: '7 8' }).addTo(mapa);
-    }
-    if (!yaCentrado && pts.length) {
-      yaCentrado = true;
-      if (pts.length === 1) mapa.setView(pts[0], 16);
-      else mapa.fitBounds(L.latLngBounds(pts), { padding: [50, 50], maxZoom: 17 });
-    } else if (lm && gm && capaMoto) {
-      mapa.panTo([lm, gm], { animate: true, duration: .8 });
-    }
+    var le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
+    var punto = (lm && gm) ? (lm + ',' + gm) : ((le && ge) ? (le + ',' + ge) : '');
+    if (punto) $('mapaLink').href = 'https://maps.google.com/?q=' + punto;
   }
 
   // ---------- estado ----------
@@ -407,7 +396,6 @@
     });
   }
 
-  iniciarMapa();
   cargar();
   setInterval(cargar, 12000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) cargar(); });
