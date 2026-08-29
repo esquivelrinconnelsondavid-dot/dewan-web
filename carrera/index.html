@@ -77,6 +77,9 @@
   .precio{display:flex;justify-content:space-between;align-items:center;background:#FFF7EC;
     border:1px solid #F1DFC2;border-radius:14px;padding:12px 14px;margin:10px 0 4px}
   .precio b{color:var(--rojo);font-size:19px}
+  .precio+.precio{margin-top:6px}
+  .precio.total{background:#FDE9E7;border:1px solid #F5CBC6}
+  .precio.total b{font-size:22px}
 
   .btns{display:flex;gap:9px;margin-top:14px}
   .btn{flex:1;text-align:center;text-decoration:none;padding:14px 10px;border-radius:14px;
@@ -322,13 +325,39 @@
     function fila(ic, txt) { if (txt) f.push('<div class="fila"><div class="ic">' + ic + '</div><div>' + txt + '</div></div>'); }
     var ICO = { moto_local: '🏪', compra: '🛒', comida: '🍽️', encomienda: '📦' };
     fila(ICO[carrera.tipo] || '📦', '<b>' + esc(carrera.titulo || 'Carrera') + '</b>');
+    // lo que el cliente PIDIO en el formulario (local, pedido, pago, notas):
+    // la pagina muestra SU carrera, no un cascaron generico
+    var res = String(carrera.resumen || '').split('\n').map(function (l) { return l.trim(); })
+      .filter(function (l) { return l && !/^🏠|^📍/.test(l); }).slice(0, 6);
+    if (res.length) fila('📋', '<b>Su pedido:</b><br>' + res.map(esc).join('<br>'));
     if (carrera.recogida) fila('📍', '<b>Recogemos en:</b><br>' + esc(sinLink(carrera.recogida)));
     if (carrera.entrega) fila('🏠', '<b>Entregamos en:</b><br>' + esc(sinLink(carrera.entrega)));
-    if (carrera.cobrar_cliente) fila('💵', '<b>La moto cobra:</b> ' + esc(carrera.cobrar_cliente));
     $('detalle').innerHTML = f.join('');
+
+    // ---- la PLATA igual que en la confirmacion: producto + carrera = TOTAL
+    // (antes salia "La moto cobra $5.00" al lado de "carrera $1.75" sin sumar
+    // -> el cliente leia mal el precio)
     var p = Number(carrera.precio);
-    $('precioBox').innerHTML = (isFinite(p) && p > 0)
-      ? '<div class="precio"><span>Valor de la carrera</span><b>$' + p.toFixed(2) + '</b></div>' : '';
+    var cobroTxt = String(carrera.cobrar_cliente || '').trim();
+    var monto = cobroTxt ? Number(cobroTxt.replace(/\$/g, '').replace(/,/g, '.').trim()) : NaN;
+    var ETQ = { comida: 'La comida', compra: 'La compra', moto_local: 'Su pedido', encomienda: 'El paquete' };
+    function linea(nombre, valor, fuerte) {
+      return '<div class="precio' + (fuerte ? ' total' : '') + '"><span>' + nombre + '</span><b>' + valor + '</b></div>';
+    }
+    var html = '';
+    if (isFinite(monto) && monto > 0 && isFinite(p) && p > 0) {
+      html = linea(ETQ[carrera.tipo] || 'El pedido', '$' + monto.toFixed(2)) +
+             linea('Carrera', '$' + p.toFixed(2)) +
+             linea('💰 Total a pagar', '$' + (monto + p).toFixed(2), true);
+    } else if (isFinite(monto) && monto === 0) {
+      html = (isFinite(p) && p > 0 ? linea('💰 Paga solo la carrera (su pedido ya esta pagado ✔)', '$' + p.toFixed(2), true) : '');
+    } else if (isFinite(p) && p > 0) {
+      html = linea('💰 Valor de la carrera', '$' + p.toFixed(2), true) +
+             (cobroTxt ? linea(esc(cobroTxt), '') : '');
+    } else if (cobroTxt) {
+      html = linea('💵 ' + esc(cobroTxt), '');
+    }
+    $('precioBox').innerHTML = html;
   }
 
   function pintarBotones(cancelada) {
