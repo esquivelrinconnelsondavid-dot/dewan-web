@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PedidoCard from './PedidoCard';
+import { supabase } from '../lib/supabase';
 
 const FILTROS = [
   { id: 'activos', label: '🔥 Activos' },
@@ -20,6 +21,25 @@ export default function PedidosTab({ data }) {
   const [filtro, setFiltro] = useState('activos');
   const [avisandoMotos, setAvisandoMotos] = useState(false);
   const { pedidos, colgados, rechazados, restaurantes } = data;
+
+  // "☔ Modo lluvia": +$0.30 empaquetado en la carrera (lo paga el cliente y va
+  // íntegro al moto). El flag vive en configuracion_delivery vía RPC (SQL 013);
+  // la cotización de n8n lo lee al calcular cada envío.
+  const [lluvia, setLluvia] = useState(null); // null = cargando/aún sin SQL 013
+  useEffect(() => {
+    supabase.rpc('get_modo_lluvia').then(({ data }) => {
+      if (data && typeof data.lluvia_activa === 'boolean') setLluvia(data.lluvia_activa);
+    }).catch(() => {});
+  }, []);
+  const toggleLluvia = async () => {
+    const nuevo = !lluvia;
+    if (!confirm(nuevo
+      ? '¿Activar MODO LLUVIA? El envío sube $0.30 (va completo al moto).'
+      : '¿Desactivar modo lluvia? El envío vuelve a la tarifa normal.')) return;
+    const { data, error } = await supabase.rpc('set_modo_lluvia', { p_activa: nuevo });
+    if (error || !data?.exito) { alert('No se pudo cambiar (¿falta correr el SQL 013?)'); return; }
+    setLluvia(nuevo);
+  };
 
   // "🔴 Faltan motos": push Expo a TODA la flota (incluye desconectados) vía el
   // workflow n8n avisos-flota-faltan-motos. El workflow tiene freno de 30 min.
@@ -64,13 +84,26 @@ export default function PedidosTab({ data }) {
 
   return (
     <div className="p-3 space-y-3">
-      <button
-        onClick={avisarFaltanMotos}
-        disabled={avisandoMotos}
-        className="w-full py-2.5 text-sm font-bold rounded-xl bg-red-600/20 text-red-400 border border-red-500 active:scale-95 disabled:opacity-50"
-      >
-        {avisandoMotos ? 'Enviando aviso…' : '🔴 FALTAN MOTOS — avisar a toda la flota'}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={avisarFaltanMotos}
+          disabled={avisandoMotos}
+          className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-red-600/20 text-red-400 border border-red-500 active:scale-95 disabled:opacity-50"
+        >
+          {avisandoMotos ? 'Enviando…' : '🔴 FALTAN MOTOS'}
+        </button>
+        <button
+          onClick={toggleLluvia}
+          disabled={lluvia === null}
+          className={`flex-1 py-2.5 text-sm font-bold rounded-xl border active:scale-95 disabled:opacity-40 ${
+            lluvia
+              ? 'bg-blue-500/25 text-blue-300 border-blue-400'
+              : 'bg-tarjeta text-gray-300 border-borde'
+          }`}
+        >
+          {lluvia === null ? '☔ Lluvia…' : lluvia ? '☔ LLUVIA ACTIVA (+$0.30)' : '☔ Modo lluvia OFF'}
+        </button>
+      </div>
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {FILTROS.map((f) => (
           <button
