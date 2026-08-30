@@ -1,8 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import PedidoCard from './PedidoCard';
 import { supabase } from '../lib/supabase';
+import { Semaforo, calcularExcepciones } from './TorreControl';
 
 const FILTROS = [
+  { id: 'torre', label: '🚨 Torre' },
   { id: 'activos', label: '🔥 Activos' },
   { id: 'todos', label: 'Todos' },
   { id: 'alerta', label: '🚨 Alertas' },
@@ -18,7 +20,7 @@ const ESTADOS_ACTIVOS = new Set([
 ]);
 
 export default function PedidosTab({ data }) {
-  const [filtro, setFiltro] = useState('activos');
+  const [filtro, setFiltro] = useState('torre');
   const [avisandoMotos, setAvisandoMotos] = useState(false);
   const { pedidos, colgados, rechazados, restaurantes } = data;
 
@@ -71,7 +73,14 @@ export default function PedidosTab({ data }) {
     return m;
   }, [restaurantes]);
 
+  // Torre de control: solo lo que necesita acción humana (gestión por excepción)
+  const excepciones = useMemo(
+    () => calcularExcepciones({ pedidos, colgados, rechazados }),
+    [pedidos, colgados, rechazados, data._tick]
+  );
+
   const lista = useMemo(() => {
+    if (filtro === 'torre') return excepciones.map((e) => e.p);
     if (filtro === 'activos') return pedidos.filter((p) => ESTADOS_ACTIVOS.has(p.estado_pedido));
     if (filtro === 'alerta') {
       const ids = new Set([...colgados, ...rechazados].map((p) => p.id));
@@ -84,6 +93,7 @@ export default function PedidosTab({ data }) {
 
   return (
     <div className="p-3 space-y-3">
+      <Semaforo pedidos={pedidos} motorizados={data.motorizados} nExcepciones={excepciones.length} />
       <div className="flex gap-2">
         <button
           onClick={avisarFaltanMotos}
@@ -118,7 +128,30 @@ export default function PedidosTab({ data }) {
         ))}
       </div>
 
-      {lista.length === 0 ? (
+      {filtro === 'torre' ? (
+        excepciones.length === 0 ? (
+          <div className="text-center mt-12 text-gray-500">
+            <p className="text-4xl mb-3">✅</p>
+            <p className="text-sm font-bold text-green-400">Todo bajo control</p>
+            <p className="text-xs mt-1">Nada necesita tu acción ahora. Las excepciones aparecen aquí solas.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {excepciones.map((e) => (
+              <div key={e.p.id}>
+                <div className="text-xs font-bold text-red-300 bg-red-600/15 border border-red-500/60 rounded-t-xl px-3 py-1.5">
+                  {e.emoji} {e.motivo}
+                </div>
+                <PedidoCard
+                  p={e.p}
+                  tipoAcuerdo={e.p.restaurante_id ? tipoPorRest.get(e.p.restaurante_id) : null}
+                  motorizados={data.motorizados}
+                />
+              </div>
+            ))}
+          </div>
+        )
+      ) : lista.length === 0 ? (
         <div className="text-center mt-12 text-gray-500">
           <p className="text-4xl mb-3">📭</p>
           <p className="text-sm">Sin pedidos</p>
