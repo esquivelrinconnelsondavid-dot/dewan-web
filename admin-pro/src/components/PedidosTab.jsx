@@ -34,6 +34,13 @@ export default function PedidosTab({ data }) {
     }).catch(() => {});
   }, []);
   const toggleLluvia = async () => {
+    // Estado aún desconocido (¿SQL 013 sin correr? ¿sin internet?): reintentar y explicar.
+    if (lluvia === null) {
+      const { data } = await supabase.rpc('get_modo_lluvia').catch(() => ({ data: null }));
+      if (data && typeof data.lluvia_activa === 'boolean') { setLluvia(data.lluvia_activa); return; }
+      alert('El modo lluvia aún no está instalado en la base.\n\nPide que corran el SQL 013 (dewan-SQL-013-modo-lluvia.sql) en Supabase y vuelve a intentar.');
+      return;
+    }
     const nuevo = !lluvia;
     if (!confirm(nuevo
       ? '¿Activar MODO LLUVIA? El envío sube $0.30 (va completo al moto).'
@@ -41,6 +48,7 @@ export default function PedidosTab({ data }) {
     const { data, error } = await supabase.rpc('set_modo_lluvia', { p_activa: nuevo });
     if (error || !data?.exito) { alert('No se pudo cambiar (¿falta correr el SQL 013?)'); return; }
     setLluvia(nuevo);
+    alert(nuevo ? '☔ Modo lluvia ACTIVADO: los envíos ya cotizan +$0.30.' : '✅ Modo lluvia desactivado.');
   };
 
   // "🔴 Faltan motos": push Expo a TODA la flota (incluye desconectados) vía el
@@ -104,8 +112,7 @@ export default function PedidosTab({ data }) {
         </button>
         <button
           onClick={toggleLluvia}
-          disabled={lluvia === null}
-          className={`flex-1 py-2.5 text-sm font-bold rounded-xl border active:scale-95 disabled:opacity-40 ${
+          className={`flex-1 py-2.5 text-sm font-bold rounded-xl border active:scale-95 ${
             lluvia
               ? 'bg-blue-500/25 text-blue-300 border-blue-400'
               : 'bg-tarjeta text-gray-300 border-borde'
