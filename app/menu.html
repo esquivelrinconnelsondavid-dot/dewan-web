@@ -489,6 +489,8 @@
         .sinconv-note-title{font-size:0.87rem;font-weight:900;color:#92400E;letter-spacing:-0.01em;line-height:1.25}
         .sinconv-note-text{font-size:0.8rem;font-weight:600;color:#92400E;opacity:0.92;line-height:1.35;margin-top:3px}
         .cart-summary-box .sinconv-note{margin:12px 0 0}
+        .lluvia-note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:#DBEAFE;border:1px solid #3B82F6;border-radius:12px;margin:12px 0 0}
+        .lluvia-note-text{font-size:0.8rem;font-weight:600;color:#1E40AF;line-height:1.35}
 
         /* Almuerzo selector modal */
         .almuerzo-modal{max-height:85vh;overflow-y:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom,20px)}
@@ -1730,6 +1732,25 @@
                         :'Los precios que ves son referenciales. El motorizado te entrega el recibo del local y pagas lo que marque.')+'</div>'+
                 '</div>'+
             '</div>';
+        }
+        // MODO LLUVIA (SQL 013): solo el AVISO de demora — el +$0.30 ya viene
+        // empaquetado en la cotización del servidor (decisión de David, sin
+        // etiqueta de lluvia en el precio). Fail-open: sin RPC => sin aviso.
+        window._modoLluvia=false; window._modoLluviaTs=0;
+        function cargarModoLluvia(){
+            if(Date.now()-window._modoLluviaTs<10*60*1000)return;
+            window._modoLluviaTs=Date.now();
+            fetch(SB_URL+'/rest/v1/rpc/get_modo_lluvia',{
+                method:'POST',
+                headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+                body:'{}'
+            }).then(function(x){return x.json()}).then(function(j){
+                window._modoLluvia=!!(j&&j.lluvia_activa);
+            }).catch(function(){});
+        }
+        function avisoLluviaHTML(){
+            return '<div class="lluvia-note"><span class="sinconv-note-icon">🌧️</span>'+
+                '<div class="lluvia-note-text">Está lloviendo en Riobamba — tu pedido puede tardar unos minutos más. Gracias por la paciencia con tu motorizado.</div></div>';
         }
         // ¿hay algun local sin convenio en el carrito? (getRestByName esta hoisted)
         function cartTieneSinConvenio(){
@@ -3635,6 +3656,7 @@
         }
         window.showCart=function(){
             if(!_cartSheetOpen()){ window._prevView=currentView; window._prevRest=currentRestIdx; } // recordar a dónde volver al cerrar
+            cargarModoLluvia();
             cotizarEnvioReal();
             if(typeof refrescarPremioEnvio==='function') refrescarPremioEnvio();   // carrera gratis (premio de sellos)
             currentView='cart';
@@ -3724,6 +3746,7 @@
                 (window._clientGPS?'':'<div class="cart-total-sub">🛵 Envío desde $1.30 · se confirma con tu ubicación</div>')+
                 // Ultimo aviso antes de confirmar: el total de arriba puede no ser el final.
                 (cartTieneSinConvenio()?avisoSinConvenioHTML(true):'')+
+                (window._modoLluvia?avisoLluviaHTML():'')+
             '</div>';
 
             // Ubicación inline — FIX #2: ambas opciones siempre visibles
