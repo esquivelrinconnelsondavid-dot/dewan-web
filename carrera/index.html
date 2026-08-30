@@ -344,11 +344,24 @@
     function linea(nombre, valor, fuerte) {
       return '<div class="precio' + (fuerte ? ' total' : '') + '"><span>' + nombre + '</span><b>' + valor + '</b></div>';
     }
+    // Recibo real del local (lo registra el moto al recoger, locales sin convenio):
+    // si existe, manda sobre la cotización — el cliente paga recibo + carrera.
+    var recibo = pedido ? num(pedido.pago_local_real) : null;
+    var notaRecibo = '';
+    if (recibo && recibo > 0) {
+      notaRecibo = '<div style="font-size:12.5px;color:#92400E;background:#FEF3C7;border:1px solid #F59E0B;' +
+        'border-radius:8px;padding:6px 10px;margin:4px 0">🧾 El local cobró <b>$' + recibo.toFixed(2) +
+        '</b> según su recibo — paga lo del recibo más la carrera.' +
+        (pedido.recibo_url ? ' <a href="' + esc(pedido.recibo_url) + '" target="_blank" rel="noopener" style="color:#92400E;font-weight:800">Ver foto 📎</a>' : '') +
+        '</div>';
+    }
     var html = '';
     if (isFinite(monto) && monto > 0 && isFinite(p) && p > 0) {
-      html = linea(ETQ[carrera.tipo] || 'El pedido', '$' + monto.toFixed(2)) +
+      var comida = (recibo && recibo > 0) ? recibo : monto;
+      html = linea(ETQ[carrera.tipo] || 'El pedido', '$' + comida.toFixed(2)) +
+             notaRecibo +
              linea('Carrera', '$' + p.toFixed(2)) +
-             linea('💰 Total a pagar', '$' + (monto + p).toFixed(2), true);
+             linea('💰 Total a pagar', '$' + (comida + p).toFixed(2), true);
     } else if (isFinite(monto) && monto === 0) {
       html = (isFinite(p) && p > 0 ? linea('💰 Paga solo la carrera (su pedido ya esta pagado ✔)', '$' + p.toFixed(2), true) : '');
     } else if (isFinite(p) && p > 0) {
@@ -405,6 +418,16 @@
       sb('/pedidos_delivery?select=estado_pedido,nombre_moto,telefono_moto,motorizado_id&id=eq.' + carrera.pedido_id + '&limit=1')
         .then(function (pp) {
           pedido = (pp && pp[0]) || null;
+          // Recibo real del local (migración 010, columnas nuevas): fetch APARTE
+          // para que, si la BD aún no las tiene, falle solo esto y no el tracking.
+          sb('/pedidos_delivery?select=pago_local_real,recibo_url&id=eq.' + carrera.pedido_id + '&limit=1')
+            .then(function (rr) {
+              if (pedido && rr && rr[0] && rr[0].pago_local_real != null) {
+                pedido.pago_local_real = rr[0].pago_local_real;
+                pedido.recibo_url = rr[0].recibo_url;
+                pintar();
+              }
+            });
           if (pedido && pedido.motorizado_id) {
             return sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + pedido.motorizado_id + '&limit=1')
               .then(function (mm) {
