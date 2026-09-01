@@ -30,6 +30,9 @@
   .logo{width:28px;height:28px;border-radius:9px;background:var(--rojo);color:#fff;
     display:flex;align-items:center;justify-content:center;font-size:15px}
   .marca b{font-size:14px;letter-spacing:.4px}.marca b span{color:var(--rojo)}
+  .tagline{position:fixed;top:calc(env(safe-area-inset-top) + 54px);left:12px;z-index:5;
+    background:var(--tinta);color:#fff;border-radius:999px;padding:5px 12px;
+    font-size:11px;font-weight:700;letter-spacing:.3px;box-shadow:0 3px 14px rgba(43,33,24,.18)}
   .cod{position:fixed;top:calc(env(safe-area-inset-top) + 12px);right:12px;z-index:5;
     background:#fff;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700;
     color:var(--gris);box-shadow:0 3px 14px rgba(43,33,24,.18)}
@@ -103,6 +106,7 @@
 
 <div id="mapa"><a id="mapaLink" target="_blank" rel="noopener"><img id="mapaImg" alt="Mapa de su carrera"></a></div>
 <div class="marca"><div class="logo">🔔</div><b>DE<span>WAN</span></b></div>
+<div class="tagline">Entrega a cargo de DEWAN 🛵</div>
 <div class="cod" id="cod">…</div>
 
 <div class="hoja">
@@ -400,7 +404,8 @@
 
   $('btnCompartir').addEventListener('click', function () {
     var url = location.href;
-    if (navigator.share) navigator.share({ title: 'Mi carrera DEWAN', text: 'Siga mi carrera ' + (carrera && carrera.codigo || ''), url: url });
+    // El local reenvia esto a SU cliente: el texto habla del pedido, no de "mi carrera"
+    if (navigator.share) navigator.share({ title: 'Su pedido va con DEWAN', text: '🔔 Su pedido va en camino con DEWAN 🛵 Siga su entrega en vivo aquí:', url: url });
     else { navigator.clipboard.writeText(url); this.textContent = '✅ Link copiado'; }
   });
 
