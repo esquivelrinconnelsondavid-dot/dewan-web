@@ -48,7 +48,12 @@ export default function PedidoEnPreparacion({ pedido }) {
     setCargando(false);
   };
   const domicilio = esDomicilio(pedido);
-  const yaSalio = pedido.estado_pedido === 'en_camino' || pedido.estado_pedido === 'listo';
+  const yaSalio = ['listo', 'en_camino', 'en_camino_entrega', 'recogido', 'llegado'].includes(pedido.estado_pedido);
+  // SISTEMA a domicilio: la entrega la hace una moto DEWAN (sus botones avisan al cliente);
+  // el trigger de la BD copia aquí motorizado/estado. El local NO marca "Salió".
+  const motoDewan = MODO_SISTEMA && domicilio;
+  const motoNombre = pedido.nombre_moto ? String(pedido.nombre_moto).split(' ').slice(0, 2).join(' ') : '';
+  const motoTel = pedido.telefono_moto ? String(pedido.telefono_moto).replace(/^593/, '0') : '';
   const dirLimpia = String(pedido.direccion_entrega || '').replace(/\s*·?\s*https?:\/\/\S+/g, '').trim();
   const telCliente = pedido.cliente_telefono ? String(pedido.cliente_telefono).replace(/^593/, '0') : '';
 
@@ -94,6 +99,11 @@ export default function PedidoEnPreparacion({ pedido }) {
           <span className="text-white font-bold">{pedido.cliente_nombre || '—'}</span>
           {MODO_SISTEMA && telCliente && <span className="text-gray-400">📞 {telCliente}</span>}
           {MODO_SISTEMA && domicilio && dirLimpia && <span className="text-gray-400 basis-full">📍 {dirLimpia}</span>}
+          {motoDewan && (
+            <span className={`basis-full font-semibold ${motoNombre ? 'text-encamino' : 'text-gray-400'}`}>
+              {motoNombre ? `🛵 Moto DEWAN: ${motoNombre}${motoTel ? ' · ' + motoTel : ''}` : '🛵 Moto DEWAN: buscando motorizado…'}
+            </span>
+          )}
           {pedido.tiempo_preparacion && !yaSalio && (
             <span className="ml-auto text-gray-400">⏱ {pedido.tiempo_preparacion} min</span>
           )}
@@ -125,21 +135,21 @@ export default function PedidoEnPreparacion({ pedido }) {
               🖨️ Reimprimir
             </button>
           )}
-          {MODO_SISTEMA && !yaSalio ? (
+          {MODO_SISTEMA && !yaSalio && !motoDewan ? (
             <button
               onClick={salio}
               disabled={cargando}
               className="flex-1 bg-dewan text-white font-extrabold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
             >
-              {domicilio ? '🛵 Salió (avisar al cliente)' : '✅ Listo (avisar al cliente)'}
+              ✅ Listo (avisar al cliente)
             </button>
           ) : (
             <button
               onClick={marcarListo}
               disabled={cargando}
-              className={`flex-1 ${yaSalio ? 'bg-encamino' : 'bg-dewan'} text-white font-extrabold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md`}
+              className={`flex-1 ${yaSalio ? 'bg-encamino' : (motoDewan ? 'bg-bg2 text-gray-300 border border-borde' : 'bg-dewan')} ${motoDewan && !yaSalio ? '' : 'text-white'} font-extrabold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md`}
             >
-              {MODO_SISTEMA ? '✓ Entregado' : '✓ Marcar listo'}
+              {MODO_SISTEMA ? (motoDewan && !yaSalio ? '✓ Entregado (si la moto no lo marcó)' : '✓ Entregado') : '✓ Marcar listo'}
             </button>
           )}
         </div>

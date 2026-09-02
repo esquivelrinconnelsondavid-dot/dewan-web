@@ -396,7 +396,7 @@
     cont.innerHTML =
       '<div class="moto"><div class="av">' + esc(ini) + '</div>' +
       '<div><div class="nom">' + esc(nom.split(' ').slice(0, 2).join(' ')) + '</div>' +
-      '<div class="rol">' + (esDewan() ? 'Su motorizado DEWAN 🛵' : 'Su repartidor 🛵') + '</div></div>' +
+      '<div class="rol">' + ((esDewan() || (esSistema && pedido.motorizado_id)) ? 'Su motorizado DEWAN 🛵' : 'Su repartidor 🛵') + '</div></div>' +
       (tel ? '<div class="acc">' +
         '<a class="ico tel" href="tel:' + esc(tel) + '" aria-label="Llamar">📞</a>' +
         '<a class="ico wa" href="https://wa.me/' + esc(telInt(tel)) + '" aria-label="WhatsApp">💬</a>' +
@@ -581,7 +581,8 @@
         tareas.push(sb('/restaurantes?select=nombre,logo_url,telefono,direccion,latitud,longitud&id=eq.' + p.restaurante_id + '&limit=1')
           .then(function (r) { local = (r && r[0]) || null; }));
       }
-      if (p.motorizado_id && !esSistema && !esRetiro() && PASO[p.estado_pedido] >= 1) {
+      // (sistema: a domicilio también entrega una moto DEWAN → mismo mapa en vivo)
+      if (p.motorizado_id && !esRetiro() && PASO[p.estado_pedido] >= 1) {
         tareas.push(sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + p.motorizado_id + '&limit=1')
           .then(function (mm) {
             moto = null;

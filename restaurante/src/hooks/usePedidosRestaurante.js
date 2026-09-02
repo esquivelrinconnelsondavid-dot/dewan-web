@@ -290,8 +290,9 @@ export function usePedidosRestaurante(restaurante) {
 
   const entrantes = pedidos.filter((p) => p.estado_pedido === 'pendiente_restaurante');
   // SISTEMA: listo / en_camino siguen en la columna de cocina hasta que el local marca Entregado.
+  // (a domicilio la moto DEWAN mueve el estado: asignado/en_camino/llegado… → sigue en la columna)
   const enPreparacion = pedidos.filter((p) => p.estado_pedido === 'preparando' ||
-    (MODO_SISTEMA && (p.estado_pedido === 'listo' || p.estado_pedido === 'en_camino')));
+    (MODO_SISTEMA && p.estado_pedido !== 'pendiente_restaurante'));
   const enProceso = pedidos.filter((p) => !MODO_SISTEMA && ESTADOS_EN_PROCESO.includes(p.estado_pedido));
 
   return { entrantes, enPreparacion, enProceso, cargando, recargar: cargar };
