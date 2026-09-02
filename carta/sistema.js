@@ -123,6 +123,7 @@
       nota +
       '<div class="sis-row tot"><span>Total a pagar</span><b>' + money(sub + env) + '</b></div>';
     if ($("#cart-total")) $("#cart-total").textContent = money(sub + env);
+    if ($("#fab-total")) $("#fab-total").textContent = money(sub + env);
   }
   const _refrescar = window.refrescar;
   window.refrescar = function () { _refrescar.apply(this, arguments); pintar(); };
