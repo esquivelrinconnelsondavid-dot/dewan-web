@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2B2118">
+<title>Mi pedido</title>
+<meta name="robots" content="noindex">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --rojo:#DC2D22; --kraft:#F4EDE2; --tinta:#2B2118; --gris:#7A6A58;
+    --linea:#EDE3D4; --verde:#25D366; --ambar:#F59E0B; --ok:#16A34A;
+  }
+  html,body{min-height:100%}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--kraft);color:var(--tinta)}
+
+  /* ---------- cabecera del LOCAL (marca propia) ---------- */
+  .top{background:var(--tinta);color:#fff;padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;
+    display:flex;align-items:center;gap:12px}
+  .logo{width:46px;height:46px;border-radius:12px;background:#fff;flex:0 0 46px;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:var(--tinta)}
+  .logo img{width:100%;height:100%;object-fit:cover;display:block}
+  .top .nom{font-size:16px;font-weight:800;line-height:1.15}
+  .top .sub{font-size:12px;opacity:.75;margin-top:2px}
+  .top .cod{margin-left:auto;background:rgba(255,255,255,.12);border-radius:999px;padding:6px 11px;
+    font-size:12px;font-weight:800;white-space:nowrap}
+
+  /* ---------- mapa (imagen estática: se ve siempre) ---------- */
+  #mapa{height:34vh;min-height:170px;background:#E9E2D6;position:relative}
+  #mapa a{display:block;width:100%;height:100%}
+  #mapa img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s}
+  #mapa img.lista{opacity:1}
+  #mapa.oculto{display:none}
+
+  /* ---------- hoja ---------- */
+  .hoja{background:#fff;border-radius:22px 22px 0 0;margin-top:-18px;position:relative;
+    box-shadow:0 -6px 26px rgba(43,33,24,.12);padding:10px 18px calc(env(safe-area-inset-bottom) + 22px)}
+  .hoja.sinmapa{margin-top:0;border-radius:0}
+  .asa{width:42px;height:4px;border-radius:99px;background:#E3D9C9;margin:2px auto 14px}
+
+  .titulo{font-size:23px;font-weight:800;letter-spacing:-.4px;line-height:1.15}
+  .eta{font-size:14px;color:var(--rojo);font-weight:700;margin-top:4px}
+  .sub{font-size:13.5px;color:var(--gris);margin:6px 0 12px;line-height:1.45}
+
+  .barra{display:flex;gap:5px;margin:12px 0 6px}
+  .tramo{flex:1;height:5px;border-radius:99px;background:#EDE3D4;overflow:hidden}
+  .tramo i{display:block;height:100%;width:0;background:var(--rojo);border-radius:99px;transition:width .6s}
+  .tramo.on i{width:100%}
+  .tramo.now i{width:55%;animation:pulso 1.6s infinite}
+  @keyframes pulso{0%,100%{opacity:.55}50%{opacity:1}}
+  .pasos{display:flex;justify-content:space-between;font-size:10.5px;color:#A2917C;margin-bottom:14px}
+  .pasos span{flex:1;text-align:center}
+  .pasos span:first-child{text-align:left}.pasos span:last-child{text-align:right}
+  .pasos span.on{color:var(--tinta);font-weight:700}
+
+  /* reloj de cocina */
+  .reloj{display:flex;align-items:center;gap:14px;background:#FFF7EC;border:1px solid #F1DFC2;
+    border-radius:16px;padding:12px 14px;margin-bottom:12px}
+  .aro{width:58px;height:58px;border-radius:50%;flex:0 0 58px;display:flex;align-items:center;justify-content:center;
+    background:conic-gradient(var(--rojo) var(--p,0%),#F1DFC2 0);position:relative}
+  .aro b{width:46px;height:46px;border-radius:50%;background:#FFF7EC;display:flex;align-items:center;
+    justify-content:center;font-size:13px;font-weight:800;text-align:center;line-height:1.1}
+  .reloj .t1{font-size:15px;font-weight:800}
+  .reloj .t2{font-size:12.5px;color:var(--gris);margin-top:2px}
+
+  .moto{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid var(--linea);
+    border-radius:16px;margin-bottom:12px}
+  .av{width:46px;height:46px;border-radius:50%;background:var(--tinta);color:#fff;flex:0 0 46px;
+    display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
+  .moto .nom{font-size:16px;font-weight:800;line-height:1.2}
+  .moto .rol{font-size:12px;color:var(--gris)}
+  .acc{display:flex;gap:8px;margin-left:auto}
+  .ico{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:19px;text-decoration:none}
+  .ico.tel{background:var(--rojo);color:#fff}
+  .ico.wa{background:var(--verde);color:#fff}
+
+  .caja{border:1px solid var(--linea);border-radius:16px;padding:4px 14px;margin-bottom:12px}
+  .caja h4{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:#A2917C;margin:10px 0 4px}
+  .item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F4EFE6;font-size:14.5px;line-height:1.35}
+  .item:last-child{border-bottom:0}
+  .item .q{flex:0 0 30px;font-weight:800;color:var(--rojo)}
+  .item .n{flex:1}
+  .item .p{font-weight:600;white-space:nowrap}
+  .item.nota{color:var(--gris);font-size:13.5px}
+  .fila{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #F4EFE6;font-size:14px;line-height:1.4}
+  .fila:last-child{border-bottom:0}
+  .fila .ic{width:20px;flex:0 0 20px}
+  .fila b{font-weight:700}
+
+  .precio{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px;color:var(--gris)}
+  .precio.total{background:#FDE9E7;border:1px solid #F5CBC6;border-radius:14px;padding:12px 14px;margin:8px 0 6px;color:var(--tinta);font-weight:700}
+  .precio.total b{color:var(--rojo);font-size:22px}
+  .pago{display:inline-block;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;border-radius:999px;
+    padding:4px 10px;font-size:12px;font-weight:700;margin:4px 0 8px}
+
+  .btns{display:flex;gap:9px;margin-top:12px}
+  .btn{flex:1;text-align:center;text-decoration:none;padding:14px 10px;border-radius:14px;
+    font-weight:800;font-size:14.5px;border:0;cursor:pointer;font-family:inherit;color:var(--tinta)}
+  .b-rojo{background:var(--rojo);color:#fff}
+  .b-verde{background:var(--verde);color:#fff}
+  .b-linea{background:#fff;color:var(--tinta);border:1.5px solid #E3D9C9}
+
+  .fin{text-align:center;padding:6px 0 2px}
+  .fin .emo{font-size:44px;line-height:1}
+  .fin h2{font-size:22px;margin:6px 0 4px}
+  .estrellas{display:flex;justify-content:center;gap:6px;margin:12px 0 6px}
+  .est{font-size:31px;cursor:pointer;filter:grayscale(1);opacity:.45;transition:.15s}
+  .est.on{filter:none;opacity:1;transform:scale(1.08)}
+  .motivo{width:100%;border:1.5px solid #E3D9C9;border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;
+    margin-top:8px;resize:vertical;min-height:64px}
+  .gracias{font-size:13.5px;color:var(--gris);margin-top:8px}
+  .cancel{background:#FEF2F2;border:1px solid #FECACA;border-radius:16px;padding:14px;margin-bottom:12px;font-size:14px;line-height:1.45}
+  .oculto{display:none !important}
+  .pie{text-align:center;font-size:11px;color:#A2917C;margin-top:16px;line-height:1.7}
+  .pie img{height:14px;vertical-align:-2px;margin-right:3px}
+  .aviso{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="logo" id="logo">🍽️</div>
+  <div><div class="nom" id="localNom">Su pedido</div><div class="sub" id="localSub">Seguimiento en vivo</div></div>
+  <div class="cod" id="cod">…</div>
+</div>
+
+<div id="mapa"><a id="mapaLink" target="_blank" rel="noopener"><img id="mapaImg" alt="Mapa"></a></div>
+
+<div class="hoja" id="hoja">
+  <div class="asa"></div>
+
+  <div id="cargando" class="sub" style="padding:18px 0;text-align:center">Cargando su pedido…</div>
+
+  <div id="contenido" class="oculto">
+    <div id="demoAviso" class="aviso oculto">Vista de DEMOSTRACIÓN con datos de ejemplo. En un pedido real la página se actualiza sola.</div>
+
+    <!-- estado -->
+    <div id="cabecera">
+      <div class="titulo" id="titulo">Pedido recibido</div>
+      <div class="eta" id="etaTxt"></div>
+      <div class="sub" id="subtitulo">El local está revisando su pedido.</div>
+      <div class="barra">
+        <div class="tramo" id="t0"><i></i></div>
+        <div class="tramo" id="t1"><i></i></div>
+        <div class="tramo" id="t2"><i></i></div>
+        <div class="tramo" id="t3"><i></i></div>
+      </div>
+      <div class="pasos">
+        <span id="p0">Recibido</span><span id="p1">En cocina</span>
+        <span id="p2">En camino</span><span id="p3">Entregado</span>
+      </div>
+      <div id="reloj"></div>
+    </div>
+
+    <!-- cancelado -->
+    <div id="cancelado" class="cancel oculto"></div>
+
+    <!-- entregado -->
+    <div id="entregado" class="fin oculto">
+      <div class="emo">🎉</div>
+      <h2 id="finTitulo">¡Pedido entregado!</h2>
+      <div class="sub" id="fraseFin">Gracias por su pedido.</div>
+      <div id="califBloque">
+        <div class="sub" style="margin-bottom:0">¿Cómo estuvo todo?</div>
+        <div class="estrellas" id="estrellas">
+          <span class="est" data-v="1">⭐</span><span class="est" data-v="2">⭐</span>
+          <span class="est" data-v="3">⭐</span><span class="est" data-v="4">⭐</span>
+          <span class="est" data-v="5">⭐</span>
+        </div>
+        <div id="motivoBloque" class="oculto">
+          <textarea class="motivo" id="motivo" maxlength="200" placeholder="¿Qué podemos mejorar? (opcional)"></textarea>
+          <div class="btns" style="margin-top:8px"><button class="btn b-rojo" id="btnEnviarCalif">Enviar</button></div>
+        </div>
+      </div>
+      <div class="gracias oculto" id="graciasCalif">¡Gracias! Su opinión ayuda al local a mejorar 💛</div>
+    </div>
+
+    <!-- motorizado -->
+    <div id="motoCard"></div>
+
+    <!-- detalle -->
+    <div class="caja" id="detalle"></div>
+    <div id="precioBox"></div>
+
+    <div class="btns" id="botones"></div>
+    <div class="btns" style="margin-top:9px">
+      <a class="btn b-linea" id="btnMapa" target="_blank" rel="noopener">🗺️ Ver en el mapa</a>
+      <button class="btn b-linea" id="btnCompartir">🔗 Compartir</button>
+    </div>
+
+    <div class="pie">Esta página se actualiza sola<br><span id="pieMarca">Con tecnología <b>DEWAN</b></span></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+  var CALIFICAR = 'https://n8n.dewansas.com/webhook/calificar-pedido';
+  var KEY_MAPS = 'AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs';
+  var WA_DEWAN = '593986777146';
+  var TZ = 'America/Guayaquil';
+
+  var q = new URLSearchParams(location.search);
+  var token = q.get('t') || '';
+  var idParam = q.get('id') || '';
+  var kParam = q.get('k') || '';
+  var demo = q.get('demo');
+
+  var pedido = null, local = null, moto = null, calificado = false, estrellasSel = 0;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+  function num(v) { var n = Number(v); return isFinite(n) && n !== 0 ? n : null; }
+  function dinero(v) { return '$' + (Math.round(Number(v) * 100) / 100).toFixed(2); }
+  function hora(d) {
+    try { return new Date(d).toLocaleTimeString('es-EC', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }); }
+    catch (e) { var x = new Date(d); return x.getHours() + ':' + String(x.getMinutes()).padStart(2, '0'); }
+  }
+  function sb(path) {
+    return fetch(SB + path, { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY } })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .catch(function () { return []; });
+  }
+  function telInt(t) {
+    t = String(t || '').replace(/[^0-9]/g, '');
+    if (t.length === 10 && t[0] === '0') return '593' + t.slice(1);
+    if (t.length === 9) return '593' + t;
+    return t;
+  }
+  function km(a, b, c, d) {
+    var R = 6371, r = Math.PI / 180;
+    var x = Math.sin((c - a) * r / 2) * Math.sin((c - a) * r / 2) +
+            Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) * Math.sin((d - b) * r / 2);
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+
+  // ---------- estados → paso (0 recibido · 1 cocina · 2 en camino/listo · 3 entregado) ----------
+  var PASO = {
+    pendiente_restaurante: 0, pendiente: 0, nuevo: 0,
+    preparando: 1, aceptado_restaurante: 1,
+    // DEWAN: mientras se busca/asigna moto, el pedido sigue en cocina para el cliente
+    confirmado: 1, buscando_motorizado: 1, asignado: 1, aceptado: 1, en_camino_recogida: 1, llego_recogida: 1,
+    listo: 2, recogido: 2, en_camino: 2, en_camino_entrega: 2, llegado: 2,
+    entregado: 3, cancelado: -1, rechazado: -1
+  };
+
+  function esRetiro() { return pedido.requiere_ubicacion === false; }
+  function esDewan() { return /^app(man)?:/.test(String(pedido.conversation_id || '')); }
+  function motoAsignada() { return !!(pedido.nombre_moto || pedido.motorizado_id); }
+
+  function textos(ix) {
+    var e = pedido.estado_pedido;
+    var retiro = esRetiro();
+    if (ix === 0) return ['Pedido recibido', 'El local está revisando su pedido. En un momento le confirma el tiempo.'];
+    if (ix === 1) {
+      if (e === 'preparando') return ['En cocina 👨‍🍳', retiro ? 'Están preparando su pedido. Aquí le avisamos cuando esté listo para retirar.' : 'Están preparando su pedido.'];
+      if (e === 'llego_recogida') return ['En cocina 👨‍🍳', 'El motorizado ya está en el local esperando su pedido.'];
+      if (motoAsignada()) return ['En cocina 👨‍🍳', 'Su pedido está casi listo. Un motorizado ya va al local a recogerlo.'];
+      return ['En cocina 👨‍🍳', 'Su pedido está casi listo. Estamos asignando un motorizado.'];
+    }
+    if (ix === 2) {
+      if (retiro) return ['¡Listo para retirar! 🏪', 'Puede pasar por el local a recoger su pedido.'];
+      if (e === 'llegado') return ['¡Llegó a su puerta! 🛵', 'El motorizado está en el punto de entrega.'];
+      return ['Su pedido va en camino 🛵', 'El motorizado ya salió hacia usted.'];
+    }
+    return ['¡Entregado!', 'Gracias por su pedido.'];
+  }
+
+  function pintar() {
+    var ix = PASO[pedido.estado_pedido];
+    if (ix == null) ix = pedido.restaurante_aceptado ? 1 : 0;
+
+    $('cod').textContent = 'Pedido #' + pedido.id;
+    $('cargando').classList.add('oculto');
+    $('contenido').classList.remove('oculto');
+    if (demo) $('demoAviso').classList.remove('oculto');
+
+    // marca del local
+    var nom = (local && local.nombre) || pedido.restaurante || 'Su pedido';
+    $('localNom').textContent = nom;
+    $('localSub').textContent = esRetiro() ? 'Para retirar en el local' : 'Entrega a domicilio';
+    if (local && local.logo_url) {
+      $('logo').innerHTML = '<img src="' + esc(local.logo_url) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(nom.charAt(0).toUpperCase()) + '\'">';
+    } else {
+      $('logo').textContent = nom.charAt(0).toUpperCase();
+    }
+
+    // pasos según modalidad
+    $('p2').textContent = esRetiro() ? 'Listo' : 'En camino';
+
+    var cancel = ix === -1, entregada = ix >= 3;
+    $('cabecera').classList.toggle('oculto', cancel || entregada);
+    $('cancelado').classList.toggle('oculto', !cancel);
+    $('entregado').classList.toggle('oculto', !entregada);
+
+    if (cancel) {
+      var motivo = pedido.restaurante_motivo_rechazo || '';
+      $('cancelado').innerHTML = '<b>😔 Pedido cancelado</b><br>' +
+        (motivo ? 'Motivo del local: ' + esc(motivo) + '<br>' : 'El local no pudo atender este pedido.<br>') +
+        'Si fue un error, escríbanos y lo volvemos a tomar.';
+    } else if (entregada) {
+      $('finTitulo').textContent = esRetiro() ? '¡Pedido entregado!' : '¡Pedido entregado!';
+      $('fraseFin').textContent = 'Gracias por pedir en ' + nom + '.';
+      pintarCalificacion();
+    } else {
+      var t = textos(ix);
+      $('titulo').textContent = t[0];
+      $('subtitulo').textContent = t[1];
+      for (var i = 0; i < 4; i++) {
+        var el = $('t' + i);
+        el.className = 'tramo' + (i < ix ? ' on' : (i === ix ? ' now' : ''));
+        $('p' + i).className = i <= ix ? 'on' : '';
+      }
+      $('etaTxt').textContent = eta(ix);
+      pintarReloj(ix);
+    }
+
+    pintarMoto(ix);
+    pintarDetalle();
+    pintarBotones(cancel, entregada);
+    pintarMapa(ix);
+  }
+
+  // hora estimada: aceptado + minutos de preparación (timer_lanzamiento ya trae esa hora)
+  function horaLista() {
+    if (pedido.timer_lanzamiento) return new Date(pedido.timer_lanzamiento);
+    if (pedido.restaurante_aceptado_at && pedido.tiempo_preparacion) {
+      return new Date(new Date(pedido.restaurante_aceptado_at).getTime() + Number(pedido.tiempo_preparacion) * 60000);
+    }
+    return null;
+  }
+
+  function eta(ix) {
+    if (ix === 1 && pedido.estado_pedido === 'preparando') {
+      var h = horaLista();
+      return h ? '· listo aprox. a las ' + hora(h) : (pedido.tiempo_preparacion ? '· ' + pedido.tiempo_preparacion + ' min de preparación' : '');
+    }
+    if (ix === 2 && !esRetiro()) {
+      var lm = moto && num(moto.lat), gm = moto && num(moto.lng);
+      var le = num(pedido.ubicacion_lat), ge = num(pedido.ubicacion_lng);
+      if (lm && gm && le && ge) {
+        var d = km(lm, gm, le, ge) * 1.3;
+        var min = Math.max(2, Math.round((d / 18) * 60));
+        return '· llega en ~' + min + ' min';
+      }
+      if (pedido.duracion_minutos) return '· llega en ~' + pedido.duracion_minutos + ' min';
+    }
+    return '';
+  }
+
+  function pintarReloj(ix) {
+    var cont = $('reloj');
+    if (ix !== 1 || pedido.estado_pedido !== 'preparando') { cont.innerHTML = ''; return; }
+    var fin = horaLista(), ini = pedido.restaurante_aceptado_at ? new Date(pedido.restaurante_aceptado_at) : null;
+    if (!fin) { cont.innerHTML = ''; return; }
+    var ahora = Date.now(), total = ini ? (fin - ini) : Number(pedido.tiempo_preparacion || 0) * 60000;
+    var resta = fin - ahora;
+    var pct = total > 0 ? Math.min(100, Math.max(0, Math.round((1 - resta / total) * 100))) : 0;
+    var min = Math.ceil(resta / 60000);
+    var centro, t1, t2;
+    if (resta <= 0) { centro = '¡Ya casi!'; pct = 100; t1 = 'Su pedido está por salir'; t2 = 'El local está terminando de prepararlo.'; }
+    else { centro = min + '<br><small style="font-size:10px">min</small>'; t1 = 'Faltan ' + min + ' minuto' + (min === 1 ? '' : 's'); t2 = 'Tiempo confirmado por el local: ' + (pedido.tiempo_preparacion || Math.round(total / 60000)) + ' min.'; }
+    cont.innerHTML = '<div class="reloj"><div class="aro" style="--p:' + pct + '%"><b>' + centro + '</b></div>' +
+      '<div><div class="t1">' + esc(t1) + '</div><div class="t2">' + esc(t2) + '</div></div></div>';
+  }
+
+  function pintarMoto(ix) {
+    var cont = $('motoCard');
+    if (esRetiro() || ix < 1 || ix > 2) { cont.innerHTML = ''; return; }
+    var nom = pedido.nombre_moto;
+    if (!nom) {
+      cont.innerHTML = (ix === 1 && pedido.estado_pedido === 'preparando') ? '' :
+        '<div class="moto" style="border-style:dashed;color:var(--gris);font-size:14px"><div class="av" style="background:#EDE3D4;color:var(--tinta)">🛵</div><div>Buscando el motorizado más cercano…</div></div>';
+      return;
+    }
+    var tel = String(pedido.telefono_moto || '').replace(/[^0-9]/g, '');
+    var ini = nom.trim().charAt(0).toUpperCase();
+    cont.innerHTML =
+      '<div class="moto"><div class="av">' + esc(ini) + '</div>' +
+      '<div><div class="nom">' + esc(nom.split(' ').slice(0, 2).join(' ')) + '</div>' +
+      '<div class="rol">' + (esDewan() ? 'Su motorizado DEWAN 🛵' : 'Su repartidor 🛵') + '</div></div>' +
+      (tel ? '<div class="acc">' +
+        '<a class="ico tel" href="tel:' + esc(tel) + '" aria-label="Llamar">📞</a>' +
+        '<a class="ico wa" href="https://wa.me/' + esc(telInt(tel)) + '" aria-label="WhatsApp">💬</a>' +
+        '</div>' : '') +
+      '</div>';
+  }
+
+  // detalle_pedido viene como texto: "2x Alitas BBQ — $6.50" por línea + notas (📦 Envases, 💳 Pago, 📝 ...)
+  function parsearDetalle(txt) {
+    var items = [], notas = [], pago = '';
+    String(txt || '').split('\n').forEach(function (l) {
+      l = l.trim(); if (!l) return;
+      var m = l.match(/^(\d+)\s*[xX×]\s*(.+?)(?:\s*[—–-]\s*\$?\s*([\d.,]+))?$/);
+      if (m) { items.push({ q: m[1], n: m[2].trim(), p: m[3] ? Number(String(m[3]).replace(',', '.')) : null }); return; }
+      var mp = l.match(/pago\s*:?\s*(.+)$/i);
+      if (mp && /💳|pago/i.test(l)) { pago = mp[1].trim(); return; }
+      if (/^(subtotal|total|env[ií]o)\b/i.test(l.replace(/^[^\w]+/, ''))) return;
+      notas.push(l);
+    });
+    return { items: items, notas: notas, pago: pago };
+  }
+
+  function pintarDetalle() {
+    var d = parsearDetalle(pedido.detalle_pedido);
+    var h = '<h4>Su pedido</h4>';
+    if (d.items.length) {
+      d.items.forEach(function (it) {
+        h += '<div class="item"><div class="q">' + esc(it.q) + '×</div><div class="n">' + esc(it.n) + '</div>' +
+          (it.p != null ? '<div class="p">' + dinero(it.p) + '</div>' : '') + '</div>';
+      });
+    } else {
+      h += '<div class="item"><div class="n" style="white-space:pre-line">' + esc(pedido.detalle_pedido || '—') + '</div></div>';
+    }
+    d.notas.forEach(function (n) { h += '<div class="item nota"><div class="n">' + esc(n) + '</div></div>'; });
+    var f = '';
+    if (!esRetiro() && pedido.direccion_entrega) f += '<div class="fila"><div class="ic">🏠</div><div><b>Entregar en:</b><br>' + esc(limpiar(pedido.direccion_entrega)) + '</div></div>';
+    if (esRetiro()) f += '<div class="fila"><div class="ic">🏪</div><div><b>Retirar en:</b><br>' + esc((local && local.direccion) || pedido.direccion_retiro || pedido.restaurante || '') + '</div></div>';
+    if (pedido.cliente_nombre && pedido.cliente_nombre !== 'Cliente') f += '<div class="fila"><div class="ic">👤</div><div>' + esc(pedido.cliente_nombre) + '</div></div>';
+    if (f) h += '<h4>Entrega</h4>' + f;
+    $('detalle').innerHTML = h + '<div style="height:6px"></div>';
+
+    // plata
+    var total = num(pedido.monto_total), envio = (!esRetiro() && num(pedido.precio_calculado)) || 0;
+    var cupon = num(pedido.cupon_descuento) || 0;
+    var p = '';
+    if (d.pago) p += '<span class="pago">💳 ' + esc(d.pago) + '</span>';
+    if (total) {
+      if (envio > 0) p += '<div class="precio"><span>Envío incluido</span><span>' + dinero(envio) + '</span></div>';
+      if (cupon > 0) p += '<div class="precio"><span>Cupón</span><span>− ' + dinero(cupon) + '</span></div>';
+      p += '<div class="precio total"><span>💰 Total a pagar</span><b>' + dinero(total) + '</b></div>';
+    }
+    $('precioBox').innerHTML = p;
+  }
+  function limpiar(s) {
+    s = String(s || '');
+    var i = s.indexOf('http');
+    return (i === -1 ? s : s.slice(0, i)).replace(/\s+/g, ' ').trim();
+  }
+
+  function waLocal() {
+    var t = local && local.telefono ? telInt(local.telefono) : '';
+    return t;
+  }
+  function pintarBotones(cancel, entregada) {
+    var nom = (local && local.nombre) || pedido.restaurante || 'el local';
+    var ayuda = encodeURIComponent('Hola, sobre mi pedido #' + pedido.id);
+    var tl = waLocal();
+    var b = '';
+    if (!cancel && entregada) {
+      b += esDewan()
+        ? '<a class="btn b-rojo" href="https://pedir.dewansas.com">🍽️ Pedir de nuevo</a>'
+        : (tl ? '<a class="btn b-rojo" href="https://wa.me/' + tl + '?text=' + encodeURIComponent('Hola, quiero hacer un pedido') + '">🍽️ Pedir de nuevo</a>' : '');
+    }
+    var waAyuda = esDewan() ? WA_DEWAN : (tl || WA_DEWAN);
+    b += '<a class="btn b-verde" href="https://wa.me/' + waAyuda + '?text=' + ayuda + '">💬 ' + (esDewan() ? 'Necesito ayuda' : 'Escribir al local') + '</a>';
+    $('botones').innerHTML = b;
+
+    var bm = $('btnMapa');
+    var le = num(pedido.ubicacion_lat), ge = num(pedido.ubicacion_lng);
+    var lr = num(pedido.retiro_lat) || (local && num(local.latitud)), gr = num(pedido.retiro_lng) || (local && num(local.longitud));
+    if (esRetiro() && lr && gr) { bm.href = 'https://maps.google.com/?q=' + lr + ',' + gr; bm.textContent = '🗺️ Cómo llegar al local'; bm.classList.remove('oculto'); }
+    else if (le && ge) { bm.href = 'https://maps.google.com/?q=' + le + ',' + ge; bm.classList.remove('oculto'); }
+    else bm.classList.add('oculto');
+  }
+
+  // ---------- mapa (Google Static Maps: una IMAGEN) ----------
+  function pintarMapa(ix) {
+    var lr = num(pedido.retiro_lat) || (local && num(local.latitud)), gr = num(pedido.retiro_lng) || (local && num(local.longitud));
+    var le = num(pedido.ubicacion_lat), ge = num(pedido.ubicacion_lng);
+    var lm = moto && num(moto.lat), gm = moto && num(moto.lng);
+    var retiro = esRetiro();
+    var cont = $('mapa');
+    if (ix === -1 || (!lr && !le)) { cont.classList.add('oculto'); $('hoja').classList.add('sinmapa'); return; }
+    cont.classList.remove('oculto'); $('hoja').classList.remove('sinmapa');
+    var u = 'https://maps.googleapis.com/maps/api/staticmap?size=640x420&scale=2&language=es&maptype=roadmap';
+    if (lr && gr) u += '&markers=' + encodeURIComponent('size:mid|color:0x2B2118|label:L|' + lr + ',' + gr);
+    if (!retiro && le && ge) u += '&markers=' + encodeURIComponent('color:0xDC2D22|label:E|' + le + ',' + ge);
+    if (!retiro && lm && gm && ix >= 1) u += '&markers=' + encodeURIComponent('color:0x25D366|label:M|' + lm + ',' + gm);
+    if (retiro) { u += '&zoom=16&center=' + lr + ',' + gr; }
+    else if (lm && gm && le && ge && ix === 2) u += '&path=' + encodeURIComponent('color:0xDC2D22AA|weight:4|' + lm + ',' + gm + '|' + le + ',' + ge);
+    else if (lr && gr && le && ge) u += '&path=' + encodeURIComponent('color:0xDC2D22AA|weight:4|' + lr + ',' + gr + '|' + le + ',' + ge);
+    else { var la = le || lr, ga = ge || gr; u += '&zoom=16&center=' + la + ',' + ga; }
+    u += '&key=' + KEY_MAPS;
+    var img = $('mapaImg');
+    if (img.getAttribute('data-u') === u) return;
+    img.setAttribute('data-u', u);
+    var pre = new Image();
+    pre.onload = function () { img.src = u; img.classList.add('lista'); };
+    pre.src = u;
+    var punto = retiro ? (lr + ',' + gr) : ((lm && gm) ? (lm + ',' + gm) : ((le && ge) ? (le + ',' + ge) : (lr + ',' + gr)));
+    $('mapaLink').href = 'https://maps.google.com/?q=' + punto;
+  }
+
+  // ---------- calificación (webhook calificar-pedido, misma validación que la app) ----------
+  function pintarCalificacion() {
+    if (Number(pedido.calificacion) > 0 || calificado) {
+      $('califBloque').classList.add('oculto');
+      $('graciasCalif').classList.remove('oculto');
+      $('graciasCalif').textContent = 'Usted calificó este pedido con ' + (estrellasSel || pedido.calificacion) + ' ⭐. ¡Gracias!';
+    }
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('.est');
+    if (!el || calificado) return;
+    estrellasSel = Number(el.dataset.v);
+    document.querySelectorAll('.est').forEach(function (s) { s.classList.toggle('on', Number(s.dataset.v) <= estrellasSel); });
+    if (estrellasSel <= 3) { $('motivoBloque').classList.remove('oculto'); $('motivo').focus(); }
+    else enviarCalif('');
+  });
+  $('btnEnviarCalif').addEventListener('click', function () { enviarCalif($('motivo').value); });
+  function enviarCalif(motivo) {
+    if (!estrellasSel || calificado) return;
+    calificado = true;
+    $('califBloque').classList.add('oculto');
+    $('graciasCalif').classList.remove('oculto');
+    if (demo) return;
+    fetch(CALIFICAR, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-dewan-key': 'dwn-app-2026' },
+      body: JSON.stringify({ pedido_id: pedido.id, estrellas: estrellasSel, telefono: pedido.cliente_telefono, motivo: motivo || '' })
+    }).catch(function () {});
+  }
+
+  $('btnCompartir').addEventListener('click', function () {
+    var url = location.href, nom = (local && local.nombre) || pedido.restaurante || '';
+    if (navigator.share) navigator.share({ title: 'Mi pedido en ' + nom, text: '🔔 Siga mi pedido de ' + nom + ' en vivo:', url: url });
+    else { try { navigator.clipboard.writeText(url); } catch (e) {} this.textContent = '✅ Link copiado'; }
+  });
+
+  // ---------- datos ----------
+  var SEL = 'id,restaurante,restaurante_id,cliente_nombre,cliente_telefono,conversation_id,detalle_pedido,requiere_ubicacion,' +
+    'estado_pedido,motorizado_id,nombre_moto,telefono_moto,direccion_entrega,ubicacion_lat,ubicacion_lng,direccion_retiro,retiro_lat,retiro_lng,' +
+    'precio_calculado,duracion_minutos,monto_total,cupon_descuento,calificacion,tiempo_preparacion,timer_lanzamiento,' +
+    'restaurante_aceptado,restaurante_aceptado_at,restaurante_motivo_rechazo,fecha_creacion';
+
+  function noEncontrado() {
+    $('cargando').innerHTML = 'No encontramos ese pedido.<br><br>' +
+      '<a class="btn b-verde" style="display:inline-block" href="https://wa.me/' + WA_DEWAN + '">Escribirnos</a>';
+  }
+
+  function cargar() {
+    if (demo) { cargarDemo(); return; }
+    var filtro = token ? '&token_seguimiento=eq.' + encodeURIComponent(token) : (idParam ? '&id=eq.' + encodeURIComponent(idParam) : '');
+    if (!filtro) { $('cargando').textContent = 'Enlace incompleto. Escríbanos por WhatsApp.'; return; }
+    sb('/pedidos_delivery?select=' + SEL + filtro + '&limit=1').then(function (rows) {
+      if (!rows || !rows.length) { if (!pedido) noEncontrado(); return; }
+      var p = rows[0];
+      // acceso por id: exige los últimos 4 dígitos del teléfono del cliente
+      if (!token && String(p.cliente_telefono || '').slice(-4) !== String(kParam)) { if (!pedido) noEncontrado(); return; }
+      pedido = p;
+      var tareas = [];
+      if (!local && p.restaurante_id) {
+        tareas.push(sb('/restaurantes?select=nombre,logo_url,telefono,direccion,latitud,longitud&id=eq.' + p.restaurante_id + '&limit=1')
+          .then(function (r) { local = (r && r[0]) || null; }));
+      }
+      if (p.motorizado_id && !esRetiro() && PASO[p.estado_pedido] >= 1) {
+        tareas.push(sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + p.motorizado_id + '&limit=1')
+          .then(function (mm) {
+            moto = null;
+            if (!mm || !mm[0]) return;
+            var edad = function (x) { return x ? (Date.now() - new Date(x).getTime()) : Infinity; };
+            if (Math.min(edad(mm[0].last_seen_at), edad(mm[0].updated_at)) < 10 * 60 * 1000) moto = { lat: mm[0].ubicacion_lat, lng: mm[0].ubicacion_lng };
+          }));
+      } else moto = null;
+      Promise.all(tareas).then(pintar, pintar);
+    });
+  }
+
+  // ---------- demo para mostrar a un local (?demo=0..3, ?demo=retiro, ?demo=cancelado) ----------
+  function cargarDemo() {
+    var paso = demo === 'retiro' ? 2 : (demo === 'cancelado' ? -1 : Math.max(0, Math.min(3, Number(demo) || 0)));
+    var retiro = demo === 'retiro';
+    var ahora = Date.now();
+    var est = { '-1': 'cancelado', 0: 'pendiente_restaurante', 1: 'preparando', 2: retiro ? 'listo' : 'en_camino', 3: 'entregado' }[paso];
+    local = { nombre: 'Alitas El Buen Sabor', logo_url: '', telefono: '0999999999', direccion: 'Av. Daniel León Borja y Brasil', latitud: -1.6636, longitud: -78.6543 };
+    pedido = {
+      id: 1287, restaurante: local.nombre, restaurante_id: null, cliente_nombre: 'María', cliente_telefono: '593999999999',
+      conversation_id: 'flow:demo', requiere_ubicacion: !retiro, estado_pedido: est,
+      detalle_pedido: '2x Alitas BBQ (8 und) — $13.00\n1x Papas grandes — $2.50\n1x Coca-Cola 1L — $1.50\n📦 Envases: $0.50\n💳 Pago: Transferencia\n📝 Sin picante por favor',
+      direccion_entrega: 'Cdla. Los Álamos, casa verde frente al parque', ubicacion_lat: -1.6712, ubicacion_lng: -78.6489,
+      retiro_lat: local.latitud, retiro_lng: local.longitud, precio_calculado: retiro ? 0 : 1.75, duracion_minutos: 9,
+      monto_total: retiro ? 17.5 : 19.25, cupon_descuento: 0, calificacion: 0,
+      tiempo_preparacion: 25, restaurante_aceptado: paso >= 1,
+      restaurante_aceptado_at: paso >= 1 ? new Date(ahora - 9 * 60000).toISOString() : null,
+      timer_lanzamiento: paso >= 1 ? new Date(ahora + 16 * 60000).toISOString() : null,
+      nombre_moto: (paso === 2 && !retiro) ? 'Carlos Andrade' : null, telefono_moto: (paso === 2 && !retiro) ? '0987654321' : null, motorizado_id: null,
+      restaurante_motivo_rechazo: paso === -1 ? 'Se nos acabaron las alitas por hoy' : null
+    };
+    moto = (paso === 2 && !retiro) ? { lat: -1.6668, lng: -78.6515 } : null;
+    pintar();
+  }
+
+  cargar();
+  setInterval(cargar, 10000);
+  setInterval(function () { if (pedido && !demo && pedido.estado_pedido === 'preparando') pintarReloj(1); }, 30000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) cargar(); });
+})();
+</script>
+</body>
+</html>
