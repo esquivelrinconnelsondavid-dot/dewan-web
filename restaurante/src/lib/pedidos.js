@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { PEDIDOS_TABLE } from './config';
+import { PEDIDOS_TABLE, TIMER_PATH, SALIO_PATH, RECHAZO_PATH, esDomicilio } from './config';
 
 const WEBHOOK_BASE = import.meta.env.VITE_N8N_WEBHOOK_BASE;
 // Happy Pollo: URL directa del webhook de aviso de tiempo. Su instancia de n8n
@@ -45,7 +45,7 @@ async function avisarClienteTiempo(pedido, minutos) {
     try {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 10000);
-      const resp = await fetch(`${WEBHOOK_BASE}/timer-restaurante`, {
+      const resp = await fetch(`${WEBHOOK_BASE}/${TIMER_PATH}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
@@ -60,6 +60,56 @@ async function avisarClienteTiempo(pedido, minutos) {
     if (intento < 3) await new Promise((r) => setTimeout(r, 1500 * intento));
   }
   console.error('[avisarCliente] no se pudo avisar tras 3 intentos (pedido', pedido.id, ')');
+}
+
+// SISTEMA: avisos al cliente por WhatsApp (salió / listo / rechazo). POST JSON con
+// reintentos, igual que el aviso de tiempo de DEWAN. Fire-and-forget.
+async function avisarEvento(path, body) {
+  if (!WEBHOOK_BASE || !path) return;
+  const json = JSON.stringify(body);
+  for (let intento = 1; intento <= 3; intento++) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 10000);
+      const resp = await fetch(`${WEBHOOK_BASE}/${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: json,
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      if (resp.ok) return;
+      console.warn('[avisarEvento]', path, 'intento', intento, '→ HTTP', resp.status);
+    } catch (e) {
+      console.warn('[avisarEvento]', path, 'intento', intento, e?.message || e);
+    }
+    if (intento < 3) await new Promise((r) => setTimeout(r, 1500 * intento));
+  }
+  console.error('[avisarEvento] no se pudo avisar', path, body);
+}
+
+// SISTEMA: el local avisa que el pedido SALIÓ (domicilio) o está LISTO (retiro).
+// Cambia el estado (en_camino | listo) y dispara el WhatsApp al cliente.
+export async function marcarSalio(pedido) {
+  const domicilio = esDomicilio(pedido);
+  const ahora = new Date().toISOString();
+  const cambios = domicilio
+    ? { estado_pedido: 'en_camino', fecha_en_camino: ahora }
+    : { estado_pedido: 'listo', fecha_listo: ahora };
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  let error;
+  try {
+    ({ error } = await supabase
+      .from(PEDIDOS_TABLE)
+      .update(cambios)
+      .eq('id', pedido.id)
+      .abortSignal(ctrl.signal));
+  } finally {
+    clearTimeout(timer);
+  }
+  if (error) throw error;
+  if (SALIO_PATH) avisarEvento(SALIO_PATH, { pedido_id: pedido.id, evento: domicilio ? 'salio' : 'listo' });
 }
 
 export async function aceptarPedido(pedidoIdOrPedido, minutos) {
@@ -144,4 +194,5 @@ export async function rechazarPedido(pedidoId, motivo) {
   }
 
   if (error) throw error;
+  if (RECHAZO_PATH) avisarEvento(RECHAZO_PATH, { pedido_id: pedidoId, evento: 'rechazo', motivo: motivo || '' });
 }

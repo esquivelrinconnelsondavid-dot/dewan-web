@@ -1,7 +1,7 @@
 // Impresión de comanda por Electron directo (sin PrintNode).
 // Configurable por local: impresora + ancho (80/76/58mm o normal) + auto al aceptar.
 import { calcularPagoAlRestaurante, formatDinero } from './formato';
-import { MARCA, MODO_HP, codigoPedido } from './config';
+import { MARCA, MODO_HP, MODO_SISTEMA, codigoPedido, esDomicilio } from './config';
 
 // Nombre que va arriba del ticket: el pasado por el panel, o el del pedido, o el
 // de la sesión guardada (sucursal logueada), y como último recurso la marca
@@ -163,9 +163,17 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
   // es RETIRO en el local — antes caía a 'PEDIDO' porque pedidos_hp no guarda
   // tipo_entrega. DEWAN mantiene 'PEDIDO' como respaldo (sus pedidos siempre traen
   // direccion_entrega, así que el fallback casi no aplica).
-  const entrega = pedido.direccion_entrega
-    ? 'DELIVERY'
-    : (pedido.tipo_entrega || (MODO_HP ? 'RETIRO EN LOCAL' : 'PEDIDO'));
+  const entrega = MODO_SISTEMA
+    ? (esDomicilio(pedido) ? 'A DOMICILIO' : 'RETIRO EN LOCAL')
+    : (pedido.direccion_entrega
+      ? 'DELIVERY'
+      : (pedido.tipo_entrega || (MODO_HP ? 'RETIRO EN LOCAL' : 'PEDIDO')));
+  // SISTEMA (el local entrega con su propia moto): la comanda SÍ lleva dirección
+  // (sin el link de mapa) y teléfono del cliente. DEWAN la omite a propósito.
+  const dirSistema = (MODO_SISTEMA && esDomicilio(pedido) && pedido.direccion_entrega)
+    ? String(pedido.direccion_entrega).replace(/\s*·?\s*https?:\/\/\S+/g, '').trim() : '';
+  const telSistema = (MODO_SISTEMA && pedido.cliente_telefono)
+    ? String(pedido.cliente_telefono).replace(/^593/, '0') : '';
   const tiempo = pedido.tiempo_preparacion ? `${pedido.tiempo_preparacion} min` : '';
 
   // Precios (mismo cálculo que las tarjetas de la app). Se omite si no hay
@@ -228,6 +236,8 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
     ${formatearItems(pedido.detalle_pedido, liviano)}
     ${sep}
     <div class="row"><span class="lbl">Cliente:</span><span class="b">${esc(limp(pedido.cliente_nombre || '-'))}</span></div>
+    ${telSistema ? `<div class="row"><span class="lbl">Telefono:</span><span class="b">${esc(telSistema)}</span></div>` : ''}
+    ${dirSistema ? `<div class="lbl">Entregar en:</div><div class="b">${esc(limp(dirSistema))}</div>` : ''}
     ${tiempo ? `<div class="row"><span class="lbl">Tiempo:</span><span class="b">${esc(tiempo)}</span></div>` : ''}
     ${bloquePago}
     ${bloquePrecios}

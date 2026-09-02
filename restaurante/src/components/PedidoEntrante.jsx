@@ -3,7 +3,7 @@ import { aceptarPedido, rechazarPedido } from '../lib/pedidos';
 import { stopAlertLoop } from '../lib/notifications';
 import { calcularPagoAlRestaurante, formatDinero } from '../lib/formato';
 import { hayImpresion, getConfigImpresora, imprimirComanda } from '../lib/comanda';
-import { MODO_HP, codigoPedido } from '../lib/config';
+import { MODO_HP, MODO_SISTEMA, codigoPedido, esDomicilio } from '../lib/config';
 
 const TIEMPOS_PRESET = [10, 15, 20, 30, 45];
 
@@ -95,7 +95,7 @@ export default function PedidoEntrante({ pedido }) {
 
   // ── Tarjeta Happy Pollo (sin bloque de comisión/motorizado DEWAN) ──
   if (MODO_HP) {
-    const esDelivery = !!pedido.direccion_entrega;
+    const esDelivery = esDomicilio(pedido);
     const monto = Number(pedido.monto_total) || 0;
     const esTransfer = /transfer/i.test(pedido.metodo_pago || '');
     return (
@@ -124,7 +124,8 @@ export default function PedidoEntrante({ pedido }) {
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm mb-2">
           <span className="text-gray-400">Cliente:</span>
           <span className="text-white font-bold">{pedido.cliente_nombre || '—'}</span>
-          {esDelivery && <span className="text-gray-400">📍 {pedido.direccion_entrega}</span>}
+          {esDelivery && <span className="text-gray-400">📍 {String(pedido.direccion_entrega || '').replace(/\s*·?\s*https?:\/\/\S+/g, '')}</span>}
+          {MODO_SISTEMA && pedido.cliente_telefono && <span className="text-gray-400">📞 {String(pedido.cliente_telefono).replace(/^593/, '0')}</span>}
         </div>
 
         {(pedido.metodo_pago || pedido.factura_datos) && (

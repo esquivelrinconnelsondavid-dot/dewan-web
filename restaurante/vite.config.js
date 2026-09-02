@@ -10,6 +10,10 @@ const isWebHost = process.env.WEB_HOST_BUILD === 'true';
 // `../restaurante-hp/web/` (carpeta hermana en la raíz del repo) y se sirve en
 // https://dewansas.com/restaurante-hp/web/ (también sin tocar nginx).
 const isHpWeb = process.env.HP_WEB_BUILD === 'true';
+// Build EL SISTEMA (locales vendidos): un solo build para todos (tabla pedidos_sistema,
+// marca neutra, colores del local desde la BD). Sale a `../restaurante-sistema/web/` y se
+// sirve en https://dewansas.com/restaurante-sistema/web/ (sin tocar nginx).
+const isSistemaWeb = process.env.SISTEMA_WEB_BUILD === 'true';
 
 export default defineConfig({
   plugins: [react()],
@@ -19,13 +23,15 @@ export default defineConfig({
   // apertura (pasó con los AAB del 5-ago y 8-ago-2026: un `npm run build` a
   // secas antes de `cap sync`). Las webs hosteadas usan sus flags (build:web /
   // HP) con su base absoluta propia.
-  base: isHpWeb
+  base: isSistemaWeb
+    ? '/restaurante-sistema/web/'
+    : isHpWeb
     ? '/restaurante-hp/web/'
     : isWebHost
     ? '/restaurante/web/'
     : './',
   build: {
-    outDir: isHpWeb ? '../restaurante-hp/web' : isWebHost ? 'web' : 'dist',
+    outDir: isSistemaWeb ? '../restaurante-sistema/web' : isHpWeb ? '../restaurante-hp/web' : isWebHost ? 'web' : 'dist',
     emptyOutDir: true,
   },
   server: { host: true, port: 5174 },

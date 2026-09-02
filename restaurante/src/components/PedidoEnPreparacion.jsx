@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { calcularPagoAlRestaurante, formatDinero } from '../lib/formato';
 import { hayImpresion, imprimirComanda } from '../lib/comanda';
-import { MODO_HP, codigoPedido } from '../lib/config';
-import { marcarEntregado } from '../lib/pedidos';
+import { MODO_HP, MODO_SISTEMA, codigoPedido, esDomicilio } from '../lib/config';
+import { marcarEntregado, marcarSalio } from '../lib/pedidos';
 
 function calcularRestante(timerLanzamiento) {
   if (!timerLanzamiento) return null;
@@ -35,6 +35,23 @@ export default function PedidoEnPreparacion({ pedido }) {
     }
   };
 
+  // SISTEMA: paso intermedio "Salió 🛵" (domicilio) / "Listo ✅" (retiro) → avisa al cliente
+  // por WhatsApp; después "Entregado ✓" cierra el pedido.
+  const salio = async () => {
+    setCargando(true);
+    try {
+      await marcarSalio(pedido);
+    } catch (e) {
+      console.error('Error al marcar salió:', e);
+      alert('No se pudo avisar. Revisa la conexión e intenta de nuevo.');
+    }
+    setCargando(false);
+  };
+  const domicilio = esDomicilio(pedido);
+  const yaSalio = pedido.estado_pedido === 'en_camino' || pedido.estado_pedido === 'listo';
+  const dirLimpia = String(pedido.direccion_entrega || '').replace(/\s*·?\s*https?:\/\/\S+/g, '').trim();
+  const telCliente = pedido.cliente_telefono ? String(pedido.cliente_telefono).replace(/^593/, '0') : '';
+
   useEffect(() => {
     const id = setInterval(() => {
       setRestante(calcularRestante(pedido.timer_lanzamiento));
@@ -48,23 +65,36 @@ export default function PedidoEnPreparacion({ pedido }) {
   // ── Tarjeta Happy Pollo (con botón "Marcar listo", sin bloque DEWAN) ──
   if (MODO_HP) {
     return (
-      <div className={`bg-tarjeta rounded-2xl border-l-4 border-preparando p-4 shadow-lg ${cargando ? 'opacity-60 pointer-events-none' : ''}`}>
+      <div className={`bg-tarjeta rounded-2xl border-l-4 ${yaSalio ? 'border-encamino' : 'border-preparando'} p-4 shadow-lg ${cargando ? 'opacity-60 pointer-events-none' : ''}`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-baseline gap-2.5">
-            <span className="marca-title text-preparando text-2xl leading-none">{codigoPedido(pedido)}</span>
-            <span className="bg-preparando text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full tracking-wider">PREPARANDO</span>
+            <span className={`marca-title ${yaSalio ? 'text-encamino' : 'text-preparando'} text-2xl leading-none`}>{codigoPedido(pedido)}</span>
+            {yaSalio ? (
+              <span className="bg-encamino text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full tracking-wider">
+                {domicilio ? '🛵 EN CAMINO' : '✅ LISTO'}
+              </span>
+            ) : (
+              <span className="bg-preparando text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full tracking-wider">PREPARANDO</span>
+            )}
+            {MODO_SISTEMA && (
+              <span className="bg-bg2 text-gray-300 border border-borde text-[11px] font-bold px-2 py-0.5 rounded-full">
+                {domicilio ? '🛵 Domicilio' : '🏪 Retiro'}
+              </span>
+            )}
           </div>
-          <div className={`marca-title text-2xl tabular-nums ${color}`}>{formatear(restante)}</div>
+          {!yaSalio && <div className={`marca-title text-2xl tabular-nums ${color}`}>{formatear(restante)}</div>}
         </div>
 
         <p className="text-sm text-white whitespace-pre-line border-y border-borde py-2 my-2">
           {pedido.detalle_pedido}
         </p>
 
-        <div className="flex items-center gap-2 text-sm mb-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm mb-2">
           <span className="text-gray-400">Cliente:</span>
           <span className="text-white font-bold">{pedido.cliente_nombre || '—'}</span>
-          {pedido.tiempo_preparacion && (
+          {MODO_SISTEMA && telCliente && <span className="text-gray-400">📞 {telCliente}</span>}
+          {MODO_SISTEMA && domicilio && dirLimpia && <span className="text-gray-400 basis-full">📍 {dirLimpia}</span>}
+          {pedido.tiempo_preparacion && !yaSalio && (
             <span className="ml-auto text-gray-400">⏱ {pedido.tiempo_preparacion} min</span>
           )}
         </div>
@@ -82,7 +112,7 @@ export default function PedidoEnPreparacion({ pedido }) {
           </div>
         )}
 
-        {vencido && (
+        {vencido && !yaSalio && (
           <div className="mb-2 text-xs text-nuevo font-bold animate-pulse">⚠️ Tiempo de preparación cumplido</div>
         )}
 
@@ -95,13 +125,23 @@ export default function PedidoEnPreparacion({ pedido }) {
               🖨️ Reimprimir
             </button>
           )}
-          <button
-            onClick={marcarListo}
-            disabled={cargando}
-            className="flex-1 bg-dewan text-white font-extrabold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
-          >
-            ✓ Marcar listo
-          </button>
+          {MODO_SISTEMA && !yaSalio ? (
+            <button
+              onClick={salio}
+              disabled={cargando}
+              className="flex-1 bg-dewan text-white font-extrabold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
+            >
+              {domicilio ? '🛵 Salió (avisar al cliente)' : '✅ Listo (avisar al cliente)'}
+            </button>
+          ) : (
+            <button
+              onClick={marcarListo}
+              disabled={cargando}
+              className={`flex-1 ${yaSalio ? 'bg-encamino' : 'bg-dewan'} text-white font-extrabold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md`}
+            >
+              {MODO_SISTEMA ? '✓ Entregado' : '✓ Marcar listo'}
+            </button>
+          )}
         </div>
       </div>
     );

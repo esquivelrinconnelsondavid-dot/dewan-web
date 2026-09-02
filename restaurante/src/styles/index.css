@@ -39,6 +39,36 @@
   --scrollbar: 213 184 138;
 }
 
+/* SISTEMA — tema CLARO neutro para cualquier local (el acento --c-dewan lo pone
+   tema.js con el color del local, panel_color). Mismo esquema de overrides que HP. */
+[data-marca="claro"] {
+  --c-fondo: 244 245 247;
+  --c-bg2: 255 255 255;
+  --c-bg3: 249 250 251;
+  --c-bg4: 233 236 240;
+  --c-borde: 220 224 230;
+  --c-tarjeta: 255 255 255;
+  --c-dewan: 16 120 90;
+  --c-nuevo: 220 38 38;
+  --c-preparando: 217 119 6;
+  --c-buscando: 37 99 235;
+  --c-encamino: 22 163 74;
+  --c-alerta: 220 38 38;
+  --c-text: 17 24 39;
+  --scrollbar: 190 196 204;
+}
+[data-marca="claro"] .text-white   { color: #111827; }
+[data-marca="claro"] .text-gray-200 { color: #1f2937; }
+[data-marca="claro"] .text-gray-300 { color: #374151; }
+[data-marca="claro"] .text-gray-400 { color: #4b5563; }
+[data-marca="claro"] .text-gray-500 { color: #6b7280; }
+[data-marca="claro"] .bg-dewan,
+[data-marca="claro"] .bg-nuevo,
+[data-marca="claro"] .bg-encamino,
+[data-marca="claro"] .bg-preparando,
+[data-marca="claro"] .bg-alerta { color: #ffffff; }
+[data-marca="claro"] .bg-tarjeta { box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+
 html, body, #root {
   height: 100%;
   background-color: rgb(var(--c-fondo));

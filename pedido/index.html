@@ -216,7 +216,10 @@
   // ---------- EL SISTEMA (locales con su propio bot/tabla/EXE) vs DEWAN ----------
   // ?s=hp → tabla pedidos_hp (Happy Pollo). Cada local vendido = una entrada aquí.
   // Sin ?s= → pedidos de DEWAN (marketplace, pedidos_delivery).
-  var SISTEMAS = { hp: 'pedidos_hp' };
+  var SISTEMAS = { hp: 'pedidos_hp', sistema: 'pedidos_sistema' };
+  // WhatsApp del BOT que toma los pedidos del sistema ("Pedir de nuevo" abre el bot, no el
+  // teléfono del local). Por defecto el número del bot de pruebas; un local con número propio = su entrada.
+  var WA_BOT = { sistema: '593986777146' };
   var sistema = (q.get('s') || '').toLowerCase();
   var TABLA = SISTEMAS[sistema] || 'pedidos_delivery';
   var esSistema = !!SISTEMAS[sistema];
@@ -468,6 +471,8 @@
         ? '<a class="btn b-rojo" href="https://wa.me/' + WA_DEMO + '?text=demo">🍽️ Pedir de nuevo</a>'
         : esDewan()
         ? '<a class="btn b-rojo" href="https://pedir.dewansas.com">🍽️ Pedir de nuevo</a>'
+        : WA_BOT[sistema]
+        ? '<a class="btn b-rojo" href="https://wa.me/' + WA_BOT[sistema] + '?text=pedir">🍽️ Pedir de nuevo</a>'
         : (tl ? '<a class="btn b-rojo" href="https://wa.me/' + tl + '?text=' + encodeURIComponent('Hola, quiero hacer un pedido') + '">🍽️ Pedir de nuevo</a>' : '');
     }
     // El Sistema (local vendido): TODO va al WhatsApp del local, nunca al de DEWAN

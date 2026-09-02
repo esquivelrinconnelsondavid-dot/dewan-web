@@ -1,4 +1,4 @@
-import { MARCA } from '../lib/config';
+import { MARCA, MODO_SISTEMA } from '../lib/config';
 import { HP_LOGO } from '../lib/hpLogo';
 
 const ES_HP = MARCA.toLowerCase().includes('happy');
@@ -31,7 +31,7 @@ export default function Header({ restaurante, onLogout, onAbrirAjustes }) {
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-encamino animate-pulse" />
             <span className="text-[10px] text-gray-400 uppercase tracking-widest">
-              {MARCA} · En línea
+              {MODO_SISTEMA ? 'En línea' : MARCA + ' · En línea'}
             </span>
           </div>
         </div>

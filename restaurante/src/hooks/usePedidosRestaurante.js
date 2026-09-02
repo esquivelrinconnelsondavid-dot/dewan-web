@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
-import { PEDIDOS_TABLE } from '../lib/config';
+import { PEDIDOS_TABLE, MODO_SISTEMA } from '../lib/config';
 import { marcarDatosOk, tiempoSinDatos } from '../lib/conexion';
 import { startAlertLoop, stopAlertLoop, showPushNotification } from '../lib/notifications';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
@@ -11,6 +11,7 @@ const HOY = () => inicioDelDiaECisoUtc();
 const ESTADOS_ABIERTOS = [
   'pendiente_restaurante',
   'preparando',
+  'listo',
   'confirmado',
   'asignado',
   'aceptado',
@@ -288,8 +289,10 @@ export function usePedidosRestaurante(restaurante) {
   }, [cargar]);
 
   const entrantes = pedidos.filter((p) => p.estado_pedido === 'pendiente_restaurante');
-  const enPreparacion = pedidos.filter((p) => p.estado_pedido === 'preparando');
-  const enProceso = pedidos.filter((p) => ESTADOS_EN_PROCESO.includes(p.estado_pedido));
+  // SISTEMA: listo / en_camino siguen en la columna de cocina hasta que el local marca Entregado.
+  const enPreparacion = pedidos.filter((p) => p.estado_pedido === 'preparando' ||
+    (MODO_SISTEMA && (p.estado_pedido === 'listo' || p.estado_pedido === 'en_camino')));
+  const enProceso = pedidos.filter((p) => !MODO_SISTEMA && ESTADOS_EN_PROCESO.includes(p.estado_pedido));
 
   return { entrantes, enPreparacion, enProceso, cargando, recargar: cargar };
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MARCA } from '../lib/config';
+import { MARCA, MODO_SISTEMA } from '../lib/config';
 import { HP_LOGO } from '../lib/hpLogo';
 
 const ES_HP = MARCA.toLowerCase().includes('happy');
@@ -43,6 +43,11 @@ export default function LoginScreen({ onLogin }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             <h1 className="marca-title text-dewan text-4xl tracking-wide">Happy Pollo</h1>
             <p className="text-gray-400 text-sm mt-1">Panel de Cocina</p>
+          </>
+        ) : MODO_SISTEMA ? (
+          <>
+            <h1 className="marca-title text-dewan font-black text-3xl tracking-wide">{MARCA}</h1>
+            <p className="text-gray-400 text-sm mt-1">Ingrese el código de su local</p>
           </>
         ) : (
           <>

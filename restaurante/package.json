@@ -9,6 +9,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:web": "cross-env WEB_HOST_BUILD=true vite build",
+    "build:sistema": "bash build_sistema.sh",
+    "build:hp": "bash build_hp.sh",
     "preview": "vite preview",
     "electron": "cross-env NODE_ENV=development electron .",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5174 && cross-env NODE_ENV=development electron .\"",

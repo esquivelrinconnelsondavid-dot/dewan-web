@@ -1,0 +1,6 @@
+# Artefactos de build del EXE — NO subir.
+node_modules/
+dist_electron/
+
+# La build WEB (web/) SÍ se versiona: EasyPanel la sirve en /restaurante-sistema/web/.
+# El ícono (build/) y el cascarón (electron/) también se versionan.

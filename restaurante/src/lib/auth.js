@@ -7,13 +7,25 @@ export const STORAGE_REST = 'dewan_rest_data';
 async function enriquecerConPerfil(restaurante) {
   if (!restaurante?.restaurante_id) return restaurante;
   try {
-    const { data, error } = await consultarConTimeout(
+    const BASE_COLS = 'logo_url, direccion, horario, categoria, telefono, tipo_restaurante, activo';
+    // panel_tema / panel_color (colores del local, SISTEMA). Si la BD aún no tiene esas
+    // columnas, se reintenta sin ellas: el login nunca depende de eso.
+    let { data, error } = await consultarConTimeout(
       supabase
         .from('restaurantes')
-        .select('logo_url, direccion, horario, categoria, telefono, tipo_restaurante, activo')
+        .select(BASE_COLS + ', panel_tema, panel_color')
         .eq('id', restaurante.restaurante_id)
         .maybeSingle()
     );
+    if (error) {
+      ({ data, error } = await consultarConTimeout(
+        supabase
+          .from('restaurantes')
+          .select(BASE_COLS)
+          .eq('id', restaurante.restaurante_id)
+          .maybeSingle()
+      ));
+    }
     if (error || !data) return restaurante;
     return { ...restaurante, ...data };
   } catch (e) {

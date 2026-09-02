@@ -24,6 +24,7 @@ import { registrarPushRestaurante, olvidarRestaurantePush } from './lib/push';
 import { tiempoSinDatos } from './lib/conexion';
 import { resucitarSocket } from './lib/supabase';
 import { MARCA, MODO_HP } from './lib/config';
+import { aplicarTemaLocal } from './lib/tema';
 
 function buildTabs(enProcesoCount) {
   return [
@@ -278,6 +279,9 @@ export default function App() {
     const id = setInterval(() => { try { api.latido(); } catch {} }, 5000);
     return () => clearInterval(id);
   }, []);
+
+  // SISTEMA: colores del local (panel_tema / panel_color) apenas hay sesión.
+  useEffect(() => { aplicarTemaLocal(restaurante); }, [restaurante?.restaurante_id, restaurante?.panel_tema, restaurante?.panel_color]);
 
   if (cargando) {
     return (
