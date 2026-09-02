@@ -209,6 +209,14 @@
   var kParam = q.get('k') || '';
   var demo = q.get('demo');
 
+  // ---------- EL SISTEMA (locales con su propio bot/tabla/EXE) vs DEWAN ----------
+  // ?s=hp → tabla pedidos_hp (Happy Pollo). Cada local vendido = una entrada aquí.
+  // Sin ?s= → pedidos de DEWAN (marketplace, pedidos_delivery).
+  var SISTEMAS = { hp: 'pedidos_hp' };
+  var sistema = (q.get('s') || '').toLowerCase();
+  var TABLA = SISTEMAS[sistema] || 'pedidos_delivery';
+  var esSistema = !!SISTEMAS[sistema];
+
   var pedido = null, local = null, moto = null, calificado = false, estrellasSel = 0;
 
   function $(id) { return document.getElementById(id); }
@@ -248,7 +256,7 @@
   };
 
   function esRetiro() { return pedido.requiere_ubicacion === false; }
-  function esDewan() { return /^app(man)?:/.test(String(pedido.conversation_id || '')); }
+  function esDewan() { return !esSistema && /^app(man)?:/.test(String(pedido.conversation_id || '')); }
   function motoAsignada() { return !!(pedido.nombre_moto || pedido.motorizado_id); }
 
   function textos(ix) {
@@ -427,7 +435,8 @@
     var total = num(pedido.monto_total), envio = (!esRetiro() && num(pedido.precio_calculado)) || 0;
     var cupon = num(pedido.cupon_descuento) || 0;
     var p = '';
-    if (d.pago) p += '<span class="pago">💳 ' + esc(d.pago) + '</span>';
+    var pago = pedido.metodo_pago ? String(pedido.metodo_pago).charAt(0).toUpperCase() + String(pedido.metodo_pago).slice(1) : d.pago;
+    if (pago) p += '<span class="pago">💳 ' + esc(pago) + '</span>';
     if (total) {
       if (envio > 0) p += '<div class="precio"><span>Envío incluido</span><span>' + dinero(envio) + '</span></div>';
       if (cupon > 0) p += '<div class="precio"><span>Cupón</span><span>− ' + dinero(cupon) + '</span></div>';
@@ -455,9 +464,11 @@
         ? '<a class="btn b-rojo" href="https://pedir.dewansas.com">🍽️ Pedir de nuevo</a>'
         : (tl ? '<a class="btn b-rojo" href="https://wa.me/' + tl + '?text=' + encodeURIComponent('Hola, quiero hacer un pedido') + '">🍽️ Pedir de nuevo</a>' : '');
     }
-    var waAyuda = esDewan() ? WA_DEWAN : (tl || WA_DEWAN);
-    b += '<a class="btn b-verde" href="https://wa.me/' + waAyuda + '?text=' + ayuda + '">💬 ' + (esDewan() ? 'Necesito ayuda' : 'Escribir al local') + '</a>';
+    // El Sistema (local vendido): TODO va al WhatsApp del local, nunca al de DEWAN
+    var waAyuda = esDewan() ? WA_DEWAN : (tl || (esSistema ? '' : WA_DEWAN));
+    if (waAyuda) b += '<a class="btn b-verde" href="https://wa.me/' + waAyuda + '?text=' + ayuda + '">💬 ' + (esDewan() ? 'Necesito ayuda' : 'Escribir al local') + '</a>';
     $('botones').innerHTML = b;
+    $('pieMarca').innerHTML = esSistema ? 'Sistema de pedidos de <b>' + esc(nom) + '</b>' : 'Con tecnología <b>DEWAN</b>';
 
     var bm = $('btnMapa');
     var le = num(pedido.ubicacion_lat), ge = num(pedido.ubicacion_lng);
@@ -539,14 +550,15 @@
 
   function noEncontrado() {
     $('cargando').innerHTML = 'No encontramos ese pedido.<br><br>' +
-      '<a class="btn b-verde" style="display:inline-block" href="https://wa.me/' + WA_DEWAN + '">Escribirnos</a>';
+      (esSistema ? 'Escríbale al local por WhatsApp para confirmar su pedido.' :
+        '<a class="btn b-verde" style="display:inline-block" href="https://wa.me/' + WA_DEWAN + '">Escribirnos</a>');
   }
 
   function cargar() {
     if (demo) { cargarDemo(); return; }
     var filtro = token ? '&token_seguimiento=eq.' + encodeURIComponent(token) : (idParam ? '&id=eq.' + encodeURIComponent(idParam) : '');
     if (!filtro) { $('cargando').textContent = 'Enlace incompleto. Escríbanos por WhatsApp.'; return; }
-    sb('/pedidos_delivery?select=' + SEL + filtro + '&limit=1').then(function (rows) {
+    sb('/' + TABLA + '?select=' + SEL + (esSistema ? ',metodo_pago' : '') + filtro + '&limit=1').then(function (rows) {
       if (!rows || !rows.length) { if (!pedido) noEncontrado(); return; }
       var p = rows[0];
       // acceso por id: exige los últimos 4 dígitos del teléfono del cliente
@@ -557,7 +569,7 @@
         tareas.push(sb('/restaurantes?select=nombre,logo_url,telefono,direccion,latitud,longitud&id=eq.' + p.restaurante_id + '&limit=1')
           .then(function (r) { local = (r && r[0]) || null; }));
       }
-      if (p.motorizado_id && !esRetiro() && PASO[p.estado_pedido] >= 1) {
+      if (p.motorizado_id && !esSistema && !esRetiro() && PASO[p.estado_pedido] >= 1) {
         tareas.push(sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + p.motorizado_id + '&limit=1')
           .then(function (mm) {
             moto = null;
