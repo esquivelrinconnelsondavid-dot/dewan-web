@@ -208,6 +208,10 @@
   var idParam = q.get('id') || '';
   var kParam = q.get('k') || '';
   var demo = q.get('demo');
+  // ?d=<base64url JSON> → DEMO del bot de WhatsApp: el pedido viaja dentro del link
+  var dParam = q.get('d') || '';
+  var esDemoD = !!dParam;
+  var WA_DEMO = '593986777146';
 
   // ---------- EL SISTEMA (locales con su propio bot/tabla/EXE) vs DEWAN ----------
   // ?s=hp → tabla pedidos_hp (Happy Pollo). Cada local vendido = una entrada aquí.
@@ -281,10 +285,10 @@
     var ix = PASO[pedido.estado_pedido];
     if (ix == null) ix = pedido.restaurante_aceptado ? 1 : 0;
 
-    $('cod').textContent = 'Pedido #' + pedido.id;
+    $('cod').textContent = pedido.codigo ? pedido.codigo : 'Pedido #' + pedido.id;
     $('cargando').classList.add('oculto');
     $('contenido').classList.remove('oculto');
-    if (demo) $('demoAviso').classList.remove('oculto');
+    if (demo || esDemoD) $('demoAviso').classList.remove('oculto');
 
     // marca del local
     var nom = (local && local.nombre) || pedido.restaurante || 'Su pedido';
@@ -460,13 +464,15 @@
     var tl = waLocal();
     var b = '';
     if (!cancel && entregada) {
-      b += esDewan()
+      b += esDemoD
+        ? '<a class="btn b-rojo" href="https://wa.me/' + WA_DEMO + '?text=demo">🍽️ Pedir de nuevo</a>'
+        : esDewan()
         ? '<a class="btn b-rojo" href="https://pedir.dewansas.com">🍽️ Pedir de nuevo</a>'
         : (tl ? '<a class="btn b-rojo" href="https://wa.me/' + tl + '?text=' + encodeURIComponent('Hola, quiero hacer un pedido') + '">🍽️ Pedir de nuevo</a>' : '');
     }
     // El Sistema (local vendido): TODO va al WhatsApp del local, nunca al de DEWAN
-    var waAyuda = esDewan() ? WA_DEWAN : (tl || (esSistema ? '' : WA_DEWAN));
-    if (waAyuda) b += '<a class="btn b-verde" href="https://wa.me/' + waAyuda + '?text=' + ayuda + '">💬 ' + (esDewan() ? 'Necesito ayuda' : 'Escribir al local') + '</a>';
+    var waAyuda = (esDewan() || esDemoD) ? WA_DEWAN : (tl || (esSistema ? '' : WA_DEWAN));
+    if (waAyuda) b += '<a class="btn b-verde" href="https://wa.me/' + waAyuda + '?text=' + ayuda + '">💬 ' + ((esDewan() || esDemoD) ? 'Necesito ayuda' : 'Escribir al local') + '</a>';
     $('botones').innerHTML = b;
     $('pieMarca').innerHTML = esSistema ? 'Sistema de pedidos de <b>' + esc(nom) + '</b>' : 'Con tecnología <b>DEWAN</b>';
 
@@ -528,7 +534,7 @@
     calificado = true;
     $('califBloque').classList.add('oculto');
     $('graciasCalif').classList.remove('oculto');
-    if (demo) return;
+    if (demo || esDemoD) return;
     fetch(CALIFICAR, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-dewan-key': 'dwn-app-2026' },
@@ -555,6 +561,7 @@
   }
 
   function cargar() {
+    if (dParam) { cargarDemoD(); return; }
     if (demo) { cargarDemo(); return; }
     var filtro = token ? '&token_seguimiento=eq.' + encodeURIComponent(token) : (idParam ? '&id=eq.' + encodeURIComponent(idParam) : '');
     if (!filtro) { $('cargando').textContent = 'Enlace incompleto. Escríbanos por WhatsApp.'; return; }
@@ -603,6 +610,67 @@
       restaurante_motivo_rechazo: paso === -1 ? 'Se nos acabaron las alitas por hoy' : null
     };
     moto = (paso === 2 && !retiro) ? { lat: -1.6668, lng: -78.6515 } : null;
+    pintar();
+  }
+
+  // ---------- DEMO del bot de WhatsApp (?d=): el pedido viene dentro del link ----------
+  // Sin base de datos. Los estados avanzan solos con el tiempo desde que se armó el
+  // pedido (ts): recibido → en cocina (con reloj) → en camino / listo → entregado.
+  // El prospecto puede adelantar con "Ver siguiente paso" (offset guardado por código).
+  function decodeD(s) {
+    s = String(s).replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    return JSON.parse(decodeURIComponent(escape(atob(s))));
+  }
+  var FASES_SEG = [0, 40, 170, 300]; // segundos: recibido <40, cocina <170, en camino <300, luego entregado
+  function offsetDemo(c, set) {
+    var k = 'seg_demo_' + c;
+    try { if (set != null) localStorage.setItem(k, String(set)); return Number(localStorage.getItem(k)) || 0; } catch (e) { return 0; }
+  }
+  function cargarDemoD() {
+    var o;
+    try { o = decodeD(dParam); } catch (e) { $('cargando').textContent = 'Enlace de demostración inválido.'; return; }
+    var codigo = String(o.c || 'DEMO');
+    var ts = (Number(o.ts) || Math.floor(Date.now() / 1000)) * 1000;
+    var el = (Date.now() - ts) / 1000 + offsetDemo(codigo);
+    var retiro = o.m === 'r';
+    var fase = el < FASES_SEG[1] ? 0 : el < FASES_SEG[2] ? 1 : el < FASES_SEG[3] ? 2 : 3;
+    var acept = ts + FASES_SEG[1] * 1000, min = Number(o.min) || 25;
+    if (!local) local = { nombre: o.l || 'El local', logo_url: '', telefono: '', direccion: o.a || '', latitud: o.la, longitud: o.lo };
+    var items = (o.i || []).map(function (x) { return x[0] + 'x ' + x[1] + ' — $' + (Number(x[2]) * Number(x[0])).toFixed(2); });
+    if (Number(o.e) > 0) items.push('📦 Envases: $' + Number(o.e).toFixed(2));
+    if (o.o) items.push('🍽️ ' + o.o);
+    if (o.n) items.push('📝 ' + o.n);
+    pedido = {
+      id: codigo, codigo: codigo, restaurante: o.l || '', restaurante_id: o.id || null,
+      cliente_nombre: '', cliente_telefono: '', conversation_id: 'demo:' + codigo, requiere_ubicacion: !retiro,
+      estado_pedido: ['pendiente_restaurante', 'preparando', retiro ? 'listo' : 'en_camino', 'entregado'][fase],
+      detalle_pedido: items.join('\n'),
+      direccion_entrega: o.r || (o.x ? 'Ubicación exacta (pin en el mapa) 📍' : ''),
+      ubicacion_lat: o.x && o.x.lat, ubicacion_lng: o.x && o.x.lng,
+      retiro_lat: o.la, retiro_lng: o.lo, precio_calculado: Number(o.v) || 0, duracion_minutos: 12,
+      monto_total: Number(o.t) || 0, cupon_descuento: 0, calificacion: 0, metodo_pago: o.p || '',
+      tiempo_preparacion: min, restaurante_aceptado: fase >= 1,
+      restaurante_aceptado_at: fase >= 1 ? new Date(acept).toISOString() : null,
+      timer_lanzamiento: fase >= 1 ? new Date(acept + min * 60000).toISOString() : null,
+      nombre_moto: (fase === 2 && !retiro) ? 'Carlos Andrade' : null,
+      telefono_moto: (fase === 2 && !retiro) ? '0987654321' : null, motorizado_id: null
+    };
+    moto = (fase === 2 && !retiro && o.x && o.la) ? { lat: (Number(o.la) + Number(o.x.lat)) / 2, lng: (Number(o.lo) + Number(o.x.lng)) / 2 } : null;
+    if (o.id && !local._buscado) {
+      local._buscado = true;
+      sb('/restaurantes?select=logo_url,telefono&id=eq.' + encodeURIComponent(o.id) + '&limit=1').then(function (r) {
+        if (r && r[0]) { local.logo_url = r[0].logo_url || ''; pintar(); }
+      });
+    }
+    var nombresFase = ['Recibido', 'En cocina', retiro ? 'Listo' : 'En camino', 'Entregado'];
+    $('demoAviso').innerHTML = '🎬 <b>Demostración</b> · paso ' + (fase + 1) + ' de 4 (' + nombresFase[fase] + '). ' +
+      'En un pedido real la página avanza sola con lo que hace el local.<br>' +
+      (fase < 3 ? '<a href="#" id="demoSig" style="color:#92400E;font-weight:800">Ver siguiente paso ▶</a> · ' : '') +
+      '<a href="#" id="demoRe" style="color:#92400E">↺ Volver al inicio</a>';
+    var sig = $('demoSig'), re = $('demoRe');
+    if (sig) sig.onclick = function (ev) { ev.preventDefault(); var meta = FASES_SEG[fase + 1]; offsetDemo(codigo, meta + 1 - (Date.now() - ts) / 1000); cargarDemoD(); };
+    if (re) re.onclick = function (ev) { ev.preventDefault(); offsetDemo(codigo, -((Date.now() - ts) / 1000)); calificado = false; estrellasSel = 0; document.querySelectorAll('.est').forEach(function (s) { s.classList.remove('on'); }); $('califBloque').classList.remove('oculto'); $('graciasCalif').classList.add('oculto'); cargarDemoD(); };
     pintar();
   }
 
