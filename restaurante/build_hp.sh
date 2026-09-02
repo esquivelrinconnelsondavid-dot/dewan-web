@@ -10,7 +10,7 @@ export VITE_PEDIDOS_TABLE=pedidos_hp
 export VITE_MARCA="Happy Pollo"
 export VITE_N8N_WEBHOOK_BASE=https://n8n.dewansas.com/webhook
 # Aviso de tiempo de HP: webhook hp-timer-restaurante en la instancia de Super Happy (text/plain, no-cors)
-export VITE_N8N_TIMER_URL="${VITE_N8N_TIMER_URL:-https://superhappy-n8n.bqspdc.easypanel.host/webhook/hp-timer-restaurante}"
+export VITE_N8N_TIMER_URL="${VITE_N8N_TIMER_URL:-https://n8n-sh.dewansas.com/webhook/hp-timer-restaurante}"
 npx vite build
 B=$(grep -o -E 'assets/index-[A-Za-z0-9_-]+\.js' ../restaurante-hp/web/index.html | head -1)
 for k in pedidos_hp hp-timer-restaurante "Happy Pollo"; do
