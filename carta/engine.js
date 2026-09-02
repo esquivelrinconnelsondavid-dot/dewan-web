@@ -33,7 +33,7 @@ const TPL = (window.TEMPLATES && window.TEMPLATES[tpl]) || null;
 
 const TOKEN = params.get("token") || "";          // si viene, el dueño está subiendo fotos
 const EDIT  = !!TOKEN;                              // modo edición de fotos
-const LIVE  = EDIT || params.get("live") === "1";  // leer el menú real de Supabase
+const LIVE  = EDIT || params.get("live") === "1" || !!(cfg && cfg.live);  // leer el menú real de Supabase (o si la config lo pide)
 const UNA_CAT = (TPL && TPL.unaCategoria === false)
   ? false
   : (!cfg || cfg.categoriaUnica !== false); // una categoría a la vez, salvo que la plantilla pida ver todas (scroll)
