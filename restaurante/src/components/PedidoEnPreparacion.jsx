@@ -141,7 +141,7 @@ export default function PedidoEnPreparacion({ pedido }) {
               disabled={cargando}
               className="flex-1 bg-dewan text-white font-extrabold py-3 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md"
             >
-              ✅ Listo (avisar al cliente)
+              ✅ Listo
             </button>
           ) : (
             <button
