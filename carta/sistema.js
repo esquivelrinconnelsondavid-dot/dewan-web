@@ -60,8 +60,8 @@
   card.id = "sis-resumen";
   card.className = "sis-card";
   const totalBox = $(".cart-total") || $("#enviar");
-  if (totalBox) { if (!modoWA) totalBox.insertAdjacentElement("beforebegin", pagos); totalBox.insertAdjacentElement("beforebegin", card); }
-  else if (foot) { if (!modoWA) foot.appendChild(pagos); foot.appendChild(card); }
+  if (totalBox) { totalBox.insertAdjacentElement("beforebegin", pagos); totalBox.insertAdjacentElement("beforebegin", card); }
+  else if (foot) { foot.appendChild(pagos); foot.appendChild(card); }
   let pago = "Efectivo";
   pagos.querySelectorAll(".sis-pago").forEach((b) => b.addEventListener("click", () => {
     pago = b.dataset.pago;
@@ -119,8 +119,10 @@
       else if (envio.estado === "loading") nota = '<div class="sis-envio-nota">⏳ ' + envio.nota + '</div>';
       else if (envio.estado === "ok") nota = '<div class="sis-envio-nota ok">' + envio.nota + '</div>';
     } else nota = '<div class="sis-envio-nota">🏪 Retiras en ' + (S.local.direccion || R.nombre) + ' · sin costo de envío</div>';
+    const filas = Object.entries(carrito).map(([pid, c]) => { const it = buscar(pid); return '<div class="sis-row"><span>' + c + 'x ' + it.nombre + '</span><b>' + money(it.precio * c) + '</b></div>'; }).join("");
     card.innerHTML =
-      '<div class="sis-row"><span>Subtotal</span><b>' + money(sub) + '</b></div>' +
+      '<div class="campo" style="margin-bottom:4px">Tu pedido</div>' + filas +
+      '<div class="sis-row" style="border-top:1px dashed #ddd;margin-top:6px;padding-top:8px"><span>Subtotal</span><b>' + money(sub) + '</b></div>' +
       (del ? '<div class="sis-row"><span>Envío 🛵</span><b>' + (envio.estado === "ok" ? money(env) : "—") + '</b></div>' : '') +
       nota +
       '<div class="sis-row tot"><span>Total a pagar</span><b>' + money(sub + env) + '</b></div>';
@@ -130,7 +132,9 @@
   const _refrescar = window.refrescar;
   window.refrescar = function () { _refrescar.apply(this, arguments); pintar(); };
   refrescar = window.refrescar;
-  if ($("#cli-entrega")) $("#cli-entrega").addEventListener("change", () => { cotizar(); pintar(); });
+  const pedirGPS = () => { if (esDelivery() && !ubicacion && ub && !ub.disabled) ub.click(); };
+  if ($("#cli-entrega")) $("#cli-entrega").addEventListener("change", () => { pedirGPS(); cotizar(); pintar(); });
+  if ($("#cart-fab")) $("#cart-fab").addEventListener("click", () => setTimeout(pedirGPS, 300));
   // cuando el GPS termina (engine pone la clase .ok al botón), cotizamos
   const ub = $("#cli-ubic");
   if (ub) new MutationObserver(() => { if (ub.classList.contains("ok")) cotizar(); }).observe(ub, { attributes: true, attributeFilter: ["class"] });
@@ -190,6 +194,8 @@ Subtotal: $${sub.toFixed(2)}`;
 🛵 Envío: ${envio.estado === "ok" ? "$" + env.toFixed(2) + (envio.km ? " (" + envio.km.toFixed(1) + " km)" : "") : "por confirmar"}`;
       m += `
 *Total: $${(sub + env).toFixed(2)}*`;
+      m += `
+*Pago:* ${pago}`;
       if (nota) m += `
 
 *Nota:* ${nota}`;

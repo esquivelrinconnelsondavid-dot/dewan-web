@@ -11,7 +11,7 @@ window.RESTAURANTES["demo"] = {
   slogan: "Food & Drinks · hamburguesas a la parrilla",
   direccion: "C.C. Multiplaza · Riobamba",
   marca: "#E05B19", tinta: "#16181D", crema: "#F6F6F4", acento: "#E05B19",
-  whatsapp: "593939647069",
+  whatsapp: "593986777146",   // [2-sep] número de PRUEBA (bot): el pedido entra al sistema (panel + link)
   logo: "assets/baltimore.jpeg",
   heroFoto: "assets/demo/food9.jpg",
   emojiDefault: "🍔",
