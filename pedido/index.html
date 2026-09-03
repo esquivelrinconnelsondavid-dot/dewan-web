@@ -284,11 +284,20 @@
     return ['¡Entregado!', 'Gracias por su pedido.'];
   }
 
+  // Numero visible del pedido: sale de codigo_pedido (PREFIJO-NUMERO, ej. RYO-1042),
+  // el MISMO que ve el local en su panel y el motorizado en su app.
+  // En el link de un local (?s=sistema / ?s=hp) se muestra solo el numero, igual
+  // que en su panel; en DEWAN, el codigo completo. Si viene vacio, "#id" como antes.
+  function numeroPedido() {
+    var cod = pedido.codigo_pedido ? String(pedido.codigo_pedido).trim() : '';
+    if (!cod) return '#' + pedido.id;
+    return esSistema ? '#' + cod.split('-').pop() : cod;
+  }
   function pintar() {
     var ix = PASO[pedido.estado_pedido];
     if (ix == null) ix = pedido.restaurante_aceptado ? 1 : 0;
 
-    $('cod').textContent = pedido.codigo ? pedido.codigo : 'Pedido #' + pedido.id;
+    $('cod').textContent = 'Pedido ' + numeroPedido();
     $('cargando').classList.add('oculto');
     $('contenido').classList.remove('oculto');
     if (demo || esDemoD) $('demoAviso').classList.remove('oculto');
@@ -463,7 +472,7 @@
   }
   function pintarBotones(cancel, entregada) {
     var nom = (local && local.nombre) || pedido.restaurante || 'el local';
-    var ayuda = encodeURIComponent('Hola, sobre mi pedido #' + pedido.id);
+    var ayuda = encodeURIComponent('Hola, sobre mi pedido ' + (pedido.codigo_pedido || '#' + pedido.id));
     var tl = waLocal();
     var b = '';
     if (!cancel && entregada) {
@@ -557,7 +566,7 @@
   var SEL = 'id,restaurante,restaurante_id,cliente_nombre,cliente_telefono,conversation_id,detalle_pedido,requiere_ubicacion,' +
     'estado_pedido,motorizado_id,nombre_moto,telefono_moto,direccion_entrega,ubicacion_lat,ubicacion_lng,direccion_retiro,retiro_lat,retiro_lng,' +
     'precio_calculado,duracion_minutos,monto_total,cupon_descuento,calificacion,tiempo_preparacion,timer_lanzamiento,' +
-    'restaurante_aceptado,restaurante_aceptado_at,restaurante_motivo_rechazo,fecha_creacion';
+    'restaurante_aceptado,restaurante_aceptado_at,restaurante_motivo_rechazo,fecha_creacion,codigo_pedido';
 
   function noEncontrado() {
     $('cargando').innerHTML = 'No encontramos ese pedido.<br><br>' +
