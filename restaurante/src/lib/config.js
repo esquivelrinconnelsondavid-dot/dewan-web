@@ -16,15 +16,21 @@ export const TIMER_PATH = import.meta.env.VITE_N8N_TIMER_PATH || 'timer-restaura
 export const SALIO_PATH = import.meta.env.VITE_N8N_SALIO_PATH || '';
 export const RECHAZO_PATH = import.meta.env.VITE_N8N_RECHAZO_PATH || '';
 
-// Número visible del pedido.
-// - Happy Pollo / sistema: SIEMPRE el número de fila (#id), igual que la app y el aviso
-//   del bot al cliente (el bot confirma "Pedido #N" con ese mismo id). Sin
-//   códigos tipo "CV-######".
-// - DEWAN: usa el código que generó su bot (codigo_pedido) si existe; si no, #id.
+// Número visible del pedido. Sale de la columna `codigo_pedido`, que la BD llena
+// sola al crear el pedido con el formato PREFIJO-NÚMERO (ej. RYO-1042) y que el
+// pedido gemelo de DEWAN COPIA tal cual → el motorizado ve el MISMO número que el local.
+// - Happy Pollo / sistema (el local): ve solo su número → "#1042". Es el que canta
+//   por teléfono y el que va en la comanda; el prefijo no le aporta nada porque
+//   todos sus pedidos son suyos.
+// - DEWAN (moto/operadora): ve el código completo → "RYO-1042", porque le entran
+//   pedidos de varios locales a la vez y necesita distinguirlos.
+// Fallback: si `codigo_pedido` viene vacío (pedidos viejos, o el SQL de códigos
+// todavía no corrió), muestra el número de fila de siempre → nada se rompe.
 export function codigoPedido(pedido) {
   if (!pedido) return '';
-  if (MODO_HP) return `#${pedido.id}`;
-  return pedido.codigo_pedido ? pedido.codigo_pedido : `#${pedido.id}`;
+  const cod = pedido.codigo_pedido ? String(pedido.codigo_pedido).trim() : '';
+  if (MODO_HP) return cod ? `#${cod.split('-').pop()}` : `#${pedido.id}`;
+  return cod || `#${pedido.id}`;
 }
 
 // ¿El pedido es a domicilio? (sistema: columna tipo_entrega; HP legado: por la dirección)

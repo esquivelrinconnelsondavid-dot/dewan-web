@@ -1,5 +1,6 @@
 import { calcularPagoAlRestaurante, formatDinero } from '../lib/formato';
 import { hayImpresion, imprimirComanda } from '../lib/comanda';
+import { codigoPedido } from '../lib/config';
 
 const LABELS = {
   confirmado: 'Buscando motorizado',
@@ -36,7 +37,7 @@ export default function PedidoEnProceso({ pedido }) {
     <div className="bg-tarjeta border border-borde rounded-xl p-3 space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] text-gray-500 uppercase tracking-widest">#{pedido.id}</p>
+          <p className="text-[10px] text-gray-500 uppercase tracking-widest">{codigoPedido(pedido)}</p>
           <p className="text-sm font-bold text-white leading-tight truncate">
             {pedido.cliente_nombre || 'Cliente'}
           </p>

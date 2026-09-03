@@ -161,7 +161,7 @@ export default function PedidoEnPreparacion({ pedido }) {
     <div className="bg-tarjeta rounded-xl border-l-4 border-preparando p-4">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <span className="text-xs font-bold text-preparando">#{pedido.id}</span>
+          <span className="text-xs font-bold text-preparando">{codigoPedido(pedido)}</span>
           <h3 className="text-sm font-bold text-white leading-tight">
             En preparación
           </h3>

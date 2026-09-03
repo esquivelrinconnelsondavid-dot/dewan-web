@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
-import { PEDIDOS_TABLE, MODO_SISTEMA } from '../lib/config';
+import { PEDIDOS_TABLE, MODO_SISTEMA, codigoPedido } from '../lib/config';
 import { marcarDatosOk, tiempoSinDatos } from '../lib/conexion';
 import { startAlertLoop, stopAlertLoop, showPushNotification } from '../lib/notifications';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
@@ -118,7 +118,7 @@ export function usePedidosRestaurante(restaurante) {
           ? `$${monto.toFixed(2)} — ${p.cliente_nombre || 'Cliente'}`
           : (p.detalle_pedido || 'Pedido entrante').slice(0, 80);
         startAlertLoop(p.id, {
-          title: `🔔 Nuevo pedido #${p.id}`,
+          title: `🔔 Nuevo pedido ${codigoPedido(p)}`,
           body: cuerpo,
         });
       }
@@ -173,7 +173,7 @@ export function usePedidosRestaurante(restaurante) {
                   ? `$${monto.toFixed(2)} — ${nuevo.cliente_nombre || 'Cliente'}`
                   : (nuevo.detalle_pedido || 'Pedido entrante').slice(0, 80);
                 startAlertLoop(nuevo.id, {
-                  title: `🔔 Nuevo pedido #${nuevo.id}`,
+                  title: `🔔 Nuevo pedido ${codigoPedido(nuevo)}`,
                   body: cuerpo,
                 });
               }

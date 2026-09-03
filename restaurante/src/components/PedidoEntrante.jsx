@@ -217,7 +217,7 @@ export default function PedidoEntrante({ pedido }) {
     >
       <div className="flex items-start justify-between mb-3">
         <div>
-          <span className="text-xs font-bold text-nuevo">#{pedido.id}</span>
+          <span className="text-xs font-bold text-nuevo">{codigoPedido(pedido)}</span>
           <h3 className="text-base font-bold text-white leading-tight mt-0.5">
             Nuevo pedido
           </h3>
