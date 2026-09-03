@@ -199,6 +199,11 @@ Subtotal: $${sub.toFixed(2)}`;
       if (nota) m += `
 
 *Nota:* ${nota}`;
+      // recordar nombre, dirección y ubicación para la próxima vez (igual que el Flow con "la de la vez pasada")
+      try {
+        const prev = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+        localStorage.setItem(LS_KEY, JSON.stringify({ nombre, dir: dir || prev.dir || "", lat: (del && ubicacion) ? ubicacion.lat : (prev.lat || null), lng: (del && ubicacion) ? ubicacion.lng : (prev.lng || null) }));
+      } catch (e) {}
       window.open(`https://wa.me/${R.whatsapp}?text=${encodeURIComponent(m)}`, "_blank");
     });
     pintar();
