@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { HOY_ISO, hace } from '../lib/time';
 
+import { codigoPedido } from '../lib/pedidoNum';
 // Bottom-sheet para asignar la carrera a un moto concreto (a dedo), en vez de
 // ofrecerla a todos con lanzar-motorizado. Usa data.motorizados (ya viene con
 // realtime desde useAdminData), ordenados como el reparto justo: conectados y
@@ -41,7 +42,7 @@ export default function ModalAsignarMoto({ pedido, motorizados, onAsignar, onCer
     if (asignando) return;
     if (m.bloqueado_por_deuda && !confirm(`${m.nombre} está BLOQUEADO por deuda. ¿Asignar igual?`)) return;
     if (!estaConectado(m) && !confirm(`${m.nombre} no da señales hace rato (app cerrada?). ¿Asignar igual?`)) return;
-    if (!confirm(`¿Asignar el pedido #${pedido.id} a ${m.nombre?.trim() || 'este moto'}?`)) return;
+    if (!confirm(`¿Asignar el pedido ${codigoPedido(pedido)} a ${m.nombre?.trim() || 'este moto'}?`)) return;
     setAsignando(m.id);
     const ok = await onAsignar(m);
     setAsignando(null);
@@ -56,7 +57,7 @@ export default function ModalAsignarMoto({ pedido, motorizados, onAsignar, onCer
       >
         <div className="flex items-center justify-between p-4 pb-2">
           <h2 className="text-white font-bold text-sm">
-            👤 Asignar moto al pedido <span className="text-dewan">#{pedido.id}</span>
+            👤 Asignar moto al pedido <span className="text-dewan">{codigoPedido(pedido)}</span>
           </h2>
           <button onClick={onCerrar} className="text-gray-400 text-xs border border-borde rounded-lg px-2 py-1">
             Cerrar

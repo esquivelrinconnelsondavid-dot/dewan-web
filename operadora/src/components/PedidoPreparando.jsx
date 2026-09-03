@@ -4,6 +4,7 @@ import { lanzarMotorizado, cancelarPedido } from '../lib/webhooks';
 import { useTimer } from '../hooks/useTimer';
 import TimerDisplay from './TimerDisplay';
 
+import { codigoPedido } from '../lib/pedidoNum';
 export default function PedidoPreparando({ pedido }) {
   const [cargando, setCargando] = useState(false);
   const { expirado } = useTimer(pedido.timer_lanzamiento);
@@ -72,7 +73,7 @@ export default function PedidoPreparando({ pedido }) {
     >
       <div className="flex items-start justify-between mb-2">
         <div>
-          <span className="text-xs font-bold text-preparando">#{pedido.id}</span>
+          <span className="text-xs font-bold text-preparando">{codigoPedido(pedido)}</span>
           <h3 className="text-sm font-bold text-white leading-tight">
             {pedido.restaurante}
           </h3>

@@ -9,6 +9,7 @@ import ModalAsignarMoto from './ModalAsignarMoto';
 import { lanzarMotorizado, cancelarPedido as wCancelarPedido, restauranteNoPuede, timerRestaurante, pedidoAceptado } from '../lib/webhooks';
 import { stopAlertLoop, alertActiva } from '../lib/notifications';
 
+import { codigoPedido } from '../lib/pedidoNum';
 const ESTADO_LABEL = {
   pendiente: 'Pendiente',
   pendiente_restaurante: 'Esperando rest.',
@@ -117,7 +118,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   // Los pedidos de la app/web entran directo a la base: sin esto, hay que transcribirlo
   // a mano. El texto dice lo que el local necesita: qué cocinar y cuánto va a cobrar.
   const textoParaLocal = useMemo(() => [
-    `🔔 PEDIDO DEWAN #${p.id}`,
+    `🔔 PEDIDO DEWAN ${codigoPedido(p)}`,
     p.restaurante ? `🏪 ${p.restaurante}` : '',
     '',
     (p.detalle_pedido || '').trim(),
@@ -259,7 +260,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   // (deja motorizado_id NULL + estado 'confirmado' y dispara lanzar-motorizado de inmediato).
   // El moto que lo tenía lo pierde en su app por realtime (el filtro es por motorizado_id).
   const quitarMotoYRelanzar = async () => {
-    if (!confirm(`¿Quitar el pedido #${p.id} a ${p.nombre_moto?.trim() || 'la moto'} y relanzarlo a los motorizados?`)) return;
+    if (!confirm(`¿Quitar el pedido ${codigoPedido(p)} a ${p.nombre_moto?.trim() || 'la moto'} y relanzarlo a los motorizados?`)) return;
     setCargando(true);
     try {
       const sucursalId = sucursalSeleccionada?.id || p.sucursal_id || null;
@@ -352,8 +353,8 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
 
   const cancelar = async () => {
     const aviso = p.motorizado_id
-      ? `¿Cancelar pedido #${p.id}? Ya tiene motorizado asignado${p.nombre_moto ? ` (${p.nombre_moto})` : ''}.`
-      : `¿Cancelar pedido #${p.id}?`;
+      ? `¿Cancelar pedido ${codigoPedido(p)}? Ya tiene motorizado asignado${p.nombre_moto ? ` (${p.nombre_moto})` : ''}.`
+      : `¿Cancelar pedido ${codigoPedido(p)}?`;
     if (!confirm(aviso)) return;
     // Motivo opcional: el cliente lo ve en el push y en la app (no culpa al local,
     // eso solo pasa cuando el LOCAL rechaza desde su app con restaurante_rechazado)
@@ -373,7 +374,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
   };
 
   const escalarOperadora = async () => {
-    if (!confirm(`¿Escalar #${p.id} a operadora? (restaurante no responde)`)) return;
+    if (!confirm(`¿Escalar ${codigoPedido(p)} a operadora? (restaurante no responde)`)) return;
     setCargando(true);
     try {
       await supabase
@@ -401,7 +402,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-lg">{ICONO_INTENCION[p.intencion] || '📋'}</span>
-          <span className="text-sm font-black text-white">#{p.id}</span>
+          <span className="text-sm font-black text-white">{codigoPedido(p)}</span>
           <span className={`text-[11px] font-black px-2.5 py-1 rounded-lg ${ESTADO_COLOR[p.estado_pedido] || 'bg-gray-500/20 text-gray-300'}`}>
             {ESTADO_LABEL[p.estado_pedido] || p.estado_pedido}
           </span>

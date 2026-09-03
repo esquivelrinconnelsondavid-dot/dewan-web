@@ -1,3 +1,5 @@
+import { codigoPedido } from '../lib/pedidoNum';
+
 export default function PedidoEntregado({ pedido }) {
   const hora = pedido.fecha_entregado
     ? new Date(pedido.fecha_entregado).toLocaleTimeString('es-EC', {
@@ -9,7 +11,7 @@ export default function PedidoEntregado({ pedido }) {
   return (
     <div className="bg-tarjeta/50 rounded-lg px-4 py-2.5 flex items-center justify-between">
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-xs text-gray-500">#{pedido.id}</span>
+        <span className="text-xs text-gray-500">{codigoPedido(pedido)}</span>
         <span className="text-xs text-gray-300 truncate">{pedido.restaurante}</span>
       </div>
       <div className="flex items-center gap-2 shrink-0">

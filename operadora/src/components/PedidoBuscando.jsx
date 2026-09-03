@@ -1,9 +1,11 @@
+import { codigoPedido } from '../lib/pedidoNum';
+
 export default function PedidoBuscando({ pedido }) {
   return (
     <div className="bg-tarjeta rounded-xl border-l-4 border-buscando p-4">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <span className="text-xs font-bold text-buscando">#{pedido.id}</span>
+          <span className="text-xs font-bold text-buscando">{codigoPedido(pedido)}</span>
           <h3 className="text-sm font-bold text-white leading-tight">
             {pedido.restaurante}
           </h3>

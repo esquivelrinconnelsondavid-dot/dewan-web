@@ -5,6 +5,7 @@ import { supabase, MIN_NO_ACEPTA } from '../lib/supabase';
 import { HOY_ISO, minutosDesde } from '../lib/time';
 import { notify, startAlertLoop, stopAlertLoop, stopAllAlerts, resumeAudio } from '../lib/notifications';
 
+import { codigoPedido } from '../lib/pedidoNum';
 const TERMINALES = new Set(['entregado', 'cancelado']);
 
 // ─── Identidad estable de las filas ──────────────────────────────────────────
@@ -100,7 +101,7 @@ export function useAdminData() {
         const tipo = p.intencion === 'pedido_comida' ? 'Comida'
           : p.intencion === 'encomienda' ? 'Encomienda'
           : p.intencion === 'compras' ? 'Compras' : 'Pedido';
-        notify(`Nuevo pedido (${tipo})`, `#${p.id} ${p.restaurante || p.cliente_nombre || ''}`);
+        notify(`Nuevo pedido (${tipo})`, `${codigoPedido(p)} ${p.restaurante || p.cliente_nombre || ''}`);
         startAlertLoop(p.id, 'nuevo');
       }
     });
@@ -316,7 +317,7 @@ export function useAdminData() {
         !notifiedNoAcepta.current.has(p.id)
       ) {
         notifiedNoAcepta.current.add(p.id);
-        notify(`Restaurante no responde`, `#${p.id} ${p.restaurante || ''} (${minutosDesde(p.fecha_creacion)}m)`);
+        notify(`Restaurante no responde`, `${codigoPedido(p)} ${p.restaurante || ''} (${minutosDesde(p.fecha_creacion)}m)`);
         startAlertLoop(p.id, 'no_acepta');
       }
       // Si el pedido YA fue atendido (operadora puso tiempo / avanzó), apagar cualquier alarma viva.

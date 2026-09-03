@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { timerRestaurante, restauranteNoPuede } from '../lib/webhooks';
 import { stopAlertLoop } from '../lib/notifications';
 
+import { codigoPedido } from '../lib/pedidoNum';
 function tiempoSinAtender(fechaCreacion) {
   const diff = Date.now() - new Date(fechaCreacion).getTime();
   const seg = Math.floor(diff / 1000);
@@ -82,7 +83,7 @@ export default function PedidoNuevo({ pedido }) {
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div>
-          <span className="text-xs font-bold text-nuevo">#{pedido.id}</span>
+          <span className="text-xs font-bold text-nuevo">{codigoPedido(pedido)}</span>
           <h3 className="text-sm font-bold text-white leading-tight">
             {pedido.restaurante || 'Sin restaurante'}
           </h3>
