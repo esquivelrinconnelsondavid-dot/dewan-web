@@ -20,6 +20,14 @@ window.RESTAURANTES["demo"] = {
   meta: ["🛵 30 min", "🔥 A la parrilla", "📍 Multiplaza"],
   promo: "🛵 30 min",
   plantillas: ["premium", "grid-foto", "poster", "inmersivo", "ticket"],
+  /* [2-sep] Tarjeta del pedido con el PRECIO DEL ENVÍO (moto DEWAN, cotizado con la
+     ubicación del cliente) antes de confirmar. Sigue mandando por WhatsApp (ventas).
+     Coordenadas aproximadas de Multiplaza Riobamba: ajustar si se quiere más exactitud. */
+  sistema: {
+    modo: "whatsapp",
+    local: { lat: -1.6467, lng: -78.6689, direccion: "C.C. Multiplaza" },
+    envio: { modo: "dewan", cotizador: "https://n8n.dewansas.com/webhook/calcular-precio" }
+  },
   menu: [
     { categoria: "Hamburguesas", items: [
       { id: "d1", nombre: "Baltimore Doble", precio: 5.50, foto: "assets/demo/food9.jpg", desc: "Doble carne a la parrilla, cheddar, tocino y salsa de la casa." },

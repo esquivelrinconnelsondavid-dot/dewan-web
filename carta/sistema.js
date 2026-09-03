@@ -13,6 +13,8 @@
 (function () {
   if (!window.RESTAURANTES || typeof cfg === "undefined" || !cfg || !cfg.sistema) return;
   const S = cfg.sistema;
+  // modo 'whatsapp' (demo Baltimore): SOLO muestra el precio del envío en la tarjeta y sigue mandando por WhatsApp
+  const modoWA = S.modo === 'whatsapp';
   const $ = (q) => document.querySelector(q);
   const money = (n) => "$" + (Math.round(Number(n) * 100) / 100).toFixed(2);
   const LS_KEY = "sis_cliente_" + id;
@@ -48,7 +50,7 @@
   const telLbl = document.createElement("label");
   telLbl.className = "campo";
   telLbl.innerHTML = 'Tu WhatsApp <input id="cli-tel" type="tel" inputmode="tel" placeholder="Ej: 0991234567" maxlength="13" />';
-  if (nombreLbl) nombreLbl.insertAdjacentElement("afterend", telLbl);
+  if (nombreLbl && !modoWA) nombreLbl.insertAdjacentElement("afterend", telLbl);
 
   const pagos = document.createElement("div");
   pagos.innerHTML = '<div class="campo" style="margin-bottom:6px">Cómo pagas</div>' +
@@ -58,15 +60,15 @@
   card.id = "sis-resumen";
   card.className = "sis-card";
   const totalBox = $(".cart-total") || $("#enviar");
-  if (totalBox) { totalBox.insertAdjacentElement("beforebegin", pagos); totalBox.insertAdjacentElement("beforebegin", card); }
-  else if (foot) { foot.appendChild(pagos); foot.appendChild(card); }
+  if (totalBox) { if (!modoWA) totalBox.insertAdjacentElement("beforebegin", pagos); totalBox.insertAdjacentElement("beforebegin", card); }
+  else if (foot) { if (!modoWA) foot.appendChild(pagos); foot.appendChild(card); }
   let pago = "Efectivo";
   pagos.querySelectorAll(".sis-pago").forEach((b) => b.addEventListener("click", () => {
     pago = b.dataset.pago;
     pagos.querySelectorAll(".sis-pago").forEach((x) => x.classList.toggle("sel", x === b));
   }));
   const btn = $("#enviar");
-  if (btn) btn.textContent = "🍔 Pedir aquí mismo";
+  if (btn && !modoWA) btn.textContent = "🍔 Pedir aquí mismo";
 
   /* ---------- envío (carrera DEWAN) ---------- */
   let envio = { estado: "na", valor: 0, km: 0, nota: "" }; // na | loading | ok | err
@@ -154,6 +156,48 @@
   const telNorm = (t) => { let d = String(t || "").replace(/[^0-9]/g, ""); if (d.startsWith("0")) d = "593" + d.slice(1); if (d.length === 9) d = "593" + d; return d; };
   const nuevoBtn = btn.cloneNode(true); // quita el listener de WhatsApp del motor
   btn.replaceWith(nuevoBtn);
+  if (modoWA) {
+    // Demo: mismo mensaje de WhatsApp del motor + la línea del envío cotizado
+    nuevoBtn.addEventListener("click", () => {
+      const nombre = ($("#cli-nombre").value || "").trim();
+      const entrega = $("#cli-entrega").value;
+      const del = esDelivery();
+      const dir = ($("#cli-dir").value || "").trim();
+      const nota = ($("#cli-nota").value || "").trim();
+      if (!nombre) return alert("Por favor escribí tu nombre 🙂");
+      if (del && !dir && !ubicacion) return alert("Falta tu dirección o tu ubicación 🛵");
+      const sub = totalDinero();
+      const env = del && envio.estado === "ok" ? envio.valor : 0;
+      let m = `*Nuevo pedido — ${R.nombre}*
+
+*Cliente:* ${nombre}
+*Entrega:* ${entrega}
+`;
+      if (del) {
+        if (dir) m += `*Dirección:* ${dir}
+`;
+        if (ubicacion) m += `*Ubicación:* https://maps.google.com/?q=${ubicacion.lat},${ubicacion.lng}
+`;
+      }
+      m += `
+*Pedido:*
+`;
+      Object.entries(carrito).forEach(([pid, c]) => { const it = buscar(pid); m += `• ${c}x ${it.nombre} — $${(it.precio * c).toFixed(2)}
+`; });
+      m += `
+Subtotal: $${sub.toFixed(2)}`;
+      if (del) m += `
+🛵 Envío: ${envio.estado === "ok" ? "$" + env.toFixed(2) + (envio.km ? " (" + envio.km.toFixed(1) + " km)" : "") : "por confirmar"}`;
+      m += `
+*Total: $${(sub + env).toFixed(2)}*`;
+      if (nota) m += `
+
+*Nota:* ${nota}`;
+      window.open(`https://wa.me/${R.whatsapp}?text=${encodeURIComponent(m)}`, "_blank");
+    });
+    pintar();
+    return;
+  }
   nuevoBtn.addEventListener("click", async () => {
     const nombre = ($("#cli-nombre").value || "").trim();
     const tel = telNorm($("#cli-tel").value);
