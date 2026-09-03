@@ -134,7 +134,7 @@
   refrescar = window.refrescar;
   const pedirGPS = () => { if (esDelivery() && !ubicacion && ub && !ub.disabled) ub.click(); };
   if ($("#cli-entrega")) $("#cli-entrega").addEventListener("change", () => { pedirGPS(); cotizar(); pintar(); });
-  if ($("#cart-fab")) $("#cart-fab").addEventListener("click", () => setTimeout(pedirGPS, 300));
+  if ($("#cart-fab")) $("#cart-fab").addEventListener("click", pedirGPS); // en el mismo gesto del usuario (iOS exige gesto para el GPS)
   // cuando el GPS termina (engine pone la clase .ok al botón), cotizamos
   const ub = $("#cli-ubic");
   if (ub) new MutationObserver(() => { if (ub.classList.contains("ok")) cotizar(); }).observe(ub, { attributes: true, attributeFilter: ["class"] });
