@@ -448,15 +448,40 @@
     $('detalle').innerHTML = h + '<div style="height:6px"></div>';
 
     // plata
-    var total = num(pedido.monto_total), envio = (!esRetiro() && num(pedido.precio_calculado)) || 0;
+    // ⚠️ DOS CONVENCIONES DISTINTAS de monto_total, no unificarlas a ciegas:
+    //  · pedidos_delivery (DEWAN): monto_total = SOLO la comida; el envío va aparte en
+    //    precio_calculado → lo que paga el cliente es comida + envío − cupón.
+    //  · el sistema del local (pedidos_hp/pedidos_sistema) y las demos: monto_total YA
+    //    trae el envío sumado (verificado 4-sep: #35 = 13.98 + 1.30) → se muestra tal cual.
+    var envio = (!esRetiro() && num(pedido.precio_calculado)) || 0;
     var cupon = num(pedido.cupon_descuento) || 0;
+    // Local SIN CONVENIO: si el motorizado registró el recibo al dar "En camino", ESE
+    // valor manda sobre el precio referencial de la app (igual que en carrera/index.html).
+    var recibo = num(pedido.pago_local_real) || 0;
+    var comida = recibo > 0 ? recibo : (num(pedido.monto_total) || 0);
+    var totalCerrado = esSistema || pedido.total_incluye_envio === true;
+    var total = totalCerrado ? comida : Math.max(0, comida + envio - cupon);
     var p = '';
     var pago = pedido.metodo_pago ? String(pedido.metodo_pago).charAt(0).toUpperCase() + String(pedido.metodo_pago).slice(1) : d.pago;
     if (pago) p += '<span class="pago">💳 ' + esc(pago) + '</span>';
-    if (total) {
-      if (envio > 0) p += '<div class="precio"><span>Envío incluido</span><span>' + dinero(envio) + '</span></div>';
-      if (cupon > 0) p += '<div class="precio"><span>Cupón</span><span>− ' + dinero(cupon) + '</span></div>';
+    if (recibo > 0) {
+      p += '<div style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;font-size:13px;line-height:1.45;' +
+        'border-radius:10px;padding:8px 10px;margin:6px 0">🧾 El local cobró <b>' + dinero(recibo) +
+        '</b> según su recibo — este es el valor que paga.' +
+        (pedido.recibo_url ? ' <a href="' + esc(pedido.recibo_url) + '" target="_blank" rel="noopener" style="color:#92400E;font-weight:800">Ver foto 📎</a>' : '') +
+        '</div>';
+    }
+    if (comida > 0) {
+      if (envio > 0) p += '<div class="precio"><span>' + (totalCerrado ? 'Envío incluido' : 'Envío') + '</span><span>' + dinero(envio) + '</span></div>';
+      if (cupon > 0 && !totalCerrado) p += '<div class="precio"><span>Cupón</span><span>− ' + dinero(cupon) + '</span></div>';
       p += '<div class="precio total"><span>💰 Total a pagar</span><b>' + dinero(total) + '</b></div>';
+    } else if (!esSistema && !esRetiro()) {
+      // Pedido que entró SIN precio (mandado / compra / local escrito por WhatsApp): el
+      // valor lo pone el motorizado cuando paga en el local y aparece solo aquí (refresco 10 s).
+      if (envio > 0) p += '<div class="precio"><span>Envío</span><span>' + dinero(envio) + '</span></div>';
+      p += '<div class="precio total"><span>💰 Total a pagar</span><b style="font-size:15px">lo confirma el motorizado</b></div>' +
+        '<div style="font-size:12.5px;color:var(--gris);margin:-2px 0 6px">El motorizado le confirma el valor de la compra apenas la haga. ' +
+        'Esta página se actualiza sola.</div>';
     }
     $('precioBox').innerHTML = p;
   }
@@ -590,6 +615,21 @@
         tareas.push(sb('/restaurantes?select=nombre,logo_url,telefono,direccion,latitud,longitud&id=eq.' + p.restaurante_id + '&limit=1')
           .then(function (r) { local = (r && r[0]) || null; }));
       }
+      // Recibo real del local (el motorizado lo registra al dar "En camino" en locales sin
+      // convenio y en los pedidos que entran sin precio). Va en un fetch APARTE a propósito:
+      // si la columna no existiera, sb() devuelve [] y la página sigue pintando igual —
+      // metido en el SELECT grande, un 400 dejaría al cliente sin pedido.
+      // El sistema del local (pedidos_hp/pedidos_sistema) NO tiene estas columnas ni las necesita:
+      // ahí el precio de la carta es firme.
+      if (!esSistema && PASO[p.estado_pedido] >= 1) {
+        tareas.push(sb('/' + TABLA + '?select=pago_local_real,recibo_url&id=eq.' + p.id + '&limit=1')
+          .then(function (rr) {
+            if (rr && rr[0]) {
+              pedido.pago_local_real = rr[0].pago_local_real;
+              pedido.recibo_url = rr[0].recibo_url;
+            }
+          }));
+      }
       // (sistema: a domicilio también entrega una moto DEWAN → mismo mapa en vivo)
       if (p.motorizado_id && !esRetiro() && PASO[p.estado_pedido] >= 1) {
         tareas.push(sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + p.motorizado_id + '&limit=1')
@@ -617,7 +657,8 @@
       detalle_pedido: '2x Alitas BBQ (8 und) — $13.00\n1x Papas grandes — $2.50\n1x Coca-Cola 1L — $1.50\n📦 Envases: $0.50\n💳 Pago: Transferencia\n📝 Sin picante por favor',
       direccion_entrega: 'Cdla. Los Álamos, casa verde frente al parque', ubicacion_lat: -1.6712, ubicacion_lng: -78.6489,
       retiro_lat: local.latitud, retiro_lng: local.longitud, precio_calculado: retiro ? 0 : 1.75, duracion_minutos: 9,
-      monto_total: retiro ? 17.5 : 19.25, cupon_descuento: 0, calificacion: 0,
+      // el total de las demos YA viene con el envio sumado (asi lo arma el bot) → no re-sumar
+      monto_total: retiro ? 17.5 : 19.25, total_incluye_envio: true, cupon_descuento: 0, calificacion: 0,
       tiempo_preparacion: 25, restaurante_aceptado: paso >= 1,
       restaurante_aceptado_at: paso >= 1 ? new Date(ahora - 9 * 60000).toISOString() : null,
       timer_lanzamiento: paso >= 1 ? new Date(ahora + 16 * 60000).toISOString() : null,
@@ -664,7 +705,7 @@
       direccion_entrega: o.r || (o.x ? 'Ubicación exacta (pin en el mapa) 📍' : ''),
       ubicacion_lat: o.x && o.x.lat, ubicacion_lng: o.x && o.x.lng,
       retiro_lat: o.la, retiro_lng: o.lo, precio_calculado: Number(o.v) || 0, duracion_minutos: 12,
-      monto_total: Number(o.t) || 0, cupon_descuento: 0, calificacion: 0, metodo_pago: o.p || '',
+      monto_total: Number(o.t) || 0, total_incluye_envio: true, cupon_descuento: 0, calificacion: 0, metodo_pago: o.p || '',
       tiempo_preparacion: min, restaurante_aceptado: fase >= 1,
       restaurante_aceptado_at: fase >= 1 ? new Date(acept).toISOString() : null,
       timer_lanzamiento: fase >= 1 ? new Date(acept + min * 60000).toISOString() : null,
