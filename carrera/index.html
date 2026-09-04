@@ -362,17 +362,24 @@
         '</div>';
     }
     var html = '';
-    if (isFinite(monto) && monto > 0 && isFinite(p) && p > 0) {
-      var comida = (recibo && recibo > 0) ? recibo : monto;
+    // Carreras de mandado/compra: casi siempre entran SIN monto cotizado (nadie sabe
+    // cuanto va a costar) y el precio lo pone el motorizado al pagar en el local.
+    // Por eso el recibo vale como precio, no solo como correccion de la cotizacion.
+    var comida = (recibo && recibo > 0) ? recibo : monto;
+    var haceCompra = carrera.tipo === 'comida' || carrera.tipo === 'compra';
+    if (isFinite(monto) && monto === 0 && !(recibo && recibo > 0)) {
+      html = (isFinite(p) && p > 0 ? linea('💰 Paga solo la carrera (su pedido ya esta pagado ✔)', '$' + p.toFixed(2), true) : '');
+    } else if (isFinite(comida) && comida > 0 && isFinite(p) && p > 0) {
       html = linea(ETQ[carrera.tipo] || 'El pedido', '$' + comida.toFixed(2)) +
              notaRecibo +
              linea('Carrera', '$' + p.toFixed(2)) +
              linea('💰 Total a pagar', '$' + (comida + p).toFixed(2), true);
-    } else if (isFinite(monto) && monto === 0) {
-      html = (isFinite(p) && p > 0 ? linea('💰 Paga solo la carrera (su pedido ya esta pagado ✔)', '$' + p.toFixed(2), true) : '');
     } else if (isFinite(p) && p > 0) {
       html = linea('💰 Valor de la carrera', '$' + p.toFixed(2), true) +
-             (cobroTxt ? linea(esc(cobroTxt), '') : '');
+             (cobroTxt ? linea(esc(cobroTxt), '') : '') +
+             (haceCompra && !cobroTxt
+               ? '<div style="font-size:12.5px;color:var(--gris);margin:2px 0 6px">El valor de la compra lo confirma el motorizado apenas la haga y aparece aquí mismo — esta página se actualiza sola.</div>'
+               : '');
     } else if (cobroTxt) {
       html = linea('💵 ' + esc(cobroTxt), '');
     }
