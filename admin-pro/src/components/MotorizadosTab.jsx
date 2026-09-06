@@ -111,36 +111,41 @@ function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onTogg
         </div>
       )}
 
-      {(totalDeuda > 0 || bloqueado) && (
+      {/* fix 5-sep-2026: la deuda tambien se muestra cuando es NEGATIVA (DEWAN le debe
+          a la moto: carrera gratis de sellos, correccion manual). Antes solo `> 0` -> el
+          saldo a favor "desaparecia" de la app y nunca se podia marcar saldado. */}
+      {(Math.abs(totalDeuda) >= 0.005 || bloqueado) && (
         <div className="border-t border-borde pt-2">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] uppercase text-gray-500 font-bold">Deuda pendiente</span>
-            <span className={`text-xs font-bold ${pagado ? 'text-dewan' : 'text-alerta'}`}>
-              {money(totalDeuda)} {pagado && '✓'}
+            <span className="text-[10px] uppercase text-gray-500 font-bold">
+              {totalDeuda < 0 ? '💚 DEWAN le debe' : 'Deuda pendiente'}
+            </span>
+            <span className={`text-xs font-bold ${pagado || totalDeuda < 0 ? 'text-dewan' : 'text-alerta'}`}>
+              {money(Math.abs(totalDeuda))} {pagado && '✓'}
             </span>
           </div>
 
           {/* HOY vs ATRASADO: la deuda vieja sin pagar se etiqueta (antes se sumaba
               en silencio y parecía que "salían carreras del día anterior" por error) */}
-          {deudaAtrasada > 0 && (
+          {Math.abs(deudaAtrasada) >= 0.005 && (
             <div className="text-[10px] space-y-0.5 mb-1.5 px-0.5">
               <div className="flex justify-between text-gray-400">
                 <span>Hoy</span>
-                <span className="font-semibold text-gray-300">{money(deudaHoy)}</span>
+                <span className="font-semibold text-gray-300">{deudaHoy < 0 ? '−' : ''}{money(Math.abs(deudaHoy))}</span>
               </div>
               <div className="flex justify-between text-encamino">
-                <span>⏰ Atrasado — no pagó el {fechasAtrasadas.map((f) => `${f.slice(8, 10)}/${f.slice(5, 7)}`).join(', ')}</span>
-                <span className="font-bold">{money(deudaAtrasada)}</span>
+                <span>⏰ {deudaAtrasada < 0 ? 'A favor de la moto desde el' : 'Atrasado — no pagó el'} {fechasAtrasadas.map((f) => `${f.slice(8, 10)}/${f.slice(5, 7)}`).join(', ')}</span>
+                <span className="font-bold">{deudaAtrasada < 0 ? '−' : ''}{money(Math.abs(deudaAtrasada))}</span>
               </div>
             </div>
           )}
 
           {/* Desglose de la deuda: las 3 partes (carreras + comisiones + markup del local) */}
-          {(carreras + comisiones + markup) > 0 && (
+          {(Math.abs(carreras) + Math.abs(comisiones) + Math.abs(markup)) >= 0.005 && (
             <div className="text-[10px] text-gray-300 space-y-0.5 mb-2 bg-bg3/40 rounded-lg px-2.5 py-2">
               <div className="flex justify-between">
                 <span className="text-gray-400">🏍️ Carreras{cantCarreras ? ` (${cantCarreras})` : ''}</span>
-                <span className="font-semibold">{money(carreras)}</span>
+                <span className={`font-semibold ${carreras < 0 ? 'text-dewan' : ''}`}>{carreras < 0 ? '−' : ''}{money(Math.abs(carreras))}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">💸 Comisiones</span>
@@ -182,13 +187,13 @@ function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onTogg
             </div>
           )}
 
-          {!pagado && (totalDeuda > 0 || bloqueado) && (
+          {!pagado && (Math.abs(totalDeuda) >= 0.005 || bloqueado) && (
             <button
               onClick={() => onMarcarPagado(m.id)}
               disabled={marcando}
               className="w-full bg-dewan text-black text-xs font-bold py-2 rounded-lg disabled:opacity-50"
             >
-              {marcando ? 'Marcando...' : 'Marcar pagado y habilitar'}
+              {marcando ? 'Marcando...' : (totalDeuda < 0 ? `Ya le pagué ${money(Math.abs(totalDeuda))} · marcar saldado` : 'Marcar pagado y habilitar')}
             </button>
           )}
         </div>
