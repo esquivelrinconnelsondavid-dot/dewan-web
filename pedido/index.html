@@ -185,12 +185,12 @@
     <div id="precioBox"></div>
 
     <div class="btns" id="botones"></div>
-    <div class="btns" style="margin-top:9px">
+    <div class="btns" id="extras" style="margin-top:9px">
       <a class="btn b-linea" id="btnMapa" target="_blank" rel="noopener">🗺️ Ver en el mapa</a>
       <button class="btn b-linea" id="btnCompartir">🔗 Compartir</button>
     </div>
 
-    <div class="pie">Esta página se actualiza sola<br><span id="pieMarca">Con tecnología <b>DEWAN</b></span></div>
+    <div class="pie"><span id="pieNota">Esta página se actualiza sola</span><br><span id="pieMarca">Con tecnología <b>DEWAN</b></span></div>
   </div>
 </div>
 
@@ -229,6 +229,10 @@
   var esSistema = !!SISTEMAS[sistema];
 
   var pedido = null, local = null, moto = null, calificado = false, estrellasSel = 0;
+  // Cuando el pedido termina (entregado/cancelado) la pagina se CONGELA: deja de
+  // consultar la BD y ya no pinta la moto. Lo que queda es el recibo + calificacion.
+  // (en las demos NO se congela: "Volver al inicio" tiene que seguir funcionando)
+  var finalizada = false, timerRefresco = null;
   var hermanos = [];   // los otros tickets del mismo carrito (?mas=), uno por local
 
   function $(id) { return document.getElementById(id); }
@@ -336,7 +340,7 @@
         'Si fue un error, escríbanos y lo volvemos a tomar.';
     } else if (entregada) {
       $('finTitulo').textContent = esRetiro() ? '¡Pedido entregado!' : '¡Pedido entregado!';
-      $('fraseFin').textContent = 'Gracias por pedir en ' + nom + '.';
+      $('fraseFin').innerHTML = fraseEntregado(nom);
       pintarCalificacion();
     } else {
       var t = textos(ix);
@@ -356,6 +360,24 @@
     pintarHermanos();
     pintarBotones(cancel, entregada);
     pintarMapa(ix);
+
+    // Pantalla final: sin Compartir/mapa, pie "finalizado" y (fuera de las demos) sin refresco
+    var fin = cancel || entregada;
+    $('extras').classList.toggle('oculto', fin);
+    $('pieNota').textContent = fin ? (cancel ? 'Pedido cancelado' : 'Pedido finalizado · ¡gracias!') : 'Esta página se actualiza sola';
+    if (fin && !demo && !esDemoD) cerrar();
+  }
+
+  function fraseEntregado(nom) {
+    var gracias = 'Gracias por pedir en ' + esc(nom) + '.';
+    var partes = [];
+    if (pedido.fecha_entregado && !demo && !esDemoD) partes.push((esRetiro() ? 'Retirado' : 'Entregado') + ' a las ' + hora(pedido.fecha_entregado));
+    if (!esRetiro() && pedido.nombre_moto) partes.push((partes.length ? 'por ' : 'Le entregó ') + esc(String(pedido.nombre_moto).trim().split(' ').slice(0, 2).join(' ')) + ' 🛵');
+    return (partes.length ? partes.join(' ') + '.<br>' : '') + gracias;
+  }
+  function cerrar() {
+    finalizada = true;
+    if (timerRefresco) { clearInterval(timerRefresco); timerRefresco = null; }
   }
 
   // hora estimada: aceptado + minutos de preparación (timer_lanzamiento ya trae esa hora)
@@ -575,7 +597,7 @@
     var u = 'https://maps.googleapis.com/maps/api/staticmap?size=640x420&scale=2&language=es&maptype=roadmap';
     if (lr && gr) u += '&markers=' + encodeURIComponent('size:mid|color:0x2B2118|label:L|' + lr + ',' + gr);
     if (!retiro && le && ge) u += '&markers=' + encodeURIComponent('color:0xDC2D22|label:E|' + le + ',' + ge);
-    if (!retiro && lm && gm && ix >= 1) u += '&markers=' + encodeURIComponent('color:0x25D366|label:M|' + lm + ',' + gm);
+    if (!retiro && lm && gm && ix >= 1 && ix <= 2) u += '&markers=' + encodeURIComponent('color:0x25D366|label:M|' + lm + ',' + gm);
     if (retiro) { u += '&zoom=16&center=' + lr + ',' + gr; }
     else if (lm && gm && le && ge && ix === 2) u += '&path=' + encodeURIComponent('color:0xDC2D22AA|weight:4|' + lm + ',' + gm + '|' + le + ',' + ge);
     else if (lr && gr && le && ge) u += '&path=' + encodeURIComponent('color:0xDC2D22AA|weight:4|' + lr + ',' + gr + '|' + le + ',' + ge);
@@ -631,7 +653,7 @@
   var SEL = 'id,restaurante,restaurante_id,cliente_nombre,cliente_telefono,conversation_id,detalle_pedido,requiere_ubicacion,' +
     'estado_pedido,motorizado_id,nombre_moto,telefono_moto,direccion_entrega,ubicacion_lat,ubicacion_lng,direccion_retiro,retiro_lat,retiro_lng,' +
     'precio_calculado,duracion_minutos,monto_total,cupon_descuento,calificacion,tiempo_preparacion,timer_lanzamiento,' +
-    'restaurante_aceptado,restaurante_aceptado_at,restaurante_motivo_rechazo,fecha_creacion,codigo_pedido';
+    'restaurante_aceptado,restaurante_aceptado_at,restaurante_motivo_rechazo,fecha_creacion,codigo_pedido,fecha_entregado';
 
   function noEncontrado() {
     $('cargando').innerHTML = 'No encontramos ese pedido.<br><br>' +
@@ -640,6 +662,7 @@
   }
 
   function cargar() {
+    if (finalizada) return;
     if (dParam) { cargarDemoD(); return; }
     if (demo) { cargarDemo(); return; }
     var filtro = token ? '&token_seguimiento=eq.' + encodeURIComponent(token) : (idParam ? '&id=eq.' + encodeURIComponent(idParam) : '');
@@ -676,7 +699,10 @@
           }));
       }
       // (sistema: a domicilio también entrega una moto DEWAN → mismo mapa en vivo)
-      if (p.motorizado_id && !esRetiro() && PASO[p.estado_pedido] >= 1) {
+      // Solo mientras el pedido esta vivo: entregado/cancelado ya no se busca la moto
+      // (antes seguia saliendo en el mapa mientras su GPS estuviera fresco, aunque el
+      // cliente abriera el link dias despues y la moto fuera en OTRA carrera).
+      if (p.motorizado_id && !esRetiro() && PASO[p.estado_pedido] >= 1 && PASO[p.estado_pedido] <= 2) {
         tareas.push(sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + p.motorizado_id + '&limit=1')
           .then(function (mm) {
             moto = null;
@@ -776,9 +802,9 @@
   }
 
   cargar();
-  setInterval(cargar, 10000);
+  timerRefresco = setInterval(cargar, 10000);
   setInterval(function () { if (pedido && !demo && pedido.estado_pedido === 'preparando') pintarReloj(1); }, 30000);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) cargar(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && !finalizada) cargar(); });
 })();
 </script>
 </body>

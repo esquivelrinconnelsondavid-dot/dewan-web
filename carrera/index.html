@@ -157,12 +157,12 @@
     <div id="precioBox"></div>
 
     <div class="btns" id="botones"></div>
-    <div class="btns" style="margin-top:9px">
+    <div class="btns" id="extras" style="margin-top:9px">
       <a class="btn b-linea" id="btnMapa" target="_blank" rel="noopener">🗺️ Ver en el mapa</a>
       <button class="btn b-linea" id="btnCompartir">🔗 Compartir</button>
     </div>
 
-    <div class="pie">DEWAN · Riobamba<br>Esta página se actualiza sola</div>
+    <div class="pie">DEWAN · Riobamba<br><span id="pieNota">Esta página se actualiza sola</span></div>
   </div>
 </div>
 
@@ -174,6 +174,9 @@
   var token = new URLSearchParams(location.search).get('t') || '';
 
   var estadoPrev = '', carrera = null, pedido = null;
+  // Cuando la carrera termina (entregada/cancelada) la pagina se CONGELA: deja de
+  // consultar la BD y ya no pinta la moto. Lo que queda es el recibo + calificacion.
+  var finalizada = false, timerRefresco = null;
 
   function sb(path) {
     return fetch(SB + path, { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY } })
@@ -183,6 +186,10 @@
   function $(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
   function num(v) { var n = Number(v); return isFinite(n) && n !== 0 ? n : null; }
+  function hora(d) {
+    try { return new Date(d).toLocaleTimeString('es-EC', { timeZone: 'America/Guayaquil', hour: '2-digit', minute: '2-digit' }); }
+    catch (e) { var x = new Date(d); return x.getHours() + ':' + String(x.getMinutes()).padStart(2, '0'); }
+  }
   function sinLink(s) {
     s = String(s || '').trim();
     var i = s.indexOf('http');
@@ -267,7 +274,9 @@
       $('subtitulo').textContent = 'Si fue un error, escríbanos y la volvemos a crear.';
       $('etaTxt').textContent = '';
       for (var k = 0; k < 4; k++) $('t' + k).className = 'tramo';
+      $('entregada').classList.add('oculto');
       pintarBotones(true);
+      cerrar('Carrera cancelada');
       return;
     }
 
@@ -286,10 +295,38 @@
       $('etaTxt').textContent = calcularEta(ix);
     }
 
-    pintarMoto();
+    if (entregada) {
+      // Pantalla final: hora + quien entrego, estrellas, recibo y "Pedir otra".
+      // Sin tarjeta de la moto (ya no hay a quien llamar), sin Compartir, sin refresco.
+      $('fraseFin').innerHTML = fraseEntregada();
+      $('motoCard').innerHTML = '';
+    } else {
+      pintarMoto();
+    }
     pintarDetalle();
     pintarBotones(false);
     pintarMapa();
+    if (entregada) cerrar('Carrera finalizada · gracias por confiar en DEWAN');
+    else abrir();
+  }
+
+  function fraseEntregada() {
+    var nom = String((pedido && pedido.nombre_moto) || carrera.moto_nombre || '').trim();
+    var cuando = pedido && pedido.fecha_entregado; // solo la hora REAL de la app del moto
+    var partes = [];
+    if (cuando) partes.push('Entregada a las ' + hora(cuando));
+    if (nom) partes.push((cuando ? 'por ' : 'Le entregó ') + esc(nom.split(' ').slice(0, 2).join(' ')) + ' 🛵');
+    return (partes.length ? partes.join(' ') + '.<br>' : '') + 'Gracias por pedir con DEWAN.';
+  }
+  function cerrar(nota) {
+    $('extras').classList.add('oculto');
+    $('pieNota').textContent = nota;
+    finalizada = true;
+    if (timerRefresco) { clearInterval(timerRefresco); timerRefresco = null; }
+  }
+  function abrir() {
+    $('extras').classList.remove('oculto');
+    $('pieNota').textContent = 'Esta página se actualiza sola';
   }
 
   function calcularEta(ix) {
@@ -420,6 +457,7 @@
 
   // ---------- datos ----------
   function cargar() {
+    if (finalizada) return;
     if (!token) { $('cargando').textContent = 'Enlace incompleto. Escríbanos por WhatsApp.'; return; }
     sb('/carreras?select=*&token=eq.' + encodeURIComponent(token) + '&limit=1').then(function (rows) {
       if (!rows || !rows.length) {
@@ -429,7 +467,7 @@
       }
       carrera = rows[0];
       if (!carrera.pedido_id) { pedido = null; pintar(); return; }
-      sb('/pedidos_delivery?select=estado_pedido,nombre_moto,telefono_moto,motorizado_id&id=eq.' + carrera.pedido_id + '&limit=1')
+      sb('/pedidos_delivery?select=estado_pedido,nombre_moto,telefono_moto,motorizado_id,fecha_entregado&id=eq.' + carrera.pedido_id + '&limit=1')
         .then(function (pp) {
           pedido = (pp && pp[0]) || null;
           // Recibo real del local (migración 010, columnas nuevas): fetch APARTE
@@ -442,7 +480,11 @@
                 pintar();
               }
             });
-          if (pedido && pedido.motorizado_id) {
+          // Pedido terminado (entregado/cancelado): la moto ya no se busca ni se pinta.
+          // Antes seguia saliendo en el mapa mientras su GPS estuviera fresco, aunque
+          // el cliente abriera el link dias despues (la moto ya iba en OTRA carrera).
+          var ixp = pedido ? MAPA_EST[pedido.estado_pedido] : null;
+          if (pedido && pedido.motorizado_id && ixp !== 3 && ixp !== -1) {
             return sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + pedido.motorizado_id + '&limit=1')
               .then(function (mm) {
                 if (!mm || !mm[0]) return;
@@ -463,8 +505,8 @@
   }
 
   cargar();
-  setInterval(cargar, 12000);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) cargar(); });
+  timerRefresco = setInterval(cargar, 12000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && !finalizada) cargar(); });
 })();
 </script>
 </body>
