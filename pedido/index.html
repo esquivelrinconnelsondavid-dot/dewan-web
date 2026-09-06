@@ -275,9 +275,43 @@
   function esDewan() { return !esSistema && /^app(man)?:/.test(String(pedido.conversation_id || '')); }
   function motoAsignada() { return !!(pedido.nombre_moto || pedido.motorizado_id); }
 
+  // Tipo de carrera: 'comida' (pedido a un local) · 'encomienda' (recoger un paquete en A y
+  // entregarlo en B) · 'compra' (el moto compra en un local/súper y entrega). Sale de
+  // `intencion`, el mismo campo con el que la app de motos elige sus botones (en encomienda:
+  // Voy a recoger → Ya recogí el paquete → En camino a entregar → Llegué → Entregué).
+  // Antes la página trataba TODO como comida: "En cocina 👨‍🍳 … va al local a recogerlo".
+  function tipoCarrera() {
+    var i = String(pedido.intencion || '').toLowerCase();
+    if (/encomienda|paquete/.test(i)) return 'encomienda';
+    if (/compra|mandado/.test(i)) return 'compra';
+    return 'comida';
+  }
+  function esPaquete() { return tipoCarrera() !== 'comida'; }
+
+  function textosPaquete(ix, e) {
+    var compra = tipoCarrera() === 'compra';
+    var cosa = compra ? 'su compra' : 'su paquete';
+    var accion = compra ? 'a hacer su compra' : 'a recoger su paquete';
+    var donde = pedido.direccion_retiro ? ' en ' + limpiar(pedido.direccion_retiro) : '';
+    if (ix === 0) return ['Carrera recibida', 'Estamos buscando un motorizado para ' + (compra ? 'hacer su compra.' : 'recoger su paquete.')];
+    if (ix === 1) {
+      if (e === 'en_camino_recogida') return [compra ? 'Yendo a comprar 🛵' : 'Yendo a recoger 🛵', 'El motorizado va ' + accion + donde + '.'];
+      if (e === 'llego_recogida') return [compra ? 'En el local 🏪' : 'En el punto de recogida 📍', 'El motorizado ya está ' + (compra ? 'haciendo su compra.' : 'recogiendo su paquete.')];
+      if (motoAsignada()) return ['Motorizado asignado 🛵', 'Ya va ' + accion + donde + '.'];
+      return ['Buscando motorizado', 'En 1-3 min le asignamos un motorizado.'];
+    }
+    if (ix === 2) {
+      if (e === 'llegado') return ['¡Llegó a su puerta! 🛵', 'El motorizado está en el punto de entrega.'];
+      if (e === 'recogido') return [compra ? 'Compra lista ✅' : 'Paquete recogido ✅', 'El motorizado ya tiene ' + cosa + ' y va hacia usted.'];
+      return [(compra ? 'Su compra' : 'Su paquete') + ' va en camino 🛵', 'El motorizado ya salió hacia usted.'];
+    }
+    return ['¡Entregado!', 'Gracias por confiar en DEWAN.'];
+  }
+
   function textos(ix) {
     var e = pedido.estado_pedido;
     var retiro = esRetiro();
+    if (esPaquete()) return textosPaquete(ix, e);
     if (ix === 0) return ['Pedido recibido', 'El local está revisando su pedido. En un momento le confirma el tiempo.'];
     if (ix === 1) {
       if (e === 'preparando') return ['En cocina 👨‍🍳', retiro ? 'Están preparando su pedido. Aquí le avisamos cuando esté listo para retirar.' : 'Están preparando su pedido.'];
@@ -313,19 +347,24 @@
 
     // marca del local
     var nom = (local && local.nombre) || pedido.restaurante || 'Su pedido';
+    if (esPaquete() && !local && !String(pedido.restaurante || '').trim()) nom = tipoCarrera() === 'compra' ? 'Su compra' : 'Su encomienda';
     $('localNom').textContent = nom;
     if (hermanos.length) {
       $('localNom').textContent = [nom].concat(hermanos.map(function (h) { return h.restaurante || 'Local'; })).join(' + ');
       $('cod').textContent = [numeroPedido()].concat(hermanos.map(function (h) { return h.codigo_pedido || ('#' + h.id); })).join(' · ');
     }
-    $('localSub').textContent = esRetiro() ? 'Para retirar en el local' : 'Entrega a domicilio';
+    $('localSub').textContent = esPaquete() ? (tipoCarrera() === 'compra' ? 'Compra y entrega 🛒' : 'Recogida y entrega 📦')
+      : (esRetiro() ? 'Para retirar en el local' : 'Entrega a domicilio');
     if (local && local.logo_url) {
       $('logo').innerHTML = '<img src="' + esc(local.logo_url) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(nom.charAt(0).toUpperCase()) + '\'">';
+    } else if (esPaquete()) {
+      $('logo').textContent = tipoCarrera() === 'compra' ? '🛒' : '📦';
     } else {
       $('logo').textContent = nom.charAt(0).toUpperCase();
     }
 
     // pasos según modalidad
+    $('p1').textContent = esPaquete() ? (tipoCarrera() === 'compra' ? 'Comprando' : 'Recogiendo') : 'En cocina';
     $('p2').textContent = esRetiro() ? 'Listo' : 'En camino';
 
     var cancel = ix === -1, entregada = ix >= 3;
@@ -339,7 +378,7 @@
         (motivo ? 'Motivo del local: ' + esc(motivo) + '<br>' : 'El local no pudo atender este pedido.<br>') +
         'Si fue un error, escríbanos y lo volvemos a tomar.';
     } else if (entregada) {
-      $('finTitulo').textContent = esRetiro() ? '¡Pedido entregado!' : '¡Pedido entregado!';
+      $('finTitulo').textContent = tipoCarrera() === 'encomienda' ? '¡Paquete entregado!' : tipoCarrera() === 'compra' ? '¡Compra entregada!' : '¡Pedido entregado!';
       $('fraseFin').innerHTML = fraseEntregado(nom);
       pintarCalificacion();
     } else {
@@ -369,7 +408,7 @@
   }
 
   function fraseEntregado(nom) {
-    var gracias = 'Gracias por pedir en ' + esc(nom) + '.';
+    var gracias = esPaquete() ? 'Gracias por confiar en DEWAN.' : 'Gracias por pedir en ' + esc(nom) + '.';
     var partes = [];
     if (pedido.fecha_entregado && !demo && !esDemoD) partes.push((esRetiro() ? 'Retirado' : 'Entregado') + ' a las ' + hora(pedido.fecha_entregado));
     if (!esRetiro() && pedido.nombre_moto) partes.push((partes.length ? 'por ' : 'Le entregó ') + esc(String(pedido.nombre_moto).trim().split(' ').slice(0, 2).join(' ')) + ' 🛵');
@@ -390,6 +429,7 @@
   }
 
   function eta(ix) {
+    if (pedido.estado_pedido === 'llegado') return '';
     if (ix === 1 && pedido.estado_pedido === 'preparando') {
       var h = horaLista();
       return h ? '· listo aprox. a las ' + hora(h) : (pedido.tiempo_preparacion ? '· ' + pedido.tiempo_preparacion + ' min de preparación' : '');
@@ -462,7 +502,10 @@
 
   function pintarDetalle() {
     var d = parsearDetalle(pedido.detalle_pedido);
-    var h = '<h4>Su pedido</h4>';
+    var h = '<h4>' + (tipoCarrera() === 'encomienda' ? 'Su encomienda' : tipoCarrera() === 'compra' ? 'Su compra' : 'Su pedido') + '</h4>';
+    // Texto libre (encomienda / mandado escrito a mano): sin líneas "Nx plato" el bloque de
+    // abajo ya muestra el texto completo → las notas serían el mismo texto repetido.
+    if (!d.items.length) d.notas = [];
     if (d.items.length) {
       d.items.forEach(function (it) {
         h += '<div class="item"><div class="q">' + esc(it.q) + '×</div><div class="n">' + esc(it.n) + '</div>' +
@@ -473,6 +516,11 @@
     }
     d.notas.forEach(function (n) { h += '<div class="item nota"><div class="n">' + esc(n) + '</div></div>'; });
     var f = '';
+    // Dos paradas: el cliente ve DÓNDE se recoge (o se compra) y dónde se entrega
+    if (esPaquete() && !esRetiro() && pedido.direccion_retiro) {
+      var compraFila = tipoCarrera() === 'compra';
+      f += '<div class="fila"><div class="ic">' + (compraFila ? '🏪' : '📍') + '</div><div><b>' + (compraFila ? 'Comprar en:' : 'Recoger en:') + '</b><br>' + esc(limpiar(pedido.direccion_retiro)) + '</div></div>';
+    }
     if (!esRetiro() && pedido.direccion_entrega) f += '<div class="fila"><div class="ic">🏠</div><div><b>Entregar en:</b><br>' + esc(limpiar(pedido.direccion_entrega)) + '</div></div>';
     if (esRetiro()) f += '<div class="fila"><div class="ic">🏪</div><div><b>Retirar en:</b><br>' + esc((local && local.direccion) || pedido.direccion_retiro || pedido.restaurante || '') + '</div></div>';
     if (pedido.cliente_nombre && pedido.cliente_nombre !== 'Cliente') f += '<div class="fila"><div class="ic">👤</div><div>' + esc(pedido.cliente_nombre) + '</div></div>';
@@ -508,14 +556,24 @@
         (pedido.recibo_url ? ' <a href="' + esc(pedido.recibo_url) + '" target="_blank" rel="noopener" style="color:#92400E;font-weight:800">Ver foto 📎</a>' : '') +
         '</div>';
     }
+    var etqEnvio = esPaquete() ? 'Carrera' : 'Envío';
     if (comida > 0) {
-      if (envio > 0) p += '<div class="precio"><span>' + (totalCerrado ? 'Envío incluido' : 'Envío') + '</span><span>' + dinero(envio) + '</span></div>';
+      if (envio > 0) p += '<div class="precio"><span>' + (totalCerrado ? 'Envío incluido' : etqEnvio) + '</span><span>' + dinero(envio) + '</span></div>';
       if (cupon > 0 && !totalCerrado) p += '<div class="precio"><span>Cupón</span><span>− ' + dinero(cupon) + '</span></div>';
       p += '<div class="precio total"><span>💰 Total a pagar</span><b>' + dinero(total) + '</b></div>';
+    } else if (!esSistema && !esRetiro() && tipoCarrera() === 'encomienda') {
+      // Encomienda: no hay compra que confirmar, lo que paga el cliente es la carrera
+      if (envio > 0) {
+        p += '<div class="precio"><span>Carrera</span><span>' + dinero(envio) + '</span></div>';
+        if (cupon > 0) p += '<div class="precio"><span>Cupón</span><span>− ' + dinero(cupon) + '</span></div>';
+        p += '<div class="precio total"><span>💰 Total a pagar</span><b>' + dinero(Math.max(0, envio - cupon)) + '</b></div>';
+      } else {
+        p += '<div class="precio total"><span>💰 Total a pagar</span><b style="font-size:15px">lo confirma el motorizado</b></div>';
+      }
     } else if (!esSistema && !esRetiro()) {
       // Pedido que entró SIN precio (mandado / compra / local escrito por WhatsApp): el
       // valor lo pone el motorizado cuando paga en el local y aparece solo aquí (refresco 10 s).
-      if (envio > 0) p += '<div class="precio"><span>Envío</span><span>' + dinero(envio) + '</span></div>';
+      if (envio > 0) p += '<div class="precio"><span>' + etqEnvio + '</span><span>' + dinero(envio) + '</span></div>';
       p += '<div class="precio total"><span>💰 Total a pagar</span><b style="font-size:15px">lo confirma el motorizado</b></div>' +
         '<div style="font-size:12.5px;color:var(--gris);margin:-2px 0 6px">El motorizado le confirma el valor de la compra apenas la haga. ' +
         'Esta página se actualiza sola.</div>';
@@ -565,6 +623,8 @@
     if (!cancel && entregada) {
       b += esDemoD
         ? '<a class="btn b-rojo" href="https://wa.me/' + WA_DEMO + '?text=demo">🍽️ Pedir de nuevo</a>'
+        : (esPaquete() && !esSistema)
+        ? '<a class="btn b-rojo" href="https://wa.me/' + WA_DEWAN + '?text=carrera">🛵 Pedir otra carrera</a>'
         : esDewan()
         ? '<a class="btn b-rojo" href="https://pedir.dewansas.com">🍽️ Pedir de nuevo</a>'
         : WA_BOT[sistema]
@@ -595,7 +655,7 @@
     if (ix === -1 || (!lr && !le)) { cont.classList.add('oculto'); $('hoja').classList.add('sinmapa'); return; }
     cont.classList.remove('oculto'); $('hoja').classList.remove('sinmapa');
     var u = 'https://maps.googleapis.com/maps/api/staticmap?size=640x420&scale=2&language=es&maptype=roadmap';
-    if (lr && gr) u += '&markers=' + encodeURIComponent('size:mid|color:0x2B2118|label:L|' + lr + ',' + gr);
+    if (lr && gr) u += '&markers=' + encodeURIComponent('size:mid|color:0x2B2118|label:' + (esPaquete() ? 'R' : 'L') + '|' + lr + ',' + gr);
     if (!retiro && le && ge) u += '&markers=' + encodeURIComponent('color:0xDC2D22|label:E|' + le + ',' + ge);
     if (!retiro && lm && gm && ix >= 1 && ix <= 2) u += '&markers=' + encodeURIComponent('color:0x25D366|label:M|' + lm + ',' + gm);
     if (retiro) { u += '&zoom=16&center=' + lr + ',' + gr; }
@@ -653,7 +713,7 @@
   var SEL = 'id,restaurante,restaurante_id,cliente_nombre,cliente_telefono,conversation_id,detalle_pedido,requiere_ubicacion,' +
     'estado_pedido,motorizado_id,nombre_moto,telefono_moto,direccion_entrega,ubicacion_lat,ubicacion_lng,direccion_retiro,retiro_lat,retiro_lng,' +
     'precio_calculado,duracion_minutos,monto_total,cupon_descuento,calificacion,tiempo_preparacion,timer_lanzamiento,' +
-    'restaurante_aceptado,restaurante_aceptado_at,restaurante_motivo_rechazo,fecha_creacion,codigo_pedido,fecha_entregado';
+    'restaurante_aceptado,restaurante_aceptado_at,restaurante_motivo_rechazo,fecha_creacion,codigo_pedido,fecha_entregado,intencion';
 
   function noEncontrado() {
     $('cargando').innerHTML = 'No encontramos ese pedido.<br><br>' +
