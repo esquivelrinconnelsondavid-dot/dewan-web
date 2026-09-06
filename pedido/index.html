@@ -205,6 +205,10 @@
 
   var q = new URLSearchParams(location.search);
   var token = q.get('t') || '';
+  // ?t=<principal>&mas=<token2,token3> → UN solo link para un carrito de varios locales
+  // (5-sep). Cada local es su propio pedido/ticket; aquí se ven todos. Una versión vieja
+  // de la página ignora `mas` y muestra el principal: el link nunca se rompe.
+  var masParam = (q.get('mas') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
   var idParam = q.get('id') || '';
   var kParam = q.get('k') || '';
   var demo = q.get('demo');
@@ -225,6 +229,7 @@
   var esSistema = !!SISTEMAS[sistema];
 
   var pedido = null, local = null, moto = null, calificado = false, estrellasSel = 0;
+  var hermanos = [];   // los otros tickets del mismo carrito (?mas=), uno por local
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
@@ -305,6 +310,10 @@
     // marca del local
     var nom = (local && local.nombre) || pedido.restaurante || 'Su pedido';
     $('localNom').textContent = nom;
+    if (hermanos.length) {
+      $('localNom').textContent = [nom].concat(hermanos.map(function (h) { return h.restaurante || 'Local'; })).join(' + ');
+      $('cod').textContent = [numeroPedido()].concat(hermanos.map(function (h) { return h.codigo_pedido || ('#' + h.id); })).join(' · ');
+    }
     $('localSub').textContent = esRetiro() ? 'Para retirar en el local' : 'Entrega a domicilio';
     if (local && local.logo_url) {
       $('logo').innerHTML = '<img src="' + esc(local.logo_url) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(nom.charAt(0).toUpperCase()) + '\'">';
@@ -344,6 +353,7 @@
 
     pintarMoto(ix);
     pintarDetalle();
+    pintarHermanos();
     pintarBotones(cancel, entregada);
     pintarMapa(ix);
   }
@@ -459,6 +469,11 @@
     // valor manda sobre el precio referencial de la app (igual que en carrera/index.html).
     var recibo = num(pedido.pago_local_real) || 0;
     var comida = recibo > 0 ? recibo : (num(pedido.monto_total) || 0);
+    // varios locales en un link: la plata que ve el cliente es la SUMA de todos los tickets
+    hermanos.forEach(function (h) {
+      comida += (num(h.monto_total) || 0);
+      envio += ((!esRetiro() && num(h.precio_calculado)) || 0);
+    });
     var totalCerrado = esSistema || pedido.total_incluye_envio === true;
     var total = totalCerrado ? comida : Math.max(0, comida + envio - cupon);
     var p = '';
@@ -484,6 +499,31 @@
         'Esta página se actualiza sola.</div>';
     }
     $('precioBox').innerHTML = p;
+  }
+  // Carrito de varios locales (?mas=): arriba del detalle, una tarjeta por ticket con su
+  // local, su código, su estado y sus platos. La barra grande, el reloj, la moto y la plata
+  // (sumada) siguen siendo los de la página normal.
+  function pintarHermanos() {
+    if (!hermanos.length) return;
+    var todos = [pedido].concat(hermanos);
+    var h = '<h4>🧩 Su pedido va en ' + todos.length + ' tickets · una sola entrega</h4>';
+    todos.forEach(function (p) {
+      var ix = PASO[p.estado_pedido];
+      if (ix == null) ix = p.restaurante_aceptado ? 1 : 0;
+      var est = ix === -1 ? '😔 Cancelado' : ix >= 3 ? '✅ Entregado' : ix === 2 ? (esRetiro() ? '🏪 Listo' : '🛵 En camino') : ix === 1 ? '👨‍🍳 En cocina' : '🕐 Recibido';
+      var barra = '<div class="barra" style="margin:6px 0 2px">';
+      for (var i = 0; i < 4; i++) barra += '<div class="tramo' + (ix >= 3 || i < ix ? ' on' : (i === ix ? ' now' : '')) + '"><i></i></div>';
+      barra += '</div>';
+      var items = '';
+      parsearDetalle(p.detalle_pedido).items.forEach(function (it) {
+        items += '<div style="display:flex;gap:8px;font-size:13px;color:var(--gris)"><span style="color:var(--rojo);font-weight:800">' + esc(it.q) + '×</span><span style="flex:1">' + esc(it.n) + '</span>' + (it.p != null ? '<span>' + dinero(it.p) + '</span>' : '') + '</div>';
+      });
+      h += '<div class="item" style="display:block">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b>' + esc(p.restaurante || 'Local') + '</b>' +
+        '<span style="color:var(--gris);font-size:12.5px;white-space:nowrap">' + esc(p.codigo_pedido || ('#' + p.id)) + ' · ' + est + '</span></div>' +
+        barra + items + '</div>';
+    });
+    $('detalle').innerHTML = h + '<div style="height:8px"></div>' + $('detalle').innerHTML;
   }
   function limpiar(s) {
     s = String(s || '');
@@ -611,6 +651,11 @@
       if (!token && String(p.cliente_telefono || '').slice(-4) !== String(kParam)) { if (!pedido) noEncontrado(); return; }
       pedido = p;
       var tareas = [];
+      // los otros tickets del mismo carrito (uno por local), para verlos en el mismo link
+      if (masParam.length && !esSistema) {
+        tareas.push(sb('/' + TABLA + '?select=' + SEL + '&token_seguimiento=in.(' + masParam.map(encodeURIComponent).join(',') + ')&limit=6')
+          .then(function (hh) { hermanos = (hh || []).filter(function (x) { return x.id !== p.id; }); }));
+      }
       if (!local && p.restaurante_id) {
         tareas.push(sb('/restaurantes?select=nombre,logo_url,telefono,direccion,latitud,longitud&id=eq.' + p.restaurante_id + '&limit=1')
           .then(function (r) { local = (r && r[0]) || null; }));
