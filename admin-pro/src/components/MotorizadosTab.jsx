@@ -20,7 +20,7 @@ function fechaCorta(ts) {
   } catch { return ''; }
 }
 
-function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onToggleCarreras, onHabilitar, onEliminar, accionandoId }) {
+function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onToggleCarreras, onHabilitar, onEliminar, accionandoId, pagos = [], onResolverPago, resolviendoId }) {
   const pendiente = m.estado === 'pendiente' || (!m.activo && m.estado !== 'suspendido' && m.estado !== 'rechazado');
   const accionando = accionandoId === m.id;
   const bloqueado = !!m.bloqueado_por_deuda;
@@ -199,6 +199,58 @@ function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onTogg
         </div>
       )}
 
+      {/* 014 (8-sep-2026): pagos que el moto registró desde su app (con foto del
+          comprobante). Si cubría la deuda ya quedó habilitado PROVISIONALMENTE;
+          aquí David confirma (queda firme) o rechaza (se revierte y se bloquea). */}
+      {pagos.length > 0 && (
+        <div className="border-t border-borde pt-2 space-y-2">
+          {pagos.map((p) => {
+            const resolviendo = resolviendoId === p.id;
+            return (
+              <div key={p.id} className="rounded-lg border border-preparando/50 bg-preparando/10 px-2.5 py-2 space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-bold text-preparando">💸 Pago por confirmar</span>
+                  <span className="text-sm font-black text-white">{money(Number(p.monto || 0))}</span>
+                </div>
+                <div className="text-[10px] text-gray-300 flex flex-wrap gap-x-2">
+                  <span>{fechaCorta(p.created_at)}</span>
+                  {p.referencia && <span>· ref <b className="text-white">{p.referencia}</b></span>}
+                  <span className={p.cubre_deuda ? 'text-dewan' : 'text-alerta'}>
+                    · {p.cubre_deuda ? 'cubre la deuda — ya habilitado' : `NO cubre (debía ${money(Number(p.deuda_al_momento || 0))}) — sigue bloqueado`}
+                  </span>
+                </div>
+                {p.comprobante_url && (
+                  <a
+                    href={p.comprobante_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block text-[11px] text-dewan font-bold underline active:opacity-70"
+                  >
+                    🧾 Ver comprobante
+                  </a>
+                )}
+                <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <button
+                    onClick={() => onResolverPago(p, true)}
+                    disabled={resolviendo}
+                    className="bg-dewan text-black text-xs font-bold py-2 rounded-lg disabled:opacity-50"
+                  >
+                    {resolviendo ? '...' : '✓ Confirmar'}
+                  </button>
+                  <button
+                    onClick={() => onResolverPago(p, false)}
+                    disabled={resolviendo}
+                    className="bg-alerta/15 text-alerta border border-alerta/40 text-xs font-bold py-2 rounded-lg disabled:opacity-50"
+                  >
+                    ✗ Rechazar
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* fix 2026-06-16: se quitó "Saldo" — motorizados.saldo es un campo LEGACY
           (no lo toca completar_entrega; billeteras está en 0 y todos son pago diario).
           Mostraba basura congelada (ej. −1.29) que confundía. La deuda real es la de arriba. */}
@@ -220,6 +272,54 @@ export default function MotorizadosTab({ data }) {
   const [marcandoId, setMarcandoId] = useState(null);
   const [detalle, setDetalle] = useState({}); // { [motoId]: {open, loading, carreras} }
   const [accionandoId, setAccionandoId] = useState(null); // habilitar/eliminar en curso
+  const [pagos, setPagos] = useState({}); // { [motoId]: [pago pendiente, ...] } (014)
+  const [resolviendoId, setResolviendoId] = useState(null);
+
+  // 014: pagos registrados desde la app del moto que esperan confirmación.
+  const cargarPagos = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('pagos_motorizado')
+      .select('id, motorizado_id, monto, metodo, referencia, comprobante_url, cubre_deuda, deuda_al_momento, created_at')
+      .eq('estado', 'pendiente')
+      .order('created_at', { ascending: true });
+    if (error) { console.warn('[pagos_motorizado] (¿014 sin correr?)', error.message); return; }
+    const mapa = {};
+    (data || []).forEach((p) => { (mapa[p.motorizado_id] = mapa[p.motorizado_id] || []).push(p); });
+    setPagos(mapa);
+  }, []);
+
+  useEffect(() => { cargarPagos(); }, [cargarPagos]);
+
+  useEffect(() => {
+    const ch = supabase
+      .channel('admin-pro-pagos-moto')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pagos_motorizado' }, () => cargarPagos())
+      .subscribe();
+    return () => { ch.unsubscribe(); };
+  }, [cargarPagos]);
+
+  const resolverPago = async (pago, confirmar) => {
+    let nota = null;
+    if (confirmar) {
+      if (!confirm(`¿Confirmás el pago de ${money(Number(pago.monto || 0))}${pago.referencia ? ` (ref ${pago.referencia})` : ''}? Queda firme y el moto sigue habilitado.`)) return;
+    } else {
+      nota = prompt('¿Por qué se rechaza? (el moto lo ve en su app y vuelve a quedar bloqueado si tenía deuda vencida)', 'No llegó la transferencia');
+      if (nota === null) return;
+    }
+    setResolviendoId(pago.id);
+    try {
+      const { data, error } = await supabase.rpc('admin_confirmar_pago', {
+        p_pago_id: pago.id, p_confirmar: confirmar, p_nota: nota,
+      });
+      if (error) alert('Error: ' + error.message);
+      else if (data && data.exito === false) alert(data.error || 'No se pudo resolver el pago');
+      else { await Promise.all([cargarPagos(), cargarDeudas()]); }
+    } catch (e) {
+      alert('Error: ' + (e?.message || e));
+    } finally {
+      setResolviendoId(null);
+    }
+  };
 
   const cargarDeudas = useCallback(async () => {
     // FIX: cargar TODA la deuda PENDIENTE (pagado=false), NO solo la de hoy.
@@ -405,6 +505,9 @@ export default function MotorizadosTab({ data }) {
             onHabilitar={habilitarMoto}
             onEliminar={eliminarMoto}
             accionandoId={accionandoId}
+            pagos={pagos[m.id] || []}
+            onResolverPago={resolverPago}
+            resolviendoId={resolviendoId}
           />
         ))
       )}
