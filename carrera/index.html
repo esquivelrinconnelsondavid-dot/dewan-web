@@ -171,6 +171,8 @@
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
   var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
   var WA = '593986777146';
+  // "Necesito ayuda" / "Escribirnos" van al DEWAN manual (una persona responde), no al bot
+  var WA_AYUDA = '593962223600';
   var token = new URLSearchParams(location.search).get('t') || '';
 
   var estadoPrev = '', carrera = null, pedido = null;
@@ -428,7 +430,7 @@
     var otra = encodeURIComponent('carrera');
     $('botones').innerHTML =
       (cancelada ? '' : '<a class="btn b-rojo" href="https://wa.me/' + WA + '?text=' + otra + '">🛵 Pedir otra carrera</a>') +
-      '<a class="btn b-verde" href="https://wa.me/' + WA + '?text=' + texto + '">💬 Necesito ayuda</a>';
+      '<a class="btn b-verde" href="https://wa.me/' + WA_AYUDA + '?text=' + texto + '">💬 Necesito ayuda</a>';
     var le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
     var bm = $('btnMapa');
     if (le && ge) { bm.href = 'https://maps.google.com/?q=' + le + ',' + ge; bm.classList.remove('oculto'); }
@@ -462,7 +464,7 @@
     sb('/carreras?select=*&token=eq.' + encodeURIComponent(token) + '&limit=1').then(function (rows) {
       if (!rows || !rows.length) {
         $('cargando').innerHTML = 'No encontramos esa carrera.<br><br>' +
-          '<a class="btn b-verde" style="display:inline-block" href="https://wa.me/' + WA + '">Escribirnos</a>';
+          '<a class="btn b-verde" style="display:inline-block" href="https://wa.me/' + WA_AYUDA + '">Escribirnos</a>';
         return;
       }
       carrera = rows[0];

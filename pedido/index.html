@@ -201,6 +201,8 @@
   var CALIFICAR = 'https://n8n.dewansas.com/webhook/calificar-pedido';
   var KEY_MAPS = 'AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs';
   var WA_DEWAN = '593986777146';
+  // "Necesito ayuda" / "Escribirnos" van al DEWAN manual (una persona responde), no al bot de pruebas
+  var WA_AYUDA = '593962223600';
   var TZ = 'America/Guayaquil';
 
   var q = new URLSearchParams(location.search);
@@ -632,7 +634,7 @@
         : (tl ? '<a class="btn b-rojo" href="https://wa.me/' + tl + '?text=' + encodeURIComponent('Hola, quiero hacer un pedido') + '">🍽️ Pedir de nuevo</a>' : '');
     }
     // El Sistema (local vendido): TODO va al WhatsApp del local, nunca al de DEWAN
-    var waAyuda = (esDewan() || esDemoD) ? WA_DEWAN : (tl || (esSistema ? '' : WA_DEWAN));
+    var waAyuda = (esDewan() || esDemoD) ? WA_AYUDA : (tl || (esSistema ? '' : WA_AYUDA));
     if (waAyuda) b += '<a class="btn b-verde" href="https://wa.me/' + waAyuda + '?text=' + ayuda + '">💬 ' + ((esDewan() || esDemoD) ? 'Necesito ayuda' : 'Escribir al local') + '</a>';
     $('botones').innerHTML = b;
     $('pieMarca').innerHTML = esSistema ? 'Sistema de pedidos de <b>' + esc(nom) + '</b>' : 'Con tecnología <b>DEWAN</b>';
@@ -718,7 +720,7 @@
   function noEncontrado() {
     $('cargando').innerHTML = 'No encontramos ese pedido.<br><br>' +
       (esSistema ? 'Escríbale al local por WhatsApp para confirmar su pedido.' :
-        '<a class="btn b-verde" style="display:inline-block" href="https://wa.me/' + WA_DEWAN + '">Escribirnos</a>');
+        '<a class="btn b-verde" style="display:inline-block" href="https://wa.me/' + WA_AYUDA + '">Escribirnos</a>');
   }
 
   function cargar() {
