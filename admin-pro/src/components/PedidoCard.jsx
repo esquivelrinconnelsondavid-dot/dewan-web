@@ -10,6 +10,7 @@ import { lanzarMotorizado, cancelarPedido as wCancelarPedido, restauranteNoPuede
 import { stopAlertLoop, alertActiva } from '../lib/notifications';
 
 import { codigoPedido } from '../lib/pedidoNum';
+import { BadgePromesa } from './TorreControl';
 const ESTADO_LABEL = {
   pendiente: 'Pendiente',
   pendiente_restaurante: 'Esperando rest.',
@@ -403,6 +404,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-lg">{ICONO_INTENCION[p.intencion] || '📋'}</span>
           <span className="text-sm font-black text-white">{codigoPedido(p)}</span>
+          <BadgePromesa p={p} />
           <span className={`text-[11px] font-black px-2.5 py-1 rounded-lg ${ESTADO_COLOR[p.estado_pedido] || 'bg-gray-500/20 text-gray-300'}`}>
             {ESTADO_LABEL[p.estado_pedido] || p.estado_pedido}
           </span>
