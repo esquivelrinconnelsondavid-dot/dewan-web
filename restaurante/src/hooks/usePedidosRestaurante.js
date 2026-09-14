@@ -295,5 +295,24 @@ export function usePedidosRestaurante(restaurante) {
     (MODO_SISTEMA && p.estado_pedido !== 'pendiente_restaurante'));
   const enProceso = pedidos.filter((p) => !MODO_SISTEMA && ESTADOS_EN_PROCESO.includes(p.estado_pedido));
 
-  return { entrantes, enPreparacion, enProceso, cargando, recargar: cargar };
+  // ── Tablero de 4 columnas (14-sep-2026), como iFood / Uber Eats Orders ──
+  // Nuevos → En preparación → Listos (esperando moto o retiro) → Entregando (con la moto).
+  const conMoto = (p) => !!(p.motorizado_id || p.nombre_moto);
+  const esListo = (p) => {
+    if (p.estado_pedido === 'listo') return true;
+    // DEWAN: el local tocó "Listo" → sigue `preparando` hasta que una moto lo toma
+    if (p.estado_pedido === 'preparando' && p.fecha_listo) return !conMoto(p);
+    // DEWAN: la moto aún no lo tomó pero ya se lanzó (buscando motorizado)
+    if (p.estado_pedido === 'confirmado' && !conMoto(p)) return true;
+    return false;
+  };
+  const esEntregando = (p) => {
+    if (MODO_SISTEMA) return conMoto(p) && p.estado_pedido !== 'pendiente_restaurante' && p.estado_pedido !== 'preparando';
+    return ESTADOS_EN_PROCESO.includes(p.estado_pedido) && !esListo(p);
+  };
+  const cocina = pedidos.filter((p) => p.estado_pedido === 'preparando' && !esListo(p));
+  const listos = pedidos.filter((p) => p.estado_pedido !== 'pendiente_restaurante' && esListo(p) && !esEntregando(p));
+  const entregando = pedidos.filter((p) => p.estado_pedido !== 'pendiente_restaurante' && esEntregando(p));
+
+  return { entrantes, enPreparacion, enProceso, cocina, listos, entregando, cargando, recargar: cargar };
 }

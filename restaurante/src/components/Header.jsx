@@ -1,9 +1,12 @@
 import { MARCA, MODO_SISTEMA } from '../lib/config';
 import { HP_LOGO } from '../lib/hpLogo';
+import { IcoAjustes } from './Iconos';
 
 const ES_HP = MARCA.toLowerCase().includes('happy');
 
-export default function Header({ restaurante, onLogout, onAbrirAjustes }) {
+// Cabecera: local a la izquierda, estado de la tienda al centro (pantallas anchas),
+// herramientas a la derecha. Iconos dibujados en vez de emojis.
+export default function Header({ restaurante, onLogout, onAbrirAjustes, centro = null }) {
   const logo = restaurante?.logo_url || (ES_HP ? HP_LOGO : null);
   const nombre = restaurante?.nombre || 'Restaurante';
 
@@ -36,19 +39,21 @@ export default function Header({ restaurante, onLogout, onAbrirAjustes }) {
           </div>
         </div>
       </div>
+      {centro && <div className="hidden md:flex items-center justify-center min-w-0">{centro}</div>}
       <div className="flex items-center gap-2 shrink-0">
         {onAbrirAjustes && (
           <button
             onClick={onAbrirAjustes}
             aria-label="Ajustes"
-            className="text-gray-300 hover:text-dewan border border-borde hover:border-dewan rounded-md w-8 h-8 flex items-center justify-center transition-colors"
+            title="Ajustes"
+            className="text-gray-300 hover:text-dewan border border-borde hover:border-dewan rounded-md w-9 h-9 flex items-center justify-center transition-colors"
           >
-            <span className="text-base">⚙️</span>
+            <IcoAjustes />
           </button>
         )}
         <button
           onClick={onLogout}
-          className="text-xs text-gray-400 hover:text-nuevo border border-borde hover:border-nuevo rounded-md px-2 py-1 transition-colors"
+          className="text-xs text-gray-400 hover:text-nuevo border border-borde hover:border-nuevo rounded-md px-2 py-1.5 transition-colors"
         >
           Salir
         </button>

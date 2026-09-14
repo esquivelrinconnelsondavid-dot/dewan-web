@@ -11,7 +11,14 @@ import { KeepAwake } from '@capacitor-community/keep-awake';
 // para que el tema crema entre sin parpadeo. DEWAN no se ve afectado (default).
 if (MODO_SISTEMA) {
   document.title = MARCA;
-} else if (MARCA && MARCA.toLowerCase().includes('happy')) {
+} else if (!(MARCA && MARCA.toLowerCase().includes('happy'))) {
+  // DEWAN (14-sep-2026): tema CLARO, como la cocina de las apps de socios grandes
+  // (Uber Eats Orders, DoorDash, iFood, PedidosYa). Misma paleta que ya usa el SISTEMA.
+  document.documentElement.dataset.marca = 'claro';
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute('content', '#f4f5f7');
+}
+if (!MODO_SISTEMA && MARCA && MARCA.toLowerCase().includes('happy')) {
   document.documentElement.dataset.marca = 'hp';
   document.title = 'Happy Pollo · Cocina';
   const tc = document.querySelector('meta[name="theme-color"]');

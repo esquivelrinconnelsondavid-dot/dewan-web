@@ -196,3 +196,52 @@ export async function rechazarPedido(pedidoId, motivo) {
   if (error) throw error;
   if (RECHAZO_PATH) avisarEvento(RECHAZO_PATH, { pedido_id: pedidoId, evento: 'rechazo', motivo: motivo || '' });
 }
+
+// ── Tablero (14-sep-2026): los botones nuevos del ticket ──────────────────────
+// +5 MIN: corre el reloj del pedido. Como el cron `auto-lanzar` busca motorizado
+// cuando `timer_lanzamiento` vence, correrlo 5 min también retrasa la moto → no
+// llega a esperar con el pedido a medio hacer. El link de seguimiento muestra el
+// tiempo nuevo. No manda ningún mensaje.
+export async function sumarMinutos(pedido, minutos = 5) {
+  const base = pedido?.timer_lanzamiento ? new Date(pedido.timer_lanzamiento) : new Date();
+  const desde = base.getTime() < Date.now() ? new Date() : base;
+  const cambios = {
+    timer_lanzamiento: new Date(desde.getTime() + minutos * 60000).toISOString(),
+    tiempo_preparacion: (Number(pedido?.tiempo_preparacion) || 0) + minutos,
+  };
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  let error;
+  try {
+    ({ error } = await supabase
+      .from(PEDIDOS_TABLE)
+      .update(cambios)
+      .eq('id', pedido.id)
+      .abortSignal(ctrl.signal));
+  } finally {
+    clearTimeout(timer);
+  }
+  if (error) throw error;
+  return cambios;
+}
+
+// LISTO (DEWAN): el pedido ya está, que venga la moto YA. Adelanta el reloj a
+// ahora → el cron `auto-lanzar` (cada 30 s) le busca motorizado enseguida, y
+// `fecha_listo` deja registro de cuándo estuvo listo de verdad (tiempo real de
+// cocina). El estado sigue `preparando` hasta que una moto lo toma.
+export async function marcarListoDewan(pedido) {
+  const ahora = new Date().toISOString();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  let error;
+  try {
+    ({ error } = await supabase
+      .from(PEDIDOS_TABLE)
+      .update({ timer_lanzamiento: ahora, fecha_listo: ahora })
+      .eq('id', pedido.id)
+      .abortSignal(ctrl.signal));
+  } finally {
+    clearTimeout(timer);
+  }
+  if (error) throw error;
+}

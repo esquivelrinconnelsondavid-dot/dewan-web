@@ -25,9 +25,11 @@ function ajustarParaClaro(rgb) {
 export function aplicarTemaLocal(restaurante) {
   if (!MODO_SISTEMA || typeof document === 'undefined') return;
   const root = document.documentElement;
+  // 14-sep-2026: el tema por defecto de los locales del SISTEMA pasa a CLARO (como
+  // las apps de socios grandes); 'oscuro' en la ficha del local conserva el oscuro.
   const tema = String(restaurante?.panel_tema || '').toLowerCase();
-  if (tema === 'claro') root.dataset.marca = 'claro';
-  else delete root.dataset.marca;
+  if (tema === 'oscuro') delete root.dataset.marca;
+  else root.dataset.marca = 'claro';
   let rgb = hexARgb(restaurante?.panel_color);
   if (rgb && tema === 'claro') rgb = ajustarParaClaro(rgb);
   if (rgb) root.style.setProperty('--c-dewan', rgb.join(' '));

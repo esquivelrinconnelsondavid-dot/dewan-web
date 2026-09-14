@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import Header from './components/Header';
 import LoginScreen from './components/LoginScreen';
-import PedidoEntrante from './components/PedidoEntrante';
-import PedidoEnPreparacion from './components/PedidoEnPreparacion';
-import PedidoEnProceso from './components/PedidoEnProceso';
+import Tablero, { Columna } from './components/Tablero';
+import NuevoPedidoModal from './components/NuevoPedidoModal';
+import EstadoLocal, { useEstadoLocal } from './components/EstadoLocal';
 import TabBar from './components/TabBar';
 import VistaVentas from './components/VistaVentas';
 import VistaOpiniones from './components/VistaOpiniones';
@@ -25,14 +25,14 @@ import {
 import { registrarPushRestaurante, olvidarRestaurantePush } from './lib/push';
 import { tiempoSinDatos } from './lib/conexion';
 import { resucitarSocket } from './lib/supabase';
-import { MARCA, MODO_HP } from './lib/config';
+import { MARCA, MODO_HP, MODO_SISTEMA } from './lib/config';
 import { aplicarTemaLocal } from './lib/tema';
 
-function buildTabs(enProcesoCount, opinionesSinLeer) {
+function buildTabs(nuevosCount, enProcesoCount, opinionesSinLeer) {
   return [
-    { id: 'pedidos', label: 'Pedidos' },
+    { id: 'pedidos', label: 'Pedidos', badge: nuevosCount },
     // Happy Pollo usa delivery propio (sin motos DEWAN) → no hay pestaña "Entregando".
-    ...(MODO_HP ? [] : [{ id: 'entregando', label: 'Entregando', badge: enProcesoCount }]),
+    ...(MODO_HP && !MODO_SISTEMA ? [] : [{ id: 'entregando', label: 'Entregando', badge: enProcesoCount }]),
     { id: 'ventas', label: 'Ventas' },
     // Lo que el cliente dijo de la comida y de cada plato (DEWAN y locales del SISTEMA).
     { id: 'opiniones', label: 'Opiniones', badge: opinionesSinLeer },
@@ -40,7 +40,11 @@ function buildTabs(enProcesoCount, opinionesSinLeer) {
 }
 
 function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
-  const { entrantes, enPreparacion, enProceso, cargando } = usePedidosRestaurante(restaurante);
+  const { entrantes, cocina, listos, entregando, cargando } = usePedidosRestaurante(restaurante);
+  // Estado de la tienda (Abierto · Ocupado · Pausar) — no aplica a Happy Pollo (reparte con su gente).
+  const estadoLocal = useEstadoLocal(restaurante?.restaurante_id);
+  // Pantalla de "Nuevo pedido": se minimiza por id; un pedido nuevo distinto la vuelve a abrir.
+  const [minimizados, setMinimizados] = useState(() => new Set());
   // Opiniones de los clientes: se cargan acá (y no dentro de la pestaña) para que el
   // badge "sin leer" y el aviso en vivo funcionen aunque el local esté en Pedidos.
   const opiniones = useResenas(restaurante);
@@ -156,8 +160,10 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
     );
   }
 
-  const sinPedidosCocina = entrantes.length === 0 && enPreparacion.length === 0;
-  const sinEntregas = enProceso.length === 0;
+  const enProceso = [...listos, ...entregando];
+  const nuevosVisibles = entrantes.filter((p) => !minimizados.has(p.id));
+  const conEstadoLocal = !(MODO_HP && !MODO_SISTEMA);
+  const resumenHoy = 'Cuando un pedido salga con el motorizado aparecerá aquí.';
 
   return (
     <div className="h-full flex flex-col">
@@ -165,10 +171,23 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
         restaurante={restaurante}
         onLogout={onLogout}
         onAbrirAjustes={() => setAjustesAbierto(true)}
+        centro={conEstadoLocal ? <EstadoLocal estado={estadoLocal} /> : null}
       />
+      {conEstadoLocal && (
+        <div className="md:hidden flex justify-center px-3 py-2 border-b border-borde bg-fondo">
+          <EstadoLocal estado={estadoLocal} compacto />
+        </div>
+      )}
       <AvisoConexion />
       <AvisoSonido />
-      <TabBar tabs={buildTabs(enProceso.length, opiniones.sinLeer)} active={tab} onChange={setTab} />
+      <div className="lg:hidden">
+        <TabBar tabs={buildTabs(entrantes.length, enProceso.length, opiniones.sinLeer)} active={tab} onChange={setTab} />
+      </div>
+      <div className="hidden lg:block">
+        <TabBar tabs={[{ id: 'pedidos', label: 'Pedidos', badge: entrantes.length }, { id: 'ventas', label: 'Ventas' }, { id: 'opiniones', label: 'Opiniones', badge: opiniones.sinLeer }]} active={tab === 'entregando' ? 'pedidos' : tab} onChange={setTab} />
+      </div>
+      <NuevoPedidoModal pedidos={nuevosVisibles} ocupadoMin={estadoLocal.ocupadoMin}
+        onMinimizar={() => setMinimizados((prev) => { const n = new Set(prev); nuevosVisibles.forEach((p) => n.add(p.id)); return n; })} />
 
       {ajustesAbierto && (
         <AjustesModal
@@ -182,87 +201,27 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
         />
       )}
 
-      <div className="flex-1 overflow-y-auto pb-8">
+      <div className={`flex-1 min-h-0 overflow-y-auto ${(tab === 'pedidos' || tab === 'entregando') ? 'lg:overflow-hidden lg:pb-0' : ''} pb-8`}>
+        {(tab === 'pedidos' || tab === 'entregando') && (
+          <Tablero entrantes={entrantes} cocina={cocina} listos={listos} entregando={entregando}
+            ocupadoMin={estadoLocal.ocupadoMin} resumenHoy={resumenHoy} />
+        )}
+
         {tab === 'pedidos' && (
-          <>
-            {entrantes.length > 0 && (
-              <section className="px-3 pt-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-2 h-2 rounded-full bg-nuevo animate-pulse" />
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-nuevo">
-                    Nuevos pedidos ({entrantes.length})
-                  </h2>
-                </div>
-                <div className="space-y-2">
-                  {entrantes.map((p) => (
-                    <PedidoEntrante key={p.id} pedido={p} />
-                  ))}
-                </div>
-              </section>
+          <div className="lg:hidden px-3 pt-3 pb-6 space-y-5">
+            <Columna id="nuevo" pedidos={entrantes} ocupadoMin={estadoLocal.ocupadoMin} apilada />
+            <Columna id="preparando" pedidos={cocina} apilada />
+            {entrantes.length === 0 && cocina.length === 0 && (
+              <p className="text-center text-xs text-gray-500 pt-6">Mantén esta pantalla abierta. Los pedidos sonarán al entrar.</p>
             )}
-
-            {enPreparacion.length > 0 && (
-              <section className="px-3 pt-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-2 h-2 rounded-full bg-preparando" />
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-preparando">
-                    En preparación ({enPreparacion.length})
-                  </h2>
-                </div>
-                <div className="space-y-2">
-                  {enPreparacion.map((p) => (
-                    <PedidoEnPreparacion key={p.id} pedido={p} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {sinPedidosCocina && (
-              <div className="h-full flex flex-col items-center justify-center px-6 text-center mt-20">
-                <p className="text-7xl mb-4">🍽️</p>
-                <h2 className="text-white font-bold text-xl mb-2">Esperando pedidos…</h2>
-                <p className="text-gray-400 text-sm max-w-xs">
-                  Mantén esta pantalla abierta. Los pedidos sonarán al entrar.
-                </p>
-                {enProceso.length > 0 && (
-                  <p className="text-encamino text-xs mt-4">
-                    Tenés {enProceso.length} pedido(s) en entrega — vé a la pestaña "Entregando".
-                  </p>
-                )}
-              </div>
-            )}
-          </>
+          </div>
         )}
 
         {tab === 'entregando' && (
-          <>
-            {enProceso.length > 0 ? (
-              <section className="px-3 pt-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-2 h-2 rounded-full bg-encamino" />
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-encamino">
-                    En entrega ({enProceso.length})
-                  </h2>
-                </div>
-                <p className="text-[11px] text-gray-500 mb-3">
-                  Estos pedidos ya están con el motorizado. No los prepares de nuevo.
-                </p>
-                <div className="space-y-2">
-                  {enProceso.map((p) => (
-                    <PedidoEnProceso key={p.id} pedido={p} />
-                  ))}
-                </div>
-              </section>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center px-6 text-center mt-20">
-                <p className="text-7xl mb-4">🏍️</p>
-                <h2 className="text-white font-bold text-xl mb-2">Sin entregas en curso</h2>
-                <p className="text-gray-400 text-sm max-w-xs">
-                  Cuando el motorizado acepte un pedido aparecerá acá.
-                </p>
-              </div>
-            )}
-          </>
+          <div className="lg:hidden px-3 pt-3 pb-6 space-y-5">
+            <Columna id="listo" pedidos={listos} apilada />
+            <Columna id="entregando" pedidos={entregando} apilada />
+          </div>
         )}
 
         {tab === 'ventas' && <VistaVentas restaurante={restaurante} />}
