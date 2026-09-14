@@ -201,7 +201,7 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
         />
       )}
 
-      <div className={`flex-1 min-h-0 overflow-y-auto ${(tab === 'pedidos' || tab === 'entregando') ? 'lg:overflow-hidden lg:pb-0' : ''} pb-8`}>
+      <div className={`flex-1 min-h-0 overflow-y-auto ${(tab === 'pedidos' || tab === 'entregando') ? 'lg:pb-0' : ''} pb-8`}>
         {(tab === 'pedidos' || tab === 'entregando') && (
           <Tablero entrantes={entrantes} cocina={cocina} listos={listos} entregando={entregando}
             ocupadoMin={estadoLocal.ocupadoMin} resumenHoy={resumenHoy} />

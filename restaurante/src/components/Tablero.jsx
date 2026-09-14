@@ -31,7 +31,7 @@ export function Columna({ id, pedidos, ocupadoMin, apilada = false, resumen }) {
   const d = DEF[id];
   const lista = [...pedidos].sort(ORDEN[id]);
   return (
-    <section className={`flex flex-col min-w-0 ${apilada ? '' : 'h-full'}`}>
+    <section className={`flex flex-col min-w-0 ${apilada ? '' : 'h-full min-h-0'}`}>
       <div className="flex items-center gap-2 px-1 pb-2 shrink-0">
         <span className={`w-2 h-2 rounded-full ${d.punto} ${id === 'nuevo' && lista.length ? 'animate-pulse' : ''}`} />
         <h2 className={`text-xs font-bold uppercase tracking-widest ${d.texto}`}>{d.titulo} · {lista.length}</h2>
@@ -54,8 +54,12 @@ export default function Tablero({ entrantes, cocina, listos, entregando, ocupado
   const cols = columnasDelModo();
   const datos = { nuevo: entrantes, preparando: cocina, listo: listos, entregando };
   const gridCols = cols.length === 2 ? 'lg:grid-cols-2' : 'lg:grid-cols-4';
+  // `grid-rows-[minmax(0,1fr)]` es lo que hace que cada columna scrollee por dentro: sin
+  // eso la fila del grid crece con el contenido, el tablero se sale de la pantalla y con
+  // varios pedidos no hay forma de bajar (bug reportado 14-sep). `h-full min-h-0` fija la
+  // altura al hueco disponible; el contenedor de arriba conserva su scroll como respaldo.
   return (
-    <div className={`hidden lg:grid ${gridCols} gap-4 px-5 pt-4 pb-2 h-full min-h-0`}>
+    <div className={`hidden lg:grid ${gridCols} grid-rows-[minmax(0,1fr)] gap-4 px-5 pt-4 pb-2 h-full min-h-0`}>
       {cols.map((id, i) => (
         <Columna key={id} id={id} pedidos={datos[id] || []} ocupadoMin={ocupadoMin}
           resumen={i === cols.length - 1 ? resumenHoy : undefined} />

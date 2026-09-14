@@ -245,3 +245,36 @@ export async function marcarListoDewan(pedido) {
   }
   if (error) throw error;
 }
+
+// SISTEMA a domicilio (la entrega la hace una moto DEWAN): "Listo" NO es "entregado".
+// El local avisa que la comida ya está y que venga la moto; la entrega al cliente la
+// marca el motorizado desde su app. Se guarda `fecha_listo` (tiempo real de cocina) y
+// se adelanta el reloj del pedido GEMELO de DEWAN para que el cron `auto-lanzar` le
+// busque moto enseguida. El estado NO pasa a entregado.
+export async function marcarListoSistema(pedido) {
+  const ahora = new Date().toISOString();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  let error;
+  try {
+    ({ error } = await supabase
+      .from(PEDIDOS_TABLE)
+      .update({ fecha_listo: ahora })
+      .eq('id', pedido.id)
+      .abortSignal(ctrl.signal));
+  } finally {
+    clearTimeout(timer);
+  }
+  if (error) throw error;
+  // El gemelo vive en pedidos_delivery (es el que ven las motos).
+  if (pedido.pedido_dewan_id) {
+    try {
+      await supabase
+        .from('pedidos_delivery')
+        .update({ timer_lanzamiento: ahora, fecha_listo: ahora })
+        .eq('id', pedido.pedido_dewan_id);
+    } catch (e) {
+      console.warn('[marcarListoSistema] no se pudo adelantar el gemelo', e?.message || e);
+    }
+  }
+}

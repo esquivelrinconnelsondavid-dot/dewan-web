@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { calcularPagoAlRestaurante, formatDinero, formatHoraEC } from '../lib/formato';
 import { hayImpresion, imprimirComanda } from '../lib/comanda';
 import { MODO_HP, MODO_SISTEMA, codigoPedido, esDomicilio } from '../lib/config';
-import { aceptarPedido, rechazarPedido, marcarEntregado, marcarSalio, sumarMinutos, marcarListoDewan } from '../lib/pedidos';
+import { aceptarPedido, rechazarPedido, marcarEntregado, marcarSalio, sumarMinutos, marcarListoDewan, marcarListoSistema } from '../lib/pedidos';
 import { parsearDetalle, limpiarDireccion, telefonoLocal, canalPedido, inicial, colorInicial, haceCuanto } from '../lib/detalle';
 import { IcoCheck, IcoImpresora, IcoTelefono, IcoPin, IcoNota, IcoMoto, IcoReloj, IcoAlerta } from './Iconos';
 
@@ -154,6 +154,9 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
 
   const domicilio = esDomicilio(pedido);
   const motoDewan = MODO_SISTEMA && domicilio;
+  // ¿La entrega al cliente la hace una moto DEWAN? Entonces el local NUNCA marca
+  // "entregado": él se lo entrega AL MOTORIZADO. (Happy Pollo reparte con su gente.)
+  const conMoto = !MODO_HP ? domicilio : motoDewan;
   const nombreRest = pedido.restaurante || pedido.restaurante_nombre;
   const telCliente = telefonoLocal(pedido.cliente_telefono);
   const telMoto = telefonoLocal(pedido.telefono_moto);
@@ -184,9 +187,13 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
   }, 'No se pudo aceptar. Revisa la conexión e intenta de nuevo.');
   const rechazar = () => correr(() => rechazarPedido(pedido.id, motivo || 'No podemos preparar este pedido'), 'No se pudo rechazar. Intenta de nuevo.');
   const masCinco = () => correr(() => sumarMinutos(pedido, 5), 'No se pudo sumar tiempo.');
+  // "Listo" = la comida está lista. OJO: cuando la entrega la hace una moto (DEWAN o
+  // SISTEMA a domicilio) esto NO cierra el pedido: el local se lo da al MOTORIZADO y es
+  // el motorizado quien marca la entrega al cliente desde su app. Solo cuando el local
+  // mismo entrega (Happy Pollo, o retiro en mostrador) "listo" cierra el pedido.
   const listo = () => correr(async () => {
     if (MODO_SISTEMA) {
-      if (motoDewan) await marcarEntregado(pedido.id);
+      if (motoDewan) await marcarListoSistema(pedido);
       else await marcarSalio(pedido);
     } else if (MODO_HP) {
       await marcarEntregado(pedido.id);
@@ -333,21 +340,27 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
           {hayImpresion() && <BotonSecundario onClick={reimprimir} title="Reimprimir comanda"><IcoImpresora /></BotonSecundario>}
           <BotonPrimario onClick={listo} disabled={cargando}>
             <IcoCheck />
-            {MODO_SISTEMA ? (motoDewan ? 'Entregado' : (domicilio ? 'Salió' : 'Listo')) : MODO_HP ? 'Entregado' : 'Listo'}
+            {conMoto ? 'Listo · que venga la moto' : (MODO_SISTEMA && !domicilio ? 'Listo · avisar al cliente' : MODO_HP ? 'Entregado al cliente' : 'Listo')}
           </BotonPrimario>
         </div>
       )}
-      {columna === 'preparando' && MODO_SISTEMA && motoDewan && (
-        <div className="text-[11px] text-gray-400">A domicilio lo entrega la moto DEWAN; "Entregado" es por si la moto no lo marcó.</div>
+      {columna === 'preparando' && conMoto && (
+        <div className="text-[11px] text-gray-400">La entrega al cliente la marca el motorizado desde su app.</div>
       )}
-      {columna === 'listo' && MODO_SISTEMA && (
+      {columna === 'listo' && conMoto && (
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-gray-400 flex-1">Cuando llegue el motorizado, entrégueselo. Él marca la entrega al cliente.</span>
+          <BotonSecundario onClick={entregado} disabled={cargando} alto="h-9" title="Solo si el motorizado no lo marcó">Ya se entregó</BotonSecundario>
+        </div>
+      )}
+      {columna === 'listo' && MODO_SISTEMA && !conMoto && (
         <div className="flex gap-2">
-          <BotonPrimario onClick={entregado} disabled={cargando} alto="h-10"><IcoCheck />Entregado</BotonPrimario>
+          <BotonPrimario onClick={entregado} disabled={cargando} alto="h-10"><IcoCheck />El cliente ya lo retiró</BotonPrimario>
         </div>
       )}
       {columna === 'entregando' && MODO_SISTEMA && (
         <div className="flex gap-2">
-          <BotonSecundario onClick={entregado} disabled={cargando} alto="h-10" extra="flex-1">Entregado (si la moto no lo marcó)</BotonSecundario>
+          <BotonSecundario onClick={entregado} disabled={cargando} alto="h-10" extra="flex-1" title="Solo si el motorizado no lo marcó">Marcar entregado (si la moto no lo hizo)</BotonSecundario>
         </div>
       )}
       {compacto && hayImpresion() && columna === 'listo' && !MODO_SISTEMA && (
