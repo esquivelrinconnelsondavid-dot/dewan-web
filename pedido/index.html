@@ -111,6 +111,18 @@
   .motivo{width:100%;border:1.5px solid #E3D9C9;border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;
     margin-top:8px;resize:vertical;min-height:64px}
   .gracias{font-size:13.5px;color:var(--gris);margin-top:8px}
+  /* opinión: platos 👍/👎, etiquetas y botón */
+  .platos{margin:10px 0 0;text-align:left}
+  .plato{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed #E3D9C9;font-size:14px}
+  .plato .pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+  .plato .pv{display:flex;gap:6px;flex:none}
+  .voto{border:1.5px solid #E3D9C9;background:#fff;border-radius:999px;padding:4px 10px;font-size:16px;cursor:pointer;opacity:.55;font-family:inherit}
+  .voto.on{opacity:1;border-color:var(--verde);background:#ECFDF5}
+  .voto.on.neg{border-color:var(--rojo);background:#FEF2F2}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+  .chip{border:1.5px solid #E3D9C9;background:#fff;border-radius:999px;padding:6px 10px;font-size:12.5px;cursor:pointer;font-family:inherit;color:var(--tinta)}
+  .chip.on{border-color:var(--rojo);background:#FEF2F2;color:#B91C1C}
+  .btn[disabled]{opacity:.45;cursor:default}
   .cancel{background:#FEF2F2;border:1px solid #FECACA;border-radius:16px;padding:14px;margin-bottom:12px;font-size:14px;line-height:1.45}
   .oculto{display:none !important}
   .pie{text-align:center;font-size:11px;color:#A2917C;margin-top:16px;line-height:1.7}
@@ -162,18 +174,8 @@
       <div class="emo">🎉</div>
       <h2 id="finTitulo">¡Pedido entregado!</h2>
       <div class="sub" id="fraseFin">Gracias por su pedido.</div>
-      <div id="califBloque">
-        <div class="sub" style="margin-bottom:0">¿Cómo estuvo todo?</div>
-        <div class="estrellas" id="estrellas">
-          <span class="est" data-v="1">⭐</span><span class="est" data-v="2">⭐</span>
-          <span class="est" data-v="3">⭐</span><span class="est" data-v="4">⭐</span>
-          <span class="est" data-v="5">⭐</span>
-        </div>
-        <div id="motivoBloque" class="oculto">
-          <textarea class="motivo" id="motivo" maxlength="200" placeholder="¿Qué podemos mejorar? (opcional)"></textarea>
-          <div class="btns" style="margin-top:8px"><button class="btn b-rojo" id="btnEnviarCalif">Enviar</button></div>
-        </div>
-      </div>
+      <!-- Opinión completa (comida + entrega + platos); la arma pintarCalificacion() -->
+      <div id="califBloque"></div>
       <div class="gracias oculto" id="graciasCalif">¡Gracias! Su opinión ayuda al local a mejorar 💛</div>
     </div>
 
@@ -678,33 +680,106 @@
     $('mapaLink').href = 'https://maps.google.com/?q=' + punto;
   }
 
-  // ---------- calificación (webhook calificar-pedido, misma validación que la app) ----------
+  // ---------- opinión del cliente (webhook calificar-pedido v3) ----------
+  // Comida ★ (al local) + entrega ★ (al moto) + 👍/👎 por plato + etiquetas si algo salió
+  // mal. Se identifica con el TOKEN del link (no hace falta teléfono) y llega al panel del
+  // local (pestaña Opiniones) sin gastar ningún mensaje de WhatsApp. Una vez por pedido.
+  var op = { comida: 0, entrega: 0, votos: {}, chips: {} };
+  var itemsCalif = [];
+  var CHIPS_COMIDA = ['🥶 Llegó frío', '❌ Faltó algo', '🍔 Sabor', '📦 Empaque', '🍽️ Porción chica'];
+  var CHIPS_ENTREGA = ['🕐 Tardó mucho', '😕 Trato del motorizado', '📍 No encontró la dirección'];
+  function origenCalif() { return sistema === 'sistema' ? 'sistema' : (sistema === 'hp' ? 'hp' : 'delivery'); }
+  function preguntaComida() { return !esPaquete(); }
+  function preguntaEntrega() { return !esRetiro() && !!pedido.nombre_moto; }
+  function estrellasHtml(k) {
+    var h = '<div class="estrellas" data-k="' + k + '">';
+    for (var i = 1; i <= 5; i++) h += '<span class="est" data-k="' + k + '" data-v="' + i + '">⭐</span>';
+    return h + '</div>';
+  }
   function pintarCalificacion() {
     if (Number(pedido.calificacion) > 0 || calificado) {
       $('califBloque').classList.add('oculto');
       $('graciasCalif').classList.remove('oculto');
-      $('graciasCalif').textContent = 'Usted calificó este pedido con ' + (estrellasSel || pedido.calificacion) + ' ⭐. ¡Gracias!';
+      $('graciasCalif').textContent = 'Usted ya calificó este pedido. ¡Gracias!';
+      return;
     }
+    if ($('califBloque').children.length) return;   // ya está armado (refrescos)
+    var nom = (local && local.nombre) || pedido.restaurante || 'el local';
+    var moto = pedido.nombre_moto ? String(pedido.nombre_moto).trim().split(' ').slice(0, 2).join(' ') : '';
+    var h = '';
+    if (preguntaComida()) h += '<div class="sub" style="margin-bottom:0">¿Qué tal la comida de <b>' + esc(nom) + '</b>?</div>' + estrellasHtml('comida');
+    if (preguntaEntrega()) h += '<div class="sub" style="margin:10px 0 0">¿Cómo estuvo la entrega de <b>' + esc(moto) + '</b>?</div>' + estrellasHtml('entrega');
+    if (!preguntaComida() && !preguntaEntrega()) h += '<div class="sub" style="margin-bottom:0">¿Cómo estuvo todo?</div>' + estrellasHtml('entrega');
+    itemsCalif = preguntaComida() ? parsearDetalle(pedido.detalle_pedido).items.slice(0, 12) : [];
+    if (itemsCalif.length) {
+      h += '<div class="platos">';
+      itemsCalif.forEach(function (it, i) {
+        h += '<div class="plato"><span class="pn">' + esc(it.n) + '</span><span class="pv">' +
+          '<button type="button" class="voto" data-i="' + i + '" data-v="1" aria-label="Me gustó">👍</button>' +
+          '<button type="button" class="voto" data-i="' + i + '" data-v="-1" aria-label="No me gustó">👎</button></span></div>';
+      });
+      h += '</div>';
+    }
+    h += '<div id="motivoBloque" class="oculto"><div class="sub" style="margin:10px 0 0">¿Qué salió mal?</div><div class="chips" id="chipsCalif"></div>' +
+      '<textarea class="motivo" id="motivo" maxlength="300" placeholder="Cuéntenos más (opcional)"></textarea></div>';
+    h += '<div class="btns" style="margin-top:10px"><button type="button" class="btn b-rojo" id="btnEnviarCalif" disabled>Enviar opinión</button></div>';
+    $('califBloque').innerHTML = h;
+  }
+  function pintarChips() {
+    var lista = [];
+    if (op.comida && op.comida <= 3) lista = lista.concat(CHIPS_COMIDA);
+    if (op.entrega && op.entrega <= 3) lista = lista.concat(CHIPS_ENTREGA);
+    var box = $('chipsCalif');
+    if (!box) return;
+    if (!lista.length) { $('motivoBloque').classList.add('oculto'); return; }
+    box.innerHTML = lista.map(function (c) { return '<button type="button" class="chip' + (op.chips[c] ? ' on' : '') + '" data-c="' + esc(c) + '">' + esc(c) + '</button>'; }).join('');
+    $('motivoBloque').classList.remove('oculto');
   }
   document.addEventListener('click', function (e) {
-    var el = e.target.closest('.est');
-    if (!el || calificado) return;
-    estrellasSel = Number(el.dataset.v);
-    document.querySelectorAll('.est').forEach(function (s) { s.classList.toggle('on', Number(s.dataset.v) <= estrellasSel); });
-    if (estrellasSel <= 3) { $('motivoBloque').classList.remove('oculto'); $('motivo').focus(); }
-    else enviarCalif('');
+    if (calificado) return;
+    var est = e.target.closest('.est');
+    if (est) {
+      var k = est.dataset.k, v = Number(est.dataset.v);
+      op[k] = v;
+      document.querySelectorAll('.est[data-k="' + k + '"]').forEach(function (s) { s.classList.toggle('on', Number(s.dataset.v) <= v); });
+      pintarChips();
+      var b = $('btnEnviarCalif'); if (b) b.disabled = !(op.comida || op.entrega);
+      return;
+    }
+    var voto = e.target.closest('.voto');
+    if (voto) {
+      var i = Number(voto.dataset.i), vv = Number(voto.dataset.v);
+      op.votos[i] = (op.votos[i] === vv) ? 0 : vv;
+      document.querySelectorAll('.voto[data-i="' + i + '"]').forEach(function (b2) {
+        var mio = Number(b2.dataset.v) === op.votos[i];
+        b2.classList.toggle('on', mio);
+        b2.classList.toggle('neg', mio && op.votos[i] < 0);
+      });
+      return;
+    }
+    var chip = e.target.closest('.chip');
+    if (chip) { var c = chip.dataset.c; op.chips[c] = !op.chips[c]; chip.classList.toggle('on', !!op.chips[c]); return; }
+    if (e.target.closest('#btnEnviarCalif')) enviarCalif();
   });
-  $('btnEnviarCalif').addEventListener('click', function () { enviarCalif($('motivo').value); });
-  function enviarCalif(motivo) {
-    if (!estrellasSel || calificado) return;
+  function enviarCalif() {
+    if (calificado || !(op.comida || op.entrega)) return;
     calificado = true;
     $('califBloque').classList.add('oculto');
     $('graciasCalif').classList.remove('oculto');
+    $('graciasCalif').textContent = '¡Gracias! Su opinión le llega al local 💛';
     if (demo || esDemoD) return;
+    var platos = [];
+    itemsCalif.forEach(function (it, i) { if (op.votos[i]) platos.push({ nombre: it.n, voto: op.votos[i] }); });
+    var etiquetas = Object.keys(op.chips).filter(function (c) { return op.chips[c]; });
+    var motivo = ($('motivo') && $('motivo').value || '').trim();
+    var body = { pedido_id: pedido.id, telefono: pedido.cliente_telefono || '', token: token || '', origen: origenCalif(), fuente: 'web',
+      platos: platos, etiquetas: etiquetas, motivo: motivo };
+    if (op.entrega) body.estrellas = op.entrega;
+    if (op.comida) body.estrellas_comida = op.comida;
     fetch(CALIFICAR, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-dewan-key': 'dwn-app-2026' },
-      body: JSON.stringify({ pedido_id: pedido.id, estrellas: estrellasSel, telefono: pedido.cliente_telefono, motivo: motivo || '' })
+      body: JSON.stringify(body)
     }).catch(function () {});
   }
 

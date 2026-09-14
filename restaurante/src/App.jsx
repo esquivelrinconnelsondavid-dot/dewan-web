@@ -6,12 +6,14 @@ import PedidoEnPreparacion from './components/PedidoEnPreparacion';
 import PedidoEnProceso from './components/PedidoEnProceso';
 import TabBar from './components/TabBar';
 import VistaVentas from './components/VistaVentas';
+import VistaOpiniones from './components/VistaOpiniones';
 import AjustesModal from './components/AjustesModal';
 import AvisoSonido from './components/AvisoSonido';
 import AvisoConexion from './components/AvisoConexion';
 import Onboarding from './components/Onboarding';
 import { useAuth } from './hooks/useAuth';
 import { usePedidosRestaurante } from './hooks/usePedidosRestaurante';
+import { useResenas } from './hooks/useResenas';
 import {
   requestPushPermission,
   unlockAudio,
@@ -26,17 +28,22 @@ import { resucitarSocket } from './lib/supabase';
 import { MARCA, MODO_HP } from './lib/config';
 import { aplicarTemaLocal } from './lib/tema';
 
-function buildTabs(enProcesoCount) {
+function buildTabs(enProcesoCount, opinionesSinLeer) {
   return [
     { id: 'pedidos', label: 'Pedidos' },
     // Happy Pollo usa delivery propio (sin motos DEWAN) → no hay pestaña "Entregando".
     ...(MODO_HP ? [] : [{ id: 'entregando', label: 'Entregando', badge: enProcesoCount }]),
     { id: 'ventas', label: 'Ventas' },
+    // Lo que el cliente dijo de la comida y de cada plato (DEWAN y locales del SISTEMA).
+    { id: 'opiniones', label: 'Opiniones', badge: opinionesSinLeer },
   ];
 }
 
 function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
   const { entrantes, enPreparacion, enProceso, cargando } = usePedidosRestaurante(restaurante);
+  // Opiniones de los clientes: se cargan acá (y no dentro de la pestaña) para que el
+  // badge "sin leer" y el aviso en vivo funcionen aunque el local esté en Pedidos.
+  const opiniones = useResenas(restaurante);
   const [tab, setTab] = useState('pedidos');
   const [ajustesAbierto, setAjustesAbierto] = useState(false);
   const [verTutorial, setVerTutorial] = useState(() => {
@@ -161,7 +168,7 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
       />
       <AvisoConexion />
       <AvisoSonido />
-      <TabBar tabs={buildTabs(enProceso.length)} active={tab} onChange={setTab} />
+      <TabBar tabs={buildTabs(enProceso.length, opiniones.sinLeer)} active={tab} onChange={setTab} />
 
       {ajustesAbierto && (
         <AjustesModal
@@ -259,6 +266,15 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
         )}
 
         {tab === 'ventas' && <VistaVentas restaurante={restaurante} />}
+
+        {tab === 'opiniones' && (
+          <VistaOpiniones
+            resenas={opiniones.resenas}
+            cargando={opiniones.cargando}
+            noDisponible={opiniones.noDisponible}
+            onMarcarLeidas={() => opiniones.marcarLeidas()}
+          />
+        )}
       </div>
 
       {verTutorial && <Onboarding onCerrar={cerrarTutorial} />}
