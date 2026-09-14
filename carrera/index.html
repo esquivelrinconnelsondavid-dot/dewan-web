@@ -188,7 +188,7 @@
 </div>
 
 <!-- Mapa vivo + tiempo real: capa extra; sin él la página funciona igual (subir ?v= al cambiar el .js) -->
-<script src="/js/dewan-vivo.js?v=20260914b" defer></script>
+<script src="/js/dewan-vivo.js?v=20260914c" defer></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -204,7 +204,7 @@
   var finalizada = false, timerRefresco = null;
   // Mapa vivo (js/dewan-vivo.js): historial de posiciones (rastro + velocidad real), ruta por
   // calles si Google la da, ficha pública de la moto y canal de tiempo real.
-  var historialMoto = [], mapaVivo = null, rutaInfo = null, rutaPedidaEn = 0, ixActual = 0;
+  var historialMoto = [], mapaVivo = null, rutaInfo = null, rutaPedidaEn = 0, rutaTramo = -1, ixActual = 0;
   var motoFicha = null, fuenteMoto = null, rt = null, rtOk = false, rtMotoId = null, avisoLlegando = false;
 
   function sb(path) {
@@ -302,10 +302,13 @@
       historial: historialMoto
     });
     $('vivoTxt').textContent = hayMoto ? (ix <= 1 ? 'En vivo · va a recoger' : 'En vivo · viene hacia usted') : (fin ? 'Entrega' : 'Mapa');
-    // Ruta por calles: solo si la Routes API está encendida en el proyecto de Google (si no,
-    // dewan-vivo la deja de pedir 1 h y se dibuja la recta punteada). Como mucho 1 vez / 90 s.
-    if (hayMoto && Date.now() - rutaPedidaEn > 90000) {
+    // Ruta por calles (Google Routes, si está encendida; si no, recta punteada y deja de
+    // pedirla 1 h). Se pide DE NUEVO solo cuando hace falta: no hay ruta, cambió el tramo
+    // (ir a recoger → ir a entregar) o la moto se salió más de 180 m del camino dibujado.
+    var tramo = ix <= 1 ? 1 : 2;
+    if (hayMoto && Date.now() - rutaPedidaEn > 60000 && (!rutaInfo || rutaTramo !== tramo || DewanVivo.fueraDeRuta(rutaInfo.coords, { lat: lm, lng: gm }) > 180)) {
       rutaPedidaEn = Date.now();
+      rutaTramo = tramo;
       var obj = ix <= 1 ? { lat: lr, lng: gr } : { lat: le, lng: ge };
       if (obj.lat && obj.lng) {
         DewanVivo.ruta({ lat: lm, lng: gm }, obj, KEY_MAPS).then(function (r) {

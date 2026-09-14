@@ -224,15 +224,23 @@
     }
     function encuadrar(pts, pitch, dur) {
       if (pts.length === 1) { map.easeTo({ center: pts[0], zoom: 16.2, pitch: pitch, bearing: 0, duration: dur }); return; }
-      var alto = (cont.offsetHeight || 260), padV = alto < 320 ? 26 : 52;
+      var alto = (cont.offsetHeight || 260), padV = alto < 320 ? 24 : 46;
       var b = new maplibregl.LngLatBounds(pts[0], pts[0]);
       pts.forEach(function (p) { b.extend(p); });
-      var cam = map.cameraForBounds(b, { padding: { top: padV + 20, bottom: padV, left: 38, right: 38 }, maxZoom: 16.6, bearing: 0 });
+      // cameraForBounds calcula SIN inclinación. Al inclinar, la mitad de arriba de la
+      // pantalla se va hacia el horizonte: por eso se deja MÁS margen arriba y no se acerca
+      // de más — si se acerca, el punto de entrega se sale de la pantalla.
+      var extra = pitch >= 40 ? Math.round(alto * 0.22) : 0;
+      var cam = map.cameraForBounds(b, { padding: { top: padV + extra, bottom: padV, left: 40, right: 40 }, maxZoom: 16.4, bearing: 0 });
       if (!cam) return;
-      // cameraForBounds calcula SIN inclinación: con la cámara inclinada todo se ve más
-      // lejos (los pines quedan diminutos) → se acerca un poco para compensar.
-      var z = Math.min(16.6, cam.zoom + (pitch >= 45 ? 0.75 : (pitch >= 25 ? 0.4 : 0)));
-      map.easeTo({ center: cam.center, zoom: z, bearing: 0, pitch: pitch, duration: dur, essential: true });
+      map.easeTo({ center: cam.center, zoom: cam.zoom, bearing: 0, pitch: pitch, duration: dur, essential: true });
+    }
+    function dentroConMargen(p) {
+      try {
+        var b = map.getBounds(), sw = b.getSouthWest(), ne = b.getNorthEast();
+        var mx = (ne.lng - sw.lng) * 0.14, my = (ne.lat - sw.lat) * 0.14;
+        return p.lng > sw.lng + mx && p.lng < ne.lng - mx && p.lat > sw.lat + my && p.lat < ne.lat - my;
+      } catch (e) { return false; }
     }
     function camara(d, forzar) {
       if (!map) return;
@@ -244,17 +252,27 @@
         if (!objetivo) { if (!primerEncuadre || forzar) { primerEncuadre = true; encuadrar([[d.moto.lng, d.moto.lat]], 55, 0); } return; }
         var par = [[d.moto.lng, d.moto.lat], [objetivo.lng, objetivo.lat]];
         // Primero una vista general PLANA (se entiende de un vistazo dónde va la moto) y a
-        // los 2,5 s la cámara baja a la vista inclinada detrás de ella, como las apps grandes.
+        // los 2,5 s la cámara baja a la vista inclinada, como las apps grandes.
         if (!primerEncuadre || forzar) {
           primerEncuadre = true; ultimoCam = ahora;
           encuadrar(par, 0, forzar ? 700 : 0);
-          setTimeout(function () { if (pendiente && !manual) { ultimoCam = 0; camara(pendiente, false); } }, 2500);
+          setTimeout(function () {
+            if (!pendiente || manual || !pendiente.moto) return;
+            var o2 = pendiente.hacia === 'origen' ? pendiente.origen : pendiente.destino;
+            if (!o2) return;
+            ultimoCam = Date.now();
+            encuadrar([[pendiente.moto.lng, pendiente.moto.lat], [o2.lng, o2.lat]], 40, 1400);
+          }, 2500);
           return;
         }
         if (ahora - ultimoCam < 2500) return;
+        // La moto y el punto de entrega tienen que verse SIEMPRE los dos (el cliente quiere
+        // ver cuánto falta para su casa). La cámara se queda quieta mientras ambos están
+        // dentro con margen; solo se reencuadra cuando alguno se acerca al borde: así no
+        // hay movimiento constante ni mareo.
+        if (dentroConMargen(d.moto) && dentroConMargen(objetivo)) return;
         ultimoCam = ahora;
-        if (metros(d.moto, objetivo) < 450) encuadrar(par, 45, 1400);
-        else map.easeTo({ center: [d.moto.lng, d.moto.lat], bearing: rumboMoto, zoom: 16.4, pitch: 60, duration: 1600, essential: true });
+        encuadrar(par, 40, 1400);
         return;
       }
       var pts = [];
@@ -372,6 +390,18 @@
     return { cerrar: function () { cerrado = true; clearInterval(hb); try { if (ws) ws.close(); } catch (e) {} }, conectado: function () { return ok; } };
   }
 
-  window.DewanVivo = { version: '1', soporta: soporta, mapa: mapa, ruta: ruta, eta: eta, velocidad: velocidad, realtime: realtime, metros: metros };
+  // Distancia de un punto a la ruta ya dibujada (al vértice más cercano: alcanza para
+  // saber si la moto se salió del camino previsto y hay que volver a pedirla).
+  function fueraDeRuta(coords, p) {
+    if (!coords || !coords.length) return Infinity;
+    var min = Infinity;
+    for (var i = 0; i < coords.length; i++) {
+      var d = metros(p, { lng: coords[i][0], lat: coords[i][1] });
+      if (d < min) min = d;
+    }
+    return min;
+  }
+
+  window.DewanVivo = { version: '1', soporta: soporta, mapa: mapa, ruta: ruta, eta: eta, velocidad: velocidad, realtime: realtime, metros: metros, fueraDeRuta: fueraDeRuta };
   try { window.dispatchEvent(new Event('dewanvivo')); } catch (e) {}
 })();

@@ -27,13 +27,13 @@
     font-size:12px;font-weight:800;white-space:nowrap}
 
   /* ---------- mapa (imagen estática: se ve siempre) ---------- */
-  #mapa{height:34vh;min-height:170px;background:#E9E2D6;position:relative}
+  #mapa{height:36vh;min-height:170px;background:#E9E2D6;position:relative}
   #mapa a{display:block;width:100%;height:100%}
   #mapa img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s}
   #mapa img.lista{opacity:1}
   #mapa.oculto{display:none}
   /* mapa VIVO (MapLibre, js/dewan-vivo.js) ENCIMA de la imagen: si no carga, la imagen queda */
-  #mapa.vivo{height:44vh;min-height:250px}
+  #mapa.vivo{height:52vh;min-height:300px}
   #mapaVivo{position:absolute;inset:0;opacity:0;transition:opacity .5s;pointer-events:none}
   #mapa.vivo #mapaVivo{opacity:1;pointer-events:auto}
   .vivoChip{position:absolute;left:10px;top:10px;z-index:3;background:rgba(255,255,255,.94);border-radius:999px;padding:6px 11px;
@@ -219,7 +219,7 @@
 </div>
 
 <!-- Mapa vivo + tiempo real: capa extra; sin él la página funciona igual (subir ?v= al cambiar el .js) -->
-<script src="/js/dewan-vivo.js?v=20260914b" defer></script>
+<script src="/js/dewan-vivo.js?v=20260914c" defer></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -264,7 +264,7 @@
   var hermanos = [];   // los otros tickets del mismo carrito (?mas=), uno por local
   // Mapa vivo (js/dewan-vivo.js): historial de posiciones de la moto (rastro + velocidad real),
   // ruta por calles si Google la da, ficha pública de la moto y canal de tiempo real.
-  var historialMoto = [], mapaVivo = null, rutaInfo = null, rutaPedidaEn = 0, ixActual = 0;
+  var historialMoto = [], mapaVivo = null, rutaInfo = null, rutaPedidaEn = 0, rutaTramo = -1, ixActual = 0;
   var motoFicha = null, fuenteMoto = null, rt = null, rtOk = false, rtMotoId = null, avisoLlegando = false;
 
   function $(id) { return document.getElementById(id); }
@@ -752,10 +752,13 @@
       historial: historialMoto
     });
     $('vivoTxt').textContent = hayMoto ? (ix === 1 ? 'En vivo · va al local' : 'En vivo · viene hacia usted') : (fin ? 'Entrega' : 'Mapa');
-    // Ruta por calles: solo si la Routes API está encendida en el proyecto de Google (si no,
-    // dewan-vivo la deja de pedir 1 h y se dibuja la recta punteada). Como mucho 1 vez / 90 s.
-    if (hayMoto && Date.now() - rutaPedidaEn > 90000) {
+    // Ruta por calles (Google Routes, si está encendida; si no, recta punteada y deja de
+    // pedirla 1 h). Se pide DE NUEVO solo cuando hace falta: no hay ruta, cambió el tramo
+    // (al local → al cliente) o la moto se salió más de 180 m del camino dibujado. Así son
+    // 2-4 consultas por pedido en vez de una cada minuto y medio.
+    if (hayMoto && Date.now() - rutaPedidaEn > 60000 && necesitaRuta(ix, lm, gm)) {
       rutaPedidaEn = Date.now();
+      rutaTramo = ix;
       var obj = ix === 1 ? { lat: lr, lng: gr } : { lat: le, lng: ge };
       if (obj.lat && obj.lng) {
         DewanVivo.ruta({ lat: lm, lng: gm }, obj, KEY_MAPS).then(function (r) {
@@ -765,6 +768,10 @@
         });
       }
     } else if (!hayMoto && rutaInfo) { rutaInfo = null; mapaVivo.ruta(null); }
+  }
+  function necesitaRuta(ix, lm, gm) {
+    if (!rutaInfo || rutaTramo !== ix) return true;
+    return DewanVivo.fueraDeRuta(rutaInfo.coords, { lat: lm, lng: gm }) > 180;
   }
   function metrosTxt(m) { return m >= 1000 ? (m / 1000).toFixed(1).replace('.', ',') + ' km' : Math.max(10, Math.round(m / 10) * 10) + ' m'; }
   function etaMoto(lm, gm, le, ge) {
@@ -1024,10 +1031,13 @@
       tiempo_preparacion: 25, restaurante_aceptado: paso >= 1,
       restaurante_aceptado_at: paso >= 1 ? new Date(ahora - 9 * 60000).toISOString() : null,
       timer_lanzamiento: paso >= 1 ? new Date(ahora + 16 * 60000).toISOString() : null,
-      nombre_moto: (paso === 2 && !retiro) ? 'Carlos Andrade' : null, telefono_moto: (paso === 2 && !retiro) ? '0987654321' : null, motorizado_id: null,
+      nombre_moto: (paso === 2 && !retiro) ? 'Carlos Andrade' : null, telefono_moto: (paso === 2 && !retiro) ? '0987654321' : null,
+      motorizado_id: (paso === 2 && !retiro) ? 99 : null,
       restaurante_motivo_rechazo: paso === -1 ? 'Se nos acabaron las alitas por hoy' : null
     };
     moto = (paso === 2 && !retiro) ? { lat: -1.6668, lng: -78.6515 } : null;
+    // ficha de ejemplo: la demo tiene que verse como un pedido real (es lo que se enseña a un local)
+    motoFicha = moto ? { placa: 'HBA-0421', tipo_vehiculo: 'moto', calificacion_promedio: 4.9, total_carreras: 312 } : null;
     pintar();
   }
 
@@ -1072,9 +1082,11 @@
       restaurante_aceptado_at: fase >= 1 ? new Date(acept).toISOString() : null,
       timer_lanzamiento: fase >= 1 ? new Date(acept + min * 60000).toISOString() : null,
       nombre_moto: (fase === 2 && !retiro) ? 'Carlos Andrade' : null,
-      telefono_moto: (fase === 2 && !retiro) ? '0987654321' : null, motorizado_id: null
+      telefono_moto: (fase === 2 && !retiro) ? '0987654321' : null, motorizado_id: (fase === 2 && !retiro) ? 99 : null
     };
     moto = (fase === 2 && !retiro && o.x && o.la) ? { lat: (Number(o.la) + Number(o.x.lat)) / 2, lng: (Number(o.lo) + Number(o.x.lng)) / 2 } : null;
+    // ficha de ejemplo: la demo tiene que verse como un pedido real (es lo que se enseña a un local)
+    motoFicha = moto ? { placa: 'HBA-0421', tipo_vehiculo: 'moto', calificacion_promedio: 4.9, total_carreras: 312 } : null;
     if (o.id && !local._buscado) {
       local._buscado = true;
       sb('/restaurantes?select=logo_url,telefono&id=eq.' + encodeURIComponent(o.id) + '&limit=1').then(function (r) {
