@@ -129,7 +129,14 @@
         'color:#5E534B;background:rgba(255,255,255,.75);border-radius:6px;padding:2px 6px;pointer-events:none';
       cred.textContent = '© OpenStreetMap · OpenFreeMap';
       cont.appendChild(cred);
-      var t = setTimeout(function () { if (!ctl.listo && op.onError) op.onError('timeout'); }, 20000);
+      // En una pestaña en segundo plano el navegador congela el dibujado y el mapa no
+      // termina de cargar: ahí no es un error, solo hay que esperar a que se vea.
+      function vencer() {
+        if (ctl.listo) return;
+        if (document.hidden) { t = setTimeout(vencer, 5000); return; }
+        if (op.onError) op.onError('timeout');
+      }
+      var t = setTimeout(vencer, 20000);
       map.on('error', function (e) {
         var m = (e && e.error && e.error.message) || '';
         if (!ctl.listo && /webgl|style/i.test(m)) { clearTimeout(t); if (op.onError) op.onError(m); }
@@ -216,12 +223,16 @@
       else setLinea('dv-recta', []);
     }
     function encuadrar(pts, pitch, dur) {
-      if (pts.length === 1) { map.easeTo({ center: pts[0], zoom: 16, pitch: pitch, bearing: 0, duration: dur }); return; }
+      if (pts.length === 1) { map.easeTo({ center: pts[0], zoom: 16.2, pitch: pitch, bearing: 0, duration: dur }); return; }
+      var alto = (cont.offsetHeight || 260), padV = alto < 320 ? 26 : 52;
       var b = new maplibregl.LngLatBounds(pts[0], pts[0]);
       pts.forEach(function (p) { b.extend(p); });
-      var cam = map.cameraForBounds(b, { padding: { top: 72, bottom: 48, left: 44, right: 44 }, maxZoom: 16.8, bearing: 0 });
+      var cam = map.cameraForBounds(b, { padding: { top: padV + 20, bottom: padV, left: 38, right: 38 }, maxZoom: 16.6, bearing: 0 });
       if (!cam) return;
-      map.easeTo({ center: cam.center, zoom: cam.zoom, bearing: 0, pitch: pitch, duration: dur, essential: true });
+      // cameraForBounds calcula SIN inclinación: con la cámara inclinada todo se ve más
+      // lejos (los pines quedan diminutos) → se acerca un poco para compensar.
+      var z = Math.min(16.6, cam.zoom + (pitch >= 45 ? 0.75 : (pitch >= 25 ? 0.4 : 0)));
+      map.easeTo({ center: cam.center, zoom: z, bearing: 0, pitch: pitch, duration: dur, essential: true });
     }
     function camara(d, forzar) {
       if (!map) return;
@@ -232,10 +243,17 @@
       if (d.fase === 'moto' && d.moto) {
         if (!objetivo) { if (!primerEncuadre || forzar) { primerEncuadre = true; encuadrar([[d.moto.lng, d.moto.lat]], 55, 0); } return; }
         var par = [[d.moto.lng, d.moto.lat], [objetivo.lng, objetivo.lat]];
-        if (!primerEncuadre || forzar) { primerEncuadre = true; encuadrar(par, 55, forzar ? 900 : 0); ultimoCam = ahora; return; }
+        // Primero una vista general PLANA (se entiende de un vistazo dónde va la moto) y a
+        // los 2,5 s la cámara baja a la vista inclinada detrás de ella, como las apps grandes.
+        if (!primerEncuadre || forzar) {
+          primerEncuadre = true; ultimoCam = ahora;
+          encuadrar(par, 0, forzar ? 700 : 0);
+          setTimeout(function () { if (pendiente && !manual) { ultimoCam = 0; camara(pendiente, false); } }, 2500);
+          return;
+        }
         if (ahora - ultimoCam < 2500) return;
         ultimoCam = ahora;
-        if (metros(d.moto, objetivo) < 450) encuadrar(par, 50, 1400);
+        if (metros(d.moto, objetivo) < 450) encuadrar(par, 45, 1400);
         else map.easeTo({ center: [d.moto.lng, d.moto.lat], bearing: rumboMoto, zoom: 16.4, pitch: 60, duration: 1600, essential: true });
         return;
       }
@@ -243,7 +261,7 @@
       if (d.origen) pts.push([d.origen.lng, d.origen.lat]);
       if (d.destino) pts.push([d.destino.lng, d.destino.lat]);
       if (!pts.length) return;
-      if (!primerEncuadre || forzar || d.fase === 'fin') { primerEncuadre = true; encuadrar(pts, d.fase === 'fin' ? 30 : 45, forzar ? 900 : 0); }
+      if (!primerEncuadre || forzar || d.fase === 'fin') { primerEncuadre = true; encuadrar(pts, d.fase === 'fin' ? 0 : 30, forzar ? 900 : 0); }
     }
     return ctl;
   }
