@@ -32,6 +32,19 @@
   #mapa img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s}
   #mapa img.lista{opacity:1}
   #mapa.oculto{display:none}
+  /* mapa VIVO (MapLibre, js/dewan-vivo.js) ENCIMA de la imagen: si no carga, la imagen queda */
+  #mapa.vivo{height:44vh;min-height:250px}
+  #mapaVivo{position:absolute;inset:0;opacity:0;transition:opacity .5s;pointer-events:none}
+  #mapa.vivo #mapaVivo{opacity:1;pointer-events:auto}
+  .vivoChip{position:absolute;left:10px;top:10px;z-index:3;background:rgba(255,255,255,.94);border-radius:999px;padding:6px 11px;
+    font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(43,33,24,.18);display:none;align-items:center;gap:6px}
+  #mapa.vivo .vivoChip{display:flex}
+  .vivoChip i{width:8px;height:8px;border-radius:50%;background:#16A34A;animation:pulso 1.4s infinite}
+  .centrar{position:absolute;right:10px;bottom:30px;z-index:3;background:#fff;border:0;border-radius:999px;padding:9px 13px;
+    font:700 12.5px system-ui,-apple-system,sans-serif;color:var(--tinta);box-shadow:0 3px 12px rgba(43,33,24,.22);cursor:pointer;display:none}
+  #mapa.vivo .centrar.mostrar{display:block}
+  .llegando{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:700;margin-bottom:12px;display:none}
+  .llegando.mostrar{display:block}
 
   /* ---------- hoja ---------- */
   .hoja{background:#fff;border-radius:22px 22px 0 0;margin-top:-18px;position:relative;
@@ -70,6 +83,10 @@
     display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800}
   .moto .nom{font-size:16px;font-weight:800;line-height:1.2}
   .moto .rol{font-size:12px;color:var(--gris)}
+  .moto .txt{min-width:0}
+  .moto .dat{font-size:12px;color:var(--gris);margin-top:3px;line-height:1.35}
+  .moto .badge{display:inline-block;font-size:10.5px;font-weight:800;color:#15803D;background:#ECFDF5;border-radius:999px;padding:2px 7px;margin-left:5px;vertical-align:1px}
+  .av img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
   .acc{display:flex;gap:8px;margin-left:auto}
   .ico{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
     font-size:19px;text-decoration:none}
@@ -138,7 +155,11 @@
   <div class="cod" id="cod">…</div>
 </div>
 
-<div id="mapa"><a id="mapaLink" target="_blank" rel="noopener"><img id="mapaImg" alt="Mapa"></a></div>
+<div id="mapa"><a id="mapaLink" target="_blank" rel="noopener"><img id="mapaImg" alt="Mapa"></a>
+  <div id="mapaVivo"></div>
+  <div class="vivoChip"><i></i><span id="vivoTxt">En vivo</span></div>
+  <button type="button" class="centrar" id="btnCentrar">📍 Centrar</button>
+</div>
 
 <div class="hoja" id="hoja">
   <div class="asa"></div>
@@ -164,6 +185,7 @@
         <span id="p2">En camino</span><span id="p3">Entregado</span>
       </div>
       <div id="reloj"></div>
+      <div class="llegando" id="llegando">🛵 ¡Su motorizado está llegando! Ya puede salir a recibirlo.</div>
     </div>
 
     <!-- cancelado -->
@@ -196,6 +218,8 @@
   </div>
 </div>
 
+<!-- Mapa vivo + tiempo real: capa extra; sin él la página funciona igual (subir ?v= al cambiar el .js) -->
+<script src="/js/dewan-vivo.js?v=20260914" defer></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -238,6 +262,10 @@
   // (en las demos NO se congela: "Volver al inicio" tiene que seguir funcionando)
   var finalizada = false, timerRefresco = null;
   var hermanos = [];   // los otros tickets del mismo carrito (?mas=), uno por local
+  // Mapa vivo (js/dewan-vivo.js): historial de posiciones de la moto (rastro + velocidad real),
+  // ruta por calles si Google la da, ficha pública de la moto y canal de tiempo real.
+  var historialMoto = [], mapaVivo = null, rutaInfo = null, rutaPedidaEn = 0, ixActual = 0;
+  var motoFicha = null, fuenteMoto = null, rt = null, rtOk = false, rtMotoId = null, avisoLlegando = false;
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
@@ -343,6 +371,7 @@
   function pintar() {
     var ix = PASO[pedido.estado_pedido];
     if (ix == null) ix = pedido.restaurante_aceptado ? 1 : 0;
+    ixActual = ix;
 
     $('cod').textContent = 'Pedido ' + numeroPedido();
     $('cargando').classList.add('oculto');
@@ -396,6 +425,7 @@
       }
       $('etaTxt').textContent = eta(ix);
       pintarReloj(ix);
+      pintarLlegando(ix);
     }
 
     pintarMoto(ix);
@@ -421,6 +451,7 @@
   function cerrar() {
     finalizada = true;
     if (timerRefresco) { clearInterval(timerRefresco); timerRefresco = null; }
+    if (rt) { rt.cerrar(); rt = null; }
   }
 
   // hora estimada: aceptado + minutos de preparación (timer_lanzamiento ya trae esa hora)
@@ -444,9 +475,10 @@
       var lm = moto && num(moto.lat), gm = moto && num(moto.lng);
       var le = num(pedido.ubicacion_lat), ge = num(pedido.ubicacion_lng);
       if (lm && gm && le && ge) {
-        var d = km(lm, gm, le, ge) * 1.3;
-        var min = Math.max(2, Math.round((d / 18) * 60));
-        return '· llega en ~' + min + ' min';
+        // Con la velocidad REAL de la moto (historial) y la ruta por calles si Google la dio;
+        // sin eso, la fórmula de siempre (recta × 1.3 a 18 km/h).
+        var e2 = etaMoto(lm, gm, le, ge);
+        return '· llega en ~' + e2.min + ' min' + (e2.metros < 1500 ? ' · a ' + metrosTxt(e2.metros) : '');
       }
       if (pedido.duracion_minutos) return '· llega en ~' + pedido.duracion_minutos + ' min';
     }
@@ -480,10 +512,23 @@
     }
     var tel = String(pedido.telefono_moto || '').replace(/[^0-9]/g, '');
     var ini = nom.trim().charAt(0).toUpperCase();
+    // Ficha de confianza: foto, placa, estrellas y entregas (motorizados_publico / motorizados).
+    // Cada dato sale solo si existe: sin foto → inicial; sin placa → nada.
+    var f = motoFicha || {};
+    var esDW = esDewan() || !!pedido.motorizado_id;
+    var avatar = f.foto_perfil_url
+      ? '<img src="' + esc(f.foto_perfil_url) + '" alt="" onerror="this.parentNode.textContent=\'' + esc(ini) + '\'">'
+      : esc(ini);
+    var datos = [];
+    if (f.tipo_vehiculo) datos.push({ moto: 'Moto', auto: 'Auto', bicicleta: 'Bici' }[String(f.tipo_vehiculo).toLowerCase()] || f.tipo_vehiculo);
+    if (f.placa) datos.push('placa ' + esc(String(f.placa).toUpperCase()));
+    if (Number(f.calificacion_promedio) > 0) datos.push('⭐ ' + Number(f.calificacion_promedio).toFixed(1).replace('.', ','));
+    if (Number(f.total_carreras) >= 20) datos.push(Number(f.total_carreras) + ' entregas');
     cont.innerHTML =
-      '<div class="moto"><div class="av">' + esc(ini) + '</div>' +
-      '<div><div class="nom">' + esc(nom.split(' ').slice(0, 2).join(' ')) + '</div>' +
-      '<div class="rol">' + ((esDewan() || (esSistema && pedido.motorizado_id)) ? 'Su motorizado DEWAN 🛵' : 'Su repartidor 🛵') + '</div></div>' +
+      '<div class="moto"><div class="av">' + avatar + '</div>' +
+      '<div class="txt"><div class="nom">' + esc(nom.split(' ').slice(0, 2).join(' ')) + (esDW ? '<span class="badge">✓ Verificado</span>' : '') + '</div>' +
+      '<div class="rol">' + ((esDewan() || (esSistema && pedido.motorizado_id)) ? 'Su motorizado DEWAN 🛵' : 'Su repartidor 🛵') + '</div>' +
+      (datos.length ? '<div class="dat">' + datos.join(' · ') + '</div>' : '') + '</div>' +
       (tel ? '<div class="acc">' +
         '<a class="ico tel" href="tel:' + esc(tel) + '" aria-label="Llamar">📞</a>' +
         '<a class="ico wa" href="https://wa.me/' + esc(telInt(tel)) + '" aria-label="WhatsApp">💬</a>' +
@@ -670,14 +715,124 @@
     else if (lr && gr && le && ge) u += '&path=' + encodeURIComponent('color:0xDC2D22AA|weight:4|' + lr + ',' + gr + '|' + le + ',' + ge);
     else { var la = le || lr, ga = ge || gr; u += '&zoom=16&center=' + la + ',' + ga; }
     u += '&key=' + KEY_MAPS;
+    pintarMapaVivo(ix, lr, gr, le, ge, lm, gm, retiro);
     var img = $('mapaImg');
     if (img.getAttribute('data-u') === u) return;
+    // Con el mapa vivo andando, la imagen de Google ya no se refresca (queda de respaldo)
+    if (mapaVivo && mapaVivo.listo && img.classList.contains('lista')) return;
     img.setAttribute('data-u', u);
     var pre = new Image();
     pre.onload = function () { img.src = u; img.classList.add('lista'); };
     pre.src = u;
     var punto = retiro ? (lr + ',' + gr) : ((lm && gm) ? (lm + ',' + gm) : ((le && ge) ? (le + ',' + ge) : (lr + ',' + gr)));
     $('mapaLink').href = 'https://maps.google.com/?q=' + punto;
+  }
+
+  // ---------- mapa VIVO (MapLibre) encima de la imagen ----------
+  // Todo pasa por js/dewan-vivo.js (carga diferida). Si no está, no hay WebGL o no cargó
+  // el estilo, la imagen de Google de arriba sigue siendo el mapa: la página no depende de esto.
+  function pintarMapaVivo(ix, lr, gr, le, ge, lm, gm, retiro) {
+    if (!window.DewanVivo || !$('mapaVivo')) return;
+    if (!mapaVivo) {
+      mapaVivo = DewanVivo.mapa($('mapaVivo'), {
+        onListo: function () { $('mapa').classList.add('vivo'); },
+        onError: function () { $('mapa').classList.remove('vivo'); }
+      });
+      mapaVivo.onManual = function (m) { $('btnCentrar').classList.toggle('mostrar', !!m); };
+      $('btnCentrar').onclick = function () { mapaVivo.centrar(); };
+    }
+    var fin = ix === -1 || ix >= 3;
+    var hayMoto = !retiro && !!(lm && gm) && ix >= 1 && ix <= 2;
+    mapaVivo.actualizar({
+      origen: (lr && gr) ? { lat: lr, lng: gr, etq: esPaquete() ? 'R' : 'L' } : null,
+      destino: (!retiro && le && ge) ? { lat: le, lng: ge } : null,
+      moto: hayMoto ? { lat: lm, lng: gm } : null,
+      hacia: ix === 1 ? 'origen' : 'destino',
+      fase: fin ? 'fin' : (hayMoto ? 'moto' : 'espera'),
+      historial: historialMoto
+    });
+    $('vivoTxt').textContent = hayMoto ? (ix === 1 ? 'En vivo · va al local' : 'En vivo · viene hacia usted') : (fin ? 'Entrega' : 'Mapa');
+    // Ruta por calles: solo si la Routes API está encendida en el proyecto de Google (si no,
+    // dewan-vivo la deja de pedir 1 h y se dibuja la recta punteada). Como mucho 1 vez / 90 s.
+    if (hayMoto && Date.now() - rutaPedidaEn > 90000) {
+      rutaPedidaEn = Date.now();
+      var obj = ix === 1 ? { lat: lr, lng: gr } : { lat: le, lng: ge };
+      if (obj.lat && obj.lng) {
+        DewanVivo.ruta({ lat: lm, lng: gm }, obj, KEY_MAPS).then(function (r) {
+          rutaInfo = r;
+          if (mapaVivo) mapaVivo.ruta(r ? r.coords : null);
+          if (r && pedido && !finalizada) { $('etaTxt').textContent = eta(ixActual); pintarLlegando(ixActual); }
+        });
+      }
+    } else if (!hayMoto && rutaInfo) { rutaInfo = null; mapaVivo.ruta(null); }
+  }
+  function metrosTxt(m) { return m >= 1000 ? (m / 1000).toFixed(1).replace('.', ',') + ' km' : Math.max(10, Math.round(m / 10) * 10) + ' m'; }
+  function etaMoto(lm, gm, le, ge) {
+    if (window.DewanVivo) {
+      return DewanVivo.eta({ moto: { lat: lm, lng: gm }, destino: { lat: le, lng: ge }, historial: historialMoto,
+        rutaMetros: rutaInfo && rutaInfo.metros, rutaSegundos: rutaInfo && rutaInfo.segundos });
+    }
+    var d = km(lm, gm, le, ge) * 1.3;
+    return { metros: Math.round(d * 1000), min: Math.max(2, Math.round((d / 18) * 60)), llegando: d < 0.15 };
+  }
+  // A menos de 150 m (o cuando la app dice "llegado"): banner + vibración una sola vez
+  function pintarLlegando(ix) {
+    var el = $('llegando');
+    if (!el) return;
+    var lm = moto && num(moto.lat), gm = moto && num(moto.lng), le = num(pedido.ubicacion_lat), ge = num(pedido.ubicacion_lng);
+    var si = ix === 2 && !esRetiro() && pedido.estado_pedido !== 'llegado' && !!(lm && gm && le && ge) && etaMoto(lm, gm, le, ge).llegando;
+    el.classList.toggle('mostrar', !!si);
+    if (si && !avisoLlegando) {
+      avisoLlegando = true;
+      try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+      document.title = '🛵 ¡Está llegando! · ' + document.title.replace(/^🛵 ¡Está llegando! · /, '');
+    }
+  }
+  // Posición + ficha de la moto. Primero la vista pública (solo lo que el cliente puede ver);
+  // si no existe todavía, la tabla como siempre. Se recuerda cuál funcionó.
+  var CAMPOS_MOTO = 'ubicacion_lat,ubicacion_lng,last_seen_at,updated_at,foto_perfil_url,placa,calificacion_promedio,total_carreras,tipo_vehiculo';
+  function cargarMoto(id) {
+    var fuente = fuenteMoto || 'motorizados_publico';
+    return sb('/' + fuente + '?select=' + CAMPOS_MOTO + '&id=eq.' + id + '&limit=1').then(function (mm) {
+      if (mm && mm[0]) { fuenteMoto = fuente; return mm; }
+      if (fuente === 'motorizados_publico') {
+        return sb('/motorizados?select=' + CAMPOS_MOTO + '&id=eq.' + id + '&limit=1').then(function (m2) { if (m2 && m2[0]) fuenteMoto = 'motorizados'; return m2; });
+      }
+      return mm;
+    }).then(function (mm) {
+      moto = null;
+      if (mm && mm[0]) recibirMoto(mm[0]);
+    });
+  }
+  function recibirMoto(m) {
+    motoFicha = m;
+    var edad = function (x) { return x ? (Date.now() - new Date(x).getTime()) : Infinity; };
+    var lat = num(m.ubicacion_lat), lng = num(m.ubicacion_lng);
+    if (lat && lng && Math.min(edad(m.last_seen_at), edad(m.updated_at)) < 10 * 60 * 1000) {
+      moto = { lat: lat, lng: lng };
+      var u = historialMoto[historialMoto.length - 1];
+      if (!u || km(u.lat, u.lng, lat, lng) * 1000 > 3) historialMoto.push({ lat: lat, lng: lng, t: Date.now() });
+      if (historialMoto.length > 80) historialMoto.shift();
+    } else moto = null;
+  }
+  // ---------- tiempo real: Supabase avisa cuando cambia el pedido o se mueve la moto ----------
+  // Mientras no llegue un evento de verdad se sigue preguntando cada 10 s (la tabla puede
+  // no estar publicada); cuando llegan, se baja a 30 s de respaldo.
+  function conectarRT() {
+    if (rt || !window.DewanVivo || demo || esDemoD || !pedido || !pedido.id || finalizada) return;
+    var canales = [{ tabla: TABLA, valor: pedido.id, cb: function () { if (!finalizada) cargar(); } }];
+    if (pedido.motorizado_id && !esRetiro()) {
+      canales.push({ tabla: 'motorizados', valor: pedido.motorizado_id, cb: function (rec) {
+        if (finalizada || PASO[pedido.estado_pedido] > 2) return;
+        recibirMoto(rec); pintar();
+      } });
+    }
+    rtMotoId = pedido.motorizado_id || null;
+    rt = DewanVivo.realtime({ url: SB.replace('/rest/v1', ''), key: KEY, canales: canales, onEstado: function (ok) { rtOk = ok; ajustarRefresco(); } });
+  }
+  function ajustarRefresco() {
+    if (timerRefresco) clearInterval(timerRefresco);
+    timerRefresco = finalizada ? null : setInterval(cargar, rtOk ? 30000 : 10000);
   }
 
   // ---------- opinión del cliente (webhook calificar-pedido v3) ----------
@@ -843,15 +998,11 @@
       // (antes seguia saliendo en el mapa mientras su GPS estuviera fresco, aunque el
       // cliente abriera el link dias despues y la moto fuera en OTRA carrera).
       if (p.motorizado_id && !esRetiro() && PASO[p.estado_pedido] >= 1 && PASO[p.estado_pedido] <= 2) {
-        tareas.push(sb('/motorizados?select=ubicacion_lat,ubicacion_lng,last_seen_at,updated_at&id=eq.' + p.motorizado_id + '&limit=1')
-          .then(function (mm) {
-            moto = null;
-            if (!mm || !mm[0]) return;
-            var edad = function (x) { return x ? (Date.now() - new Date(x).getTime()) : Infinity; };
-            if (Math.min(edad(mm[0].last_seen_at), edad(mm[0].updated_at)) < 10 * 60 * 1000) moto = { lat: mm[0].ubicacion_lat, lng: mm[0].ubicacion_lng };
-          }));
+        tareas.push(cargarMoto(p.motorizado_id));
       } else moto = null;
-      Promise.all(tareas).then(pintar, pintar);
+      // cambió la moto asignada → el canal de tiempo real se rehace con la nueva
+      if (rt && rtMotoId !== (p.motorizado_id || null)) { rt.cerrar(); rt = null; }
+      Promise.all(tareas).then(pintar, pintar).then(conectarRT);
     });
   }
 
@@ -943,6 +1094,8 @@
 
   cargar();
   timerRefresco = setInterval(cargar, 10000);
+  // dewan-vivo.js carga diferido: cuando está, se enciende el mapa vivo y el tiempo real
+  window.addEventListener('dewanvivo', function () { if (pedido && !finalizada) { pintarMapa(ixActual); conectarRT(); } });
   setInterval(function () { if (pedido && !demo && PASO[pedido.estado_pedido] === 1) pintarReloj(1); }, 30000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && !finalizada) cargar(); });
 })();
