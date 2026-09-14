@@ -432,7 +432,9 @@
 
   function eta(ix) {
     if (pedido.estado_pedido === 'llegado') return '';
-    if (ix === 1 && pedido.estado_pedido === 'preparando') {
+    // Todo el tramo "en cocina" muestra la hora que puso el local (antes solo en `preparando`:
+    // en cuanto se asignaba moto, el tiempo desaparecía aunque el pedido siguiera en cocina).
+    if (ix === 1 && !esPaquete()) {
       var h = horaLista();
       return h ? '· listo aprox. a las ' + hora(h) : (pedido.tiempo_preparacion ? '· ' + pedido.tiempo_preparacion + ' min de preparación' : '');
     }
@@ -451,7 +453,7 @@
 
   function pintarReloj(ix) {
     var cont = $('reloj');
-    if (ix !== 1 || pedido.estado_pedido !== 'preparando') { cont.innerHTML = ''; return; }
+    if (ix !== 1 || esPaquete()) { cont.innerHTML = ''; return; }
     var fin = horaLista(), ini = pedido.restaurante_aceptado_at ? new Date(pedido.restaurante_aceptado_at) : null;
     if (!fin) { cont.innerHTML = ''; return; }
     var ahora = Date.now(), total = ini ? (fin - ini) : Number(pedido.tiempo_preparacion || 0) * 60000;
@@ -593,6 +595,7 @@
       var ix = PASO[p.estado_pedido];
       if (ix == null) ix = p.restaurante_aceptado ? 1 : 0;
       var est = ix === -1 ? '😔 Cancelado' : ix >= 3 ? '✅ Entregado' : ix === 2 ? (esRetiro() ? '🏪 Listo' : '🛵 En camino') : ix === 1 ? '👨‍🍳 En cocina' : '🕐 Recibido';
+      if (ix === 1 && p.timer_lanzamiento) est += ' · listo ~' + hora(new Date(p.timer_lanzamiento));
       var barra = '<div class="barra" style="margin:6px 0 2px">';
       for (var i = 0; i < 4; i++) barra += '<div class="tramo' + (ix >= 3 || i < ix ? ' on' : (i === ix ? ' now' : '')) + '"><i></i></div>';
       barra += '</div>';
@@ -865,7 +868,7 @@
 
   cargar();
   timerRefresco = setInterval(cargar, 10000);
-  setInterval(function () { if (pedido && !demo && pedido.estado_pedido === 'preparando') pintarReloj(1); }, 30000);
+  setInterval(function () { if (pedido && !demo && PASO[pedido.estado_pedido] === 1) pintarReloj(1); }, 30000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden && !finalizada) cargar(); });
 })();
 </script>
