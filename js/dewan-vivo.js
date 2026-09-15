@@ -57,6 +57,74 @@
     js.onerror = function () { avisar(false); };
     document.head.appendChild(js);
   }
+  // ---------- descargas con REINTENTO ----------
+  // Visto en producción: el servidor de mapas cierra conexiones de vez en cuando
+  // (ERR_CONNECTION_CLOSED en un tile o un glifo). MapLibre NO reintenta y el mapa se queda
+  // a medio cargar para siempre → se veía la foto de Google y "la moto no se mueve".
+  // Todo lo que baja el mapa (estilo, tilejson, tiles, sprites, glifos) pasa por aquí.
+  function fetchReintentos(url, intentos) {
+    intentos = intentos || 3;
+    return fetch(url, { cache: 'default' }).then(function (r) {
+      if (r.status >= 500 && intentos > 1) throw new Error('HTTP ' + r.status);
+      return r;
+    }).catch(function (e) {
+      if (intentos <= 1) throw e;
+      var espera = 700 * (4 - intentos);
+      return new Promise(function (res) { setTimeout(res, espera); }).then(function () { return fetchReintentos(url, intentos - 1); });
+    });
+  }
+  var protocoloListo = false;
+  function registrarProtocolo() {
+    if (protocoloListo || !window.maplibregl || !maplibregl.addProtocol) return;
+    protocoloListo = true;
+    function bajar(params) {
+      var url = String(params.url).replace(/^dv:\/\//, '');
+      return fetchReintentos(url).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + url);
+        if (params.type === 'json') return r.json();
+        if (params.type === 'string') return r.text();
+        return r.arrayBuffer();
+      });
+    }
+    var v = String(maplibregl.version || '');
+    if (/^[0-3]\./.test(v)) {
+      // MapLibre 3: (params, callback) → {cancel}
+      maplibregl.addProtocol('dv', function (params, cb) {
+        bajar(params).then(function (d) { cb(null, d, null, null); }, function (e) { cb(e); });
+        return { cancel: function () {} };
+      });
+    } else {
+      // MapLibre 4+: (params, abortController) → Promise<{data}>
+      maplibregl.addProtocol('dv', function (params) {
+        return bajar(params).then(function (d) { return { data: d }; });
+      });
+    }
+  }
+  // Estilo con TODAS sus descargas pasando por dv:// (el tilejson se resuelve aquí para
+  // que también los tiles queden cubiertos).
+  function estiloConReintentos() {
+    return fetchReintentos(ESTILO).then(function (r) { return r.json(); }).then(function (s) {
+      var pre = function (u) { return /^https?:/.test(u) ? 'dv://' + u : u; };
+      if (s.sprite) s.sprite = pre(s.sprite);
+      if (s.glyphs) s.glyphs = pre(s.glyphs);
+      var tareas = [];
+      Object.keys(s.sources || {}).forEach(function (k) {
+        var src = s.sources[k];
+        if (src.tiles) { src.tiles = src.tiles.map(pre); return; }
+        if (src.url && /^https?:/.test(src.url)) {
+          tareas.push(fetchReintentos(src.url).then(function (r) { return r.json(); }).then(function (tj) {
+            src.tiles = (tj.tiles || []).map(pre);
+            if (tj.minzoom != null) src.minzoom = tj.minzoom;
+            if (tj.maxzoom != null) src.maxzoom = tj.maxzoom;
+            if (tj.bounds) src.bounds = tj.bounds;
+            if (tj.attribution) src.attribution = tj.attribution;
+            delete src.url;
+          }));
+        }
+      });
+      return Promise.all(tareas).then(function () { return s; });
+    });
+  }
   // MapLibre posiciona el marcador con `transform` sobre el elemento → lo que gira o se
   // dibuja va en un hijo, nunca en el elemento del marcador.
   function pin(etq, color) {
@@ -116,30 +184,51 @@
       crear();
     });
 
+    var intentosMapa = 0, cred = null;
     function crear() {
-      try {
-        map = new maplibregl.Map({
-          container: cont, style: ESTILO, center: [-78.6543, -1.6636], zoom: 14.5, pitch: 55, bearing: 0,
-          maxPitch: 65, pitchWithRotate: false, touchPitch: false, fadeDuration: 0, attributionControl: false
-        });
-      } catch (e) { if (op.onError) op.onError('crear'); return; }
-      // Créditos obligatorios del mapa (OpenStreetMap / OpenFreeMap), chiquitos y sin caja abierta
-      var cred = document.createElement('div');
-      cred.style.cssText = 'position:absolute;right:6px;bottom:4px;z-index:2;font:500 9.5px/1.2 system-ui,-apple-system,sans-serif;' +
-        'color:#5E534B;background:rgba(255,255,255,.75);border-radius:6px;padding:2px 6px;pointer-events:none';
-      cred.textContent = '© OpenStreetMap · OpenFreeMap';
-      cont.appendChild(cred);
+      intentosMapa++;
+      registrarProtocolo();
+      ctl.errores = ctl.errores || []; window.DewanVivo._ctl = ctl;
+      estiloConReintentos().then(function (estilo) {
+        if (map) { try { map.remove(); } catch (e) {} map = null; }
+        mkOrigen = mkDestino = mkMoto = null; posMoto = null; primerEncuadre = false;
+        try {
+          map = new maplibregl.Map({
+            container: cont, style: estilo, center: [-78.6543, -1.6636], zoom: 14.5, pitch: 55, bearing: 0,
+            maxPitch: 65, pitchWithRotate: false, touchPitch: false, fadeDuration: 0, attributionControl: false
+          });
+        } catch (e) { if (op.onError) op.onError('crear'); return; }
+        ctl._map = map;
+        if (!cred) {
+          // Créditos obligatorios del mapa (OpenStreetMap / OpenFreeMap), chiquitos y sin caja abierta
+          cred = document.createElement('div');
+          cred.style.cssText = 'position:absolute;right:6px;bottom:4px;z-index:2;font:500 9.5px/1.2 system-ui,-apple-system,sans-serif;' +
+            'color:#5E534B;background:rgba(255,255,255,.75);border-radius:6px;padding:2px 6px;pointer-events:none';
+          cred.textContent = '© OpenStreetMap · OpenFreeMap';
+          cont.appendChild(cred);
+        }
+        armar();
+      }).catch(function (e) {
+        ctl.errores.push('estilo: ' + String(e && e.message || e).slice(0, 120));
+        if (op.onError) op.onError('estilo');
+      });
+    }
+    function armar() {
       // En una pestaña en segundo plano el navegador congela el dibujado y el mapa no
       // termina de cargar: ahí no es un error, solo hay que esperar a que se vea.
+      // Con la pestaña a la vista y 20 s sin cargar: se REHACE el mapa una vez (conexiones
+      // nuevas); si tampoco, se avisa y queda la foto de Google.
       function vencer() {
         if (ctl.listo) return;
         if (document.hidden) { t = setTimeout(vencer, 5000); return; }
+        if (intentosMapa < 2) { ctl.errores.push('sin cargar en 20 s: se rehace'); crear(); return; }
         if (op.onError) op.onError('timeout');
       }
       var t = setTimeout(vencer, 20000);
       map.on('error', function (e) {
         var m = (e && e.error && e.error.message) || '';
-        if (!ctl.listo && /webgl|style/i.test(m)) { clearTimeout(t); if (op.onError) op.onError(m); }
+        if (ctl.errores.length < 20) ctl.errores.push(m.slice(0, 160));
+        if (!ctl.listo && /webgl/i.test(m)) { clearTimeout(t); if (op.onError) op.onError(m); }
       });
       map.on('load', function () {
         clearTimeout(t);
