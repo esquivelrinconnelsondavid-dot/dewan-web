@@ -29,6 +29,9 @@
     font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(43,33,24,.18);display:none;align-items:center;gap:6px}
   #mapa.vivo .vivoChip{display:flex}
   .vivoChip i{width:8px;height:8px;border-radius:50%;background:#16A34A;animation:pulso 1.4s infinite}
+  /* el GPS del motorizado dejó de llegar: se dice, no se disimula */
+  .vivoChip.viejo{color:#92400E}
+  .vivoChip.viejo i{background:#F59E0B;animation:none}
   .centrar{position:absolute;right:12px;bottom:14px;z-index:3;background:#fff;border:0;border-radius:999px;padding:9px 13px;
     font:700 12.5px system-ui,-apple-system,sans-serif;color:var(--tinta);box-shadow:0 3px 12px rgba(43,33,24,.22);cursor:pointer;display:none}
   #mapa.vivo .centrar.mostrar{display:block}
@@ -188,7 +191,7 @@
 </div>
 
 <!-- Mapa vivo + tiempo real: capa extra; sin él la página funciona igual (subir ?v= al cambiar el .js) -->
-<script src="/js/dewan-vivo.js?v=20260914c" defer></script>
+<script src="/js/dewan-vivo.js?v=20260914d" defer></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -301,7 +304,12 @@
       fase: fin ? 'fin' : (hayMoto ? 'moto' : 'espera'),
       historial: historialMoto
     });
-    $('vivoTxt').textContent = hayMoto ? (ix <= 1 ? 'En vivo · va a recoger' : 'En vivo · viene hacia usted') : (fin ? 'Entrega' : 'Mapa');
+    var edadMin = hayMoto && pedido && pedido.moto_edad != null ? Math.round(pedido.moto_edad / 60000) : 0;
+    var quieta = hayMoto && edadMin >= 2;
+    document.querySelector('.vivoChip').classList.toggle('viejo', quieta);
+    $('vivoTxt').textContent = !hayMoto ? (fin ? 'Entrega' : 'Mapa')
+      : quieta ? 'Última ubicación hace ' + edadMin + ' min'
+      : (ix <= 1 ? 'En vivo · va a recoger' : 'En vivo · viene hacia usted');
     // Ruta por calles (Google Routes, si está encendida; si no, recta punteada y deja de
     // pedirla 1 h). Se pide DE NUEVO solo cuando hace falta: no hay ruta, cambió el tramo
     // (ir a recoger → ir a entregar) o la moto se salió más de 180 m del camino dibujado.
@@ -361,8 +369,10 @@
     // (last_seen_at). Vale el mas reciente de los dos.
     var edad = function (x) { return x ? (Date.now() - new Date(x).getTime()) : Infinity; };
     var lat = num(m.ubicacion_lat), lng = num(m.ubicacion_lng);
-    if (lat && lng && Math.min(edad(m.last_seen_at), edad(m.updated_at)) < 10 * 60 * 1000) {
-      pedido.moto_lat = lat; pedido.moto_lng = lng;
+    var vieja = Math.min(edad(m.last_seen_at), edad(m.updated_at));
+    if (lat && lng && vieja < 10 * 60 * 1000) {
+      // hace cuánto se movió el GPS: si la app dejó de reportar, se avisa en el chip
+      pedido.moto_lat = lat; pedido.moto_lng = lng; pedido.moto_edad = vieja;
       var u = historialMoto[historialMoto.length - 1];
       if (!u || km(u.lat, u.lng, lat, lng) * 1000 > 3) historialMoto.push({ lat: lat, lng: lng, t: Date.now() });
       if (historialMoto.length > 80) historialMoto.shift();
