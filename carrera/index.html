@@ -205,7 +205,7 @@
 </div>
 
 <!-- Mapa vivo + tiempo real: capa extra; sin él la página funciona igual (subir ?v= al cambiar el .js) -->
-<script src="/js/dewan-vivo.js?v=20260914h" defer></script>
+<script src="/js/dewan-vivo.js?v=20260914i" defer></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -312,8 +312,9 @@
     var lm = pedido && num(pedido.moto_lat), gm = pedido && num(pedido.moto_lng);
     var fin = ix === -1 || ix >= 3, hayMoto = !!(lm && gm) && !fin;
     mapaVivo.actualizar({
-      origen: (lr && gr) ? { lat: lr, lng: gr, etq: 'R' } : null,
-      destino: (le && ge) ? { lat: le, lng: ge } : null,
+      // pines con dibujo: negocio / caja / carrito según el tipo de carrera, casita en la entrega
+      origen: (lr && gr) ? { lat: lr, lng: gr, tipo: carrera.tipo === 'compra' ? 'compra' : (carrera.tipo === 'encomienda' ? 'recogida' : 'local') } : null,
+      destino: (le && ge) ? { lat: le, lng: ge, tipo: 'casa' } : null,
       moto: hayMoto ? { lat: lm, lng: gm } : null,
       hacia: ix <= 1 ? 'origen' : 'destino',
       fase: fin ? 'fin' : (hayMoto ? 'moto' : 'espera'),

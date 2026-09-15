@@ -139,12 +139,80 @@
     el.appendChild(s); w.appendChild(el);
     return w;
   }
+  // Pines con dibujo: casita para la entrega, negocio (con su LOGO si lo tiene) para el
+  // local, caja para una recogida, carrito para una compra. Todo SVG: se ve igual en
+  // cualquier teléfono (los emojis cambian de un celular a otro).
+  var GLIFOS = {
+    casa: '<path d="M12 3 3 11h2.2v9h5.3v-6h3v6h5.3v-9H21z"/>',
+    local: '<path d="M3.5 4h17l1.5 4.5c0 1.4-1 2.5-2.4 2.5-1 0-1.8-.5-2.2-1.3-.4.8-1.2 1.3-2.2 1.3s-1.8-.5-2.2-1.3c-.4.8-1.2 1.3-2.2 1.3s-1.8-.5-2.2-1.3C6.2 10.5 5.4 11 4.4 11 3 11 2 9.9 2 8.5zM4 12.3c.7.4 1.6.5 2.4.2.7.4 1.6.5 2.4.2.8.4 1.7.4 2.4 0 .8.4 1.7.4 2.4 0 .8.4 1.7.4 2.4 0 .8.4 1.7.4 2.4 0 .7.4 1.6.5 2.4.2V20H4zm6 2.7v5h4v-5z"/>',
+    recogida: '<path d="M12 2 3 6.5v11L12 22l9-4.5v-11zm0 2.3 6.2 3.1L12 10.5 5.8 7.4zM5 9l6 3v7.4l-6-3zm14 0v7.4l-6 3V12z"/>',
+    compra: '<path d="M2 3h3.2l.7 3H22l-2.6 8H8.1l.4 2H19v2H6.9L4.2 5H2zm5.9 5 1.1 5h8.2l1.6-5z"/><circle cx="9" cy="20" r="1.8"/><circle cx="17" cy="20" r="1.8"/>'
+  };
+  function pinIcono(tipo, logo) {
+    var color = tipo === 'casa' ? '#DC2D22' : '#2B2118';
+    var w = document.createElement('div');
+    w.style.cssText = 'width:40px;height:44px;position:relative';
+    var cola = document.createElement('div');
+    cola.style.cssText = 'position:absolute;left:14px;top:29px;width:12px;height:12px;background:' + color + ';transform:rotate(45deg);border-radius:2px';
+    var bola = document.createElement('div');
+    bola.style.cssText = 'position:absolute;left:3px;top:0;width:34px;height:34px;border-radius:50%;background:#fff;border:3px solid ' + color +
+      ';box-shadow:0 2px 6px rgba(0,0,0,.35);overflow:hidden;display:flex;align-items:center;justify-content:center';
+    function glifo() { bola.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="' + color + '">' + (GLIFOS[tipo] || GLIFOS.local) + '</svg>'; }
+    if (logo) {
+      var img = document.createElement('img');
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
+      img.alt = ''; img.onerror = glifo; img.src = logo;
+      bola.appendChild(img);
+    } else glifo();
+    w.appendChild(cola); w.appendChild(bola);
+    return w;
+  }
+  // ---------- geometría sobre la ruta (para que la moto siga la CALLE) ----------
+  function acumular(coords) {
+    var a = [0];
+    for (var i = 1; i < coords.length; i++) a.push(a[i - 1] + metros({ lng: coords[i - 1][0], lat: coords[i - 1][1] }, { lng: coords[i][0], lat: coords[i][1] }));
+    return a;
+  }
+  // Punto de la ruta más cercano a p → a cuántos metros del inicio queda y a qué distancia está
+  function proyectar(coords, acum, p) {
+    var mejor = { m: 0, dist: Infinity }, k = Math.cos(p.lat * Math.PI / 180);
+    for (var i = 1; i < coords.length; i++) {
+      var ax = coords[i - 1][0], ay = coords[i - 1][1], bx = coords[i][0], by = coords[i][1];
+      var vx = (bx - ax) * k, vy = by - ay, wx = (p.lng - ax) * k, wy = p.lat - ay;
+      var L = vx * vx + vy * vy, t = L > 0 ? Math.max(0, Math.min(1, (wx * vx + wy * vy) / L)) : 0;
+      var q = { lng: ax + (bx - ax) * t, lat: ay + (by - ay) * t }, d = metros(p, q);
+      if (d < mejor.dist) mejor = { m: acum[i - 1] + (acum[i] - acum[i - 1]) * t, dist: d };
+    }
+    return mejor;
+  }
+  function puntoEnRuta(coords, acum, m) {
+    var n = coords.length, L = acum[n - 1];
+    if (m <= 0) return { p: coords[0], b: rumbo({ lng: coords[0][0], lat: coords[0][1] }, { lng: coords[1][0], lat: coords[1][1] }) };
+    if (m >= L) return { p: coords[n - 1], b: rumbo({ lng: coords[n - 2][0], lat: coords[n - 2][1] }, { lng: coords[n - 1][0], lat: coords[n - 1][1] }) };
+    var i = 1; while (acum[i] < m) i++;
+    var f = (m - acum[i - 1]) / ((acum[i] - acum[i - 1]) || 1), a = coords[i - 1], b = coords[i];
+    return { p: [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], b: rumbo({ lng: a[0], lat: a[1] }, { lng: b[0], lat: b[1] }) };
+  }
+  function girarSuave(actual, objetivo, f) {
+    var d = ((objetivo - actual + 540) % 360) - 180;
+    return (actual + d * f + 360) % 360;
+  }
+  // Moto vista desde arriba (apunta al norte): ruedas, carrocería roja, motorizado con
+  // casco y la caja de reparto atrás. Gira con el rumbo real.
   function iconoMoto() {
     var w = document.createElement('div');
-    w.style.cssText = 'width:26px;height:40px';
-    w.innerHTML = '<svg viewBox="0 0 40 60" width="26" height="40" style="display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))">' +
-      '<rect x="13" y="3" width="14" height="54" rx="7" fill="#DC2D22"/><rect x="7" y="44" width="26" height="7" rx="3.5" fill="#2B2118"/>' +
-      '<circle cx="20" cy="24" r="9" fill="#2B2118"/><circle cx="20" cy="24" r="4" fill="#F6F3EF"/></svg>';
+    w.style.cssText = 'width:32px;height:52px';
+    w.innerHTML = '<svg viewBox="0 0 40 64" width="32" height="52" style="display:block;overflow:visible;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))">' +
+      '<ellipse cx="20" cy="33" rx="11" ry="27" fill="rgba(0,0,0,.14)"/>' +
+      '<rect x="16.5" y="1" width="7" height="12" rx="3.5" fill="#2B2118"/>' +                 // rueda delantera
+      '<rect x="15.5" y="51" width="9" height="12" rx="4" fill="#2B2118"/>' +                  // rueda trasera
+      '<path d="M20 6c6 0 9 5 9 12v24c0 6-4 10-9 10s-9-4-9-10V18c0-7 3-12 9-12z" fill="#DC2D22"/>' + // carrocería
+      '<path d="M13 22h14l-1.5 4h-11z" fill="#B3221A"/>' +                                      // escudo delantero
+      '<rect x="6" y="14" width="28" height="3.2" rx="1.6" fill="#2B2118"/>' +                  // manubrio
+      '<path d="M11 24c0-3 4-4 9-4s9 1 9 4v9c0 3-4 5-9 5s-9-2-9-5z" fill="#3B2F26"/>' +        // hombros / chaqueta
+      '<circle cx="20" cy="26" r="6.6" fill="#F6F3EF"/><path d="M13.6 25.2a6.6 6.6 0 0 1 12.8 0z" fill="#DC2D22"/>' + // casco
+      '<rect x="10" y="40" width="20" height="14" rx="3" fill="#2B2118"/><rect x="12" y="42" width="16" height="3" rx="1.5" fill="#5E534B"/>' + // caja de reparto
+      '</svg>';
     return w;
   }
   function coleccion(coords) {
@@ -167,12 +235,16 @@
   function mapa(cont, op) {
     op = op || {};
     var ctl = { listo: false, onManual: null };
-    var map = null, pendiente = null, rutaCoords = null;
-    var mkOrigen = null, mkDestino = null, mkMoto = null, posMoto = null, animId = null, rumboMoto = 0;
-    var manual = false, manualHasta = 0, primerEncuadre = false, ultimoCam = 0;
+    var map = null, pendiente = null, rutaCoords = null, rutaAcum = null;
+    var mkOrigen = null, mkDestino = null, mkMoto = null, posMoto = null, animId = null, rumboMoto = 0, ultimoGps = 0;
+    var manual = false, manualHasta = 0, primerEncuadre = false, ultimoCam = 0, claveOrigen = '', claveDestino = '';
 
     ctl.actualizar = function (d) { pendiente = d; if (ctl.listo) aplicar(d); };
-    ctl.ruta = function (c) { rutaCoords = c; if (ctl.listo && pendiente) pintarRuta(pendiente); };
+    ctl.ruta = function (c) {
+      rutaCoords = (c && c.length > 1) ? c : null;
+      rutaAcum = rutaCoords ? acumular(rutaCoords) : null;
+      if (ctl.listo && pendiente) pintarRuta(pendiente);
+    };
     ctl.centrar = function () { manual = false; manualHasta = 0; if (ctl.onManual) ctl.onManual(false); if (pendiente && ctl.listo) camara(pendiente, true); };
     ctl.motor = null;
 
@@ -264,8 +336,16 @@
       return mk;
     }
     function aplicar(d) {
-      mkOrigen = marcador(mkOrigen, d.origen, function () { return pin((d.origen && d.origen.etq) || 'L', '#2B2118'); });
-      mkDestino = marcador(mkDestino, d.destino, function () { return pin('E', '#DC2D22'); });
+      // el pin del origen se rehace si cambia su tipo o llega el logo del local
+      var tipoO = d.origen ? (d.origen.tipo || (d.origen.etq === 'R' ? 'recogida' : 'local')) : '';
+      var kO = d.origen ? tipoO + '|' + (d.origen.logo || '') : '';
+      if (kO !== claveOrigen && mkOrigen) { mkOrigen.remove(); mkOrigen = null; }
+      claveOrigen = kO;
+      mkOrigen = marcador(mkOrigen, d.origen, function () { return pinIcono(tipoO, d.origen.logo); });
+      var kD = d.destino ? (d.destino.tipo || 'casa') : '';
+      if (kD !== claveDestino && mkDestino) { mkDestino.remove(); mkDestino = null; }
+      claveDestino = kD;
+      mkDestino = marcador(mkDestino, d.destino, function () { return pinIcono(kD || 'casa'); });
       if (d.moto && d.fase === 'moto') {
         var dest = [d.moto.lng, d.moto.lat];
         if (!mkMoto) {
@@ -282,21 +362,36 @@
       pintarRuta(d);
       camara(d, false);
     }
-    // La posición llega cada 10-20 s: en vez de saltar, la moto se desliza hasta el punto nuevo.
+    // La posición llega cada 10-20 s. Como las apps grandes: la moto se desliza de forma
+    // CONTINUA durante todo el intervalo (llega al punto nuevo justo cuando se espera el
+    // siguiente), va POR LA CALLE si hay ruta dibujada (se pega a ella y avanza sobre ella,
+    // nada de cortar por las manzanas) y gira suave hacia su rumbo.
     function animarMoto(dest) {
-      var desde = posMoto || dest;
-      var dist = metros({ lat: desde[1], lng: desde[0] }, { lat: dest[1], lng: dest[0] });
-      if (dist < 1) return;
-      if (dist > 6) rumboMoto = rumbo({ lat: desde[1], lng: desde[0] }, { lat: dest[1], lng: dest[0] });
+      var ahora = performance.now();
+      var desde = posMoto || dest, dO = { lat: desde[1], lng: desde[0] }, hO = { lat: dest[1], lng: dest[0] };
+      var dist = metros(dO, hO);
+      if (dist < 2) { ultimoGps = ahora; return; }
+      // duración = lo que tardó en llegar este punto (entre 2,5 s y 25 s)
+      var dur = ultimoGps ? Math.min(25000, Math.max(2500, ahora - ultimoGps)) : 3000;
+      ultimoGps = ahora;
       if (dist > 800) { posMoto = dest; mkMoto.setLngLat(dest).setRotation(rumboMoto); return; } // GPS viejo: sin animar
-      var t0 = performance.now(), dur = Math.min(4000, Math.max(700, dist * 40));
+      // ¿los dos puntos están sobre la ruta y el nuevo queda más adelante? → se anima SOBRE la ruta
+      var camino = null;
+      if (rutaCoords && rutaAcum) {
+        var a = proyectar(rutaCoords, rutaAcum, dO), b = proyectar(rutaCoords, rutaAcum, hO);
+        if (a.dist < 45 && b.dist < 45 && b.m > a.m + 1) camino = { m0: a.m, m1: b.m };
+      }
+      var rumboRecta = dist > 6 ? rumbo(dO, hO) : rumboMoto;
+      var t0 = ahora;
       if (animId) cancelAnimationFrame(animId);
       var paso = function (t) {
-        var k = Math.min(1, (t - t0) / dur), e = k * (2 - k);
-        var p = [desde[0] + (dest[0] - desde[0]) * e, desde[1] + (dest[1] - desde[1]) * e];
+        var k = Math.min(1, (t - t0) / dur), p, objetivo;
+        if (camino) { var q = puntoEnRuta(rutaCoords, rutaAcum, camino.m0 + (camino.m1 - camino.m0) * k); p = q.p; objetivo = q.b; }
+        else { p = [desde[0] + (dest[0] - desde[0]) * k, desde[1] + (dest[1] - desde[1]) * k]; objetivo = rumboRecta; }
+        rumboMoto = girarSuave(rumboMoto, objetivo, 0.18);
         posMoto = p;
         mkMoto.setLngLat(p).setRotation(rumboMoto);
-        if (k < 1) animId = requestAnimationFrame(paso); else { posMoto = dest; animId = null; }
+        if (k < 1) animId = requestAnimationFrame(paso); else { posMoto = p; animId = null; }
       };
       animId = requestAnimationFrame(paso);
     }
