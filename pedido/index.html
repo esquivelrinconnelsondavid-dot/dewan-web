@@ -236,7 +236,7 @@
 </div>
 
 <!-- Mapa vivo + tiempo real: capa extra; sin él la página funciona igual (subir ?v= al cambiar el .js) -->
-<script src="/js/dewan-vivo.js?v=20260914f" defer></script>
+<script src="/js/dewan-vivo.js?v=20260914g" defer></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -791,7 +791,9 @@
       historial: historialMoto
     });
     var edadMin = hayMoto && moto && moto.edadMs != null ? Math.round(moto.edadMs / 60000) : 0;
-    var quieta = hayMoto && edadMin >= 2;
+    // Solo se avisa de la ubicación vieja cuando el pedido YA VIENE hacia el cliente: en
+    // cocina la moto suele estar parada esperando en el local y "hace 9 min" asusta al pepe.
+    var quieta = hayMoto && ix === 2 && edadMin >= 3;
     document.querySelector('.vivoChip').classList.toggle('viejo', quieta);
     $('vivoTxt').textContent = !hayMoto ? (fin ? 'Entrega' : 'Mapa')
       : quieta ? 'Última ubicación hace ' + edadMin + ' min'
