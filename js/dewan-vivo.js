@@ -64,10 +64,16 @@
   // Todo lo que baja el mapa (estilo, tilejson, tiles, sprites, glifos) pasa por aquí.
   function fetchReintentos(url, intentos) {
     intentos = intentos || 3;
-    return fetch(url, { cache: 'default' }).then(function (r) {
+    // tope de 9 s por intento: una conexión que se queda colgada (sin respuesta) también
+    // se reintenta, en vez de esperar el timeout eterno del navegador
+    var ac = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var tmo = ac ? setTimeout(function () { try { ac.abort(); } catch (e) {} }, 9000) : null;
+    return fetch(url, ac ? { cache: 'default', signal: ac.signal } : { cache: 'default' }).then(function (r) {
+      if (tmo) clearTimeout(tmo);
       if (r.status >= 500 && intentos > 1) throw new Error('HTTP ' + r.status);
       return r;
     }).catch(function (e) {
+      if (tmo) clearTimeout(tmo);
       if (intentos <= 1) throw e;
       var espera = 700 * (4 - intentos);
       return new Promise(function (res) { setTimeout(res, espera); }).then(function () { return fetchReintentos(url, intentos - 1); });
@@ -160,8 +166,10 @@
     function glifo() { bola.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="' + color + '">' + (GLIFOS[tipo] || GLIFOS.local) + '</svg>'; }
     if (logo) {
       var img = document.createElement('img');
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block';
-      img.alt = ''; img.onerror = glifo; img.src = logo;
+      // opacity y clase explícitas: las páginas tienen `#mapa img{opacity:0}` para su
+      // imagen de respaldo y esa regla alcanzaba también a este logo (salía la bola vacía)
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;opacity:1;transition:none';
+      img.className = 'lista'; img.alt = ''; img.onerror = glifo; img.src = logo;
       bola.appendChild(img);
     } else glifo();
     w.appendChild(cola); w.appendChild(bola);
