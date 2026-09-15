@@ -129,6 +129,7 @@
   .gracias{font-size:13.5px;color:var(--gris);margin-top:6px}
   .oculto{display:none !important}
   .pie{text-align:center;font-size:11px;color:#A2917C;margin-top:14px;line-height:1.6}
+  .pie .tocar{cursor:pointer;-webkit-tap-highlight-color:rgba(220,45,34,.1)}
 </style>
 </head>
 <body>
@@ -204,7 +205,7 @@
 </div>
 
 <!-- Mapa vivo + tiempo real: capa extra; sin él la página funciona igual (subir ?v= al cambiar el .js) -->
-<script src="/js/dewan-vivo.js?v=20260914e" defer></script>
+<script src="/js/dewan-vivo.js?v=20260914f" defer></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -222,6 +223,7 @@
   // calles si Google la da, ficha pública de la moto y canal de tiempo real.
   var historialMoto = [], mapaVivo = null, rutaInfo = null, rutaPedidaEn = 0, rutaTramo = -1, ixActual = 0;
   var motoFicha = null, fuenteMoto = null, rt = null, rtOk = false, rtMotoId = null, avisoLlegando = false, av = null;
+  var ultimaCarga = Date.now(), textoFin = '';
 
   function sb(path) {
     return fetch(SB + path, { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY } })
@@ -509,6 +511,7 @@
     pintarDetalle();
     pintarBotones(false);
     pintarMapa();
+    ultimaCarga = Date.now();
     if (entregada) cerrar('Carrera finalizada · gracias por confiar en DEWAN');
     else abrir();
   }
@@ -521,16 +524,34 @@
     if (nom) partes.push((cuando ? 'por ' : 'Le entregó ') + esc(nom.split(' ').slice(0, 2).join(' ')) + ' 🛵');
     return (partes.length ? partes.join(' ') + '.<br>' : '') + 'Gracias por pedir con DEWAN.';
   }
+  // El teléfono CONGELA la página cuando se bloquea la pantalla o se cambia de app: los
+  // relojes del navegador se detienen y la carrera se queda como estaba. Por eso se dice
+  // desde cuándo no se actualiza (y tocando ahí se actualiza al instante).
+  function pintarPie() {
+    var el = $('pieNota');
+    if (!el) return;
+    if (textoFin) { el.textContent = textoFin; el.classList.remove('tocar'); return; }
+    var seg = Math.round((Date.now() - ultimaCarga) / 1000);
+    el.classList.add('tocar');
+    el.textContent = seg < 20 ? '🟢 Actualizado hace un momento'
+      : seg < 60 ? '🟢 Actualizado hace ' + seg + ' s'
+      : '⏸️ Sin actualizar hace ' + Math.round(seg / 60) + ' min · toque para actualizar';
+  }
+  function refrescarYa() {
+    if (finalizada) return;
+    $('pieNota').textContent = 'Actualizando…';
+    cargar();
+  }
   function cerrar(nota) {
     $('extras').classList.add('oculto');
-    $('pieNota').textContent = nota;
+    textoFin = nota; pintarPie();
     finalizada = true;
     if (timerRefresco) { clearInterval(timerRefresco); timerRefresco = null; }
     if (rt) { rt.cerrar(); rt = null; }
   }
   function abrir() {
     $('extras').classList.remove('oculto');
-    $('pieNota').textContent = 'Esta página se actualiza sola';
+    textoFin = ''; pintarPie();
   }
 
   function calcularEta(ix) {
@@ -717,7 +738,13 @@
   timerRefresco = setInterval(cargar, 12000);
   // dewan-vivo.js carga diferido: cuando está, se enciende el mapa vivo y el tiempo real
   window.addEventListener('dewanvivo', function () { if (carrera && !finalizada) { pintarMapa(); conectarRT(); } });
+  setInterval(pintarPie, 5000);
+  $('pieNota').addEventListener('click', refrescarYa);
+  // Volver a la página (desbloquear el teléfono, cambiar de app, recuperar señal) = consultar ya
   document.addEventListener('visibilitychange', function () { if (!document.hidden && !finalizada) cargar(); });
+  window.addEventListener('focus', function () { if (!finalizada) cargar(); });
+  window.addEventListener('pageshow', function () { if (!finalizada) cargar(); });
+  window.addEventListener('online', function () { if (!finalizada) cargar(); });
 })();
 </script>
 </body>
