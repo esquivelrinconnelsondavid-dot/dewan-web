@@ -390,6 +390,96 @@
     return { cerrar: function () { cerrado = true; clearInterval(hb); try { if (ws) ws.close(); } catch (e) {} }, conectado: function () { return ok; } };
   }
 
+  // ---------- avisar al cliente SIN gastar un mensaje de WhatsApp ----------
+  // Tres cosas, de más a menos disponible:
+  //   1. sonido (Web Audio) + vibración → solo mientras el link está abierto; el navegador
+  //      exige que la persona haya TOCADO la pantalla antes, por eso hace falta el botón.
+  //   2. notificación del sistema → si dio permiso; en Android sale aunque esté en otra
+  //      pestaña o con el navegador de fondo. En iPhone (Safari) solo si agregó la página
+  //      a la pantalla de inicio.
+  //   3. pantalla encendida (Wake Lock) cuando la moto ya está cerca, para que no tenga
+  //      que estar desbloqueando el teléfono. Chrome 84+ y Safari 16.4+.
+  function avisos(cfg) {
+    cfg = cfg || {};
+    var clave = 'dv_avisos', claveHechos = 'dv_hechos_' + (cfg.clave || 'x');
+    var ctx = null, activo = false, hechos = {}, lock = null;
+    try { activo = localStorage.getItem(clave) === '1'; } catch (e) {}
+    try { hechos = JSON.parse(localStorage.getItem(claveHechos) || '{}'); } catch (e) {}
+
+    function guardarHechos() { try { localStorage.setItem(claveHechos, JSON.stringify(hechos)); } catch (e) {} }
+    function audio() {
+      if (ctx) return ctx;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      try { ctx = new AC(); } catch (e) { return null; }
+      return ctx;
+    }
+    // Campanita de dos notas: se sintetiza, no hay archivo que descargar.
+    function sonar(tono) {
+      var c = audio();
+      if (!c) return;
+      if (c.state === 'suspended') { try { c.resume(); } catch (e) {} }
+      var notas = tono === 'llego' ? [880, 1174, 1568] : (tono === 'suave' ? [660, 880] : [784, 1046]);
+      var t0 = c.currentTime;
+      notas.forEach(function (f, i) {
+        var o = c.createOscillator(), g = c.createGain();
+        o.type = 'sine'; o.frequency.value = f;
+        var ini = t0 + i * 0.18;
+        g.gain.setValueAtTime(0.0001, ini);
+        g.gain.exponentialRampToValueAtTime(0.35, ini + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, ini + 0.42);
+        o.connect(g); g.connect(c.destination);
+        o.start(ini); o.stop(ini + 0.45);
+      });
+    }
+    function vibrar(patron) { try { if (navigator.vibrate) navigator.vibrate(patron || [200, 120, 200]); } catch (e) {} }
+    function notificar(titulo, cuerpo) {
+      try {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        var n = new Notification(titulo, { body: cuerpo, icon: cfg.icono || '/logo.png', tag: cfg.clave || 'dewan', renotify: true });
+        n.onclick = function () { try { window.focus(); n.close(); } catch (e) {} };
+      } catch (e) {}
+    }
+    return {
+      activo: function () { return activo; },
+      // Se llama DESDE EL BOTÓN (hace falta un toque real para que el navegador deje sonar)
+      activar: function (cb) {
+        activo = true;
+        try { localStorage.setItem(clave, '1'); } catch (e) {}
+        var c = audio();
+        if (c && c.state === 'suspended') { try { c.resume(); } catch (e) {} }
+        sonar('suave'); vibrar([120]);
+        if ('Notification' in window && Notification.permission === 'default') {
+          try {
+            var p = Notification.requestPermission(function (r) { if (cb) cb(r); });
+            if (p && p.then) p.then(function (r) { if (cb) cb(r); });
+          } catch (e) { if (cb) cb('default'); }
+        } else if (cb) cb(('Notification' in window) ? Notification.permission : 'no');
+      },
+      apagar: function () { activo = false; try { localStorage.setItem(clave, '0'); } catch (e) {} },
+      // Cada aviso suena UNA sola vez por pedido (se recuerda en el teléfono)
+      avisar: function (id, o) {
+        if (!activo || hechos[id]) return false;
+        hechos[id] = 1; guardarHechos();
+        sonar(o && o.tono); vibrar(o && o.vibracion);
+        if (o && o.titulo) notificar(o.titulo, o.cuerpo || '');
+        return true;
+      },
+      // Pantalla encendida mientras la moto está por llegar
+      pantalla: function (encendida) {
+        try {
+          if (!navigator.wakeLock) return;
+          if (encendida && !lock && !document.hidden) {
+            navigator.wakeLock.request('screen').then(function (l) {
+              lock = l;
+              l.addEventListener('release', function () { lock = null; });
+            }).catch(function () {});
+          } else if (!encendida && lock) { lock.release().catch(function () {}); lock = null; }
+        } catch (e) {}
+      }
+    };
+  }
+
   // Distancia de un punto a la ruta ya dibujada (al vértice más cercano: alcanza para
   // saber si la moto se salió del camino previsto y hay que volver a pedirla).
   function fueraDeRuta(coords, p) {
@@ -402,6 +492,6 @@
     return min;
   }
 
-  window.DewanVivo = { version: '1', soporta: soporta, mapa: mapa, ruta: ruta, eta: eta, velocidad: velocidad, realtime: realtime, metros: metros, fueraDeRuta: fueraDeRuta };
+  window.DewanVivo = { version: '1', soporta: soporta, mapa: mapa, ruta: ruta, eta: eta, velocidad: velocidad, realtime: realtime, metros: metros, fueraDeRuta: fueraDeRuta, avisos: avisos };
   try { window.dispatchEvent(new Event('dewanvivo')); } catch (e) {}
 })();

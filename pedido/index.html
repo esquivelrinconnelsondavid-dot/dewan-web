@@ -48,6 +48,15 @@
   #mapa.vivo .centrar.mostrar{display:block}
   .llegando{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:700;margin-bottom:12px;display:none}
   .llegando.mostrar{display:block}
+  /* avisar sin gastar un mensaje de WhatsApp: suena y vibra con el link abierto */
+  .avisar{display:none;width:100%;align-items:center;gap:10px;background:#FFF7EC;border:1px solid #F1DFC2;border-radius:14px;
+    padding:11px 13px;margin-bottom:12px;font:inherit;font-size:13.5px;color:var(--tinta);text-align:left;cursor:pointer}
+  .avisar.mostrar{display:flex}
+  .avisar .em{font-size:20px;flex:0 0 auto}
+  .avisar b{display:block;font-size:14px;margin-bottom:1px}
+  .avisar span{color:var(--gris);font-size:12.5px;line-height:1.35}
+  .avisar.on{background:#ECFDF5;border-color:#A7F3D0}
+  .avisar.on b{color:#065F46}
 
   /* ---------- hoja ---------- */
   .hoja{background:#fff;border-radius:22px 22px 0 0;margin-top:-18px;position:relative;
@@ -189,6 +198,10 @@
       </div>
       <div id="reloj"></div>
       <div class="llegando" id="llegando">🛵 ¡Su motorizado está llegando! Ya puede salir a recibirlo.</div>
+      <button type="button" class="avisar" id="btnAvisar">
+        <span class="em">🔔</span>
+        <span><b id="avisarTit">Avisarme cuando esté llegando</b><span id="avisarSub">Esta página suena y vibra cuando el motorizado esté cerca. No cuesta nada.</span></span>
+      </button>
     </div>
 
     <!-- cancelado -->
@@ -222,7 +235,7 @@
 </div>
 
 <!-- Mapa vivo + tiempo real: capa extra; sin él la página funciona igual (subir ?v= al cambiar el .js) -->
-<script src="/js/dewan-vivo.js?v=20260914d" defer></script>
+<script src="/js/dewan-vivo.js?v=20260914e" defer></script>
 <script>
 (function () {
   var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
@@ -268,7 +281,7 @@
   // Mapa vivo (js/dewan-vivo.js): historial de posiciones de la moto (rastro + velocidad real),
   // ruta por calles si Google la da, ficha pública de la moto y canal de tiempo real.
   var historialMoto = [], mapaVivo = null, rutaInfo = null, rutaPedidaEn = 0, rutaTramo = -1, ixActual = 0;
-  var motoFicha = null, fuenteMoto = null, rt = null, rtOk = false, rtMotoId = null, avisoLlegando = false;
+  var motoFicha = null, fuenteMoto = null, rt = null, rtOk = false, rtMotoId = null, avisoLlegando = false, av = null;
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
@@ -428,9 +441,9 @@
       }
       $('etaTxt').textContent = eta(ix);
       pintarReloj(ix);
-      pintarLlegando(ix);
     }
 
+    pintarLlegando(ix);   // avisos + banner: también en entregado/cancelado (apaga y avisa)
     pintarMoto(ix);
     pintarDetalle();
     pintarHermanos();
@@ -790,16 +803,56 @@
     var d = km(lm, gm, le, ge) * 1.3;
     return { metros: Math.round(d * 1000), min: Math.max(2, Math.round((d / 18) * 60)), llegando: d < 0.15 };
   }
-  // A menos de 150 m (o cuando la app dice "llegado"): banner + vibración una sola vez
+  // ---------- avisos al cliente (suena/vibra/notifica, sin gastar mensajes) ----------
+  // El navegador solo deja sonar si la persona tocó la pantalla antes → botón "Avisarme".
+  function avisador() {
+    if (!av && window.DewanVivo && DewanVivo.avisos) {
+      av = DewanVivo.avisos({ clave: 'p' + (pedido && pedido.id), icono: (local && local.logo_url) || '' });
+      pintarBotonAvisar();
+    }
+    return av;
+  }
+  function pintarBotonAvisar() {
+    var b = $('btnAvisar');
+    if (!b || !av) return;
+    b.onclick = function () {
+      if (av.activo()) { av.apagar(); pintarBotonAvisar(); return; }
+      av.activar(function () { pintarBotonAvisar(); });
+      pintarBotonAvisar();
+    };
+    var on = av.activo();
+    b.classList.toggle('on', on);
+    $('avisarTit').textContent = on ? '✅ Le avisamos cuando esté llegando' : 'Avisarme cuando esté llegando';
+    var perm = ('Notification' in window) ? Notification.permission : 'no';
+    $('avisarSub').textContent = on
+      ? (perm === 'granted' ? 'Sonará y le llegará un aviso aunque cambie de pantalla. Deje esta página abierta.'
+                            : 'Sonará y vibrará mientras tenga esta página abierta. Toque de nuevo para apagarlo.')
+      : 'Esta página suena y vibra cuando el motorizado esté cerca. No cuesta nada.';
+  }
+  // A menos de 150 m (o cuando la app dice "llegado"): banner + sonido una sola vez
   function pintarLlegando(ix) {
     var el = $('llegando');
     if (!el) return;
     var lm = moto && num(moto.lat), gm = moto && num(moto.lng), le = num(pedido.ubicacion_lat), ge = num(pedido.ubicacion_lng);
-    var si = ix === 2 && !esRetiro() && pedido.estado_pedido !== 'llegado' && !!(lm && gm && le && ge) && etaMoto(lm, gm, le, ge).llegando;
+    var cerca = !!(lm && gm && le && ge) && etaMoto(lm, gm, le, ge).llegando;
+    var si = ix === 2 && !esRetiro() && pedido.estado_pedido !== 'llegado' && cerca;
     el.classList.toggle('mostrar', !!si);
+    // El botón de avisos se ofrece mientras el pedido está en curso
+    var a = avisador();
+    $('btnAvisar').classList.toggle('mostrar', ix >= 0 && ix <= 2);
+    if (a) {
+      var nom = (local && local.nombre) || pedido.restaurante || 'Su pedido';
+      if (ix === 2 && !esRetiro()) a.avisar('encamino', { titulo: '🛵 Su pedido salió', cuerpo: nom + ' · el motorizado va hacia usted', tono: 'suave' });
+      if (esRetiro() && ix === 2) a.avisar('listo', { titulo: '🏪 ¡Su pedido está listo!', cuerpo: 'Puede pasar a retirarlo en ' + nom, tono: 'llego' });
+      if (si || pedido.estado_pedido === 'llegado') {
+        a.avisar('llegando', { titulo: '🛎️ ¡Su pedido está llegando!', cuerpo: 'El motorizado está a menos de 2 cuadras', tono: 'llego', vibracion: [250, 120, 250, 120, 250] });
+      }
+      if (ix >= 3) a.avisar('entregado', { titulo: '✅ Pedido entregado', cuerpo: '¡Gracias! Puede calificar su pedido', tono: 'suave' });
+      // pantalla encendida solo cuando ya está por llegar (se apaga sola al entregar)
+      a.pantalla(!!(si && a.activo()));
+    }
     if (si && !avisoLlegando) {
       avisoLlegando = true;
-      try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
       document.title = '🛵 ¡Está llegando! · ' + document.title.replace(/^🛵 ¡Está llegando! · /, '');
     }
   }
