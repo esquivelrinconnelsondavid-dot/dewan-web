@@ -1,0 +1,83 @@
+/* ============================================================
+   MODELO C — "PÓSTER": la marca a todo color. Cabecera y hero en rojo,
+   tipografía enorme, una columna con fotos a lo ancho (como un feed),
+   precios en etiqueta amarilla. Movimiento leve (reveals en compositor).
+   ============================================================ */
+:root{
+  --fondo:#FFFDF8; --panel:#FFFFFF; --panel2:#FFF4E8; --panel3:#FFE8D2; --linea:#F0E2D2;
+  --texto:#161616; --texto2:#5F5A55; --texto3:#9B948C; --sobre-texto:#fff;
+  --foto-bg:#2A2A2E; --sel-bg:#FFE9E4; --sel2-bg:#FFF3C4; --toast-bg:#161616; --toast-c:#fff;
+  --aviso-bg:#FFE9E4; --aviso-b:#F5B8AE; --aviso-c:#A32616;
+  --promo-bg:#161616; --promo-b:#161616;
+  --ultimo-bg:#FFF4E8; --ultimo-b:#F5D5B8;
+  --hero-velo:linear-gradient(180deg,rgba(239,65,46,.05) 0%,rgba(239,65,46,.0) 40%,rgba(120,20,10,.85) 100%);
+  --chip-on-bg:#EF412E; --chip-on-c:#fff;
+  --sombra:0 10px 26px rgba(120,30,10,.16);
+}
+/* cabecera roja, logo grande */
+.top{background:var(--rojo);border-bottom:0;color:#fff;padding-top:calc(14px + var(--safe-t));padding-bottom:12px}
+.top .logo{width:58px;height:58px;flex-basis:58px;box-shadow:0 0 0 3px #fff}
+.top .nombre{color:#fff;font-size:34px}
+.top .nombre b{color:#FFE27A}
+.estado{color:rgba(255,255,255,.9)}
+.estado.cerrado{color:#FFE27A}
+.estado i{background:#7CF2A0}
+.estado.cerrado i{background:#FFE27A}
+.icono-btn{background:rgba(0,0,0,.18);border-color:transparent;color:#fff}
+/* la franja de entrega también en rojo, integrada al header */
+.entrega{background:var(--rojo);padding:0 16px 16px;margin-top:-1px}
+.segment{background:rgba(0,0,0,.18);border-color:transparent}
+.segment button{color:rgba(255,255,255,.85)}
+.segment button small{color:rgba(255,255,255,.65)}
+.segment button.on{background:#fff;color:var(--rojo)}
+.segment button.on small{color:var(--rojo-osc)}
+.envio-linea{color:#fff}
+.envio-linea b{color:#FFE27A}
+.envio-linea button{color:#FFE27A}
+.envio-linea .ok{color:#7CF2A0}
+/* hero: foto a sangre, texto abajo, sin borde */
+.hero{margin:0;border-radius:0;min-height:300px;border:0;display:flex;align-items:flex-end}
+.hero img{opacity:1;object-position:center 35%}
+.hero .txt{max-width:100%;padding:26px 18px 22px;color:#fff}
+.hero .kicker{color:#FFE27A}
+.hero h1{font-size:54px}
+.hero h1 b{color:#FFE27A}
+.hero p{color:#F3E7DF;max-width:80%}
+.hero .cta{background:#fff;color:var(--rojo)}
+/* promo del día: banda negra */
+.promo-dia{margin:0;border-radius:0;color:#fff;padding:14px 18px}
+.promo-dia span{color:#C9C2BA}
+.promo-dia .k{color:#FFE27A}
+.promo-dia .precio{color:#FFE27A}
+/* chips grandes en píldora roja */
+.chips-wrap{top:0;padding:10px 0;background:var(--fondo);border-bottom:2px solid var(--rojo)}
+.chip{padding:11px 16px;font-size:14px;min-height:44px;background:#fff}
+/* secciones: título gigante y línea roja */
+.seccion{padding:26px 16px 6px}
+.seccion h2{font-size:38px}
+.seccion h2::before{content:"";display:inline-block;width:6px;height:30px;background:var(--rojo);border-radius:3px;margin-right:4px}
+/* póster: tarjeta a lo ancho con la foto grande y precio en etiqueta */
+.poster{gap:18px}
+.poster .card{border:0;box-shadow:var(--sombra);border-radius:20px}
+.poster .card .foto{aspect-ratio:16/10}
+.poster .card .cuerpo{padding:14px 16px 16px}
+.poster .card .nom{font-size:30px}
+.poster .card .desc{font-size:14px;color:var(--texto2)}
+.poster .card .pie{padding-top:10px}
+.poster .card .precio{background:var(--amarillo);color:#161616;padding:6px 12px;border-radius:10px;font-size:26px;display:flex;align-items:baseline;gap:6px}
+.poster .card .precio small{display:inline;margin:0;color:#5B4A00}
+.poster .card .mas{width:48px;height:48px;border-radius:14px;font-size:28px}
+.poster .card .mas.qty{font-size:17px}
+.fila{border:0;box-shadow:0 3px 12px rgba(120,30,10,.08)}
+.fila .precio{background:var(--amarillo);color:#161616;padding:4px 10px;border-radius:9px;font-size:19px}
+.fab{border-radius:999px;background:#161616;box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.fab .n{background:var(--amarillo);color:#161616}
+.hoja .cerrar{background:rgba(0,0,0,.35)}
+.buscar input,.campo input,.nota-in,.stepper,.pago button,.opcion,.salsa{background:#fff}
+.wa-local{box-shadow:0 8px 20px rgba(37,211,102,.45)}
+/* movimiento leve */
+@supports (animation-timeline: view()){
+  @keyframes entra{from{opacity:.2;transform:translateY(24px)}to{opacity:1;transform:none}}
+  html.anim .poster .card,html.anim .lista .fila,html.anim .seccion{animation:entra linear both;animation-timeline:view();animation-range:entry 0% entry 35%}
+}
+@media (prefers-reduced-motion:reduce){html.anim .poster .card,html.anim .lista .fila,html.anim .seccion{animation:none}}

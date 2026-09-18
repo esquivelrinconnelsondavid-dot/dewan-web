@@ -1,0 +1,79 @@
+/* ============================================================
+   MODELO B — "VIVO": claro, cálido y con movimiento.
+   Carruseles por categoría, hero con ken burns, tarjetas que entran al
+   hacer scroll (scroll-driven, en el compositor, cero JS) y el plato que
+   "vuela" al carrito (motion.js). Todo degrada a estático: nada arranca
+   oculto si el navegador no soporta animation-timeline.
+   ============================================================ */
+:root{
+  --fondo:#FFF6EC; --panel:#FFFFFF; --panel2:#FFF1E3; --panel3:#FFE4CC; --linea:#F0DCC8;
+  --texto:#1B1B1E; --texto2:#5E5A55; --texto3:#9A928A; --sobre-texto:#fff;
+  --foto-bg:#2A2A2E; --sel-bg:#FFE9E4; --sel2-bg:#FFF3C4; --toast-bg:#1B1B1E; --toast-c:#fff;
+  --aviso-bg:#FFE9E4; --aviso-b:#F5B8AE; --aviso-c:#A32616;
+  --promo-bg:linear-gradient(135deg,#FFE9A8,#FFF6EC); --promo-b:#F1CD5A;
+  --ultimo-bg:linear-gradient(135deg,#FFE4DC,#FFF6EC); --ultimo-b:#F5B8AE;
+  --hero-velo:linear-gradient(90deg,rgba(27,27,30,.92) 0%,rgba(27,27,30,.72) 50%,rgba(27,27,30,.05) 100%);
+  --chip-on-bg:#1B1B1E; --chip-on-c:#fff;
+  --sombra:0 10px 26px rgba(90,50,20,.14);
+}
+.estado.cerrado{color:#C9321F}
+.top{box-shadow:0 2px 0 rgba(0,0,0,.02)}
+.top .logo{box-shadow:0 0 0 3px var(--rojo),0 6px 14px rgba(239,65,46,.25)}
+.hero{border:0;min-height:230px;box-shadow:var(--sombra)}
+.hero .txt{color:#fff}
+.hero p{color:#E8E2DA}
+.hero .kicker{color:var(--amarillo)}
+.hero img{opacity:1}
+.card{box-shadow:0 4px 14px rgba(90,50,20,.08);border-color:transparent;transition:transform .18s ease,box-shadow .18s ease}
+.card:active{transform:scale(.98)}
+.card .mas{box-shadow:0 4px 10px rgba(239,65,46,.35)}
+.fila{box-shadow:0 3px 10px rgba(90,50,20,.06);border-color:transparent}
+.chips-wrap{box-shadow:0 6px 12px -8px rgba(0,0,0,.12)}
+.fab{box-shadow:0 12px 28px rgba(239,65,46,.45)}
+.hoja{box-shadow:0 -10px 40px rgba(60,30,10,.25)}
+.hoja .cerrar{background:rgba(0,0,0,.35)}
+.exito .check{box-shadow:0 0 0 12px rgba(46,204,113,.18)}
+.instalar,.toast{box-shadow:var(--sombra)}
+.buscar input,.campo input,.nota-in{background:#fff}
+.stepper{background:#fff}
+.pago button{background:#fff}
+.opcion{background:#fff}
+.salsa{background:#fff}
+
+/* ---- header compacto al bajar (html.scrolled lo pone app.js) ---- */
+.top .logo,.top .nombre{transition:all .25s ease}
+html.scrolled .top .logo{width:40px;height:40px;flex-basis:40px}
+html.scrolled .top .nombre{font-size:24px}
+
+/* ---- hero: ken burns suave (solo compositor; solo si el JS llegó) ---- */
+@keyframes kb{from{transform:scale(1) translate3d(0,0,0)}to{transform:scale(1.14) translate3d(-2%,-3%,0)}}
+html.anim .hero img{animation:kb 22s ease-in-out infinite alternate;will-change:transform}
+
+/* ---- tarjetas que entran al hacer scroll: scroll-driven, cero JS ---- */
+@supports (animation-timeline: view()){
+  @keyframes entra{from{opacity:.15;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
+  html.anim .grid .card,html.anim .poster .card,html.anim .lista .fila,html.anim .seccion{
+    animation:entra linear both;animation-timeline:view();animation-range:entry 0% entry 40%;
+  }
+  @keyframes entraX{from{opacity:.2;transform:translateX(26px)}to{opacity:1;transform:none}}
+  html.anim .rail .card{animation:entraX linear both;animation-timeline:view(x);animation-range:entry 0% entry 35%}
+}
+
+/* ---- rails: tarjetas un poco más anchas y con sombra, precio grande ---- */
+.rail{padding-bottom:12px}
+.rail .card{flex-basis:222px}
+.rail .card .nom{font-size:20px}
+.seccion .ver-todo{background:var(--panel2);padding:7px 11px;border-radius:999px;font-size:12px}
+
+/* ---- micro: el FAB "respira" cuando hay ítems, el badge hace pop ---- */
+@keyframes respira{0%,100%{box-shadow:0 12px 28px rgba(239,65,46,.45)}50%{box-shadow:0 12px 34px rgba(239,65,46,.7)}}
+html.anim .fab:not(.oculto-anim){animation:respira 2.6s ease-in-out infinite}
+.fab .n{transition:transform .2s}
+.fab.pop .n{transform:scale(1.25)}
+
+/* ---- botón de WhatsApp más presente en claro ---- */
+.wa-local{box-shadow:0 8px 20px rgba(37,211,102,.45)}
+
+@media (prefers-reduced-motion:reduce){
+  html.anim .hero img,html.anim .fab:not(.oculto-anim),html.anim .grid .card,html.anim .rail .card,html.anim .lista .fila,html.anim .seccion{animation:none}
+}

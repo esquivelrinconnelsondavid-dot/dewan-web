@@ -1,16 +1,26 @@
 /* ============================================================
-   RYO BURGER — app web de pedidos
+   RYO BURGER — app web de pedidos (lógica compartida por los 3 modelos)
    El pedido NO pasa por WhatsApp: se guarda directo en pedidos_sistema
    (mismo INSERT que carta/sistema.js, ya probado con el panel del local).
    El panel de Ryo lo recibe al instante, el cliente sigue el pedido en
    dewansas.com/pedido/?s=sistema&t=TOKEN y a domicilio lo lleva una
    moto DEWAN (gemelo en pedidos_delivery, lo crea el wf de avisos).
+
+   TARIFA (v31, 16-sep-2026): el cotizador calcular-precio devuelve la
+   CARRERA DEL MOTO ($1,30 hasta 3 km, +$0,25 cada 500 m). Al cliente se
+   le cobra esa carrera + el SERVICIO DEWAN ($0,45) → mínimo $1,75.
+   Se guarda precio_calculado = lo que paga el cliente y tarifa_servicio
+   = la parte de DEWAN, para que el gemelo pueda pagar al moto su carrera.
+
+   Modelos de diseño: <body data-modelo="a|b|c"> cambia SOLO el layout del
+   menú (a = cuadrícula, b = carruseles, c = póster). Todo lo demás es igual.
    ============================================================ */
 (function () {
   'use strict';
   const CFG = {
     rid: '0cca9530-df0c-4151-87ee-ad619429e714',
     nombre: 'Ryo Burger',
+    whatsapp: '593984150412',
     local: { lat: -1.6653981066649846, lng: -78.65913811876005, direccion: 'Av. Carlos Zambrano y Reina Pacha', ciudad: 'Riobamba' },
     horario: { abre: '12:00', cierra: '22:30' },
     supa: 'https://wfpdtjmmrhhfuxayvpzu.supabase.co',
@@ -20,9 +30,12 @@
     seguimiento: 'https://dewansas.com/pedido/?s=sistema&t=',
     fotos: 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/storage/v1/object/public/menu-fotos/0cca9530-df0c-4151-87ee-ad619429e714/',
     mapsKey: 'AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs',
+    servicio: 0.45,       // servicio DEWAN por entrega (cliente = carrera del moto + esto)
+    carreraMin: 1.30,     // carrera del moto hasta 3 km
+    cocinaMin: 20,        // minutos de cocina que se suman al tiempo de ruta
     maxKm: 12
   };
-  // Orden y presentación de las categorías (las de Supabase se mapean por nombre)
+  const MODELO = (document.body.dataset.modelo || 'a').toLowerCase();
   const CATS = [
     { k: 'Colección',                 t: 'La Colección',        e: '🍔', sub: 'Todas con 160 g de carne · sola $4,99 · combo $6,99' },
     { k: 'Hamburguesas',              t: 'Las de la casa',      e: '🔥', sub: 'Clásica, Ranchera, Criolla, Blue Cheese, Mega y Sultana' },
@@ -48,6 +61,7 @@
   const $ = (q, el) => (el || document).querySelector(q);
   const $$ = (q, el) => Array.prototype.slice.call((el || document).querySelectorAll(q));
   const money = (n) => '$' + (Math.round(Number(n) * 100) / 100).toFixed(2).replace('.', ',');
+  const r2 = (n) => Math.round(Number(n) * 100) / 100;
   const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const ls = {
@@ -65,26 +79,25 @@
     let d = $('#toast'); if (!d) { d = document.createElement('div'); d.id = 'toast'; d.className = 'toast'; document.body.appendChild(d); }
     d.textContent = msg; d.classList.remove('oculto'); clearTimeout(toastT); toastT = setTimeout(() => d.classList.add('oculto'), ms || 2200);
   }
+  const emitir = (nombre, detalle) => { try { window.dispatchEvent(new CustomEvent(nombre, { detail: detalle || {} })); } catch (e) {} };
 
   /* ================= ESTADO ================= */
-  let PRODUCTOS = [];          // catálogo agrupado (una tarjeta por producto, con variantes)
-  let POR_ID = {};             // id de Supabase -> {nombre, precio, cat}
-  let cart = ls.get('ryo_cart', []);            // [{key,id,nombre,precio,qty,salsa,nota}]
-  let entrega = ls.get('ryo_entrega', 'domicilio'); // 'domicilio' | 'retiro'
-  let cliente = ls.get('ryo_cliente', {});      // {nombre, tel, ref, lat, lng}
+  let PRODUCTOS = [];
+  let POR_ID = {};
+  let cart = ls.get('ryo_cart', []);
+  let entrega = ls.get('ryo_entrega', 'domicilio');
+  let cliente = ls.get('ryo_cliente', {});
   let ubic = (cliente.lat && cliente.lng) ? { lat: cliente.lat, lng: cliente.lng, guardada: true } : null;
-  let envio = { estado: 'na', valor: 0, km: 0, min: 0 };  // na | loading | ok | err | lejos
+  let envio = { estado: 'na', valor: 0, carrera: 0, servicio: 0, km: 0, min: 0 };  // na | loading | ok | lejos
   let ubicKey = '';
   let abierto = true, motivoCerrado = '';
   let pago = ls.get('ryo_pago', 'Efectivo');
   let catActiva = '';
+  const expandidas = {};   // modelo B: secciones abiertas con "Ver todo"
 
   /* ================= MENÚ ================= */
-  function leerEmbed() {
-    try { return JSON.parse($('#menu-embed').textContent); } catch (e) { return []; }
-  }
+  function leerEmbed() { try { return JSON.parse($('#menu-embed').textContent); } catch (e) { return []; } }
   async function cargarMenu() {
-    // 1) embebido al instante, 2) lo vivo de Supabase pisa precios/disponibilidad
     let rows = leerEmbed();
     construir(rows); pintarMenu();
     try {
@@ -96,7 +109,6 @@
       }
     } catch (e) { /* nos quedamos con el embebido */ }
   }
-  // "Ryo Texas Combo" -> base "Ryo Texas", variante "Combo"
   const RE_VAR = /\s+(Sola|Combo|Mediana|Grande|(\d+)\s+unidades)$/i;
   function construir(rows) {
     POR_ID = {}; const mapa = new Map();
@@ -110,14 +122,14 @@
       const p = mapa.get(key);
       if (!p.desc || (r.d && r.d.length > p.desc.length && !varLabel.match(/combo/i))) p.desc = limpiarDesc(r.d);
       if (!p.foto && r.f) p.foto = r.f;
-      p.variantes.push({ id: r.id, label: etiquetaVar(varLabel, r.d), precio: r.p, nombre: r.n, orden: varLabel ? (varLabel.match(/sola|mediana/i) ? 0 : (varLabel.match(/combo|grande/i) ? 1 : parseInt(varLabel) || 2)) : 0 });
+      p.variantes.push({ id: r.id, label: etiquetaVar(varLabel), precio: r.p, nombre: r.n, orden: varLabel ? (varLabel.match(/sola|mediana/i) ? 0 : (varLabel.match(/combo|grande/i) ? 1 : parseInt(varLabel) || 2)) : 0 });
       const s = parsearSalsas(r.d); if (s.length) p.salsas = s;
       if (/pork bacon|gaucha|primicias/i.test(r.n)) p.nuevo = true;
     });
     PRODUCTOS = Array.from(mapa.values());
     PRODUCTOS.forEach((p) => { p.variantes.sort((a, b) => a.orden - b.orden || a.precio - b.precio); p.desde = Math.min.apply(null, p.variantes.map((v) => v.precio)); });
   }
-  function etiquetaVar(v, desc) {
+  function etiquetaVar(v) {
     if (!v) return '';
     if (/combo/i.test(v)) return 'Combo · papas + bebida';
     if (/sola/i.test(v)) return 'Sola';
@@ -126,14 +138,8 @@
     const n = parseInt(v); if (n) return n + ' unidades';
     return v;
   }
-  function limpiarDesc(d) {
-    return String(d || '').replace(/\s*\+\s*papas\s*\+\s*bebida\s*$/i, '').replace(/Salsas a elecci[oó]n:.*$/i, '').replace(/\s+$/, '').replace(/[,.]\s*$/, '');
-  }
-  function parsearSalsas(d) {
-    const m = /Salsas a elecci[oó]n:\s*([^.\n]+)/i.exec(d || '');
-    if (!m) return [];
-    return m[1].split('/').map((s) => s.trim()).filter(Boolean);
-  }
+  function limpiarDesc(d) { return String(d || '').replace(/\s*\+\s*papas\s*\+\s*bebida\s*$/i, '').replace(/Salsas a elecci[oó]n:.*$/i, '').replace(/\s+$/, '').replace(/[,.]\s*$/, ''); }
+  function parsearSalsas(d) { const m = /Salsas a elecci[oó]n:\s*([^.\n]+)/i.exec(d || ''); return m ? m[1].split('/').map((s) => s.trim()).filter(Boolean) : []; }
   function catInfo(k) { return CATS.find((c) => norm(c.k) === norm(k)) || { k, t: k, e: '🍽️' }; }
   function catsPresentes() {
     const set = new Set(PRODUCTOS.map((p) => norm(p.cat)));
@@ -143,33 +149,39 @@
   }
   function fotoUrl(f) { if (!f) return ''; return /^https?:/.test(f) ? f : CFG.fotos + f; }
   function emojiDe(p) { return catInfo(p.cat).e || '🍽️'; }
+  const slug = (s) => norm(s).replace(/[^a-z0-9]+/g, '-');
 
-  /* ================= PINTAR MENÚ ================= */
+  /* ================= PINTAR MENÚ (por modelo) ================= */
   function pintarMenu(filtro) {
     const cats = catsPresentes();
     const chips = $('#chips');
-    chips.innerHTML = cats.map((c) => '<button class="chip' + (norm(c.k) === norm(catActiva || cats[0].k) ? ' on' : '') + '" data-cat="' + esc(c.k) + '">' + c.e + ' ' + esc(c.t) + '</button>').join('');
     if (!catActiva && cats[0]) catActiva = cats[0].k;
+    chips.innerHTML = cats.map((c) => '<button class="chip' + (norm(c.k) === norm(catActiva) ? ' on' : '') + '" data-cat="' + esc(c.k) + '">' + c.e + ' ' + esc(c.t) + '</button>').join('');
     const q = norm(filtro || '');
-    const cont = $('#menu');
     let html = '';
     cats.forEach((c) => {
       let prods = PRODUCTOS.filter((p) => norm(p.cat) === norm(c.k));
       if (q) prods = prods.filter((p) => norm(p.nombre + ' ' + p.desc).includes(q));
       if (!prods.length) return;
-      html += '<section class="seccion" id="cat-' + slug(c.k) + '"><h2 class="tit">' + c.e + ' ' + esc(c.t) + ' <small>' + prods.length + '</small></h2>' + (c.sub ? '<div class="sub">' + esc(c.sub) + '</div>' : '') + '</section>';
+      const abierta = !!expandidas[c.k] || !!q;
+      const rail = MODELO === 'b' && !c.lista && prods.length > 2 && !abierta;
+      html += '<section class="seccion" id="cat-' + slug(c.k) + '"><h2 class="tit">' + c.e + ' ' + esc(c.t) + ' <small>' + prods.length + '</small>' +
+        (MODELO === 'b' && !c.lista && prods.length > 2 ? '<button class="ver-todo" data-todo="' + esc(c.k) + '">' + (abierta ? 'Ver menos' : 'Ver todo →') + '</button>' : '') + '</h2>' +
+        (c.sub ? '<div class="sub">' + esc(c.sub) + '</div>' : '') + '</section>';
       if (c.lista) html += '<div class="lista">' + prods.map(filaHtml).join('') + '</div>';
+      else if (rail) html += '<div class="rail">' + prods.map(cardHtml).join('') + '</div>';
+      else if (MODELO === 'c') html += '<div class="poster">' + prods.map(cardHtml).join('') + '</div>';
       else html += '<div class="grid">' + prods.map(cardHtml).join('') + '</div>';
     });
-    cont.innerHTML = html || '<div class="vacio">No encontré nada con "' + esc(filtro) + '" 🙈</div>';
+    $('#menu').innerHTML = html || '<div class="vacio">No encontré nada con "' + esc(filtro) + '" 🙈</div>';
     pintarCarritoBadge();
+    emitir('ryo:menu');
   }
   function qtyDe(p) { return cart.filter((c) => p.variantes.some((v) => v.id === c.id)).reduce((t, c) => t + c.qty, 0); }
   function cardHtml(p) {
-    const q = qtyDe(p); const f = fotoUrl(p.foto);
-    const unaVar = p.variantes.length === 1;
+    const q = qtyDe(p); const f = fotoUrl(p.foto); const unaVar = p.variantes.length === 1;
     return '<button class="card" data-prod="' + esc(p.key) + '" aria-label="' + esc(p.nombre) + '">' +
-      '<div class="foto">' + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '') + (f ? '' : '<div class="emoji">' + emojiDe(p) + '</div>') +
+      '<div class="foto">' + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '<div class="emoji">' + emojiDe(p) + '</div>') +
       (p.nuevo ? '<span class="tag">Nuevo</span>' : '') + (p.salsas.length ? '<span class="tag rojo">Elige salsa</span>' : '') + '</div>' +
       '<div class="cuerpo"><div class="nom tit">' + esc(p.nombre) + '</div>' + (p.desc ? '<div class="desc">' + esc(p.desc) + '</div>' : '') +
       '<div class="pie"><div class="precio">' + (unaVar ? '' : '<small>desde</small>') + money(p.desde) + '</div>' +
@@ -183,9 +195,8 @@
       '<div class="precio">' + (p.variantes.length > 1 ? '<small style="font-family:var(--fuente);font-size:11px;color:var(--texto3)">desde </small>' : '') + money(p.desde) + '</div>' +
       '<span class="mas' + (q ? ' qty' : '') + '">' + (q ? q : '+') + '</span></button>';
   }
-  const slug = (s) => norm(s).replace(/[^a-z0-9]+/g, '-');
 
-  /* ================= HOJA DE PRODUCTO ================= */
+  /* ================= HOJAS ================= */
   let hojaAbierta = null;
   function abrirHoja(html, onClose) {
     cerrarHoja();
@@ -194,8 +205,9 @@
     hoja.innerHTML = '<div class="asa"></div><button class="cerrar" aria-label="Cerrar">✕</button><div class="cuerpo-hoja">' + html + '</div>';
     document.body.appendChild(velo); document.body.appendChild(hoja);
     document.body.style.overflow = 'hidden';
-    velo.addEventListener('click', cerrarHoja); $('.cerrar', hoja).addEventListener('click', cerrarHoja);
+    velo.addEventListener('click', () => cerrarHoja()); $('.cerrar', hoja).addEventListener('click', () => cerrarHoja());
     hojaAbierta = { onClose }; history.pushState({ hoja: 1 }, '');
+    emitir('ryo:hoja', { hoja });
     return hoja;
   }
   function cerrarHoja(desdeAtras) {
@@ -205,7 +217,7 @@
   }
   window.addEventListener('popstate', () => { if (hojaAbierta) cerrarHoja(true); });
 
-  function abrirProducto(key) {
+  function abrirProducto(key, origenEl) {
     const p = PRODUCTOS.find((x) => x.key === key); if (!p) return;
     let vSel = p.variantes[0], salsa = p.salsas[0] || '', qty = 1;
     const f = fotoUrl(p.foto);
@@ -220,15 +232,18 @@
       '<div class="prod-pie"><div class="stepper"><button id="q-menos" aria-label="menos">−</button><b id="q-n">1</b><button id="q-mas" aria-label="más">+</button></div>' +
       '<button class="btn-p" id="agregar"><span>Agregar</span><span class="t" id="agregar-total">' + money(vSel.precio) + '</span></button></div>';
     const hoja = abrirHoja(html);
-    const refrescar = () => { $('#q-n', hoja).textContent = qty; $('#agregar-total', hoja).textContent = money(vSel.precio * qty); };
+    const refrescar = () => { $('#q-n', hoja).textContent = qty; $('#agregar-total', hoja).textContent = money(vSel.precio * qty); const qn = $('#q-n', hoja); qn.classList.remove('pop'); void qn.offsetWidth; qn.classList.add('pop'); };
     $$('#vars .opcion', hoja).forEach((b) => b.addEventListener('click', () => { $$('#vars .opcion', hoja).forEach((x) => x.classList.remove('on')); b.classList.add('on'); vSel = p.variantes[+b.dataset.i]; refrescar(); }));
     $$('#salsas .salsa', hoja).forEach((b) => b.addEventListener('click', () => { $$('#salsas .salsa', hoja).forEach((x) => x.classList.remove('on')); b.classList.add('on'); salsa = b.dataset.s; $('#salsa-sel', hoja).textContent = salsa; }));
     $('#q-mas', hoja).addEventListener('click', () => { qty = Math.min(20, qty + 1); refrescar(); });
     $('#q-menos', hoja).addEventListener('click', () => { qty = Math.max(1, qty - 1); refrescar(); });
     $('#agregar', hoja).addEventListener('click', () => {
       const nota = ($('#nota-prod', hoja).value || '').trim().slice(0, 120);
+      const img = $('.prod-foto img', hoja);
+      const rect = img ? img.getBoundingClientRect() : null;
       agregar(vSel, qty, salsa, nota);
       cerrarHoja();
+      emitir('ryo:agregado', { foto: f, rect, qty });
       toast('✅ ' + qty + 'x ' + vSel.nombre + ' agregado');
     });
   }
@@ -252,45 +267,50 @@
   function pintarCarritoBadge(pop) {
     const fab = $('#fab'); const n = nItems();
     fab.classList.toggle('oculto-anim', n === 0);
+    const wa = $('#wa-local'); if (wa) wa.classList.toggle('arriba', n === 0);
     $('#fab-n').textContent = n; $('#fab-t').textContent = money(subtotal() + (entrega === 'domicilio' && envio.estado === 'ok' ? envio.valor : 0));
     if (pop) { fab.classList.remove('pop'); void fab.offsetWidth; fab.classList.add('pop'); }
   }
 
   /* ================= ENTREGA / ENVÍO ================= */
   const havKm = (la1, lo1, la2, lo2) => { const R = 6371, rad = Math.PI / 180, dLa = (la2 - la1) * rad, dLo = (lo2 - lo1) * rad; const a = Math.sin(dLa / 2) ** 2 + Math.cos(la1 * rad) * Math.cos(la2 * rad) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(a)); };
-  const tramos = (d) => d <= 2 ? 1.3 : d < 3 ? 1.5 : 1.75 + Math.ceil((d - 3) / 0.5) * 0.25;
+  // carrera del moto, fórmula única v29: $1,30 hasta 3 km, +$0,25 cada 500 m
+  const carreraMoto = (d) => d < 3 ? CFG.carreraMin : r2(CFG.carreraMin + Math.ceil((d - 3) / 0.5) * 0.25);
   async function cotizar() {
-    if (entrega !== 'domicilio' || !ubic) { envio = { estado: 'na', valor: 0, km: 0, min: 0 }; pintarEnvio(); return; }
+    if (entrega !== 'domicilio' || !ubic) { envio = { estado: 'na', valor: 0, carrera: 0, servicio: 0, km: 0, min: 0 }; pintarEnvio(); return; }
     const key = ubic.lat.toFixed(4) + ',' + ubic.lng.toFixed(4);
     if (key === ubicKey && envio.estado === 'ok') { pintarEnvio(); return; }
     ubicKey = key;
     const recta = havKm(CFG.local.lat, CFG.local.lng, ubic.lat, ubic.lng);
-    if (recta > CFG.maxKm) { envio = { estado: 'lejos', valor: 0, km: recta, min: 0 }; pintarEnvio(); return; }
-    envio = { estado: 'loading', valor: 0, km: 0, min: 0 }; pintarEnvio();
-    let precio = 0, km = 0, min = 0;
+    if (recta > CFG.maxKm) { envio = { estado: 'lejos', valor: 0, carrera: 0, servicio: 0, km: recta, min: 0 }; pintarEnvio(); return; }
+    envio = { estado: 'loading', valor: 0, carrera: 0, servicio: 0, km: 0, min: 0 }; pintarEnvio();
+    let carrera = 0, km = 0, min = 0;
     try {
       const r = await fetchJson(CFG.cotizador, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ origen_lat: CFG.local.lat, origen_lng: CFG.local.lng, destino_lat: ubic.lat, destino_lng: ubic.lng, origen: CFG.local.lat + ',' + CFG.local.lng, destino: ubic.lat + ',' + ubic.lng }) }, 9000);
       const j = r.json || {};
-      if (j.ok !== false && Number(j.precio) > 0) { precio = Number(j.precio); km = Number(j.distancia_km) || 0; min = Number(j.duracion_minutos) || 0; }
+      if (j.ok !== false && Number(j.precio) > 0) { carrera = Number(j.precio); km = Number(j.distancia_km) || 0; min = Number(j.duracion_minutos) || 0; }
     } catch (e) { /* estimado */ }
-    if (!precio) { km = recta * 1.3; precio = tramos(km); }
+    if (!carrera) { km = recta * 1.3; carrera = carreraMoto(km); }
     if (key !== ubicKey) return;
-    envio = { estado: 'ok', valor: Math.round(precio * 100) / 100, km, min, estimado: !min };
+    const servicio = CFG.servicio;
+    envio = { estado: 'ok', valor: r2(carrera + servicio), carrera: r2(carrera), servicio, km, min, estimado: !min };
     pintarEnvio();
+    emitir('ryo:envio', envio);
   }
+  const etaTxt = () => envio.min ? ' · llega en ~' + (envio.min + CFG.cocinaMin) + ' min' : '';
   function pintarEnvio() {
-    const el = $('#envio-linea'); const enCheckout = $('#resumen');
+    const el = $('#envio-linea');
     let txt = '';
     if (entrega === 'retiro') txt = '🏪 Retiras en <b>' + esc(CFG.local.direccion) + '</b> · sin costo de envío';
-    else if (!ubic) txt = '📍 <button type="button" id="btn-ubic-top">Usa tu ubicación</button> para ver el precio del envío';
+    else if (!ubic) txt = '📍 <button type="button" id="btn-ubic-top">Usa tu ubicación</button> para ver el precio del envío · desde ' + money(CFG.carreraMin + CFG.servicio);
     else if (envio.estado === 'loading') txt = '⏳ Calculando tu envío…';
     else if (envio.estado === 'lejos') txt = '😕 Estás a ' + envio.km.toFixed(1) + ' km: fuera de la zona de entrega';
-    else if (envio.estado === 'ok') txt = '🛵 Envío <b>' + money(envio.valor) + '</b> · ' + envio.km.toFixed(1) + ' km' + (envio.min ? ' · llega en ~' + (envio.min + 20) + ' min' : '') + ' <span class="ok">✓</span>';
+    else if (envio.estado === 'ok') txt = '🛵 Envío <b>' + money(envio.valor) + '</b> · ' + envio.km.toFixed(1) + ' km' + etaTxt() + ' <span class="ok">✓</span>';
     el.innerHTML = txt;
-    const b = $('#btn-ubic-top'); if (b) b.addEventListener('click', pedirGPS);
+    const b = $('#btn-ubic-top'); if (b) b.addEventListener('click', () => pedirGPS());
     pintarCarritoBadge();
-    if (enCheckout) pintarResumen();
+    if ($('#resumen')) pintarResumen();
   }
   function setEntrega(e) {
     entrega = e; ls.set('ryo_entrega', e);
@@ -309,10 +329,8 @@
       toast('📍 Ubicación lista ✓', 1500);
       cotizar(); pintarUbic();
       if (typeof cb === 'function') cb();
-    }, () => {
-      pidiendoGPS = false;
-      toast('No pude obtener tu ubicación. Activa el GPS y permite el acceso 📍', 4000);
-    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+    }, () => { pidiendoGPS = false; toast('No pude obtener tu ubicación. Activa el GPS y permite el acceso 📍', 4000); },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
   }
   function mapaUrl(lat, lng, color, label) {
     return 'https://maps.googleapis.com/maps/api/staticmap?size=640x360&scale=2&zoom=16&language=es&center=' + lat + ',' + lng +
@@ -395,7 +413,7 @@
       if (!ubic) notaEnv = '<div class="nota-envio">📍 Falta tu ubicación para calcular el envío</div>';
       else if (envio.estado === 'loading') notaEnv = '<div class="nota-envio">⏳ Calculando el envío…</div>';
       else if (envio.estado === 'lejos') notaEnv = '<div class="nota-envio">😕 Fuera de la zona de entrega (' + envio.km.toFixed(1) + ' km). Puedes retirar en el local.</div>';
-      else if (envio.estado === 'ok') notaEnv = '<div class="nota-envio ok">🛵 ' + envio.km.toFixed(1) + ' km' + (envio.min ? ' · llega en ~' + (envio.min + 20) + ' min' : '') + ' · lo lleva una moto DEWAN</div>';
+      else if (envio.estado === 'ok') notaEnv = '<div class="nota-envio ok">🛵 ' + envio.km.toFixed(1) + ' km' + etaTxt() + ' · lo lleva una moto DEWAN</div>';
     }
     r.innerHTML = '<div class="r"><span>Subtotal (' + nItems() + ' ítems)</span><b>' + money(sub) + '</b></div>' +
       (del ? '<div class="r"><span>Envío 🛵</span><b>' + (envio.estado === 'ok' ? money(env) : '—') + '</b></div>' : '<div class="r"><span>Retiro en local</span><b>$0,00</b></div>') + notaEnv +
@@ -426,14 +444,13 @@
       if (!ubic) { toast('📍 Necesitamos tu ubicación para el envío'); pedirGPS(); return; }
       if (envio.estado === 'loading') { toast('⏳ Un momento, estamos calculando el envío…'); return; }
       if (envio.estado === 'lejos') { toast('Estás fuera de la zona de entrega 😕'); return; }
+      if (envio.estado !== 'ok') { cotizar(); toast('⏳ Calculando el envío, intenta en un segundo'); return; }
       if (!ref) { marcarErr('ref', true); return; } else marcarErr('ref', false);
     }
     const del = entrega === 'domicilio';
-    const sub = Math.round(subtotal() * 100) / 100;
+    const sub = r2(subtotal());
     const env = del ? envio.valor : 0;
-    const total = Math.round((sub + env) * 100) / 100;
-    // Detalle en el formato que ya entienden el panel, la comanda y el link:
-    // "Nx Nombre — $X.XX" por línea; pago con 💳; notas con 📝
+    const total = r2(sub + env);
     let detalle = cart.map((c) => c.qty + 'x ' + c.nombre + ' — ' + '$' + (c.precio * c.qty).toFixed(2)).join('\n');
     detalle += '\n💳 ' + pago;
     cart.forEach((c) => { if (c.salsa) detalle += '\n📝 ' + c.nombre + ': salsa ' + c.salsa; if (c.nota) detalle += '\n📝 ' + c.nombre + ': ' + c.nota; });
@@ -457,7 +474,9 @@
       retiro_lat: CFG.local.lat, retiro_lng: CFG.local.lng,
       detalle_pedido: detalle, metodo_pago: pago,
       precio_base_productos: sub, precio_calculado: env, monto_total: total, markup_dewan: 0,
+      tarifa_servicio: del ? envio.servicio : 0,
       distancia_km: del ? Math.round(envio.km * 10) / 10 : 0,
+      duracion_minutos: del ? (envio.min || 0) : 0,
       factura_datos: factura
     };
     enviando = true;
@@ -482,6 +501,7 @@
     ls.set('ryo_ultimo', { codigo, link, ts: Date.now(), items: resumen, total, entrega });
     cart = []; guardarCart(); pintarMenu($('#q').value); pintarCarritoBadge();
     mostrarExito(codigo, link, resumen, del, env, total);
+    emitir('ryo:pedido', { codigo });
   }
   function mostrarExito(codigo, link, items, del, env, total) {
     const h = $('#hoja .cuerpo-hoja'); if (!h) return;
@@ -548,9 +568,10 @@
     box.onclick = () => { if (p.buscar) { const q = $('#q'); q.value = p.buscar; pintarMenu(p.buscar); $('#menu').scrollIntoView({ block: 'start' }); } };
   }
 
-  /* ================= PWA ================= */
+  /* ================= PWA (solo en la app principal, no en los modelos de muestra) ================= */
   let deferredPrompt = null;
   function pwa() {
+    if (document.body.dataset.pwa === 'off') return;
     if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('sw.js', { scope: './' }); } catch (e) {} }
     const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
     if (standalone || ls.get('ryo_pwa_snooze', 0) > Date.now()) return;
@@ -577,27 +598,33 @@
 
   /* ================= ARRANQUE ================= */
   function init() {
-    // delegación de clics: tarjetas, chips, fab, header
+    document.documentElement.classList.add('anim'); // las animaciones CSS solo corren si el JS llegó hasta aquí
     document.addEventListener('click', (e) => {
-      const card = e.target.closest('[data-prod]'); if (card) { abrirProducto(card.dataset.prod); return; }
+      const todo = e.target.closest('[data-todo]'); if (todo) { e.stopPropagation(); expandidas[todo.dataset.todo] = !expandidas[todo.dataset.todo]; pintarMenu($('#q').value); return; }
+      const card = e.target.closest('[data-prod]'); if (card) { abrirProducto(card.dataset.prod, card); return; }
       const chip = e.target.closest('[data-cat]'); if (chip) { catActiva = chip.dataset.cat; $$('.chip').forEach((c) => c.classList.toggle('on', c === chip)); const s = $('#cat-' + slug(chip.dataset.cat)); if (s) { const y = s.getBoundingClientRect().top + window.scrollY - 128; window.scrollTo({ top: y, behavior: 'smooth' }); } return; }
     });
     $('#fab').addEventListener('click', abrirCarrito);
     $$('#seg button').forEach((b) => b.addEventListener('click', () => { setEntrega(b.dataset.e); if (entrega === 'domicilio' && !ubic) pedirGPS(); }));
     $$('#seg button').forEach((b) => b.classList.toggle('on', b.dataset.e === entrega));
     $('#q').addEventListener('input', (e) => pintarMenu(e.target.value));
-    $('#btn-compartir').addEventListener('click', async () => {
+    const comp = $('#btn-compartir'); if (comp) comp.addEventListener('click', async () => {
       const url = location.origin + location.pathname;
       try { if (navigator.share) { await navigator.share({ title: 'Ryo Burger · pide aquí', text: 'Pide en Ryo Burger sin salir de casa 🍔', url }); return; } } catch (e) { return; }
       try { await navigator.clipboard.writeText(url); toast('Link copiado ✓'); } catch (e) {}
     });
-    $('#hero-cta').addEventListener('click', () => { const s = $('#menu'); if (s) window.scrollTo({ top: s.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' }); });
+    const cta = $('#hero-cta'); if (cta) cta.addEventListener('click', () => { const s = $('#menu'); if (s) window.scrollTo({ top: s.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' }); });
+    // botón de WhatsApp del local (dudas): el número de coexistencia del local
+    if (!$('#wa-local')) { const a = document.createElement('a'); a.id = 'wa-local'; a.className = 'wa-local arriba'; a.href = 'https://wa.me/' + CFG.whatsapp + '?text=' + encodeURIComponent('Hola Ryo Burger, tengo una consulta'); a.target = '_blank'; a.rel = 'noopener'; a.setAttribute('aria-label', 'Escribir al local por WhatsApp'); a.textContent = '💬'; document.body.appendChild(a); }
     // chip activo según scroll
     const obs = ('IntersectionObserver' in window) ? new IntersectionObserver((ents) => {
       ents.forEach((en) => { if (en.isIntersecting) { const k = en.target.id.replace(/^cat-/, ''); $$('.chip').forEach((c) => c.classList.toggle('on', slug(c.dataset.cat) === k)); } });
     }, { rootMargin: '-130px 0px -70% 0px' }) : null;
     const observar = () => { if (obs) { obs.disconnect(); $$('.seccion').forEach((s) => obs.observe(s)); } };
-    const _pm = pintarMenu; pintarMenu = function () { _pm.apply(this, arguments); observar(); };
+    window.addEventListener('ryo:menu', observar);
+    // header compacto al hacer scroll (los temas deciden qué hacer con html.scrolled)
+    let ultimoScroll = -1;
+    window.addEventListener('scroll', () => { const s = window.scrollY > 90; if (s !== ultimoScroll) { ultimoScroll = s; document.documentElement.classList.toggle('scrolled', s); } }, { passive: true });
 
     cargarMenu().then(() => { pintarUltimo(); observar(); });
     pintarPromoDia(); pintarEnvio(); pintarCarritoBadge(); estadoLocal(); pwa();
