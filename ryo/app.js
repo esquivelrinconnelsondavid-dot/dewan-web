@@ -383,7 +383,7 @@
       '<div class="hoja-titulo tit">Tu pedido</div><div class="hoja-sub" id="hoja-sub-cart">' + nItems() + ' ítems · ' + (entrega === 'domicilio' ? 'a domicilio' : 'para retirar') + '</div>' +
       '<div class="cart-items" id="cart-items"></div>' +
       '<div class="bloque"><div class="et">Entrega</div><div class="segment" id="seg2">' +
-        '<button data-e="domicilio" class="' + (entrega === 'domicilio' ? 'on' : '') + '">🛵 A domicilio<small>moto DEWAN</small></button>' +
+        '<button data-e="domicilio" class="' + (entrega === 'domicilio' ? 'on' : '') + '">🛵 A domicilio</button>' +
         '<button data-e="retiro" class="' + (entrega === 'retiro' ? 'on' : '') + '">🏪 Retiro en local<small>sin costo</small></button></div>' +
         '<div id="zona-entrega"></div></div>' +
       '<div class="bloque"><div class="et">Tus datos</div>' +
@@ -428,7 +428,7 @@
       return;
     }
     z.innerHTML = '<div class="ubic" id="ubic-box"><div class="mapa" id="ubic-mapa"><img id="ubic-img" alt=""></div><div class="fila-ubic" id="ubic-fila"></div></div>' +
-      '<label class="campo"><span class="et">Referencia de tu casa</span><input id="c-ref" maxlength="140" placeholder="Ej: casa blanca de 2 pisos, portón negro" value="' + esc(cliente.ref || '') + '"><div class="err oculto" id="e-ref">Cuéntanos una referencia para que la moto te encuentre</div></label>';
+      '<label class="campo"><span class="et">Referencia de tu casa (opcional)</span><input id="c-ref" maxlength="140" placeholder="Ej: casa blanca de 2 pisos, portón negro" value="' + esc(cliente.ref || '') + '"><div class="err oculto" id="e-ref"></div></label>';
     pintarUbic();
   }
   function pintarUbic() {
@@ -486,7 +486,6 @@
       if (envio.estado === 'loading') { toast('⏳ Un momento, estamos calculando el envío…'); return; }
       if (envio.estado === 'lejos') { toast('Estás fuera de la zona de entrega 😕'); return; }
       if (envio.estado !== 'ok') { cotizar(); toast('⏳ Calculando el envío, intenta en un segundo'); return; }
-      if (!ref) { marcarErr('ref', true); return; } else marcarErr('ref', false);
     }
     const del = entrega === 'domicilio';
     const sub = r2(subtotal());
