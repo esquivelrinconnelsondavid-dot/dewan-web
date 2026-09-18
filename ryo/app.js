@@ -21,7 +21,7 @@
     rid: '0cca9530-df0c-4151-87ee-ad619429e714',
     nombre: 'Ryo Burger',
     whatsapp: '593984150412',
-    local: { lat: -1.6653981066649846, lng: -78.65913811876005, direccion: 'Av. Carlos Zambrano y Reina Pacha', ciudad: 'Riobamba' },
+    local: { lat: -1.6653766580570144, lng: -78.65920249177714, direccion: 'Av. Carlos Zambrano y Av. Daniel León Borja', ciudad: 'Riobamba' },
     horario: { abre: '12:00', cierra: '22:30' },
     supa: 'https://wfpdtjmmrhhfuxayvpzu.supabase.co',
     anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s',
@@ -104,8 +104,18 @@
       const r = await fetchJson(CFG.supa + '/rest/v1/vitrina_menu?restaurante_id=eq.' + CFG.rid + '&select=id,categoria_menu,nombre_item,descripcion,precio,foto_url&order=categoria_menu,nombre_item',
         { headers: { apikey: CFG.anon, Authorization: 'Bearer ' + CFG.anon } }, 7000);
       if (r.ok && Array.isArray(r.json) && r.json.length) {
-        rows = r.json.map((x) => ({ id: x.id, c: x.categoria_menu, n: x.nombre_item, d: x.descripcion || '', p: Number(x.precio) || 0, f: String(x.foto_url || '').replace(CFG.fotos, '') }));
+        const prev = {}; leerEmbed().forEach((x) => { prev[x.id] = Number(x.e) || 0; });
+        rows = r.json.map((x) => ({ id: x.id, c: x.categoria_menu, n: x.nombre_item, d: x.descripcion || '', p: Number(x.precio) || 0, f: String(x.foto_url || '').replace(CFG.fotos, ''), e: prev[x.id] || 0 }));
         construir(rows); pintarMenu(); pintarCarritoBadge();
+        try {   // cargo_envase: solo esta en menu_items, la vista vitrina_menu no lo trae
+          const e = await fetchJson(CFG.supa + '/rest/v1/menu_items?restaurante_id=eq.' + CFG.rid + '&select=id,cargo_envase',
+            { headers: { apikey: CFG.anon, Authorization: 'Bearer ' + CFG.anon } }, 6000);
+          if (e.ok && Array.isArray(e.json) && e.json.length) {
+            const mapa = {}; e.json.forEach((x) => { mapa[x.id] = Number(x.cargo_envase) || 0; });
+            rows.forEach((x) => { if (mapa[x.id] != null) x.e = mapa[x.id]; });
+            construir(rows); pintarMenu(); pintarCarritoBadge();
+          }
+        } catch (e2) { /* nos quedamos con el envase del embed */ }
       }
     } catch (e) { /* nos quedamos con el embebido */ }
   }
@@ -122,7 +132,7 @@
     POR_ID = {}; PROMOS_OCULTAS.clear(); const mapa = new Map();
     rows.forEach((r) => {
       if (!promoDeHoy(r)) { PROMOS_OCULTAS.add(r.id); return; }
-      POR_ID[r.id] = { nombre: r.n, precio: r.p, cat: r.c };
+      POR_ID[r.id] = { nombre: r.n, precio: r.p, cat: r.c, envase: Number(r.e) || 0 };
       const m = r.n.match(RE_VAR);
       const base = m ? r.n.slice(0, m.index).trim() : r.n;
       const varLabel = m ? m[1] : '';
@@ -131,7 +141,7 @@
       const p = mapa.get(key);
       if (!p.desc || (r.d && r.d.length > p.desc.length && !varLabel.match(/combo/i))) p.desc = limpiarDesc(r.d);
       if (!p.foto && r.f) p.foto = r.f;
-      p.variantes.push({ id: r.id, label: etiquetaVar(varLabel), precio: r.p, nombre: r.n, orden: varLabel ? (varLabel.match(/sola|mediana/i) ? 0 : (varLabel.match(/combo|grande/i) ? 1 : parseInt(varLabel) || 2)) : 0 });
+      p.variantes.push({ id: r.id, label: etiquetaVar(varLabel), precio: r.p, nombre: r.n, envase: Number(r.e) || 0, orden: varLabel ? (varLabel.match(/sola|mediana/i) ? 0 : (varLabel.match(/combo|grande/i) ? 1 : parseInt(varLabel) || 2)) : 0 });
       const s = parsearSalsas(r.d); if (s.lista.length) { p.salsas = s.lista; p.salsasMax = s.max; }
       if (/pork bacon|gaucha|primicias/i.test(r.n)) p.nuevo = true;
     });
@@ -245,6 +255,7 @@
       (p.salsas.length ? '<div class="bloque"><div class="et">' + (maxS > 1 ? 'Tus salsas · elige hasta ' + maxS : 'Tu salsa') + ' <span id="salsa-sel">' + esc(salsas.join(' + ')) + '</span></div><div class="salsas" id="salsas">' +
         p.salsas.map((s, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-s="' + esc(s) + '">' + esc(s) + '</button>').join('') + '</div></div>' : '') +
       '<div class="bloque"><div class="et">Alguna nota para la cocina</div><input class="nota-in" id="nota-prod" maxlength="120" placeholder="' + esc(placeholderNota(p)) + '"></div>' +
+      (envMax(p) > 0 ? '<div class="prod-envase">📦 Se suma ' + money(envMax(p)) + ' por el envase para llevar</div>' : '') +
       '<div class="prod-pie"><div class="stepper"><button id="q-menos" aria-label="menos">−</button><b id="q-n">1</b><button id="q-mas" aria-label="más">+</button></div>' +
       '<button class="btn-p" id="agregar"><span>Agregar</span><span class="t" id="agregar-total">' + money(vSel.precio) + '</span></button></div>';
     const hoja = abrirHoja(html);
@@ -270,6 +281,7 @@
       toast('✅ ' + qty + 'x ' + vSel.nombre + ' agregado');
     });
   }
+  function envMax(p) { return p.variantes.reduce((m, v) => Math.max(m, Number(v.envase) || 0), 0); }
   function placeholderNota(p) {
     if (/gordon|cordon/i.test(p.nombre)) return 'Ej: la quiero de lentejas';
     if (/infantil/i.test(p.nombre)) return 'Ej: con pop corn y jugo del Valle';
@@ -281,17 +293,21 @@
   function agregar(v, qty, salsa, nota) {
     const key = v.id + '|' + norm(salsa) + '|' + norm(nota);
     const ex = cart.find((c) => c.key === key);
-    if (ex) ex.qty += qty; else cart.push({ key, id: v.id, nombre: v.nombre, precio: v.precio, qty, salsa: salsa || '', nota: nota || '' });
+    if (ex) ex.qty += qty; else cart.push({ key, id: v.id, nombre: v.nombre, precio: v.precio, envase: Number(v.envase) || 0, qty, salsa: salsa || '', nota: nota || '' });
     guardarCart(); pintarMenu($('#q').value); pintarCarritoBadge(true);
   }
   function guardarCart() { ls.set('ryo_cart', cart); }
   const subtotal = () => cart.reduce((t, c) => t + c.precio * c.qty, 0);
   const nItems = () => cart.reduce((t, c) => t + c.qty, 0);
+  // Envase "para llevar": dato por plato (menu_items.cargo_envase). Bebidas e ingredientes extra van en 0.
+  const envaseDe = (c) => { const p = POR_ID[c.id]; return Number(p && p.envase != null ? p.envase : c.envase) || 0; };
+  const envases = () => cart.reduce((t, c) => t + envaseDe(c) * c.qty, 0);
+  const nEnvases = () => cart.reduce((t, c) => t + (envaseDe(c) > 0 ? c.qty : 0), 0);
   function pintarCarritoBadge(pop) {
     const fab = $('#fab'); const n = nItems();
     fab.classList.toggle('oculto-anim', n === 0);
     const wa = $('#wa-local'); if (wa) wa.classList.toggle('arriba', n === 0);
-    $('#fab-n').textContent = n; $('#fab-t').textContent = money(subtotal() + (entrega === 'domicilio' && envio.estado === 'ok' ? envio.valor : 0));
+    $('#fab-n').textContent = n; $('#fab-t').textContent = money(subtotal() + envases() + (entrega === 'domicilio' && envio.estado === 'ok' ? envio.valor : 0));
     if (pop) { fab.classList.remove('pop'); void fab.offsetWidth; fab.classList.add('pop'); }
   }
 
@@ -397,7 +413,8 @@
   function pintarCartItems() {
     const c = $('#cart-items'); if (!c) return;
     c.innerHTML = cart.map((it, i) => '<div class="cart-item"><div><div class="n">' + esc(it.nombre) + '</div>' +
-      ((it.salsa || it.nota) ? '<div class="d">' + esc([it.salsa ? (it.salsa.indexOf(' + ') >= 0 ? 'Salsas: ' : 'Salsa: ') + it.salsa : '', it.nota].filter(Boolean).join(' · ')) + '</div>' : '') + '</div>' +
+      ((it.salsa || it.nota) ? '<div class="d">' + esc([it.salsa ? (it.salsa.indexOf(' + ') >= 0 ? 'Salsas: ' : 'Salsa: ') + it.salsa : '', it.nota].filter(Boolean).join(' · ')) + '</div>' : '') +
+      (envaseDe(it) > 0 ? '<div class="d">📦 + envase ' + money(envaseDe(it)) + ' c/u</div>' : '') + '</div>' +
       '<div class="r"><div class="p">' + money(it.precio * it.qty) + '</div><div class="stepper chico"><button data-m="' + i + '">−</button><b>' + it.qty + '</b><button data-p="' + i + '">+</button></div></div></div>').join('');
     $$('[data-m]', c).forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.m; cart[i].qty--; if (cart[i].qty <= 0) cart.splice(i, 1); guardarCart(); if (!cart.length) { cerrarHoja(); pintarMenu($('#q').value); return; } pintarCartItems(); pintarResumen(); pintarMenu($('#q').value); }));
     $$('[data-p]', c).forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.p; cart[i].qty = Math.min(20, cart[i].qty + 1); guardarCart(); pintarCartItems(); pintarResumen(); pintarMenu($('#q').value); }));
@@ -429,7 +446,7 @@
   }
   function pintarResumen() {
     const r = $('#resumen'); if (!r) return;
-    const sub = subtotal(); const del = entrega === 'domicilio';
+    const sub = subtotal(); const env2 = envases(); const del = entrega === 'domicilio';
     const env = del && envio.estado === 'ok' ? envio.valor : 0;
     let notaEnv = '';
     if (del) {
@@ -439,9 +456,10 @@
       else if (envio.estado === 'ok') notaEnv = '<div class="nota-envio ok">🛵 ' + envio.km.toFixed(1) + ' km' + etaTxt() + ' · lo lleva una moto DEWAN</div>';
     }
     r.innerHTML = '<div class="r"><span>Subtotal (' + nItems() + ' ítems)</span><b>' + money(sub) + '</b></div>' +
+      (env2 > 0 ? '<div class="r"><span>Envases para llevar (' + nEnvases() + ')</span><b>' + money(env2) + '</b></div>' : '') +
       (del ? '<div class="r"><span>Envío 🛵</span><b>' + (envio.estado === 'ok' ? money(env) : '—') + '</b></div>' : '<div class="r"><span>Retiro en local</span><b>$0,00</b></div>') + notaEnv +
-      '<div class="r tot"><span>Total a pagar · ' + esc(pago) + '</span><b>' + money(sub + env) + '</b></div>';
-    const ct = $('#confirmar-total'); if (ct) ct.textContent = money(sub + env);
+      '<div class="r tot"><span>Total a pagar · ' + esc(pago) + '</span><b>' + money(sub + env2 + env) + '</b></div>';
+    const ct = $('#confirmar-total'); if (ct) ct.textContent = money(sub + env2 + env);
     const av = $('#aviso-cerrado'); const btn = $('#confirmar'); const bt = $('#confirmar-txt');
     if (av && btn) {
       if (!abierto) { av.innerHTML = '<div class="aviso">⏰ ' + esc(motivoCerrado) + '</div>'; btn.disabled = true; bt.textContent = 'Cerrado ahora'; }
@@ -472,9 +490,11 @@
     }
     const del = entrega === 'domicilio';
     const sub = r2(subtotal());
+    const envs = r2(envases());
     const env = del ? envio.valor : 0;
-    const total = r2(sub + env);
+    const total = r2(sub + envs + env);
     let detalle = cart.map((c) => c.qty + 'x ' + c.nombre + ' — ' + '$' + (c.precio * c.qty).toFixed(2)).join('\n');
+    if (envs > 0) detalle += '\n📦 Envases para llevar (' + nEnvases() + ') — $' + envs.toFixed(2);
     detalle += '\n💳 ' + pago;
     cart.forEach((c) => { if (c.salsa) detalle += '\n📝 ' + c.nombre + (c.salsa.indexOf(' + ') >= 0 ? ': salsas ' : ': salsa ') + c.salsa; if (c.nota) detalle += '\n📝 ' + c.nombre + ': ' + c.nota; });
     if (nota) detalle += '\n📝 ' + nota;
@@ -496,7 +516,7 @@
       direccion_retiro: del ? null : CFG.local.direccion,
       retiro_lat: CFG.local.lat, retiro_lng: CFG.local.lng,
       detalle_pedido: detalle, metodo_pago: pago,
-      precio_base_productos: sub, precio_calculado: env, monto_total: total, markup_dewan: 0,
+      precio_base_productos: r2(sub + envs), precio_calculado: env, monto_total: total, markup_dewan: 0,
       tarifa_servicio: del ? envio.servicio : 0,
       distancia_km: del ? Math.round(envio.km * 10) / 10 : 0,
       duracion_minutos: del ? (envio.min || 0) : 0,
@@ -557,7 +577,7 @@
       '<div class="acciones">' + (reciente ? '<a href="' + esc(u.link) + '" target="_blank" rel="noopener">Seguir 📍</a>' : '') + '<button type="button" id="btn-repetir">Repetir</button></div>';
     $('#btn-repetir').addEventListener('click', () => {
       let n = 0;
-      u.items.forEach((c) => { const p = POR_ID[c.id]; if (!p) return; agregar({ id: c.id, nombre: p.nombre, precio: p.precio }, c.qty, c.salsa, c.nota); n += c.qty; });
+      u.items.forEach((c) => { const p = POR_ID[c.id]; if (!p) return; agregar({ id: c.id, nombre: p.nombre, precio: p.precio, envase: p.envase || 0 }, c.qty, c.salsa, c.nota); n += c.qty; });
       if (n) { toast('🔁 ' + n + ' ítems de nuevo en tu pedido (con precios de hoy)'); abrirCarrito(); } else toast('Esos platos ya no están en la carta 🙈');
     });
   }
