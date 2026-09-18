@@ -42,7 +42,7 @@
     { k: 'Hamburguesas de Pollo',     t: 'De pollo crocante',   e: '🐔' },
     { k: 'Hamburguesas Lomo Fino',    t: 'Lomo fino',           e: '🥩', sub: '180 g de lomo fino en pan de papa · nuevas' },
     { k: 'Hamburguesas Vegetarianas', t: 'Veggie',              e: '🥬' },
-    { k: 'Alitas',                    t: 'Alitas',              e: '🍗', sub: 'Elige tu salsa · vienen con papas' },
+    { k: 'Alitas',                    t: 'Alitas',              e: '🍗', sub: 'Elige tus salsas · vienen con papas' },
     { k: 'Costillas',                 t: 'Costillas',           e: '🍖' },
     { k: 'Promos',                    t: 'Promos',              e: '🎉', sub: 'Solo por hoy · cada día tiene la suya' },
     { k: 'Especiales',                t: 'Para compartir',      e: '👨‍👩‍👧' },
@@ -109,7 +109,7 @@
       }
     } catch (e) { /* nos quedamos con el embebido */ }
   }
-  const RE_VAR = /\s+(Sola|Combo|Mediana|Grande|(\d+)\s+unidades)$/i;
+  const RE_VAR = /\s+(Sola|Combo|Mediana|Grande)$/i;   // 'N unidades' NO se agrupa: cada tamaño de alitas es su tarjeta (con su tope de salsas)
   /* Promos por día: "Lunes para Todos" solo los lunes, "Martes Locos" los martes, "Jueves ..." los jueves (hora EC). */
   const DIAS = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
   const PROMOS_OCULTAS = new Set();
@@ -127,12 +127,12 @@
       const base = m ? r.n.slice(0, m.index).trim() : r.n;
       const varLabel = m ? m[1] : '';
       const key = r.c + '|' + norm(base);
-      if (!mapa.has(key)) mapa.set(key, { key, cat: r.c, nombre: base, desc: '', foto: r.f || '', variantes: [], salsas: [], nuevo: false });
+      if (!mapa.has(key)) mapa.set(key, { key, cat: r.c, nombre: base, desc: '', foto: r.f || '', variantes: [], salsas: [], salsasMax: 1, nuevo: false, unidades: parseInt((base.match(/(\d+)\s+unidades/i) || [])[1], 10) || 0 });
       const p = mapa.get(key);
       if (!p.desc || (r.d && r.d.length > p.desc.length && !varLabel.match(/combo/i))) p.desc = limpiarDesc(r.d);
       if (!p.foto && r.f) p.foto = r.f;
       p.variantes.push({ id: r.id, label: etiquetaVar(varLabel), precio: r.p, nombre: r.n, orden: varLabel ? (varLabel.match(/sola|mediana/i) ? 0 : (varLabel.match(/combo|grande/i) ? 1 : parseInt(varLabel) || 2)) : 0 });
-      const s = parsearSalsas(r.d); if (s.length) p.salsas = s;
+      const s = parsearSalsas(r.d); if (s.lista.length) { p.salsas = s.lista; p.salsasMax = s.max; }
       if (/pork bacon|gaucha|primicias/i.test(r.n)) p.nuevo = true;
     });
     PRODUCTOS = Array.from(mapa.values());
@@ -148,8 +148,12 @@
     const n = parseInt(v); if (n) return n + ' unidades';
     return v;
   }
-  function limpiarDesc(d) { return String(d || '').replace(/\s*\+\s*papas\s*\+\s*bebida\s*$/i, '').replace(/Salsas a elecci[oó]n:.*$/i, '').replace(/\s+$/, '').replace(/[,.]\s*$/, ''); }
-  function parsearSalsas(d) { const m = /Salsas a elecci[oó]n:\s*([^.\n]+)/i.exec(d || ''); return m ? m[1].split('/').map((s) => s.trim()).filter(Boolean) : []; }
+  function limpiarDesc(d) { return String(d || '').replace(/\s*\+\s*papas\s*\+\s*bebida\s*$/i, '').replace(/(Salsas a elecci[oó]n|Elige\s+\d+\s+salsas?).*$/i, '').replace(/\s+$/, '').replace(/[,.]\s*$/, ''); }
+  function parsearSalsas(d) {
+    const m = /(?:Salsas a elecci[oó]n|Elige\s+(\d+)\s+salsas?)(?:\s*\((?:elige\s+)?(\d+)\))?\s*:\s*([^.\n]+)/i.exec(d || '');
+    if (!m) return { lista: [], max: 1 };
+    return { lista: m[3].split('/').map((x) => x.trim()).filter(Boolean), max: Math.max(1, parseInt(m[1] || m[2], 10) || 1) };
+  }
   function catInfo(k) { return CATS.find((c) => norm(c.k) === norm(k)) || { k, t: k, e: '🍽️' }; }
   function catsPresentes() {
     const set = new Set(PRODUCTOS.map((p) => norm(p.cat)));
@@ -172,6 +176,7 @@
     cats.forEach((c) => {
       let prods = PRODUCTOS.filter((p) => norm(p.cat) === norm(c.k));
       if (q) prods = prods.filter((p) => norm(p.nombre + ' ' + p.desc).includes(q));
+      prods = prods.slice().sort((a, b) => (a.unidades || 9999) - (b.unidades || 9999));
       if (!prods.length) return;
       const abierta = !!expandidas[c.k] || !!q;
       const rail = MODELO === 'b' && !c.lista && prods.length > 2 && !abierta;
@@ -192,7 +197,7 @@
     const q = qtyDe(p); const f = fotoUrl(p.foto); const unaVar = p.variantes.length === 1;
     return '<button class="card" data-prod="' + esc(p.key) + '" aria-label="' + esc(p.nombre) + '">' +
       '<div class="foto">' + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '<div class="emoji">' + emojiDe(p) + '</div>') +
-      (p.nuevo ? '<span class="tag">Nuevo</span>' : '') + (p.salsas.length ? '<span class="tag rojo">Elige salsa</span>' : '') + '</div>' +
+      (p.nuevo ? '<span class="tag">Nuevo</span>' : '') + (p.salsas.length ? '<span class="tag rojo">' + (p.salsasMax > 1 ? 'Elige ' + p.salsasMax + ' salsas' : 'Elige salsa') + '</span>' : '') + '</div>' +
       '<div class="cuerpo"><div class="nom tit">' + esc(p.nombre) + '</div>' + (p.desc ? '<div class="desc">' + esc(p.desc) + '</div>' : '') +
       '<div class="pie"><div class="precio">' + (unaVar ? '' : '<small>desde</small>') + money(p.desde) + '</div>' +
       '<span class="mas' + (q ? ' qty' : '') + '">' + (q ? q + ' en tu pedido' : '+') + '</span></div></div></button>';
@@ -229,14 +234,15 @@
 
   function abrirProducto(key, origenEl) {
     const p = PRODUCTOS.find((x) => x.key === key); if (!p) return;
-    let vSel = p.variantes[0], salsa = p.salsas[0] || '', qty = 1;
+    let vSel = p.variantes[0], salsas = p.salsas.length ? [p.salsas[0]] : [], qty = 1;
+    const maxS = p.salsasMax || 1;
     const f = fotoUrl(p.foto);
     const html =
       '<div class="prod-foto">' + (f ? '<img src="' + esc(f) + '" alt="">' : '<div class="emoji">' + emojiDe(p) + '</div>') + '</div>' +
       '<div class="prod-nom tit">' + esc(p.nombre) + '</div>' + (p.desc ? '<div class="prod-desc">' + esc(p.desc) + '</div>' : '') +
       (p.variantes.length > 1 ? '<div class="bloque"><div class="et">Elige cómo la quieres</div><div class="opciones" id="vars">' +
         p.variantes.map((v, i) => '<button class="opcion' + (i === 0 ? ' on' : '') + '" data-i="' + i + '"><span class="radio"></span><div><b>' + esc(v.label || p.nombre) + '</b></div><span class="p">' + money(v.precio) + '</span></button>').join('') + '</div></div>' : '') +
-      (p.salsas.length ? '<div class="bloque"><div class="et">Tu salsa <span id="salsa-sel">' + esc(salsa) + '</span></div><div class="salsas" id="salsas">' +
+      (p.salsas.length ? '<div class="bloque"><div class="et">' + (maxS > 1 ? 'Tus salsas · elige hasta ' + maxS : 'Tu salsa') + ' <span id="salsa-sel">' + esc(salsas.join(' + ')) + '</span></div><div class="salsas" id="salsas">' +
         p.salsas.map((s, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-s="' + esc(s) + '">' + esc(s) + '</button>').join('') + '</div></div>' : '') +
       '<div class="bloque"><div class="et">Alguna nota para la cocina</div><input class="nota-in" id="nota-prod" maxlength="120" placeholder="' + esc(placeholderNota(p)) + '"></div>' +
       '<div class="prod-pie"><div class="stepper"><button id="q-menos" aria-label="menos">−</button><b id="q-n">1</b><button id="q-mas" aria-label="más">+</button></div>' +
@@ -244,14 +250,21 @@
     const hoja = abrirHoja(html);
     const refrescar = () => { $('#q-n', hoja).textContent = qty; $('#agregar-total', hoja).textContent = money(vSel.precio * qty); const qn = $('#q-n', hoja); qn.classList.remove('pop'); void qn.offsetWidth; qn.classList.add('pop'); };
     $$('#vars .opcion', hoja).forEach((b) => b.addEventListener('click', () => { $$('#vars .opcion', hoja).forEach((x) => x.classList.remove('on')); b.classList.add('on'); vSel = p.variantes[+b.dataset.i]; refrescar(); }));
-    $$('#salsas .salsa', hoja).forEach((b) => b.addEventListener('click', () => { $$('#salsas .salsa', hoja).forEach((x) => x.classList.remove('on')); b.classList.add('on'); salsa = b.dataset.s; $('#salsa-sel', hoja).textContent = salsa; }));
+    $$('#salsas .salsa', hoja).forEach((b) => b.addEventListener('click', () => {
+      const sv = b.dataset.s, i = salsas.indexOf(sv);
+      if (i >= 0) { if (salsas.length > 1) salsas.splice(i, 1); }                      // quitar (siempre queda al menos una)
+      else if (maxS <= 1) salsas = [sv];                                              // una sola: reemplaza
+      else { salsas.push(sv); if (salsas.length > maxS) salsas.shift(); }             // varias: al pasarse, sale la más vieja
+      $$('#salsas .salsa', hoja).forEach((x) => x.classList.toggle('on', salsas.includes(x.dataset.s)));
+      $('#salsa-sel', hoja).textContent = salsas.join(' + ');
+    }));
     $('#q-mas', hoja).addEventListener('click', () => { qty = Math.min(20, qty + 1); refrescar(); });
     $('#q-menos', hoja).addEventListener('click', () => { qty = Math.max(1, qty - 1); refrescar(); });
     $('#agregar', hoja).addEventListener('click', () => {
       const nota = ($('#nota-prod', hoja).value || '').trim().slice(0, 120);
       const img = $('.prod-foto img', hoja);
       const rect = img ? img.getBoundingClientRect() : null;
-      agregar(vSel, qty, salsa, nota);
+      agregar(vSel, qty, salsas.join(' + '), nota);
       cerrarHoja();
       emitir('ryo:agregado', { foto: f, rect, qty });
       toast('✅ ' + qty + 'x ' + vSel.nombre + ' agregado');
@@ -384,7 +397,7 @@
   function pintarCartItems() {
     const c = $('#cart-items'); if (!c) return;
     c.innerHTML = cart.map((it, i) => '<div class="cart-item"><div><div class="n">' + esc(it.nombre) + '</div>' +
-      ((it.salsa || it.nota) ? '<div class="d">' + esc([it.salsa ? 'Salsa: ' + it.salsa : '', it.nota].filter(Boolean).join(' · ')) + '</div>' : '') + '</div>' +
+      ((it.salsa || it.nota) ? '<div class="d">' + esc([it.salsa ? (it.salsa.indexOf(' + ') >= 0 ? 'Salsas: ' : 'Salsa: ') + it.salsa : '', it.nota].filter(Boolean).join(' · ')) + '</div>' : '') + '</div>' +
       '<div class="r"><div class="p">' + money(it.precio * it.qty) + '</div><div class="stepper chico"><button data-m="' + i + '">−</button><b>' + it.qty + '</b><button data-p="' + i + '">+</button></div></div></div>').join('');
     $$('[data-m]', c).forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.m; cart[i].qty--; if (cart[i].qty <= 0) cart.splice(i, 1); guardarCart(); if (!cart.length) { cerrarHoja(); pintarMenu($('#q').value); return; } pintarCartItems(); pintarResumen(); pintarMenu($('#q').value); }));
     $$('[data-p]', c).forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.p; cart[i].qty = Math.min(20, cart[i].qty + 1); guardarCart(); pintarCartItems(); pintarResumen(); pintarMenu($('#q').value); }));
@@ -463,7 +476,7 @@
     const total = r2(sub + env);
     let detalle = cart.map((c) => c.qty + 'x ' + c.nombre + ' — ' + '$' + (c.precio * c.qty).toFixed(2)).join('\n');
     detalle += '\n💳 ' + pago;
-    cart.forEach((c) => { if (c.salsa) detalle += '\n📝 ' + c.nombre + ': salsa ' + c.salsa; if (c.nota) detalle += '\n📝 ' + c.nombre + ': ' + c.nota; });
+    cart.forEach((c) => { if (c.salsa) detalle += '\n📝 ' + c.nombre + (c.salsa.indexOf(' + ') >= 0 ? ': salsas ' : ': salsa ') + c.salsa; if (c.nota) detalle += '\n📝 ' + c.nombre + ': ' + c.nota; });
     if (nota) detalle += '\n📝 ' + nota;
     let factura = null;
     if ($('#c-fact').checked) {
