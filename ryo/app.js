@@ -44,7 +44,7 @@
     { k: 'Hamburguesas Vegetarianas', t: 'Veggie',              e: '🥬' },
     { k: 'Alitas',                    t: 'Alitas',              e: '🍗', sub: 'Elige tu salsa · vienen con papas' },
     { k: 'Costillas',                 t: 'Costillas',           e: '🍖' },
-    { k: 'Promos',                    t: 'Promos',              e: '🎉', sub: 'Lunes, martes y jueves tienen lo suyo' },
+    { k: 'Promos',                    t: 'Promos',              e: '🎉', sub: 'Solo por hoy · cada día tiene la suya' },
     { k: 'Especiales',                t: 'Para compartir',      e: '👨‍👩‍👧' },
     { k: 'Ensaladas',                 t: 'Ensaladas',           e: '🥗' },
     { k: 'Menú Infantil',             t: 'Menú infantil',       e: '🧒' },
@@ -110,9 +110,18 @@
     } catch (e) { /* nos quedamos con el embebido */ }
   }
   const RE_VAR = /\s+(Sola|Combo|Mediana|Grande|(\d+)\s+unidades)$/i;
+  /* Promos por día: "Lunes para Todos" solo los lunes, "Martes Locos" los martes, "Jueves ..." los jueves (hora EC). */
+  const DIAS = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+  const PROMOS_OCULTAS = new Set();
+  function promoDeHoy(r) {
+    if (norm(r.c) !== 'promos') return true;
+    const m = norm(r.n).match(/^(lunes|martes|miercoles|jueves|viernes|sabado|domingo)(\s|$)/);
+    return !m || m[1] === DIAS[diaEC()];
+  }
   function construir(rows) {
-    POR_ID = {}; const mapa = new Map();
+    POR_ID = {}; PROMOS_OCULTAS.clear(); const mapa = new Map();
     rows.forEach((r) => {
+      if (!promoDeHoy(r)) { PROMOS_OCULTAS.add(r.id); return; }
       POR_ID[r.id] = { nombre: r.n, precio: r.p, cat: r.c };
       const m = r.n.match(RE_VAR);
       const base = m ? r.n.slice(0, m.index).trim() : r.n;
@@ -128,6 +137,7 @@
     });
     PRODUCTOS = Array.from(mapa.values());
     PRODUCTOS.forEach((p) => { p.variantes.sort((a, b) => a.orden - b.orden || a.precio - b.precio); p.desde = Math.min.apply(null, p.variantes.map((v) => v.precio)); });
+    if (cart.some((c) => PROMOS_OCULTAS.has(c.id))) { cart = cart.filter((c) => !PROMOS_OCULTAS.has(c.id)); guardarCart(); }
   }
   function etiquetaVar(v) {
     if (!v) return '';
