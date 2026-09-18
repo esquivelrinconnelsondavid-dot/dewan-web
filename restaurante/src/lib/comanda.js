@@ -29,11 +29,11 @@ const LS_LIVIANO = 'dewan_impresora_liviano'; // '1' = sin negrita/sin emojis (i
 // minH evita páginas más anchas que altas (algunos drivers de Windows las
 // rotan a landscape); guiones = largo de la línea separadora de texto.
 const PAPEL = {
-  '80': { maxW: '70mm', fs: 13, guiones: 32, minH: '90mm' },
+  '80': { maxW: '70mm', fs: 14, guiones: 32, minH: '90mm' },
   '76': { maxW: '60mm', fs: 12, guiones: 28, minH: '90mm' },
-  '58': { maxW: '46mm', fs: 12, guiones: 22, minH: '70mm' },
+  '58': { maxW: '46mm', fs: 13, guiones: 22, minH: '70mm' },
   'a4': { maxW: '190mm', fs: 14, guiones: 40, minH: null },
-  'auto': { maxW: '68mm', fs: 13, guiones: 32, minH: null, anchoAuto: true },
+  'auto': { maxW: '68mm', fs: 14, guiones: 32, minH: null, anchoAuto: true },
 };
 
 // ¿Estamos en la app de escritorio (Electron) con impresión disponible?
@@ -138,6 +138,11 @@ function ahoraTexto() {
 // allá de la barra de corte (cabezal→corte: térmicas ~15mm, impacto ~28mm);
 // sin él, el final del ticket queda DENTRO de la máquina. main.cjs mide
 // document.body.scrollHeight, que ya incluye este padding.
+// LETRA GRUESA (18-sep-2026): el driver de Windows rasteriza el ticket como
+// IMAGEN a ~203 dpi y convierte el gris del antialiasing en puntos salteados.
+// Courier New normal (trazo ~1px) salía "sin tinta" en TODOS los locales.
+// Térmica: Consolas (trazo grueso, viene con Windows) + todo en negrita +
+// text-stroke → el trazo queda sólido tras el tramado (simulado: x2 de negro).
 export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre = '', liviano = false } = {}) {
   const papel = PAPEL[ancho] || PAPEL['80'];
   const termica = ancho !== 'a4';
@@ -146,16 +151,20 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
   // número de pedido y el total SÍ conservan negrita (tokens cortos no traban
   // la impresora; lo que la trababa eran emojis y negrita masiva).
   const limp = liviano ? limpiarTextoSimple : (x) => x;
+  const wBase = liviano ? 400 : 700;   // hasta las líneas de detalle van en negrita
   const wBold = liviano ? 400 : 700;
   const wBlack = liviano ? 400 : 900;
   const wBig = liviano ? 700 : 900;
+  const fuente = liviano ? "'Courier New',monospace" : "Consolas,'Lucida Console','Courier New',monospace";
+  const grueso = liviano ? '' : '-webkit-text-stroke:0.35px #000;';
   const bigFs = liviano ? fs + 5 : fs + 9;
   const restFs = liviano ? fs + 1 : fs + 3;
   const itemsFs = liviano ? fs : fs + 1;
-  // OJO: 12mm bastan SOLO porque main.cjs suma +24px (~6mm) de colchón al alto
-  // de página; si ese buffer se quita, el final vuelve a quedar dentro de la
-  // impresora en térmicas de rasgado manual (cabezal→barra ~15mm).
-  const feed = termica ? (liviano ? '28mm' : '12mm') : '8mm';
+  // 18-sep-2026: con 12mm (+24px de colchón en main.cjs) el final seguía
+  // quedando DENTRO en varias térmicas (tocaban FEED para ver el total):
+  // la barra de rasgado queda más lejos del cabezal que los ~15mm de catálogo.
+  // 24mm de avance en térmicas; impacto sigue en 28mm.
+  const feed = termica ? (liviano ? '28mm' : '24mm') : '8mm';
   const sep = liviano
     ? `<div class="sept">${'-'.repeat(papel.guiones)}</div>`
     : '<hr class="sep">';
@@ -210,7 +219,7 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     * { margin:0; padding:0; box-sizing:border-box; }
     html,body { background:#fff; }
-    body { font-family:'Courier New',monospace; color:#000; font-size:${fs}px;
+    body { font-family:${fuente}; color:#000; font-size:${fs}px; font-weight:${wBase}; ${grueso}
       line-height:${liviano ? 1.3 : 1.2};
       ${papel.anchoAuto ? `width:auto; max-width:${papel.maxW};` : `width:${papel.maxW};`}
       ${papel.minH ? `min-height:${papel.minH};` : ''}
@@ -218,13 +227,13 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
     .c { text-align:center; }
     .big { font-size:${bigFs}px; font-weight:${wBig}; }
     .rest { font-size:${restFs}px; font-weight:${wBlack}; text-transform:uppercase; }
-    .sep { border:none; border-top:1px dashed #000; margin:3px 0; }
+    .sep { border:none; border-top:2px dashed #000; margin:3px 0; }
     .sept { text-align:center; white-space:nowrap; overflow:hidden; }
     .row { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
     .idrow { margin:2px 0; }
     .plato { white-space:normal; overflow-wrap:break-word; font-weight:${wBold}; font-size:${itemsFs}px; margin-top:3px; padding-left:1.2em; text-indent:-1.2em; }
-    .sub { white-space:normal; overflow-wrap:break-word; font-weight:400; font-size:${fs}px; padding-left:12px; }
-    .lbl { font-weight:400; }
+    .sub { white-space:normal; overflow-wrap:break-word; font-weight:${wBase}; font-size:${fs}px; padding-left:12px; }
+    .lbl { font-weight:${wBase}; }
     .b { font-weight:${wBlack}; }
     .tot { font-size:${fs + 3}px; font-weight:${wBig}; }
     .fin { margin-top:3px; }
