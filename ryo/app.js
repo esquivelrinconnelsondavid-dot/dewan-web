@@ -21,7 +21,7 @@
     rid: '0cca9530-df0c-4151-87ee-ad619429e714',
     nombre: 'Ryo Burger',
     whatsapp: '593984150412',
-    local: { lat: -1.6653766580570144, lng: -78.65920249177714, direccion: 'Av. Carlos Zambrano y Av. Daniel León Borja', ciudad: 'Riobamba' },
+    local: { lat: -1.6653981066649846, lng: -78.65915957643243, direccion: 'Reina Pacha y Av. Carlos Zambrano', ciudad: 'Riobamba' },
     horario: { abre: '12:00', cierra: '22:30' },
     supa: 'https://wfpdtjmmrhhfuxayvpzu.supabase.co',
     anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s',
