@@ -29,7 +29,9 @@ export const RECHAZO_PATH = import.meta.env.VITE_N8N_RECHAZO_PATH || '';
 export function codigoPedido(pedido) {
   if (!pedido) return '';
   const cod = pedido.codigo_pedido ? String(pedido.codigo_pedido).trim() : '';
-  if (MODO_HP) return cod ? `#${cod.split('-').pop()}` : `#${pedido.id}`;
+  // [18-sep] El SISTEMA (Panel de Pedidos) muestra el codigo COMPLETO (RYO-55): David quiere que
+  // la comanda diga lo mismo que la app de motos y los mensajes al cliente. HP sigue con #numero.
+  if (MODO_HP && !MODO_SISTEMA) return cod ? `#${cod.split('-').pop()}` : `#${pedido.id}`;
   return cod || `#${pedido.id}`;
 }
 
