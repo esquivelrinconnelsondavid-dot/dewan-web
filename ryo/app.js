@@ -27,6 +27,7 @@
     anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s',
     tabla: 'pedidos_sistema',
     cotizador: 'https://n8n.dewansas.com/webhook/calcular-precio',
+    avisoWa: 'https://n8n.dewansas.com/webhook/ryo-pedido-recibido',   // manda la confirmacion al WhatsApp del cliente
     seguimiento: 'https://dewansas.com/pedido/?s=sistema&t=',
     fotos: 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/storage/v1/object/public/menu-fotos/0cca9530-df0c-4151-87ee-ad619429e714/',
     mapsKey: 'AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs',
@@ -538,7 +539,23 @@
     enviando = false;
     cliente.nombre = nombre; cliente.tel = $('#c-tel').value; if (del) cliente.ref = ref; ls.set('ryo_cliente', cliente);
     const link = CFG.seguimiento + (row.token_seguimiento || '');
-    const codigo = row.codigo_pedido || ('#' + row.id);
+    // El codigo RYO-N lo pone un trigger de la BD y viene en la respuesta; si faltara, se relee
+    // para que el cliente vea EL MISMO numero que el panel del local y la app de la moto.
+    let codigo = row.codigo_pedido || '';
+    if (!codigo) {
+      try {
+        const rc = await fetchJson(CFG.supa + '/rest/v1/' + CFG.tabla + '?select=codigo_pedido&id=eq.' + row.id,
+          { headers: { apikey: CFG.anon, Authorization: 'Bearer ' + CFG.anon } }, 6000);
+        if (rc.ok && rc.json && rc.json[0]) codigo = rc.json[0].codigo_pedido || '';
+      } catch (e) {}
+    }
+    codigo = codigo || ('#' + row.id);
+    // Confirmacion por WhatsApp (plantilla de Meta, sale por el numero del local). No bloquea la
+    // pantalla de exito: si falla, el cliente igual tiene su codigo y su link aqui.
+    try {
+      fetch(CFG.avisoWa, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pedido_id: row.id }), keepalive: true }).catch(function () {});
+    } catch (e) {}
     const resumen = cart.map((c) => ({ id: c.id, nombre: c.nombre, precio: c.precio, qty: c.qty, salsa: c.salsa, nota: c.nota }));
     ls.set('ryo_ultimo', { codigo, link, ts: Date.now(), items: resumen, total, entrega });
     cart = []; guardarCart(); pintarMenu($('#q').value); pintarCarritoBadge();
