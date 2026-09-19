@@ -38,7 +38,7 @@
   };
   const MODELO = (document.body.dataset.modelo || 'a').toLowerCase();
   const CATS = [
-    { k: 'Colección',                 t: 'La Colección',        e: '🍔', sub: 'Todas con 160 g de carne · sola $4,99 · combo $6,99' },
+    { k: 'Hamburguesas de Colección',  t: 'Hamburguesas de Colección', e: '🍔', sub: 'Todas con 160 g de carne · sola $4,99 · combo $6,99' },
     { k: 'Hamburguesas',              t: 'Las de la casa',      e: '🔥', sub: 'Clásica, Ranchera, Criolla, Blue Cheese, Mega y Sultana' },
     { k: 'Hamburguesas de Pollo',     t: 'De pollo crocante',   e: '🐔' },
     { k: 'Hamburguesas Lomo Fino',    t: 'Lomo fino',           e: '🥩', sub: '180 g de lomo fino en pan de papa · nuevas' },
@@ -117,6 +117,7 @@
             construir(rows); pintarMenu(); pintarCarritoBadge();
           }
         } catch (e2) { /* nos quedamos con el envase del embed */ }
+        await cargarGrupos(rows);
       }
     } catch (e) { /* nos quedamos con el embebido */ }
   }
@@ -129,6 +130,26 @@
     const m = norm(r.n).match(/^(lunes|martes|miercoles|jueves|viernes|sabado|domingo)(\s|$)/);
     return !m || m[1] === DIAS[diaEC()];
   }
+  // Opciones por plato (salsas de las alitas, "hamburguesa o pop corn" del menu infantil...).
+  // Viven en menu_opcion_grupos/menu_opciones, las mismas que usa el bot de WhatsApp.
+  let GRUPOS = {};
+  async function cargarGrupos(rows) {
+    try {
+      const r = await fetchJson(CFG.supa + '/rest/v1/menu_opcion_grupos?restaurante_id=eq.' + CFG.rid +
+        '&activo=eq.true&menu_item_id=not.is.null&select=menu_item_id,nombre,tipo,min_sel,max_sel,menu_opciones(nombre,orden,activo)&order=orden',
+        { headers: { apikey: CFG.anon, Authorization: 'Bearer ' + CFG.anon } }, 6000);
+      if (!r.ok || !Array.isArray(r.json) || !r.json.length) return;
+      const g = {};
+      r.json.forEach((x) => {
+        const ops = (x.menu_opciones || []).filter((o) => o.activo !== false)
+          .sort((a, b) => (a.orden || 0) - (b.orden || 0)).map((o) => o.nombre);
+        if (!ops.length) return;
+        g[x.menu_item_id] = { nombre: x.nombre || '', opciones: ops, max: Math.max(1, Number(x.max_sel) || 1) };
+      });
+      if (!Object.keys(g).length) return;
+      GRUPOS = g; construir(rows); pintarMenu($('#q').value); pintarCarritoBadge();
+    } catch (e) { /* sin grupos: se usa lo que diga la descripcion */ }
+  }
   function construir(rows) {
     POR_ID = {}; PROMOS_OCULTAS.clear(); const mapa = new Map();
     rows.forEach((r) => {
@@ -138,12 +159,14 @@
       const base = m ? r.n.slice(0, m.index).trim() : r.n;
       const varLabel = m ? m[1] : '';
       const key = r.c + '|' + norm(base);
-      if (!mapa.has(key)) mapa.set(key, { key, cat: r.c, nombre: base, desc: '', foto: r.f || '', variantes: [], salsas: [], salsasMax: 1, nuevo: false, unidades: parseInt((base.match(/(\d+)\s+unidades/i) || [])[1], 10) || 0 });
+      if (!mapa.has(key)) mapa.set(key, { key, cat: r.c, nombre: base, desc: '', foto: r.f || '', variantes: [], salsas: [], salsasMax: 1, opcLabel: '', nuevo: false, unidades: parseInt((base.match(/(\d+)\s+unidades/i) || [])[1], 10) || 0 });
       const p = mapa.get(key);
       if (!p.desc || (r.d && r.d.length > p.desc.length && !varLabel.match(/combo/i))) p.desc = limpiarDesc(r.d);
       if (!p.foto && r.f) p.foto = r.f;
       p.variantes.push({ id: r.id, label: etiquetaVar(varLabel), precio: r.p, nombre: r.n, envase: Number(r.e) || 0, orden: varLabel ? (varLabel.match(/sola|mediana/i) ? 0 : (varLabel.match(/combo|grande/i) ? 1 : parseInt(varLabel) || 2)) : 0 });
-      const s = parsearSalsas(r.d); if (s.lista.length) { p.salsas = s.lista; p.salsasMax = s.max; }
+      const g = GRUPOS[r.id];
+      if (g) { p.salsas = g.opciones; p.salsasMax = g.max; p.opcLabel = g.nombre; }
+      else { const s = parsearSalsas(r.d); if (s.lista.length) { p.salsas = s.lista; p.salsasMax = s.max; } }
       if (/pork bacon|gaucha|primicias/i.test(r.n)) p.nuevo = true;
     });
     PRODUCTOS = Array.from(mapa.values());
@@ -208,7 +231,7 @@
     const q = qtyDe(p); const f = fotoUrl(p.foto); const unaVar = p.variantes.length === 1;
     return '<button class="card" data-prod="' + esc(p.key) + '" aria-label="' + esc(p.nombre) + '">' +
       '<div class="foto">' + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '<div class="emoji">' + emojiDe(p) + '</div>') +
-      (p.nuevo ? '<span class="tag">Nuevo</span>' : '') + (p.salsas.length ? '<span class="tag rojo">' + (p.salsasMax > 1 ? 'Elige ' + p.salsasMax + ' salsas' : 'Elige salsa') + '</span>' : '') + '</div>' +
+      (p.nuevo ? '<span class="tag">Nuevo</span>' : '') + (p.salsas.length ? '<span class="tag rojo">' + etiquetaOpc(p) + '</span>' : '') + '</div>' +
       '<div class="cuerpo"><div class="nom tit">' + esc(p.nombre) + '</div>' + (p.desc ? '<div class="desc">' + esc(p.desc) + '</div>' : '') +
       '<div class="pie"><div class="precio">' + (unaVar ? '' : '<small>desde</small>') + money(p.desde) + '</div>' +
       '<span class="mas' + (q ? ' qty' : '') + '">' + (q ? q + ' en tu pedido' : '+') + '</span></div></div></button>';
@@ -253,7 +276,7 @@
       '<div class="prod-nom tit">' + esc(p.nombre) + '</div>' + (p.desc ? '<div class="prod-desc">' + esc(p.desc) + '</div>' : '') +
       (p.variantes.length > 1 ? '<div class="bloque"><div class="et">Elige cómo la quieres</div><div class="opciones" id="vars">' +
         p.variantes.map((v, i) => '<button class="opcion' + (i === 0 ? ' on' : '') + '" data-i="' + i + '"><span class="radio"></span><div><b>' + esc(v.label || p.nombre) + '</b></div><span class="p">' + money(v.precio) + '</span></button>').join('') + '</div></div>' : '') +
-      (p.salsas.length ? '<div class="bloque"><div class="et">' + (maxS > 1 ? 'Tus salsas · elige hasta ' + maxS : 'Tu salsa') + ' <span id="salsa-sel">' + esc(salsas.join(' + ')) + '</span></div><div class="salsas" id="salsas">' +
+      (p.salsas.length ? '<div class="bloque"><div class="et">' + esc(tituloOpc(p, maxS)) + ' <span id="salsa-sel">' + esc(salsas.join(' + ')) + '</span></div><div class="salsas" id="salsas">' +
         p.salsas.map((s, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-s="' + esc(s) + '">' + esc(s) + '</button>').join('') + '</div></div>' : '') +
       '<div class="bloque"><div class="et">Alguna nota para la cocina</div><input class="nota-in" id="nota-prod" maxlength="120" placeholder="' + esc(placeholderNota(p)) + '"></div>' +
       (envMax(p) > 0 ? '<div class="prod-envase">📦 Se suma ' + money(envMax(p)) + ' por el envase para llevar</div>' : '') +
@@ -281,6 +304,17 @@
       emitir('ryo:agregado', { foto: f, rect, qty });
       toast('✅ ' + qty + 'x ' + vSel.nombre + ' agregado');
     });
+  }
+  // Como se anuncia el grupo: usa el nombre real ("Salsas", "Elija el plato") en vez de decir
+  // siempre "salsas", que no aplica al menu infantil.
+  function esSalsas(p) { return !p.opcLabel || /salsa/i.test(p.opcLabel); }
+  function etiquetaOpc(p) {
+    if (!esSalsas(p)) return p.opcLabel;
+    return p.salsasMax > 1 ? 'Elige ' + p.salsasMax + ' salsas' : 'Elige salsa';
+  }
+  function tituloOpc(p, maxS) {
+    if (!esSalsas(p)) return p.opcLabel + (maxS > 1 ? ' · elige hasta ' + maxS : '');
+    return maxS > 1 ? 'Tus salsas · elige hasta ' + maxS : 'Tu salsa';
   }
   function envMax(p) { return p.variantes.reduce((m, v) => Math.max(m, Number(v.envase) || 0), 0); }
   function placeholderNota(p) {
