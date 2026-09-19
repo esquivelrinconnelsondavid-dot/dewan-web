@@ -23,18 +23,41 @@ const LS_ANCHO = 'dewan_impresora_ancho';   // '80' | '76' | '58' | 'a4' | 'auto
 const LS_AUTO = 'dewan_impresora_auto';     // '1' | '0'
 const LS_LIVIANO = 'dewan_impresora_liviano'; // '1' = sin negrita/sin emojis (impacto)
 
-// Geometría por papel. El rollo físico es MÁS ancho que la franja imprimible
-// (80mm→~72, 76mm impacto TM-U220→~63, 58mm→~48): el body se queda dentro de
-// esa franja para que el borde derecho (precios, DELIVERY) no se recorte.
-// minH evita páginas más anchas que altas (algunos drivers de Windows las
-// rotan a landscape); guiones = largo de la línea separadora de texto.
-const PAPEL = {
-  '80': { maxW: '70mm', fs: 14, guiones: 32, minH: '90mm' },
-  '76': { maxW: '60mm', fs: 12, guiones: 28, minH: '90mm' },
-  '58': { maxW: '46mm', fs: 13, guiones: 22, minH: '70mm' },
-  'a4': { maxW: '190mm', fs: 14, guiones: 40, minH: null },
-  'auto': { maxW: '68mm', fs: 14, guiones: 32, minH: null, anchoAuto: true },
-};
+// Geometría por papel (19-sep-2026: RECORTE LATERAL en todos los locales).
+// El rollo es MÁS ancho que la franja que la impresora PINTA: 80mm→~72, 76mm
+// impacto TM-U220→~63, 58mm→~48. Antes pedíamos a Windows una página del
+// ancho NOMINAL del rollo (80mm) con el cuerpo a 70mm: el driver acepta la
+// página de 80 pero solo imprime 72 (medido con el driver POS-80C: papel
+// "80(72.1) x 297", área útil 283/100 in = 72mm) → la página queda más ancha
+// que lo que sale en el papel y el driver corta/centra por un lado. Ahora la
+// PÁGINA que pedimos = la franja imprimible (72/63/48) y el cuerpo la llena
+// con 1mm de aire por lado: página y papel coinciden y no hay nada que cortar.
+// Si el EXE nuevo puede preguntarle a Windows la franja real de la impresora
+// elegida (infoImpresora), se usa ESA en vez de la típica del preset: así una
+// impresora de 58mm con el panel en "Rollo 80mm" también sale completa.
+const ANCHO_UTIL = { '80': 72, '76': 63, '58': 48 };
+const UTIL_MIN = 30, UTIL_MAX = 120; // fuera de esto Windows está en A4/Carta: se ignora
+export function anchoUtilValido(mm) {
+  const n = Number(mm);
+  return isFinite(n) && n >= UTIL_MIN && n <= UTIL_MAX ? Math.round(n * 10) / 10 : null;
+}
+// Letra según el ancho útil (Consolas ≈0.55em/char; Courier New ≈0.6em):
+// 72mm → 14px (~34 chars/línea), 63mm → 13px (~32), 48mm → 13px (~24).
+function geometria(ancho, utilMm, liviano) {
+  if (ancho === 'a4') return { pageMm: null, bodyCss: 'width:190mm;', bodyMm: 190, fs: 14, guiones: 40, minH: null };
+  const util = anchoUtilValido(utilMm) || ANCHO_UTIL[ancho] || (ancho === 'auto' ? 70 : 72);
+  const bodyMm = Math.max(28, Math.round((util - 2) * 10) / 10); // 1mm de aire por lado
+  const fs = liviano ? (util >= 66 ? 13 : 12) : (util >= 66 ? 14 : util >= 52 ? 13 : 12);
+  const charPx = fs * (liviano ? 0.6 : 0.55);
+  const guiones = Math.max(16, Math.floor((bodyMm / 25.4 * 96) / charPx) - 1);
+  return {
+    pageMm: ancho === 'auto' ? null : util,   // 'auto' = el papel que tenga el driver
+    bodyMm,
+    bodyCss: ancho === 'auto' ? `width:auto; max-width:${bodyMm}mm;` : `width:${bodyMm}mm;`,
+    fs, guiones,
+    minH: ancho === 'auto' ? null : (util >= 56 ? '90mm' : '70mm'),
+  };
+}
 
 // ¿Estamos en la app de escritorio (Electron) con impresión disponible?
 export function hayImpresion() {
@@ -60,6 +83,20 @@ export function setConfigImpresora({ deviceName, ancho, auto, liviano }) {
 export async function listarImpresoras() {
   if (!window.electronAPI || !window.electronAPI.listarImpresoras) return [];
   try { return await window.electronAPI.listarImpresoras(); } catch { return []; }
+}
+
+// Lo que Windows dice de la impresora (papel del driver y franja imprimible).
+// Solo el EXE nuevo (main.cjs con 'info-impresora') lo trae; los EXE viejos → null
+// y se usa la franja típica del preset. Tope 4s: no frena la impresión.
+export async function infoImpresora(deviceName) {
+  if (!window.electronAPI || !window.electronAPI.infoImpresora) return null;
+  try {
+    const r = await Promise.race([
+      window.electronAPI.infoImpresora({ deviceName: deviceName || '' }),
+      new Promise((res) => setTimeout(() => res(null), 4000)),
+    ]);
+    return r && typeof r === 'object' ? r : null;
+  } catch { return null; }
 }
 
 // Quita "surrogates" UTF-16 sueltos (mitad de un emoji que llegó corrupto del
@@ -143,8 +180,8 @@ function ahoraTexto() {
 // Courier New normal (trazo ~1px) salía "sin tinta" en TODOS los locales.
 // Térmica: Consolas (trazo grueso, viene con Windows) + todo en negrita +
 // text-stroke → el trazo queda sólido tras el tramado (simulado: x2 de negro).
-export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre = '', liviano = false } = {}) {
-  const papel = PAPEL[ancho] || PAPEL['80'];
+export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre = '', liviano = false, utilMm = null } = {}) {
+  const papel = geometria(ancho, utilMm, liviano);
   const termica = ancho !== 'a4';
   const fs = papel.fs;
   // En liviano: limpiamos emojis del texto del bot y aplanamos los pesos. El
@@ -221,15 +258,16 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
     html,body { background:#fff; }
     body { font-family:${fuente}; color:#000; font-size:${fs}px; font-weight:${wBase}; ${grueso}
       line-height:${liviano ? 1.3 : 1.2};
-      ${papel.anchoAuto ? `width:auto; max-width:${papel.maxW};` : `width:${papel.maxW};`}
+      ${papel.bodyCss}
       ${papel.minH ? `min-height:${papel.minH};` : ''}
-      margin:${termica ? '0' : '0 auto'}; padding:${termica ? `2mm 1mm ${feed} 1mm` : `8mm 8mm ${feed} 8mm`}; }
+      margin:0 auto; padding:${termica ? `2mm 1mm ${feed} 1mm` : `8mm 8mm ${feed} 8mm`}; overflow-wrap:anywhere; }
     .c { text-align:center; }
     .big { font-size:${bigFs}px; font-weight:${wBig}; }
     .rest { font-size:${restFs}px; font-weight:${wBlack}; text-transform:uppercase; }
     .sep { border:none; border-top:2px dashed #000; margin:3px 0; }
     .sept { text-align:center; white-space:nowrap; overflow:hidden; }
-    .row { display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+    .row { display:flex; flex-wrap:wrap; justify-content:space-between; gap:0 8px; align-items:baseline; }
+    .row > span { min-width:0; }
     .idrow { margin:2px 0; }
     .plato { white-space:normal; overflow-wrap:break-word; font-weight:${wBold}; font-size:${itemsFs}px; margin-top:3px; padding-left:1.2em; text-indent:-1.2em; }
     .sub { white-space:normal; overflow-wrap:break-word; font-weight:${wBase}; font-size:${fs}px; padding-left:12px; }
@@ -260,8 +298,6 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
 export async function imprimirComanda(pedido, opts = {}) {
   if (!hayImpresion()) return { ok: false, motivo: 'no-electron' };
   const cfg = getConfigImpresora();
-  const html = construirComandaHTML(pedido, { ancho: cfg.ancho, restauranteNombre: opts.restauranteNombre, liviano: cfg.liviano });
-  const anchoMm = cfg.ancho === '58' ? 58 : cfg.ancho === '76' ? 76 : cfg.ancho === '80' ? 80 : null;
   const usarDefault = cfg.ancho === 'auto';
   // Si la impresora guardada ya no existe (Windows la renombra al reconectarla
   // por otro puerto: "POS80 (Copia 1)"), buscamos la pariente renombrada y si
@@ -281,6 +317,12 @@ export async function imprimirComanda(pedido, opts = {}) {
       }
     } catch { /* si no se pudo listar, intentamos con el nombre guardado */ }
   }
+  // Franja imprimible REAL de esa impresora (EXE nuevo); si no, la típica del preset.
+  const info = (cfg.ancho === 'a4') ? null : await infoImpresora(deviceName);
+  const utilMm = info ? anchoUtilValido(info.utilAnchoMm) : null;
+  const html = construirComandaHTML(pedido, { ancho: cfg.ancho, restauranteNombre: opts.restauranteNombre, liviano: cfg.liviano, utilMm });
+  // La PÁGINA que se le pide a Windows = la franja imprimible (no el rollo nominal).
+  const anchoMm = (cfg.ancho === 'a4' || usarDefault) ? null : (utilMm || ANCHO_UTIL[cfg.ancho] || 72);
   try {
     const r = await window.electronAPI.imprimirComanda({ html, deviceName, anchoMm, usarDefault, liviano: cfg.liviano });
     return { ok: !!(r && r.success), motivo: r && r.reason };

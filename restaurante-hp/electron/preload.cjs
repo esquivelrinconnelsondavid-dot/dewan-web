@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   notifyOrder: (payload) => ipcRenderer.invoke('notify-order', payload),
   listarImpresoras: () => ipcRenderer.invoke('listar-impresoras'),
   imprimirComanda: (payload) => ipcRenderer.invoke('imprimir-comanda', payload),
+  infoImpresora: (payload) => ipcRenderer.invoke('info-impresora', payload), // papel/franja útil según Windows
   recuperarRed: () => ipcRenderer.invoke('recuperar-red'),
   latido: () => ipcRenderer.send('latido'),            // watchdog del proceso principal
   reiniciarApp: () => ipcRenderer.send('reiniciar-app'), // relanzar (proceso nuevo)

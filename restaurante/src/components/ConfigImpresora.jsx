@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   hayImpresion, getConfigImpresora, setConfigImpresora,
-  listarImpresoras, imprimirComanda,
+  listarImpresoras, imprimirComanda, infoImpresora, anchoUtilValido,
 } from '../lib/comanda';
 
 const ANCHOS = [
@@ -17,10 +17,18 @@ export default function ConfigImpresora({ restaurante }) {
   const [cfg, setCfg] = useState(getConfigImpresora());
   const [probando, setProbando] = useState(false);
   const [msg, setMsg] = useState('');
+  // Lo que Windows dice de la impresora elegida (solo el EXE nuevo lo trae).
+  const [info, setInfo] = useState(null);
 
   useEffect(() => {
     listarImpresoras().then(setImpresoras);
   }, []);
+  useEffect(() => {
+    let vivo = true;
+    setInfo(null);
+    infoImpresora(cfg.deviceName).then((i) => { if (vivo) setInfo(i); });
+    return () => { vivo = false; };
+  }, [cfg.deviceName]);
 
   if (!hayImpresion()) {
     return (
@@ -82,6 +90,14 @@ export default function ConfigImpresora({ restaurante }) {
         </select>
         {impresoras.length === 0 && (
           <p className="text-[11px] text-gray-500 mt-1">No se detectaron impresoras instaladas en esta PC.</p>
+        )}
+        {info && (
+          <p className="text-[11px] text-gray-400 mt-1">
+            Windows la tiene en papel <b className="text-gray-200">{info.papel || '—'}</b>
+            {anchoUtilValido(info.utilAnchoMm)
+              ? <> · imprime <b className="text-gray-200">{anchoUtilValido(info.utilAnchoMm)} mm</b> de ancho: el ticket se arma a esa medida.</>
+              : <> · ⚠️ eso es una hoja, no un rollo: ponga el rollo en Preferencias de impresión de Windows.</>}
+          </p>
         )}
       </div>
 

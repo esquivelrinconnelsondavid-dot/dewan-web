@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Notification, ipcMain, powerSaveBlocker, powerMonitor, Menu } = require('electron');
 const path = require('path');
+const { execFile } = require('child_process');
 
 // --- Arreglos de estabilidad y sonido (escritorio) ---
 // 1) La sirena (AudioContext) puede sonar/reanudar sin gesto del usuario.
@@ -270,7 +271,57 @@ ipcMain.handle('listar-impresoras', async () => {
   }
 });
 
-// Imprime una comanda en silencio. anchoMm = 58/76/80 para rollos; null = A4.
+// Papel y franja IMPRIMIBLE de una impresora según Windows (19-sep-2026).
+// El rollo nominal (80mm) es más ancho que lo que el driver pinta (72mm); si le
+// pedimos a Windows una página de 80 el ticket sale RECORTADO de un lado. Con
+// esto el renderer pide la página del ancho que la impresora imprime de verdad.
+// Se lee con .NET (System.Drawing.Printing) vía PowerShell — no hay API en
+// Electron — y se cachea por impresora 10 min. Si falla → null (el renderer
+// usa la franja típica del preset). Nunca bloquea: tope 6s.
+const cacheInfoImpresora = new Map();
+function leerInfoImpresora(deviceName) {
+  return new Promise((resolve) => {
+    if (process.platform !== 'win32') return resolve(null);
+    const nombre = String(deviceName || '').replace(/'/g, "''");
+    const script =
+      "$ErrorActionPreference='Stop'; Add-Type -AssemblyName System.Drawing; " +
+      "$p = New-Object System.Drawing.Printing.PrinterSettings; " +
+      (nombre ? "$p.PrinterName = '" + nombre + "'; " : "") +
+      "if (-not $p.IsValid) { 'null'; exit 0 }; " +
+      "$g = $p.DefaultPageSettings; $a = $g.PrintableArea; $z = $g.PaperSize; " +
+      "@{ nombre = $p.PrinterName; papel = $z.PaperName; papelAnchoMm = [math]::Round($z.Width * 0.254, 1); " +
+      "papelAltoMm = [math]::Round($z.Height * 0.254, 1); utilXmm = [math]::Round($a.X * 0.254, 1); " +
+      "utilAnchoMm = [math]::Round($a.Width * 0.254, 1); dpi = $g.PrinterResolution.X } | ConvertTo-Json -Compress";
+    const encoded = Buffer.from(script, 'utf16le').toString('base64');
+    let done = false;
+    const fin = (v) => { if (!done) { done = true; resolve(v); } };
+    try {
+      const child = execFile('powershell.exe',
+        ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded],
+        { windowsHide: true, timeout: 6000, maxBuffer: 64 * 1024 },
+        (err, stdout) => {
+          if (err) { console.warn('[info-impresora]', err.message); return fin(null); }
+          try {
+            const txt = String(stdout || '').trim();
+            const j = JSON.parse(txt);
+            fin(j && typeof j === 'object' ? j : null);
+          } catch (e) { fin(null); }
+        });
+      child.on('error', () => fin(null));
+    } catch (e) { fin(null); }
+  });
+}
+ipcMain.handle('info-impresora', async (_event, payload) => {
+  const deviceName = (payload && payload.deviceName) || '';
+  const c = cacheInfoImpresora.get(deviceName);
+  if (c && Date.now() - c.ts < 10 * 60 * 1000) return c.info;
+  const info = await leerInfoImpresora(deviceName);
+  if (info) cacheInfoImpresora.set(deviceName, { ts: Date.now(), info });
+  return info;
+});
+
+// Imprime una comanda en silencio. anchoMm = ancho de PÁGINA para rollos (la franja
+// imprimible: 72/63/48, o la real que dijo Windows — NO el rollo nominal); null = A4.
 // Las ventanas ocultas pendientes se registran para destruirlas al cerrar la
 // app: si quedara una viva (destroy diferido del timeout), 'window-all-closed'
 // no dispararía y la app retendría el single-instance lock sin UI.
@@ -314,7 +365,7 @@ ipcMain.handle('imprimir-comanda', async (_event, { html, deviceName, anchoMm, u
       }
     }
     if (anchoMm && alturaPx != null) {
-      // Rollo (térmica o Epson de impacto): ancho fijo, alto ajustado al contenido.
+      // Rollo (térmica o Epson de impacto): ancho = franja imprimible, alto ajustado al contenido.
       // Mínimo 90mm: una página más ancha que alta puede salir rotada a
       // landscape en algunos drivers de Windows (Electron #39702).
       const micronPorPx = 25400 / 96; // ~264.58

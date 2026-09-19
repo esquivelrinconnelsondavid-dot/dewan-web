@@ -26,6 +26,30 @@ const LABEL_MOTO = {
   listo: 'Listo',
 };
 
+// Teléfono del cliente / motorizado (19-sep-2026): antes solo decía "Llamar" (un
+// enlace tel:), que en la PC del local no abre nada — no tienen WhatsApp ni marcador —
+// y el local no veía el número. Ahora el NÚMERO va escrito al lado, siempre, y en el
+// EXE tocarlo lo copia al portapapeles; en el celular/tablet sigue marcando.
+function Telefono({ tel, extra = '' }) {
+  const [copiado, setCopiado] = useState(false);
+  const esEscritorio = !!(window.electronAPI && window.electronAPI.isElectron);
+  const copiar = (e) => {
+    if (!esEscritorio) return; // celular/tablet: deja que el tel: marque
+    e.preventDefault();
+    try { navigator.clipboard.writeText(tel); } catch { /* sin portapapeles: el número igual se lee */ }
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 1500);
+  };
+  return (
+    <a href={`tel:${tel}`} onClick={copiar} title={esEscritorio ? 'Tocar para copiar el número' : 'Llamar'}
+      className={`flex items-center gap-1 text-[12px] font-semibold text-buscando active:opacity-70 shrink-0 ${extra}`}>
+      <IcoTelefono size={14} />
+      <span className="font-mono text-white tracking-wide select-all">{tel}</span>
+      <span className="text-gray-400 font-normal">{copiado ? '· copiado' : (esEscritorio ? '' : '· Llamar')}</span>
+    </a>
+  );
+}
+
 function formatearMs(ms) {
   if (ms === null || !isFinite(ms)) return '—';
   const neg = ms < 0;
@@ -247,9 +271,7 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full text-white font-extrabold text-xs flex items-center justify-center shrink-0" style={{ background: colorInicial(pedido.cliente_nombre) }}>{inicial(pedido.cliente_nombre)}</div>
           <div className={`font-bold text-white truncate ${grande ? 'text-base' : 'text-[13px]'}`}>{pedido.cliente_nombre || 'Cliente'}</div>
-          {telCliente && (
-            <a href={`tel:${telCliente}`} className="ml-auto flex items-center gap-1 text-[12px] font-semibold text-buscando active:opacity-70"><IcoTelefono size={14} />Llamar</a>
-          )}
+          {telCliente && <Telefono tel={telCliente} extra="ml-auto" />}
         </div>
       )}
 
@@ -280,7 +302,7 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
               {pedido.fecha_en_camino ? <><IcoReloj size={12} />Salió {formatHoraEC(pedido.fecha_en_camino)}</> : (LABEL_MOTO[pedido.estado_pedido] || '')}
             </div>
           </div>
-          {telMoto && <a href={`tel:${telMoto}`} className="flex items-center gap-1 text-[12px] font-semibold text-buscando"><IcoTelefono size={14} />Llamar</a>}
+          {telMoto && <Telefono tel={telMoto} />}
         </div>
       )}
 
