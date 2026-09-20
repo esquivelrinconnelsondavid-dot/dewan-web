@@ -612,6 +612,13 @@
         /* V2.1: Badge cuenta de platos por restaurante en búsqueda/categoría */
         .rest-compact-meta .badge-count{background:var(--acc-soft);color:var(--acc);font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:0.02em}
 
+        /* HOME VIVA (19-sep): chips de frescura en la tarjeta del local (Nuevo · N pedidos hoy · Cierra en X min) */
+        .fresh-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+        .fresh-chip{font-size:0.64rem;font-weight:800;padding:2px 7px;border-radius:20px;white-space:nowrap;line-height:1.5}
+        .fresh-nuevo{background:#E8F6EE;color:#1F9D55}
+        .fresh-hoy{background:rgba(232,67,26,0.10);color:#CF3A12}
+        .fresh-cierra{background:#FEF3C7;color:#92400E}
+
         /* V4.2: Banner premium de "falta ubicacion" en checkout */
         .loc-missing-banner{margin:14px 0 12px;padding:14px 16px;background:linear-gradient(135deg,rgba(255,179,0,0.12) 0%,rgba(255,179,0,0.04) 100%);border:1.5px solid rgba(255,179,0,0.32);border-radius:16px;display:flex;align-items:flex-start;gap:12px;position:relative;overflow:hidden}
         .loc-missing-banner::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#FFB800,#FF8800)}
@@ -1388,6 +1395,54 @@
             return window._popPromise;
         }
         function _ventasPlato(nombre){return (window._popPlatos||{})[removeAccents(String(nombre||'').toLowerCase().trim())]||0}
+
+        // ══ HOME VIVA Nivel 1 (19-sep-2026, GO de David) — espejo de dewan-cliente/src/lib/momento.ts ══
+        // La home cambia de contenido con la HORA y con el DÍA sin cambiar de diseño (patrón Uber Eats/
+        // Rappi en versión de reglas). Una colección = título + palabras que califican a un plato.
+        var MOMENTO_FRANJAS=[
+            {desde:6*60,hasta:11*60+30,col:{key:'manana',titulo:'☕ Para empezar el día',sub:'desayunos, empanadas y café',bebidas:true,
+                kw:/desayun|bolon|tigrillo|humita|tamal|quimbolito|empanad|sanduch|sandwich|tostad|\bcafe\b|capuc|latte|mocaccino|batido|jugo|panqueq|waffle|croissant|\bpan\b|huevo|avena|yogur|granola|morocho|chocolate/}},
+            {desde:11*60+30,hasta:15*60,col:{key:'almuerzo',titulo:'🍱 Hora de almuerzo',sub:'sopa, segundo y de todo',
+                kw:/almuerzo|ejecutivo|menu del dia|\bsopa|caldo|seco de|arroz con|encebollado|guatita|fritada|hornado|ceviche|corvina|churrasco|yapingacho|llapingacho|locro|sancocho|menestra|bandeja|chaulaf|apanado|pescado frito/}},
+            {desde:15*60,hasta:18*60,col:{key:'tarde',titulo:'🧁 Media tarde',sub:'postres, helados y algo de picar',bebidas:true,
+                kw:/postre|helado|torta|pastel|cheesecake|brownie|waffle|\bdona|crepe|frapp|\bte\b|\bcafe\b|batido|smoothie|milkshake|malteada|mangonada|fresa|salchipapa|papas fritas|empanad|sanduch|nachos|picad|tequen|choclo|humita|pan de yuca|yogur|bubble|boba|mochi|churro/}},
+            {desde:18*60,hasta:23*60+30,col:{key:'noche',titulo:'🌙 Para la noche',sub:'pizza, alitas, hamburguesas y chifa',
+                kw:/pizza|alita|wing|hambur|burger|salchipapa|chaulaf|chaufa|arroz chino|tallar|wantan|taco|burrito|hot ?dog|parrill|pincho|costilla|shawarma|nacho|broaster|broster|pollo|presa|lasa|calzone|papipollo|combo|picad|choripan|chorizo|asado|mollej/}}
+        ];
+        var MOMENTO_TEMAS=[
+            {key:'dom',titulo:'🍛 Domingo en familia',sub:'almuerzos, sopas y comida típica',kw:/almuerzo|\bsopa|caldo|seco de|hornado|fritada|encebollado|ceviche|yapingacho|llapingacho|locro|sancocho|arroz con|parrillada|familiar|entero|guatita|bandeja|cazuela|apanado/},
+            {key:'lun',titulo:'🍗 Lunes de pollo',sub:'broaster, presas y combos',kw:/pollo|presa|broaster|broster|chicken|papipollo|alita|wing/},
+            {key:'mar',titulo:'🍕 Martes de pizza',sub:'la selección de hoy, precio del local',kw:/pizza|calzone|lasa/},
+            {key:'mie',titulo:'🥡 Miércoles de chifa',sub:'chaulafán, tallarín y arroces',kw:/chaulaf|chaufa|tallar|arroz chino|wantan|chifa|rollito|arroz especial|arroz mixto|arroz marinero|arroz relleno/},
+            {key:'jue',titulo:'🍗 Jueves de alitas',sub:'con la salsa que quieras',kw:/alita|wing/},
+            {key:'vie',titulo:'🍔 Viernes de hamburguesas',sub:'las de Riobamba, sin recargos',kw:/hambur|burger/},
+            {key:'sab',titulo:'🌮 Sábado de antojos',sub:'tacos, salchipapas y picadas',kw:/taco|burrito|quesadilla|nacho|salchipapa|papipollo|picad|hot ?dog|choripan|tequen|empanad|shawarma|mollej|chifle|aros de cebolla|nugget/}
+        ];
+        function _colFranja(){var n=_hNowEc(),m=n.getHours()*60+n.getMinutes();for(var i=0;i<MOMENTO_FRANJAS.length;i++){if(m>=MOMENTO_FRANJAS[i].desde&&m<MOMENTO_FRANJAS[i].hasta)return MOMENTO_FRANJAS[i].col;}return null;}
+        function _colTema(){return MOMENTO_TEMAS[_hNowEc().getDay()];}
+        function _platoCalifica(col,nombre,cat){return col.kw.test(removeAccents(String((nombre||'')+' '+(cat||'')).toLowerCase()));}
+        // Pedidos de HOY por local (badge "🔥 N pedidos hoy"). Nunca rechaza.
+        function loadPedidosHoy(){
+            if(window._hoyPromise) return window._hoyPromise;
+            var ec=new Date(Date.now()-5*3600*1000);
+            var d=ec.getUTCFullYear()+'-'+String(ec.getUTCMonth()+1).padStart(2,'0')+'-'+String(ec.getUTCDate()).padStart(2,'0')+'T00:00:00-05:00';
+            var u=SB_URL+'/rest/v1/pedidos_delivery?select=restaurante_id&fecha_creacion=gte.'+encodeURIComponent(d)+'&estado_pedido=neq.cancelado&limit=1000';
+            window._hoyPromise=fetch(u,{headers:supaHeaders()}).then(function(r){return r.json()}).then(function(rows){
+                var m={};(rows||[]).forEach(function(rw){if(rw.restaurante_id)m[rw.restaurante_id]=(m[rw.restaurante_id]||0)+1;});
+                window._pedidosHoy=m; return m;
+            }).catch(function(){window._pedidosHoy={};return {}});
+            return window._hoyPromise;
+        }
+        // Chips de frescura del local: "Nuevo" (≤30 días) · "N pedidos hoy" (desde 3) · "Cierra en X min" (≤45)
+        function _freshChips(r){
+            var abierto=isRestOpen(r.horario),c=[];
+            if(_esNuevoRest(r)) c.push('<span class="fresh-chip fresh-nuevo">🆕 Nuevo</span>');
+            var n=(window._pedidosHoy||{})[r.id]||0;
+            if(abierto!==false&&n>=3) c.push('<span class="fresh-chip fresh-hoy">🔥 '+n+' pedidos hoy</span>');
+            var m=abierto===true?_minutosParaCerrar(r.horario):null;
+            if(m!=null&&m>0&&m<=45) c.push('<span class="fresh-chip fresh-cierra">⏰ Cierra en '+m+' min</span>');
+            return c.length?'<div class="fresh-chips">'+c.join('')+'</div>':'';
+        }
         // Barajado determinístico por FECHA (mismo orden todo el día, cambia mañana)
         function _dayShuffle(arr,key){
             var d=new Date(),seed=d.getFullYear()*372+(d.getMonth()+1)*31+d.getDate();
@@ -1452,7 +1507,8 @@
             var url=SB_URL+'/rest/v1/menu_items?select=id,nombre_item,precio,categoria_menu,descripcion,foto_url,cargo_envase,restaurante_id&disponible=eq.true&foto_url=not.is.null&limit=1000';
             Promise.all([
                 fetch(url,{headers:supaHeaders()}).then(function(r){return r.json()}),
-                loadPopularidad30d() // en paralelo; nunca rechaza
+                loadPopularidad30d(), // en paralelo; nunca rechaza
+                loadPedidosHoy()      // HOME VIVA: badge "N pedidos hoy" listo cuando se pinte el feed
             ])
                 .then(function(_res){
                     var items=_res[0];
@@ -1499,7 +1555,8 @@
                             porUnidad:!!(win&&win.porUnidad),
                             abierto:_abierto,
                             apertura:(_abierto===false?proximaApertura(rest.horario):null),
-                            logo:(rest.logo_url||rest.imagen_url||rest.foto_url||null)
+                            logo:(rest.logo_url||rest.imagen_url||rest.foto_url||null),
+                            categoria:it.categoria_menu||'' // HOME VIVA: las colecciones también leen la categoría del plato
                         });
                     });
                     // Cada local aporta una MUESTRA ALEATORIA de sus platos con foto (máx 3), sin repetir
@@ -1529,6 +1586,39 @@
                     // los sin ventas conservan el orden aleatorio de variedad
                     _ab.sort(function(a,b){return _ventasPlato(b.nombre)-_ventasPlato(a.nombre)});
                     window._destHome=_ab.concat(_ce).slice(0,16);
+                    // ── HOME VIVA (19-sep): carriles por MOMENTO del día y TEMA del día. Mismas reglas
+                    // que la nativa: la misma foto nunca en dos carriles; los locales que ya salieron
+                    // arriba van al FINAL del siguiente carril; hasta 2 platos por local; semilla diaria.
+                    try{
+                        var _vFoto={},_vLocal={};
+                        window._destHome.forEach(function(p){_vFoto[p.foto_url]=1;});
+                        window._destHome.slice(0,8).forEach(function(p){_vLocal[p.rest]=1;});
+                        var _armar=function(col){
+                            if(!col) return [];
+                            var g={},ord=[];
+                            out.forEach(function(p){
+                                if(_vFoto[p.foto_url]) return;
+                                if(!_platoCalifica(col,p.nombre,p.categoria)) return;
+                                if(!g[p.rest]){g[p.rest]=[];ord.push(p.rest);}
+                                g[p.rest].push(p);
+                            });
+                            ord=_dayShuffle(ord,function(x){return x+col.key}).sort(function(a,b){return (_vLocal[a]?1:0)-(_vLocal[b]?1:0)});
+                            var items=[];
+                            for(var ronda=0;ronda<2&&items.length<10;ronda++){
+                                for(var i=0;i<ord.length&&items.length<10;i++){
+                                    var it=_dayShuffle(g[ord[i]],function(x){return String(x.nombre)})[ronda];
+                                    if(!it||_vFoto[it.foto_url]) continue;
+                                    _vFoto[it.foto_url]=1; items.push(it);
+                                }
+                            }
+                            items=items.filter(function(p){return p.abierto!==false}).concat(items.filter(function(p){return p.abierto===false}));
+                            if(items.length<4) return [];
+                            items.slice(0,5).forEach(function(p){_vLocal[p.rest]=1;});
+                            return items;
+                        };
+                        window._momentoHome=_armar(_colFranja());
+                        window._temaHome=_armar(_colTema());
+                    }catch(e){window._momentoHome=[];window._temaHome=[];}
                     // Portadas FINALES por local: la más vendida primero, empates barajados
                     // POR DÍA (hasta 3; con 2+ la tarjeta hero rota con fundido)
                     window._fotoRest={};
@@ -1549,7 +1639,7 @@
                         else{var el=document.getElementById('home-food-rail');if(el)el.innerHTML=homeFoodRailInner();}
                     }catch(e){try{var el2=document.getElementById('home-food-rail');if(el2)el2.innerHTML=homeFoodRailInner();}catch(e2){}}
                 })
-                .catch(function(){window._destHomeLoading=false;window._destHome=[];try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML='';}catch(e){}}); // []=colapsa, no reintenta ni deja skeleton
+                .catch(function(){window._destHomeLoading=false;window._destHome=[];window._momentoHome=[];window._temaHome=[];try{var el=document.getElementById('home-food-rail');if(el)el.innerHTML='';}catch(e){}}); // []=colapsa, no reintenta ni deja skeleton
         }
         function homeFoodRailInner(){
             var _hr=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'})).getHours();
@@ -1591,6 +1681,18 @@
         function renderHomeFoodRail(){
             if(window._destHome===undefined) loadDestacadosHome();
             return '<section class="destacados" id="home-food-rail">'+homeFoodRailInner()+'</section>';
+        }
+        // ── HOME VIVA (19-sep): carriles "momento del día" y "tema del día" (mismas tarjetas que Los más pedidos) ──
+        function homeCtxRailInner(kind){
+            var arr=kind==='momento'?window._momentoHome:window._temaHome;
+            var col=kind==='momento'?_colFranja():_colTema();
+            if(!arr||!arr.length||!col) return '';
+            var h='<div class="destacados-head"><span class="destacados-title">'+col.titulo+'</span><span class="destacados-sub">'+esc(col.sub)+'</span></div><div class="destacados-scroll">';
+            arr.forEach(function(p,idx){h+=_railCard(p,idx,kind);});
+            return h+'</div>';
+        }
+        function renderHomeCtxRail(kind){
+            return '<section class="destacados" id="home-'+kind+'-rail">'+homeCtxRailInner(kind)+'</section>';
         }
         // ── Carril de fotos por CONTEXTO (categoría / búsqueda) ──
         // Mismas tarjetas que "Para ti", pero alimentado por los platos que matchean la categoría
@@ -1658,7 +1760,7 @@
         }
         // Lightbox: tocar la foto la abre en grande + botón agregar (idx = posición en _destHome).
         window.zoomFoto=function(idx,ctx){
-            var p=((ctx==='ctx'?window._railCtxItems:window._destHome)||[])[idx];
+            var p=((ctx==='ctx'?window._railCtxItems:ctx==='momento'?window._momentoHome:ctx==='tema'?window._temaHome:window._destHome)||[])[idx];
             if(!p) return;
             var ov=document.createElement('div');
             ov.className='foto-zoom';
@@ -1998,7 +2100,7 @@
         // Mezcla multiplicativa (Math.imul): la semilla arranca el hash y se propaga por cada char,
         // así un cambio de +1 en la fecha reordena TODO (si se pega al final el hash casi no se movía).
         function _dayHash(id){var h=_daySeed()>>>0,str=String(id);for(var i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),2654435761)>>>0;}h^=h>>>15;return h%101;} // 0..100
-        function _esNuevoRest(r){if(!r||!r.created_at)return false;var t=Date.parse(r.created_at);if(isNaN(t))return false;return (Date.now()-t)<21*86400000;}
+        function _esNuevoRest(r){if(!r||!r.created_at)return false;var t=Date.parse(r.created_at);if(isNaN(t))return false;return (Date.now()-t)<30*86400000;} // 21→30 días (19-sep, badge "Nuevo" + vitrina)
         function _tieneFotoRest(r){return !!(r&&(r.logo_url||r.foto_url||r.imagen_url));}
         function _scoreRecomendado(r){
             var s=0;
@@ -2360,10 +2462,12 @@
 
             // 🔥 Carril de COMIDA arriba del todo (solo home sin filtro): la comida es lo que vende,
             // debe verse en la primera pantalla, antes del banner/chips/GPS/sort.
+            if(!window._activeCat) h+=renderHomeCtxRail('momento'); // HOME VIVA: lo de AHORA (☕ mañana · 🍱 almuerzo · 🧁 tarde · 🌙 noche)
             if(!window._activeCat) h+=renderHomeFoodRail();
 
             // Home liviano: UN solo banner por prioridad (cupón > promo envío > Mundial > precio del local)
             h+=renderHomeBanner();
+            if(!window._activeCat) h+=renderHomeCtxRail('tema');    // HOME VIVA: tema del día (🍕 martes de pizza, 🍗 jueves de alitas…)
 
             // Chips de categoría. Mundial: 'partido' solo aparece en período.
             // En horario de almuerzo (12-15h) el chip 🍱 Almuerzo va PRIMERO (al mediodía la gente busca almuerzo, no promos).
@@ -3378,6 +3482,7 @@
                     '<div class="rest-compact-info">'+
                         '<div class="rest-compact-name">'+esc(r.nombre)+openBadge(r.horario)+'</div>'+
                         '<div class="rest-compact-meta">'+metaParts.join('<span class="dot">·</span>')+'</div>'+
+                        _freshChips(r)+
                     '</div>'+
                     '<span class="rest-compact-chevron">›</span>'+
                 '</div>'+
@@ -3432,6 +3537,7 @@
                         (cat?'<div class="grid3-cat"><span class="grid3-cat-name">'+cat+'</span></div>':'')+
                         perksH+
                         '<div class="grid3-meta">'+metaBits.join(' · ')+'</div>'+
+                        _freshChips(r)+
                     '</div>'+
                 '</div>';
             }
@@ -3447,6 +3553,7 @@
                         ?'<div class="grid3-meta">'+(proximaApertura(r.horario)?'Cerrado · abre '+proximaApertura(r.horario):'Cerrado')+'</div>'
                         :'<div class="grid3-meta">'+(cat?'<span class="grid3-cat-name">'+cat+'</span> · ':'')+metaBits.join(' · ')+'</div>')+
                     perksH+
+                    _freshChips(r)+
                 '</div>'+
                 '<span class="grid3-row-chev">›</span>'+
             '</div>';
@@ -4893,6 +5000,25 @@
             var pick=next!==null?next:first;
             var h=Math.floor(pick/60),min=pick%60,ap=h<12?'am':'pm',h12=h%12;if(h12===0)h12=12;
             return h12+':'+(min<10?'0'+min:min)+' '+ap;
+        }
+        // HOME VIVA (19-sep): minutos para que cierre el turno ABIERTO ahora; null si cerrado, sin hora o
+        // cierre manual. Espejo de minutosParaCerrar de la nativa, con soporte del horario por día (multi).
+        function _minutosParaCerrar(horario){
+            if(!horario||!String(horario).trim()) return null;
+            if(_H_CERRADO_MANUAL.test(_hNorm(horario))) return null;
+            var pr=_hParse(horario),now=_hNowEc(),dow=now.getDay(),nowMin=now.getHours()*60+now.getMinutes(),ranges=pr.ranges;
+            if(pr.multi){
+                var hoy=pr.multi.filter(function(p){return (!p.days||p.days.indexOf(dow)!==-1)&&p.ranges.length;});
+                ranges=[]; hoy.forEach(function(p){ranges=ranges.concat(p.ranges);});
+            } else if(pr.days&&pr.days.indexOf(dow)===-1) return null;
+            var best=null;
+            ranges.forEach(function(r){
+                var o=r[0],c=r[1],f=null;
+                if(c<=o){ if(nowMin>=o) f=c+1440-nowMin; else if(nowMin<c) f=c-nowMin; }
+                else if(nowMin>=o&&nowMin<c) f=c-nowMin;
+                if(f!=null&&(best===null||f<best)) best=f;
+            });
+            return best;
         }
         // ── AVISO DE LOCAL CERRADO (toast) — 2026-06-19 ──
         function _toast(html,ms){
