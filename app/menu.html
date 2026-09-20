@@ -965,8 +965,44 @@
         window._clientGPS=null;
         window._clientAddr=''; // CAMBIO 3: dirección de texto
         // Persistir ubicación: la dirección siempre; el GPS solo si es fresco (<2h) para no mandar a una ubicación vieja.
-        function guardarUbic(){try{if(typeof cotizarEnvioReal==='function')setTimeout(cotizarEnvioReal,0)}catch(e){} if(OP_MODE)return;try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:Date.now()}))}catch(e){}}
-        function restaurarUbic(){try{var d=JSON.parse(localStorage.getItem('dewan_ubic')||'null');if(!d)return;if(d.addr)window._clientAddr=d.addr;if(d.gps&&d.ts&&(Date.now()-d.ts)<2*60*60*1000)window._clientGPS=d.gps;}catch(e){}}
+        // `ts` = momento del FIX (window._gpsFixTs), no del último guardado: antes cada letra escrita en la
+        // referencia renovaba las 2 h de un GPS viejo.
+        function guardarUbic(){try{if(typeof cotizarEnvioReal==='function')setTimeout(cotizarEnvioReal,0)}catch(e){} if(OP_MODE)return;try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:(window._clientGPS&&window._gpsFixTs)||Date.now()}))}catch(e){}}
+        function restaurarUbic(){try{var d=JSON.parse(localStorage.getItem('dewan_ubic')||'null');if(!d)return;if(d.addr)window._clientAddr=d.addr;if(d.gps&&d.ts&&(Date.now()-d.ts)<2*60*60*1000){window._clientGPS=d.gps;window._ubicRestauradaTs=d.ts;window._gpsFixTs=d.ts;}}catch(e){}}
+        // ¿El punto en uso es uno RESTAURADO del disco (no un GPS ni un pin de esta visita)? Entonces el
+        // cliente pudo haberse movido (caso DW-1310: pidió desde otro lugar y el moto fue a la casa).
+        function ubicRestaurada(){return !!(window._clientGPS&&window._ubicRestauradaTs&&!window._lastGpsFix&&window._opGpsApplied!=='map')}
+        function ubicEdadTxt(){var m=Math.max(0,Math.floor((Date.now()-(window._ubicRestauradaTs||Date.now()))/60000));return m>=60?Math.floor(m/60)+' h':m+' min'}
+        // Aviso automático (patrón Uber Eats/Rappi): con la ubicación restaurada, comparar en silencio con
+        // dónde está el celular AHORA (solo si el permiso ya fue dado: no vuelve a preguntar) y, si está a
+        // >300 m, ofrecer entregar donde está. Una sola vez por visita.
+        function verificarUbicRestaurada(){
+            if(window._ubicChequeada||OP_MODE||!ubicRestaurada())return;
+            window._ubicChequeada=true;
+            var enUso=window._clientGPS;
+            function correr(){
+                getBestPosition(function(pos){
+                    if(!gpsEnZona(pos)||!ubicRestaurada())return;
+                    var v=window._clientGPS; if(!v||v.lat!==enUso.lat||v.lng!==enUso.lng)return; // ya la cambió
+                    var km=haversine(pos.coords.latitude,pos.coords.longitude,parseFloat(v.lat),parseFloat(v.lng));
+                    if(km<0.3||(pos.coords.accuracy||0)>500)return;
+                    var sec=document.getElementById('loc-section'); if(!sec||document.getElementById('ubic-aviso'))return;
+                    var dist=km<1?(Math.round(km*1000/50)*50)+' m':km.toFixed(1).replace('.',',')+' km';
+                    window._fixActual=pos;
+                    var box=document.createElement('div');box.id='ubic-aviso';
+                    box.style.cssText='background:#FEF3C7;border:1.5px solid #F59E0B;color:#92400E;border-radius:12px;padding:10px 12px;margin:8px 0;font-size:0.82rem;font-weight:800;line-height:1.35';
+                    box.innerHTML='📍 Tu celular te ubica a ~'+dist+' de la ubicación guardada. ¿Sigues ahí?'+
+                        '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn-gps-main" style="flex:1;margin:0" onclick="aplicarFixCliente(window._fixActual)">📍 Entregar donde estoy</button>'+
+                        '<button style="flex:1;background:#fff;border:1.5px solid #F59E0B;color:#92400E;border-radius:999px;font-weight:800;font-family:inherit;padding:9px 10px;cursor:pointer" onclick="var b=document.getElementById(\'ubic-aviso\');if(b)b.remove();">Sigo ahí ✓</button></div>';
+                    sec.insertBefore(box,sec.firstChild.nextSibling);
+                },function(){});
+            }
+            try{
+                if(navigator.permissions&&navigator.permissions.query){
+                    navigator.permissions.query({name:'geolocation'}).then(function(p){if(p.state==='granted')correr();}).catch(function(){});
+                }
+            }catch(e){}
+        }
         // Pixel Meta: avisar cuando el cliente FIJA su ubicación (GPS o pin) = paso fuerte de intención, casi-pedido.
         // Una sola vez por sesión y solo para el cliente real (no la centralista).
         window._ubicPixelFired=false;
@@ -1010,7 +1046,7 @@
             if(!navigator.geolocation){if(st){st.className='gps-status error';st.textContent='Tu navegador no soporta GPS, pero puedes continuar 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Ver restaurantes cerca de ti';}return}
             getBestPosition(function(pos){
                 if(!gpsEnZona(pos)){if(st){st.className='gps-status error';st.textContent='Tu GPS te ubicó fuera de la ciudad — puedes continuar y marcar tu casa en el mapa 😊';}if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}return;}
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;guardarUbic();
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;window._gpsFixTs=Date.now();window._ubicRestauradaTs=null;guardarUbic();
                 markEtapa('eligio_gps');
                 if(st){st.className='gps-status success';st.textContent='✅ ¡Te encontramos!';}
                 // Si viene del banner, actualizar la vista
@@ -1035,7 +1071,7 @@
             banner.innerHTML='<span style="font-size:0.88rem;font-weight:800;color:var(--texto)">🔎 Buscando tu ubicación...</span>';
             getBestPosition(function(pos){
                 if(!gpsEnZona(pos)){banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">Tu GPS te ubicó fuera de la ciudad. Marca tu casa en el mapa del carrito.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';return;}
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;guardarUbic();
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;window._gpsFixTs=Date.now();window._ubicRestauradaTs=null;guardarUbic();
                 renderHome(); // mantiene 'recomendado'; la cercanía entra como desempate del híbrido
             },function(){
                 banner.innerHTML='<span style="font-size:0.78rem;color:var(--gris)">No se pudo obtener GPS. Puedes seguir sin ubicación.</span><button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>';
@@ -3777,6 +3813,13 @@
                     if(window._pinLejosKm&&window._opGpsApplied==='map'){
                         h+='<div class="loc-gps-ok" style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E"><span>⚠️ Marcaste el pin a ~'+window._pinLejosKm.toFixed(1)+' km de donde te ubica el GPS. ¿Seguro que ahí es tu casa? Revisa el mapa 👇 o vuelve a usar tu GPS:</span></div>';
                         h+='<button class="btn-gps-main" style="margin-top:8px" onclick="requestGPSCart()">📍 Usar mi ubicación GPS</button>';
+                    } else if(ubicRestaurada()){
+                        // Punto restaurado de una visita anterior (<2 h): decirlo con claridad (antes decía
+                        // "¡Te ubicamos!") y dar la salida de un toque si el cliente está en otro lugar.
+                        h+='<div class="loc-gps-ok" style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E"><span>🕒 Esta es tu ubicación de hace '+ubicEdadTxt()+'. ¿Sigues ahí? Si estás en otro lugar:</span></div>';
+                        h+='<button class="btn-gps-main" id="btn-gps-cart" style="margin-top:8px" onclick="requestGPSCart()">📍 Usar mi ubicación actual</button>';
+                        h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px;text-align:center"></div>';
+                        setTimeout(verificarUbicRestaurada,0);
                     } else if(_accUI>150){
                         h+='<div class="loc-gps-ok" style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E"><span>⚠️ Tu ubicación es APROXIMADA (±'+accTxt(_accUI)+'). Mueve el pin a tu casa para que el motorizado llegue bien 👇</span></div>';
                     } else {
@@ -4190,6 +4233,25 @@
             });
             return min;
         }
+        // Aplicar un fix de GPS al carrito (lo usan el botón "Usar mi ubicación" y el aviso "¿sigues ahí?").
+        window.aplicarFixCliente=function(pos){
+            if(!pos)return;
+            window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;window._gpsFixTs=Date.now();window._ubicRestauradaTs=null;guardarUbic();
+            trackUbicacionPixel();
+            // Recalcular delivery en el carrito con nueva ubicación
+            var rests=getFilteredRestaurantes();
+            var deliveryByRest={};
+            rests.forEach(function(r){deliveryByRest[r.nombre]=r.precio_delivery||0});
+            window._cart.forEach(function(c){
+                if(deliveryByRest[c.restaurante]!=null) c.delivery=deliveryByRest[c.restaurante];
+            });
+            saveCart();
+            // Capturar referencia antes de re-renderizar
+            var addrInput=document.getElementById('loc-addr');
+            if(addrInput) window._clientAddr=addrInput.value;
+            // Re-render completo para actualizar totales + sección ubicación
+            showCart();
+        };
         window.requestGPSCart=function(){
             var st=document.getElementById('gps-status-cart'),btn=document.getElementById('btn-gps-cart');
             if(st){st.className='gps-status checkout-gps-searching';st.textContent='🔍 Buscando tu ubicación...';}
@@ -4200,21 +4262,7 @@
                     if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}
                     return;
                 }
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;guardarUbic();
-                trackUbicacionPixel();
-                // Recalcular delivery en el carrito con nueva ubicación
-                var rests=getFilteredRestaurantes();
-                var deliveryByRest={};
-                rests.forEach(function(r){deliveryByRest[r.nombre]=r.precio_delivery||0});
-                window._cart.forEach(function(c){
-                    if(deliveryByRest[c.restaurante]!=null) c.delivery=deliveryByRest[c.restaurante];
-                });
-                saveCart();
-                // Capturar referencia antes de re-renderizar
-                var addrInput=document.getElementById('loc-addr');
-                if(addrInput) window._clientAddr=addrInput.value;
-                // Re-render completo para actualizar totales + sección ubicación
-                showCart();
+                aplicarFixCliente(pos);
             },function(){
                 if(st){st.className='gps-status';st.textContent='No se pudo obtener GPS';}
                 if(btn){btn.disabled=false;btn.textContent='📍 Toca aquí para poner tu ubicación';}
@@ -4360,6 +4408,7 @@
             }
             if(window._opMapCircle){try{window._opMap.removeLayer(window._opMapCircle)}catch(e){} window._opMapCircle=null;} // ya no hay incertidumbre
             window._opGpsApplied='map';
+            window._gpsFixTs=Date.now(); // el pin recién puesto es "fresco" para las 2 h
             guardarUbic(); // el pin del mapa también persiste (guardarUbic ya ignora OP_MODE)
             trackUbicacionPixel();
             window._opGpsRaw=''; // el pin pegado (si había) ya no manda: al re-render el input queda limpio
