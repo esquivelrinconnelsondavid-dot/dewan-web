@@ -493,12 +493,14 @@
     if (rt) { rt.cerrar(); rt = null; }
   }
 
-  // hora estimada: aceptado + minutos de preparación (timer_lanzamiento ya trae esa hora)
+  // hora estimada: aceptado (o atendido por la operadora) + minutos de preparación.
+  // OJO [21-sep-2026]: timer_lanzamiento NO es esa hora, es cuándo SALE LA MOTO (10 min antes
+  // en DEWAN); antes se usaba primero y el link decía "listo" 10 min antes. Queda de respaldo.
   function horaLista() {
+    var base = pedido.restaurante_aceptado_at || pedido.operadora_atendido_at;
+    var min = Number(pedido.tiempo_preparacion || 0);
+    if (base && min > 0) return new Date(new Date(base).getTime() + min * 60000);
     if (pedido.timer_lanzamiento) return new Date(pedido.timer_lanzamiento);
-    if (pedido.restaurante_aceptado_at && pedido.tiempo_preparacion) {
-      return new Date(new Date(pedido.restaurante_aceptado_at).getTime() + Number(pedido.tiempo_preparacion) * 60000);
-    }
     return null;
   }
 
@@ -681,7 +683,9 @@
       var ix = PASO[p.estado_pedido];
       if (ix == null) ix = p.restaurante_aceptado ? 1 : 0;
       var est = ix === -1 ? '😔 Cancelado' : ix >= 3 ? '✅ Entregado' : ix === 2 ? (esRetiro() ? '🏪 Listo' : '🛵 En camino') : ix === 1 ? '👨‍🍳 En cocina' : '🕐 Recibido';
-      if (ix === 1 && p.timer_lanzamiento) est += ' · listo ~' + hora(new Date(p.timer_lanzamiento));
+      var baseH = p.restaurante_aceptado_at || p.operadora_atendido_at, minH = Number(p.tiempo_preparacion || 0);
+      var listoH = (baseH && minH > 0) ? new Date(new Date(baseH).getTime() + minH * 60000) : (p.timer_lanzamiento ? new Date(p.timer_lanzamiento) : null);
+      if (ix === 1 && listoH) est += ' · listo ~' + hora(listoH);
       var barra = '<div class="barra" style="margin:6px 0 2px">';
       for (var i = 0; i < 4; i++) barra += '<div class="tramo' + (ix >= 3 || i < ix ? ' on' : (i === ix ? ' now' : '')) + '"><i></i></div>';
       barra += '</div>';
@@ -1047,7 +1051,7 @@
   var SEL = 'id,restaurante,restaurante_id,cliente_nombre,cliente_telefono,conversation_id,detalle_pedido,requiere_ubicacion,' +
     'estado_pedido,motorizado_id,nombre_moto,telefono_moto,direccion_entrega,ubicacion_lat,ubicacion_lng,direccion_retiro,retiro_lat,retiro_lng,' +
     'precio_calculado,duracion_minutos,monto_total,cupon_descuento,calificacion,tiempo_preparacion,timer_lanzamiento,' +
-    'restaurante_aceptado,restaurante_aceptado_at,restaurante_motivo_rechazo,fecha_creacion,codigo_pedido,fecha_entregado,intencion';
+    'restaurante_aceptado,restaurante_aceptado_at,operadora_atendido_at,restaurante_motivo_rechazo,fecha_creacion,codigo_pedido,fecha_entregado,intencion';
 
   function noEncontrado() {
     $('cargando').innerHTML = 'No encontramos ese pedido.<br><br>' +

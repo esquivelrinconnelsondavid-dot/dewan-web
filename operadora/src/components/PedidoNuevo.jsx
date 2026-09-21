@@ -34,7 +34,8 @@ export default function PedidoNuevo({ pedido }) {
         .update({
           estado_pedido: 'preparando',
           tiempo_preparacion: minutos,
-          timer_lanzamiento: new Date(Date.now() + minutos * 60000).toISOString(),
+          // [21-sep-2026] la moto sale 10 min antes de que esté listo (misma regla que Admin Pro)
+          timer_lanzamiento: new Date(Date.now() + Math.max(0, minutos - 10) * 60000).toISOString(),
           operadora_atendido: true,
           operadora_atendido_at: new Date().toISOString(),
         })

@@ -112,9 +112,17 @@ export async function marcarSalio(pedido) {
   if (SALIO_PATH) avisarEvento(SALIO_PATH, { pedido_id: pedido.id, evento: domicilio ? 'salio' : 'listo' });
 }
 
+// La moto sale LEAD_MOTO_MIN (10) min ANTES de que el pedido esté listo: es lo que tarda en
+// llegar al local (misma regla que Admin Pro, LEAD_LANZAMIENTO_MIN). 10 min → sale ya; 15 → a
+// los 5; 20 → a los 10. Solo DEWAN (pedidos_delivery): en el SISTEMA el gemelo lo resta n8n y en
+// HP no hay motos DEWAN, ahí timer_lanzamiento sigue siendo la hora prometida.
+// [21-sep-2026] Antes se guardaba ahora + minutos completos → la moto salía con la comida ya lista
+// y las operadoras tenían que lanzar a mano.
+export const LEAD_MOTO_MIN = PEDIDOS_TABLE === 'pedidos_delivery' ? 10 : 0;
+
 export async function aceptarPedido(pedidoIdOrPedido, minutos) {
   const ahora = new Date();
-  const lanzamiento = new Date(ahora.getTime() + minutos * 60000);
+  const lanzamiento = new Date(ahora.getTime() + Math.max(0, minutos - LEAD_MOTO_MIN) * 60000);
   const pedido = typeof pedidoIdOrPedido === 'object' ? pedidoIdOrPedido : null;
   const pedidoId = pedido ? pedido.id : pedidoIdOrPedido;
 

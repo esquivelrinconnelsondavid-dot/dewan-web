@@ -59,6 +59,16 @@ function formatearMs(ms) {
   return `${neg ? '-' : ''}${min}:${String(seg).padStart(2, '0')}`;
 }
 
+// Hora en que el local prometió tener el pedido: aceptado (o atendido por la operadora) +
+// minutos de preparación. OJO: `timer_lanzamiento` NO es esa hora, es cuándo sale la moto
+// (10 min antes en DEWAN, ver LEAD_MOTO_MIN en lib/pedidos.js); queda solo de respaldo.
+function horaPrometida(p) {
+  const base = p?.restaurante_aceptado_at || p?.operadora_atendido_at;
+  const min = Number(p?.tiempo_preparacion);
+  if (base && min > 0) return new Date(base).getTime() + min * 60000;
+  return p?.timer_lanzamiento ? new Date(p.timer_lanzamiento).getTime() : null;
+}
+
 // Anillo de tiempo: verde → ámbar a la mitad → rojo si se pasó (patrón iFood).
 function AnilloTiempo({ pedido, tam = 56 }) {
   const [ahora, setAhora] = useState(Date.now());
@@ -66,8 +76,8 @@ function AnilloTiempo({ pedido, tam = 56 }) {
     const id = setInterval(() => setAhora(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  if (!pedido.timer_lanzamiento) return null;
-  const fin = new Date(pedido.timer_lanzamiento).getTime();
+  const fin = horaPrometida(pedido);
+  if (!fin) return null;
   const total = Math.max(1, (Number(pedido.tiempo_preparacion) || 15) * 60000);
   const restante = fin - ahora;
   const frac = Math.max(0, Math.min(1, restante / total));
@@ -310,7 +320,7 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
       {columna === 'preparando' && !compacto && (
         <div className="text-[11px] text-gray-400">
           Aceptado {formatHoraEC(pedido.restaurante_aceptado_at || pedido.fecha_creacion)} · prometió {pedido.tiempo_preparacion || '—'} min
-          {pedido.timer_lanzamiento && new Date(pedido.timer_lanzamiento).getTime() < Date.now() && (
+          {horaPrometida(pedido) != null && horaPrometida(pedido) < Date.now() && (
             <span className="ml-2 inline-flex items-center gap-1 text-nuevo font-bold"><IcoAlerta size={12} />se pasó el tiempo prometido</span>
           )}
         </div>
