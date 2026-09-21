@@ -134,6 +134,11 @@
   // Viven en menu_opcion_grupos/menu_opciones, las mismas que usa el bot de WhatsApp.
   // Un plato puede tener VARIOS grupos (promo Lunes: "Hamburguesas" elige 2 + "Bebidas" elige 2) y cada opcion
   // puede traer recargo (precio_extra: bebida 500 ml para llevar +$0.50) que se suma al precio del plato. (21-sep-2026)
+  // Grupo "[envase]" (marca en el nombre): sus opciones traen en precio_extra el ENVASE del plato cuando se elige esa
+  // opcion (promo Lunes: Coca-Cola 300 ml -> $0.25, bebidas 500 ml -> $0.50). Se cobra UNA vez por plato (el mayor de
+  // las marcadas) y no toca el precio. Mismo criterio que el Cerebro Ryo; la marca se quita al mostrar el nombre.
+  function esGrupoEnvase(n) { return /\[envase\]/i.test(String(n || '')); }
+  function nombreGrupo(n) { return String(n || '').replace(/\s*\[envase\]\s*/ig, ' ').replace(/\s+/g, ' ').trim() || 'Opciones'; }
   let GRUPOS = {};
   async function cargarGrupos(rows) {
     try {
@@ -147,7 +152,7 @@
           .sort((a, b) => (a.orden || 0) - (b.orden || 0)).map((o) => ({ n: String(o.nombre), x: Number(o.precio_extra) || 0 }));
         if (!ops.length) return;
         const max = x.tipo === 'unica' ? 1 : Math.max(1, Math.min(Number(x.max_sel) || ops.length, ops.length));
-        (g[x.menu_item_id] = g[x.menu_item_id] || []).push({ nombre: x.nombre || '', opciones: ops, max, min: Math.max(0, Math.min(Number(x.min_sel) || 0, max)) });
+        (g[x.menu_item_id] = g[x.menu_item_id] || []).push({ nombre: nombreGrupo(x.nombre), envase: esGrupoEnvase(x.nombre), opciones: ops, max, min: Math.max(0, Math.min(Number(x.min_sel) || 0, max)) });
       });
       if (!Object.keys(g).length) return;
       GRUPOS = g; construir(rows); pintarMenu($('#q').value); pintarCarritoBadge();
@@ -274,6 +279,7 @@
     let vSel = p.variantes[0], qty = 1;
     const grupos = p.grupos || [];
     const sel = grupos.map((g) => (g.opciones.length ? [g.opciones[0].n] : []));   // preselección: la primera de cada grupo
+    const envUnit = () => { const e = envaseSel(grupos, sel); return e != null ? e : envMax(p); };   // envase por unidad (puede depender de la elección)
     const f = fotoUrl(p.foto);
     const html =
       '<div class="prod-foto">' + (f ? '<img src="' + esc(f) + '" alt="">' : '<div class="emoji">' + emojiDe(p) + '</div>') + '</div>' +
@@ -282,14 +288,18 @@
         p.variantes.map((v, i) => '<button class="opcion' + (i === 0 ? ' on' : '') + '" data-i="' + i + '"><span class="radio"></span><div><b>' + esc(v.label || p.nombre) + '</b></div><span class="p">' + money(v.precio) + '</span></button>').join('') + '</div></div>' : '') +
       // un bloque de chips por grupo (salsas de las alitas; hamburguesas y bebidas de la promo), mismo toque que las salsas
       grupos.map((g, gi) => '<div class="bloque"><div class="et">' + esc(tituloGrupo(g)) + ' <span class="sel-g" data-g="' + gi + '">' + esc(textoSel(g, sel[gi])) + '</span></div><div class="salsas" data-g="' + gi + '">' +
-        g.opciones.map((o, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-g="' + gi + '" data-s="' + esc(o.n) + '">' + esc(o.n) + (o.x > 0 ? ' <small>+' + money(o.x) + '</small>' : '') + '</button>').join('') + '</div></div>').join('') +
+        g.opciones.map((o, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-g="' + gi + '" data-s="' + esc(o.n) + '">' + esc(o.n) + (o.x > 0 ? ' <small>' + (g.envase ? '📦 ' : '+') + money(o.x) + '</small>' : '') + '</button>').join('') + '</div></div>').join('') +
       '<div class="bloque"><div class="et">Alguna nota para la cocina</div><input class="nota-in" id="nota-prod" maxlength="120" placeholder="' + esc(placeholderNota(p)) + '"></div>' +
-      (envMax(p) > 0 ? '<div class="prod-envase">📦 Se suma ' + money(envMax(p)) + ' por el envase para llevar</div>' : '') +
+      ((envMax(p) > 0 || grupos.some((g) => g.envase)) ? '<div class="prod-envase" id="prod-envase">📦 Se suma ' + money(envUnit()) + ' por el envase para llevar</div>' : '') +
       '<div class="prod-pie"><div class="stepper"><button id="q-menos" aria-label="menos">−</button><b id="q-n">1</b><button id="q-mas" aria-label="más">+</button></div>' +
       '<button class="btn-p" id="agregar"><span>Agregar</span><span class="t" id="agregar-total">' + money(vSel.precio + extrasDe(grupos, sel)) + '</span></button></div>';
     const hoja = abrirHoja(html);
     const unit = () => vSel.precio + extrasDe(grupos, sel);
-    const refrescar = () => { $('#q-n', hoja).textContent = qty; $('#agregar-total', hoja).textContent = money(unit() * qty); const qn = $('#q-n', hoja); qn.classList.remove('pop'); void qn.offsetWidth; qn.classList.add('pop'); };
+    const refrescar = () => {
+      $('#q-n', hoja).textContent = qty; $('#agregar-total', hoja).textContent = money(unit() * qty);
+      const pe = $('#prod-envase', hoja); if (pe) pe.textContent = '📦 Se suma ' + money(envUnit()) + ' por el envase para llevar';
+      const qn = $('#q-n', hoja); qn.classList.remove('pop'); void qn.offsetWidth; qn.classList.add('pop');
+    };
     $$('#vars .opcion', hoja).forEach((b) => b.addEventListener('click', () => { $$('#vars .opcion', hoja).forEach((x) => x.classList.remove('on')); b.classList.add('on'); vSel = p.variantes[+b.dataset.i]; refrescar(); }));
     $$('.salsas .salsa', hoja).forEach((b) => b.addEventListener('click', () => {
       const gi = +b.dataset.g, g = grupos[gi], s = sel[gi], sv = b.dataset.s, i = s.indexOf(sv);
@@ -306,7 +316,7 @@
       const nota = ($('#nota-prod', hoja).value || '').trim().slice(0, 120);
       const img = $('.prod-foto img', hoja);
       const rect = img ? img.getBoundingClientRect() : null;
-      agregar(vSel, qty, textoOpc(grupos, sel), nota, extrasDe(grupos, sel));
+      agregar(vSel, qty, textoOpc(grupos, sel), nota, extrasDe(grupos, sel), envaseSel(grupos, sel));
       cerrarHoja();
       emitir('ryo:agregado', { foto: f, rect, qty });
       toast('✅ ' + qty + 'x ' + vSel.nombre + ' agregado');
@@ -316,10 +326,23 @@
   // elige 2") si marca UNA sola, van las N iguales ("Ryo Texas x2") y el recargo se multiplica.
   function vecesDe(g, s) { return (g.min >= 2 && g.min === g.max && s.length === 1) ? g.max : 1; }
   function extrasDe(grupos, sel) {
-    return grupos.reduce((t, g, i) => { const n = vecesDe(g, sel[i]); return t + sel[i].reduce((u, nm) => { const o = g.opciones.find((x) => x.n === nm); return u + (o ? o.x : 0) * n; }, 0); }, 0);
+    return grupos.reduce((t, g, i) => { if (g.envase) return t; const n = vecesDe(g, sel[i]); return t + sel[i].reduce((u, nm) => { const o = g.opciones.find((x) => x.n === nm); return u + (o ? o.x : 0) * n; }, 0); }, 0);
+  }
+  // envase que definen los grupos "[envase]": el mayor de las opciones marcadas; null si no hay grupo así
+  function envaseSel(grupos, sel) {
+    let e = null;
+    grupos.forEach((g, i) => { if (!g.envase) return; sel[i].forEach((nm) => { const o = g.opciones.find((x) => x.n === nm); if (o && (e == null || o.x > e)) e = o.x; }); });
+    return e;
   }
   function textoSel(g, s) { const n = vecesDe(g, s); return s.map((nm) => nm + (n > 1 ? ' x' + n : '')).join(' + '); }
-  function textoOpc(grupos, sel) { return grupos.map((g, i) => (sel[i].length ? g.nombre + ': ' + textoSel(g, sel[i]) : '')).filter(Boolean).join(' · '); }
+  function textoOpc(grupos, sel) {
+    return grupos.map((g, i) => {
+      if (!sel[i].length) return '';
+      let t = g.nombre + ': ' + textoSel(g, sel[i]);
+      if (g.envase) { const e = envaseSel([g], [sel[i]]); if (e != null) t += ' · 📦 envase ' + money(e); }
+      return t;
+    }).filter(Boolean).join(' · ');
+  }
   // Como se anuncia el grupo: usa el nombre real ("Salsas", "Hamburguesas", "Elija el plato").
   function tituloGrupo(g) {
     if (/salsa/i.test(g.nombre)) return g.max > 1 ? 'Tus salsas · elige hasta ' + g.max : 'Tu salsa';
@@ -343,18 +366,20 @@
   /* ================= CARRITO ================= */
   // `salsa` = texto de las elecciones ("Salsas: BBQ + Buffalo" / "Hamburguesas: Ryo Texas x2 · Bebidas: …");
   // `extra` = recargo por unidad de esas elecciones (va DENTRO de `precio`, que es lo que paga el cliente).
-  function agregar(v, qty, salsa, nota, extra) {
+  // `envOpc` = envase que fijó la elección (grupo "[envase]"); null = el cargo_envase normal del plato.
+  function agregar(v, qty, salsa, nota, extra, envOpc) {
     const ex2 = Math.round((Number(extra) || 0) * 100) / 100;
+    const eo = (envOpc != null && isFinite(Number(envOpc))) ? Math.round(Number(envOpc) * 100) / 100 : null;
     const key = v.id + '|' + norm(salsa) + '|' + norm(nota);
     const ex = cart.find((c) => c.key === key);
-    if (ex) ex.qty += qty; else cart.push({ key, id: v.id, nombre: v.nombre, precio: Math.round((v.precio + ex2) * 100) / 100, extra: ex2, envase: Number(v.envase) || 0, qty, salsa: salsa || '', nota: nota || '' });
+    if (ex) ex.qty += qty; else cart.push({ key, id: v.id, nombre: v.nombre, precio: Math.round((v.precio + ex2) * 100) / 100, extra: ex2, envase: Number(v.envase) || 0, envOpc: eo, qty, salsa: salsa || '', nota: nota || '' });
     guardarCart(); pintarMenu($('#q').value); pintarCarritoBadge(true);
   }
   function guardarCart() { ls.set('ryo_cart', cart); }
   const subtotal = () => cart.reduce((t, c) => t + c.precio * c.qty, 0);
   const nItems = () => cart.reduce((t, c) => t + c.qty, 0);
   // Envase "para llevar": dato por plato (menu_items.cargo_envase). Bebidas e ingredientes extra van en 0.
-  const envaseDe = (c) => { const p = POR_ID[c.id]; return Number(p && p.envase != null ? p.envase : c.envase) || 0; };
+  const envaseDe = (c) => { if (c.envOpc != null) return Number(c.envOpc) || 0; const p = POR_ID[c.id]; return Number(p && p.envase != null ? p.envase : c.envase) || 0; };
   const envases = () => cart.reduce((t, c) => t + envaseDe(c) * c.qty, 0);
   const nEnvases = () => cart.reduce((t, c) => t + (envaseDe(c) > 0 ? c.qty : 0), 0);
   function pintarCarritoBadge(pop) {
@@ -609,7 +634,7 @@
       fetch(CFG.avisoWa, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pedido_id: row.id }), keepalive: true }).catch(function () {});
     } catch (e) {}
-    const resumen = cart.map((c) => ({ id: c.id, nombre: c.nombre, precio: c.precio, extra: c.extra || 0, qty: c.qty, salsa: c.salsa, nota: c.nota }));
+    const resumen = cart.map((c) => ({ id: c.id, nombre: c.nombre, precio: c.precio, extra: c.extra || 0, envOpc: (c.envOpc != null ? c.envOpc : null), qty: c.qty, salsa: c.salsa, nota: c.nota }));
     ls.set('ryo_ultimo', { codigo, link, ts: Date.now(), items: resumen, total, entrega });
     cart = []; guardarCart(); pintarMenu($('#q').value); pintarCarritoBadge();
     mostrarExito(codigo, link, resumen, del, env, total);
@@ -646,7 +671,7 @@
       '<div class="acciones">' + (reciente ? '<a href="' + esc(u.link) + '" target="_blank" rel="noopener">Seguir 📍</a>' : '') + '<button type="button" id="btn-repetir">Repetir</button></div>';
     $('#btn-repetir').addEventListener('click', () => {
       let n = 0;
-      u.items.forEach((c) => { const p = POR_ID[c.id]; if (!p) return; agregar({ id: c.id, nombre: p.nombre, precio: p.precio, envase: p.envase || 0 }, c.qty, c.salsa, c.nota, c.extra || 0); n += c.qty; });
+      u.items.forEach((c) => { const p = POR_ID[c.id]; if (!p) return; agregar({ id: c.id, nombre: p.nombre, precio: p.precio, envase: p.envase || 0 }, c.qty, c.salsa, c.nota, c.extra || 0, (c.envOpc != null ? c.envOpc : null)); n += c.qty; });
       if (n) { toast('🔁 ' + n + ' ítems de nuevo en tu pedido (con precios de hoy)'); abrirCarrito(); } else toast('Esos platos ya no están en la carta 🙈');
     });
   }
