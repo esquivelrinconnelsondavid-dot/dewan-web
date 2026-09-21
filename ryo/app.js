@@ -287,8 +287,10 @@
       (p.variantes.length > 1 ? '<div class="bloque"><div class="et">Elige cómo la quieres</div><div class="opciones" id="vars">' +
         p.variantes.map((v, i) => '<button class="opcion' + (i === 0 ? ' on' : '') + '" data-i="' + i + '"><span class="radio"></span><div><b>' + esc(v.label || p.nombre) + '</b></div><span class="p">' + money(v.precio) + '</span></button>').join('') + '</div></div>' : '') +
       // un bloque de chips por grupo (salsas de las alitas; hamburguesas y bebidas de la promo), mismo toque que las salsas
-      grupos.map((g, gi) => '<div class="bloque"><div class="et">' + esc(tituloGrupo(g)) + ' <span class="sel-g" data-g="' + gi + '">' + esc(textoSel(g, sel[gi])) + '</span></div><div class="salsas" data-g="' + gi + '">' +
-        g.opciones.map((o, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-g="' + gi + '" data-s="' + esc(o.n) + '">' + esc(o.n) + (o.x > 0 ? ' <small>' + (g.envase ? '📦 ' : '+') + money(o.x) + '</small>' : '') + '</button>').join('') + '</div></div>').join('') +
+      grupos.map((g, gi) => '<div class="bloque"><div class="et">' + esc(tituloGrupo(g)) + ' <span class="sel-g" data-g="' + gi + '">' + esc(textoSel(g, sel[gi])) + '</span></div>' +
+        (g.envase ? '<div class="prod-desc" style="margin:0 0 8px">' + esc(descEnvase(g)) + '</div>' : '') +   // la regla del envase va en el grupo, no en cada bebida (se leía como cobro por bebida)
+        '<div class="salsas" data-g="' + gi + '">' +
+        g.opciones.map((o, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-g="' + gi + '" data-s="' + esc(o.n) + '">' + esc(o.n) + (o.x > 0 && !g.envase ? ' <small>+' + money(o.x) + '</small>' : '') + '</button>').join('') + '</div></div>').join('') +
       '<div class="bloque"><div class="et">Alguna nota para la cocina</div><input class="nota-in" id="nota-prod" maxlength="120" placeholder="' + esc(placeholderNota(p)) + '"></div>' +
       ((envMax(p) > 0 || grupos.some((g) => g.envase)) ? '<div class="prod-envase" id="prod-envase">📦 Se suma ' + money(envUnit()) + ' por el envase para llevar</div>' : '') +
       '<div class="prod-pie"><div class="stepper"><button id="q-menos" aria-label="menos">−</button><b id="q-n">1</b><button id="q-mas" aria-label="más">+</button></div>' +
@@ -333,6 +335,12 @@
     let e = null;
     grupos.forEach((g, i) => { if (!g.envase) return; sel[i].forEach((nm) => { const o = g.opciones.find((x) => x.n === nm); if (o && (e == null || o.x > e)) e = o.x; }); });
     return e;
+  }
+  // "Envase de la promo, una vez por promo: $0,25 con Coca-Cola 300 ml · $0,50 con Inca Kola 500 ml, Fanta 500 ml, Sprite 500 ml"
+  function descEnvase(g) {
+    const por = {};
+    g.opciones.forEach((o) => { (por[o.x] = por[o.x] || []).push(o.n); });
+    return 'Envase de la promo, una vez por promo: ' + Object.keys(por).map(Number).sort((a, b) => a - b).map((x) => money(x) + ' con ' + por[x].join(', ')).join(' · ');
   }
   function textoSel(g, s) { const n = vecesDe(g, s); return s.map((nm) => nm + (n > 1 ? ' x' + n : '')).join(' + '); }
   function textoOpc(grupos, sel) {

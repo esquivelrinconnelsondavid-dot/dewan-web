@@ -3,8 +3,8 @@
    - Fotos del Storage y fuentes = caché primero + refresco en segundo plano.
    - GET a Supabase REST = red primero (precios vivos), respaldo caché.
    - POST / webhooks: NUNCA se interceptan (el pedido siempre va a la red). */
-const V = 'ryo-v11';
-const SHELL = ['./', './index.html', './app.css?v=3', './app.js?v=10', './img/logo.webp', './icons/icon-192.png', './icons/icon-512.png', './manifest.webmanifest'];
+const V = 'ryo-v12';
+const SHELL = ['./', './index.html', './app.css?v=3', './app.js?v=11', './img/logo.webp', './icons/icon-192.png', './icons/icon-512.png', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting()));
