@@ -167,14 +167,15 @@
       const base = m ? r.n.slice(0, m.index).trim() : r.n;
       const varLabel = m ? m[1] : '';
       const key = r.c + '|' + norm(base);
-      if (!mapa.has(key)) mapa.set(key, { key, cat: r.c, nombre: base, desc: '', foto: r.f || '', variantes: [], grupos: [], salsas: [], salsasMax: 1, opcLabel: '', nuevo: false, unidades: parseInt((base.match(/(\d+)\s+unidades/i) || [])[1], 10) || 0 });
+      if (!mapa.has(key)) mapa.set(key, { key, cat: r.c, nombre: base, desc: '', foto: r.f || '', variantes: [], grupos: [], gruposPorVar: {}, salsas: [], salsasMax: 1, opcLabel: '', nuevo: false, unidades: parseInt((base.match(/(\d+)\s+unidades/i) || [])[1], 10) || 0 });
       const p = mapa.get(key);
       if (!p.desc || (r.d && r.d.length > p.desc.length && !varLabel.match(/combo/i))) p.desc = limpiarDesc(r.d);
       if (!p.foto && r.f) p.foto = r.f;
       p.variantes.push({ id: r.id, label: etiquetaVar(varLabel), precio: r.p, nombre: r.n, envase: Number(r.e) || 0, orden: varLabel ? (varLabel.match(/sola|mediana/i) ? 0 : (varLabel.match(/combo|grande/i) ? 1 : parseInt(varLabel) || 2)) : 0 });
+      // grupos POR VARIANTE (el Combo tiene "Bebida", la Sola no); p.grupos = los de la primera variante con grupos (tarjeta)
       const gl = GRUPOS[r.id];
-      if (gl && gl.length) { p.grupos = gl; p.salsas = gl[0].opciones.map((o) => o.n); p.salsasMax = gl[0].max; p.opcLabel = gl[0].nombre; }
-      else { const s = parsearSalsas(r.d); if (s.lista.length) { p.salsas = s.lista; p.salsasMax = s.max; p.grupos = [{ nombre: 'Salsas', opciones: s.lista.map((n) => ({ n, x: 0 })), max: s.max, min: 0 }]; } }
+      if (gl && gl.length) { p.gruposPorVar[r.id] = gl; if (!p.grupos.length) { p.grupos = gl; p.salsas = gl[0].opciones.map((o) => o.n); p.salsasMax = gl[0].max; p.opcLabel = gl[0].nombre; } }
+      else { const s = parsearSalsas(r.d); if (s.lista.length) { p.salsas = s.lista; p.salsasMax = s.max; p.grupos = [{ nombre: 'Salsas', opciones: s.lista.map((n) => ({ n, x: 0 })), max: s.max, min: 0 }]; p.gruposPorVar[r.id] = p.grupos; } }
       if (/pork bacon|gaucha|primicias/i.test(r.n)) p.nuevo = true;
     });
     PRODUCTOS = Array.from(mapa.values());
@@ -277,33 +278,35 @@
   function abrirProducto(key, origenEl) {
     const p = PRODUCTOS.find((x) => x.key === key); if (!p) return;
     let vSel = p.variantes[0], qty = 1;
-    const grupos = p.grupos || [];
-    const sel = grupos.map((g) => (g.opciones.length ? [g.opciones[0].n] : []));   // preselección: la primera de cada grupo
+    // los grupos dependen de la VARIANTE elegida (el Combo pide la bebida; la Sola no)
+    const gruposDe = (v) => (p.variantes.length > 1 ? (p.gruposPorVar[v.id] || []) : (p.grupos || []));
+    let grupos = gruposDe(vSel);
+    let sel = grupos.map((g) => (g.opciones.length ? [g.opciones[0].n] : []));   // preselección: la primera de cada grupo
     const envUnit = () => { const e = envaseSel(grupos, sel); return e != null ? e : envMax(p); };   // envase por unidad (puede depender de la elección)
     const f = fotoUrl(p.foto);
+    // un bloque de chips por grupo (salsas de las alitas; hamburguesas y bebidas de la promo; bebida del combo), mismo toque que las salsas
+    const htmlGrupos = () => grupos.map((g, gi) => '<div class="bloque"><div class="et">' + esc(tituloGrupo(g)) + ' <span class="sel-g" data-g="' + gi + '">' + esc(textoSel(g, sel[gi])) + '</span></div>' +
+        (g.envase ? '<div class="prod-desc" style="margin:0 0 8px">' + esc(descEnvase(g)) + '</div>' : '') +   // la regla del envase va en el grupo, no en cada bebida (se leía como cobro por bebida)
+        '<div class="salsas" data-g="' + gi + '">' +
+        g.opciones.map((o, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-g="' + gi + '" data-s="' + esc(o.n) + '">' + esc(o.n) + (o.x > 0 && !g.envase ? ' <small>+' + money(o.x) + '</small>' : '') + '</button>').join('') + '</div></div>').join('');
     const html =
       '<div class="prod-foto">' + (f ? '<img src="' + esc(f) + '" alt="">' : '<div class="emoji">' + emojiDe(p) + '</div>') + '</div>' +
       '<div class="prod-nom tit">' + esc(p.nombre) + '</div>' + (p.desc ? '<div class="prod-desc">' + esc(p.desc) + '</div>' : '') +
       (p.variantes.length > 1 ? '<div class="bloque"><div class="et">Elige cómo la quieres</div><div class="opciones" id="vars">' +
         p.variantes.map((v, i) => '<button class="opcion' + (i === 0 ? ' on' : '') + '" data-i="' + i + '"><span class="radio"></span><div><b>' + esc(v.label || p.nombre) + '</b></div><span class="p">' + money(v.precio) + '</span></button>').join('') + '</div></div>' : '') +
-      // un bloque de chips por grupo (salsas de las alitas; hamburguesas y bebidas de la promo), mismo toque que las salsas
-      grupos.map((g, gi) => '<div class="bloque"><div class="et">' + esc(tituloGrupo(g)) + ' <span class="sel-g" data-g="' + gi + '">' + esc(textoSel(g, sel[gi])) + '</span></div>' +
-        (g.envase ? '<div class="prod-desc" style="margin:0 0 8px">' + esc(descEnvase(g)) + '</div>' : '') +   // la regla del envase va en el grupo, no en cada bebida (se leía como cobro por bebida)
-        '<div class="salsas" data-g="' + gi + '">' +
-        g.opciones.map((o, i) => '<button class="salsa' + (i === 0 ? ' on' : '') + '" data-g="' + gi + '" data-s="' + esc(o.n) + '">' + esc(o.n) + (o.x > 0 && !g.envase ? ' <small>+' + money(o.x) + '</small>' : '') + '</button>').join('') + '</div></div>').join('') +
+      '<div id="grupos">' + htmlGrupos() + '</div>' +
       '<div class="bloque"><div class="et">Alguna nota para la cocina</div><input class="nota-in" id="nota-prod" maxlength="120" placeholder="' + esc(placeholderNota(p)) + '"></div>' +
-      ((envMax(p) > 0 || grupos.some((g) => g.envase)) ? '<div class="prod-envase" id="prod-envase">📦 Se suma ' + money(envUnit()) + ' por el envase para llevar</div>' : '') +
+      '<div class="prod-envase" id="prod-envase"' + ((envMax(p) > 0 || grupos.some((g) => g.envase)) ? '' : ' hidden') + '>📦 Se suma ' + money(envUnit()) + ' por el envase para llevar</div>' +
       '<div class="prod-pie"><div class="stepper"><button id="q-menos" aria-label="menos">−</button><b id="q-n">1</b><button id="q-mas" aria-label="más">+</button></div>' +
       '<button class="btn-p" id="agregar"><span>Agregar</span><span class="t" id="agregar-total">' + money(vSel.precio + extrasDe(grupos, sel)) + '</span></button></div>';
     const hoja = abrirHoja(html);
     const unit = () => vSel.precio + extrasDe(grupos, sel);
     const refrescar = () => {
       $('#q-n', hoja).textContent = qty; $('#agregar-total', hoja).textContent = money(unit() * qty);
-      const pe = $('#prod-envase', hoja); if (pe) pe.textContent = '📦 Se suma ' + money(envUnit()) + ' por el envase para llevar';
+      const pe = $('#prod-envase', hoja); if (pe) { pe.textContent = '📦 Se suma ' + money(envUnit()) + ' por el envase para llevar'; pe.hidden = !(envUnit() > 0); }
       const qn = $('#q-n', hoja); qn.classList.remove('pop'); void qn.offsetWidth; qn.classList.add('pop');
     };
-    $$('#vars .opcion', hoja).forEach((b) => b.addEventListener('click', () => { $$('#vars .opcion', hoja).forEach((x) => x.classList.remove('on')); b.classList.add('on'); vSel = p.variantes[+b.dataset.i]; refrescar(); }));
-    $$('.salsas .salsa', hoja).forEach((b) => b.addEventListener('click', () => {
+    const bindGrupos = () => $$('.salsas .salsa', hoja).forEach((b) => b.addEventListener('click', () => {
       const gi = +b.dataset.g, g = grupos[gi], s = sel[gi], sv = b.dataset.s, i = s.indexOf(sv);
       if (i >= 0) { if (s.length > 1) s.splice(i, 1); }                          // quitar (siempre queda al menos una)
       else if (g.max <= 1) { s.length = 0; s.push(sv); }                        // una sola: reemplaza
@@ -312,6 +315,13 @@
       $('.sel-g[data-g="' + gi + '"]', hoja).textContent = textoSel(g, s);
       refrescar();
     }));
+    $$('#vars .opcion', hoja).forEach((b) => b.addEventListener('click', () => {
+      $$('#vars .opcion', hoja).forEach((x) => x.classList.remove('on')); b.classList.add('on'); vSel = p.variantes[+b.dataset.i];
+      grupos = gruposDe(vSel); sel = grupos.map((g) => (g.opciones.length ? [g.opciones[0].n] : []));
+      $('#grupos', hoja).innerHTML = htmlGrupos(); bindGrupos();
+      refrescar();
+    }));
+    bindGrupos();
     $('#q-mas', hoja).addEventListener('click', () => { qty = Math.min(20, qty + 1); refrescar(); });
     $('#q-menos', hoja).addEventListener('click', () => { qty = Math.max(1, qty - 1); refrescar(); });
     $('#agregar', hoja).addEventListener('click', () => {
