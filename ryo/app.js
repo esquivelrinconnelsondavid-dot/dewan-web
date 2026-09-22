@@ -31,6 +31,20 @@
     seguimiento: 'https://dewansas.com/pedido/?s=sistema&t=',
     fotos: 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/storage/v1/object/public/menu-fotos/0cca9530-df0c-4151-87ee-ad619429e714/',
     mapsKey: 'AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs',
+    // Cuentas para transferir (placa del mostrador, 21-sep-2026). El cliente las ve al elegir
+    // "Transferencia" y otra vez en la pantalla del pedido hecho, con el total y el botón para
+    // mandar el comprobante por WhatsApp ya con el código del pedido escrito.
+    transfer: {
+      cuentas: [
+        { b: 'Banco de Guayaquil',   n: '35551064',     t: 'Karla Ruiz' },
+        { b: 'Banco Pichincha',      n: '2208129249',   t: 'Karla Ruiz' },
+        { b: 'Banco Pacífico',       n: '1064979016',   t: 'Karla Ruiz' },
+        { b: 'Cooperativa Riobamba', n: '402110602325', t: 'Karla Ruiz' },
+        { b: 'Produbanco',           n: '12667030188',  t: 'Francis Osuna' }
+      ],
+      deuna: 'Karla Cecilia Ruiz Bernal',
+      correo: 'Ryoburger2022@gmail.com'
+    },
     servicio: 0.45,       // servicio DEWAN por entrega (cliente = carrera del moto + esto)
     carreraMin: 1.30,     // carrera del moto hasta 3 km
     cocinaMin: 20,        // minutos de cocina que se suman al tiempo de ruta
@@ -473,6 +487,35 @@
       '&markers=' + encodeURIComponent('color:0x' + color + '|label:' + label + '|' + lat + ',' + lng) + '&key=' + CFG.mapsKey;
   }
 
+  /* ================= CUENTAS PARA TRANSFERIR ================= */
+  // Antes el cliente tenía que pedir la cuenta por WhatsApp y el local le mandaba una foto a mano.
+  function htmlCuentas(total, codigo) {
+    const T = CFG.transfer;
+    return '<div class="cuentas">' +
+      '<div class="cuentas-tit">🏦 Transfiere a cualquiera de estas cuentas' + (total != null ? ' · <b>' + money(total) + '</b>' : '') + '</div>' +
+      T.cuentas.map((c) => '<button type="button" class="cta-cuenta" data-n="' + esc(c.n) + '">' +
+        '<span class="i"><span class="b">' + esc(c.b) + '</span><span class="t">' + esc(c.t) + '</span></span>' +
+        '<span class="n">' + esc(c.n) + '</span><span class="cp">copiar</span></button>').join('') +
+      '<div class="cuentas-pie">📲 También por <b>DeUna</b> (Banco Pichincha) a nombre de ' + esc(T.deuna) + '</div>' +
+      (codigo
+        ? '<a class="btn-wa" target="_blank" rel="noopener" href="https://wa.me/' + CFG.whatsapp + '?text=' +
+          encodeURIComponent('Hola, le mando el comprobante de mi pedido ' + codigo + ' 📸') + '">📸 Mandar el comprobante por WhatsApp</a>'
+        : '<div class="cuentas-pie">📸 Al confirmar te damos el botón para mandar el comprobante por WhatsApp.</div>') +
+      '</div>';
+  }
+  function bindCuentas(cont) {
+    $$('.cta-cuenta', cont).forEach((b) => b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(b.dataset.n); toast('Número copiado ✓'); }
+      catch (e) { toast('Cuenta: ' + b.dataset.n); }
+    }));
+  }
+  function pintarCuentasPago() {
+    const c = $('#pago-cuentas'); if (!c) return;
+    if (pago !== 'Transferencia') { c.innerHTML = ''; return; }
+    c.innerHTML = htmlCuentas(null, null);
+    bindCuentas(c);
+  }
+
   /* ================= CHECKOUT ================= */
   function abrirCarrito() {
     if (!cart.length) { toast('Tu pedido está vacío 🍔'); return; }
@@ -488,7 +531,7 @@
         '<label class="campo"><span class="et">Tu WhatsApp</span><input id="c-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej: 0991234567" maxlength="14" value="' + esc(cliente.tel || '') + '"><div class="err oculto" id="e-tel">Escribe tu número de 10 dígitos (para que el local te contacte)</div></label>' +
       '</div>' +
       '<div class="bloque"><div class="et">Cómo pagas</div><div class="pago" id="pago">' +
-        '<button data-p="Efectivo" class="' + (pago === 'Efectivo' ? 'on' : '') + '">💵 Efectivo</button><button data-p="Transferencia" class="' + (pago === 'Transferencia' ? 'on' : '') + '">🏦 Transferencia</button></div></div>' +
+        '<button data-p="Efectivo" class="' + (pago === 'Efectivo' ? 'on' : '') + '">💵 Efectivo</button><button data-p="Transferencia" class="' + (pago === 'Transferencia' ? 'on' : '') + '">🏦 Transferencia</button></div><div id="pago-cuentas"></div></div>' +
       '<label class="campo"><span class="et">Nota para el local (opcional)</span><input id="c-nota" maxlength="200" placeholder="Ej: tocar el timbre, sin cebolla en todo…"></label>' +
       '<label class="toggle"><input type="checkbox" id="c-fact"> 🧾 Necesito factura</label>' +
       '<div id="fact-campos" class="oculto"><label class="campo"><span class="et">Nombre / Razón social</span><input id="f-nom" placeholder="Nombre para la factura" value="' + esc(cliente.fnom || '') + '"></label>' +
@@ -501,10 +544,10 @@
     const hoja = abrirHoja(html);
     pintarCartItems();
     $$('#seg2 button', hoja).forEach((b) => b.addEventListener('click', () => { setEntrega(b.dataset.e); $$('#seg2 button', hoja).forEach((x) => x.classList.toggle('on', x.dataset.e === entrega)); pintarZonaEntrega(); pintarResumen(); if (entrega === 'domicilio' && !ubic) pedirGPS(); }));
-    $$('#pago button', hoja).forEach((b) => b.addEventListener('click', () => { pago = b.dataset.p; ls.set('ryo_pago', pago); $$('#pago button', hoja).forEach((x) => x.classList.toggle('on', x === b)); pintarResumen(); }));
+    $$('#pago button', hoja).forEach((b) => b.addEventListener('click', () => { pago = b.dataset.p; ls.set('ryo_pago', pago); $$('#pago button', hoja).forEach((x) => x.classList.toggle('on', x === b)); pintarCuentasPago(); pintarResumen(); }));
     $('#c-fact', hoja).addEventListener('change', (e) => $('#fact-campos', hoja).classList.toggle('oculto', !e.target.checked));
     $('#confirmar', hoja).addEventListener('click', confirmar);
-    pintarZonaEntrega(); pintarResumen();
+    pintarZonaEntrega(); pintarCuentasPago(); pintarResumen();
     if (entrega === 'domicilio' && !ubic) setTimeout(() => pedirGPS(), 250);
   }
   function pintarCartItems() {
@@ -665,11 +708,13 @@
       '<p><b>Ryo Burger</b> ya lo tiene en su pantalla y en un momento te confirma el tiempo. ' + (del ? 'Cuando esté listo, una moto DEWAN te lo lleva.' : 'Te avisamos cuando esté listo para retirar.') + '</p>' +
       '<div class="resumen" style="text-align:left">' + items.map((c) => '<div class="r"><span>' + c.qty + 'x ' + esc(c.nombre) + '</span><b>' + money(c.precio * c.qty) + '</b></div>').join('') +
       (del ? '<div class="r"><span>Envío 🛵</span><b>' + money(env) + '</b></div>' : '') + '<div class="r tot"><span>Total · ' + esc(pago) + '</span><b>' + money(total) + '</b></div></div>' +
+      (pago === 'Transferencia' ? htmlCuentas(total, codigo) : '') +
       '<div class="btns"><a class="btn-p" id="btn-seguir" href="' + esc(link) + '" target="_blank" rel="noopener">📍 Seguir mi pedido en vivo</a>' +
       '<button class="btn-s" id="btn-copiar">Guardar el link del pedido</button><button class="btn-s" id="btn-otro">Hacer otro pedido</button></div>' +
       '<div class="link-caja">' + esc(link) + '</div>' +
       '<p style="font-size:12px">En ese link ves cuando el local confirma, cuando sale la moto y cuando llega.</p></div>';
     hojaAbierta.onClose = null;
+    bindCuentas(h);
     $('#btn-otro').addEventListener('click', () => { cerrarHoja(); pintarUltimo(); });
     $('#btn-copiar').addEventListener('click', async () => {
       try { if (navigator.share) { await navigator.share({ title: 'Mi pedido ' + codigo + ' — Ryo Burger', url: link }); return; } } catch (e) {}
