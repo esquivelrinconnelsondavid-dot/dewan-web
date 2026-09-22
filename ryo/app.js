@@ -765,7 +765,7 @@
     box.classList.remove('oculto');
     box.innerHTML = '<div class="em">' + p.em + '</div><div><div class="k">' + esc(p.k) + '</div><b class="tit">' + esc(p.t) + '</b><span>' + esc(p.d) + '</span></div>' +
       (p.p ? '<div class="precio">' + (p.antes ? '<s>' + money(p.antes) + '</s>' : '') + money(p.p) + '</div>' : '');
-    box.onclick = () => { if (p.buscar) { const q = $('#q'); q.value = p.buscar; pintarMenu(p.buscar); $('#menu').scrollIntoView({ block: 'start' }); } };
+    box.onclick = () => { if (p.buscar) { const q = $('#q'); q.value = p.buscar; pintarMenu(p.buscar); const m = $('#menu'); window.scrollTo({ top: m.getBoundingClientRect().top + window.scrollY - 128, behavior: 'smooth' }); } }; // -128: la cabecera y los chips van pegados arriba y tapaban la tarjeta
   }
 
   /* ================= PWA (solo en la app principal, no en los modelos de muestra) ================= */

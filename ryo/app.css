@@ -320,3 +320,12 @@ a{color:inherit}
 .cuentas-pie{font-size:12px;color:var(--texto3);line-height:1.45;margin-top:4px}
 .cuentas-pie b{color:var(--texto2)}
 .btn-wa{display:block;margin-top:10px;text-align:center;background:var(--ok);color:#06240f;font-weight:800;font-size:14px;border-radius:12px;padding:11px;text-decoration:none}
+
+/* ===== colchon del menu (22-sep-2026) =====
+   Una vista corta (la promo del dia, una busqueda de un solo plato) dejaba al cliente
+   CLAVADO en el final del scroll, y ahi Chrome Android mueve todo ~56px cada vez que
+   asoma o esconde su barra de direccion: la tarjeta "temblaba" sola. Con aire debajo
+   nunca se toca el fondo, asi que no hay nada que recortar y nada se mueve.
+   svh = alto de pantalla CON la barra visible: es fijo, no cambia al desplazarse. */
+#menu{min-height:calc(100vh + 60px)}
+@supports (height:100svh){#menu{min-height:calc(100svh + 60px)}}
