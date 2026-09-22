@@ -323,11 +323,12 @@
     var edadMin = hayMoto && pedido && pedido.moto_edad != null ? Math.round(pedido.moto_edad / 60000) : 0;
     // Solo se avisa de la ubicación vieja cuando ya viene hacia el cliente: yendo a recoger
     // la moto suele estar parada y "hace 9 min" asusta sin motivo.
-    var quieta = hayMoto && ix === 2 && edadMin >= 3;
+    // (ya en la puerta tampoco: parado, el GPS no se mueve y el moto ya dijo que llegó)
+    var quieta = hayMoto && ix === 2 && !llego() && edadMin >= 3;
     document.querySelector('.vivoChip').classList.toggle('viejo', quieta);
     $('vivoTxt').textContent = !hayMoto ? (fin ? 'Entrega' : 'Mapa')
       : quieta ? 'Última ubicación hace ' + edadMin + ' min'
-      : (ix <= 1 ? 'En vivo · va a recoger' : 'En vivo · viene hacia usted');
+      : (ix <= 1 ? 'En vivo · va a recoger' : (llego() ? 'En vivo · ya llegó' : 'En vivo · viene hacia usted'));
     // Ruta por calles (Google Routes, si está encendida; si no, recta punteada y deja de
     // pedirla 1 h). Se pide DE NUEVO solo cuando hace falta: no hay ruta, cambió el tramo
     // (ir a recoger → ir a entregar) o la moto se salió más de 180 m del camino dibujado.
@@ -380,19 +381,21 @@
                             : 'Sonará y vibrará mientras tenga esta página abierta. Toque de nuevo para apagarlo.')
       : 'Esta página suena y vibra cuando el motorizado esté cerca. No cuesta nada.';
   }
-  // A menos de 150 m del punto de entrega: banner + sonido una sola vez
+  // El moto marcó "Llegué": está en el punto de entrega (igual que en /pedido/).
+  function llego() { return !!(pedido && pedido.estado_pedido === 'llegado'); }
+  // A menos de 150 m del punto de entrega (o cuando la app dice "llegado"): banner + sonido una sola vez
   function pintarLlegando(ix) {
     var el = $('llegando');
     if (!el || !carrera) return;
     var lm = pedido && num(pedido.moto_lat), gm = pedido && num(pedido.moto_lng), le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
-    var si = ix === 2 && !!(lm && gm && le && ge) && etaMoto(lm, gm, le, ge).llegando;
+    var si = ix === 2 && !llego() && !!(lm && gm && le && ge) && etaMoto(lm, gm, le, ge).llegando;
     el.classList.toggle('mostrar', !!si);
     var a = avisador();
     $('btnAvisar').classList.toggle('mostrar', ix >= 0 && ix <= 2);
     if (a) {
       if (ix >= 1) a.avisar('asignado', { titulo: '🛵 Motorizado asignado', cuerpo: 'Ya va por su carrera', tono: 'suave' });
       if (ix === 2) a.avisar('encamino', { titulo: '🛵 Su carrera va en camino', cuerpo: 'El motorizado ya salió hacia usted', tono: 'suave' });
-      if (si) a.avisar('llegando', { titulo: '🛎️ ¡Está llegando!', cuerpo: 'El motorizado está a menos de 2 cuadras', tono: 'llego', vibracion: [250, 120, 250, 120, 250] });
+      if (si || llego()) a.avisar('llegando', { titulo: llego() ? '🛎️ ¡Su motorizado llegó!' : '🛎️ ¡Está llegando!', cuerpo: llego() ? 'Está en el punto de entrega' : 'El motorizado está a menos de 2 cuadras', tono: 'llego', vibracion: [250, 120, 250, 120, 250] });
       if (ix >= 3) a.avisar('entregado', { titulo: '✅ Carrera entregada', cuerpo: '¡Gracias por pedir con DEWAN!', tono: 'suave' });
       a.pantalla(!!(si && a.activo()));
     }
@@ -453,8 +456,10 @@
   // ---------- estado ----------
   var MAPA_EST = {
     confirmado: 0, buscando_motorizado: 0, pendiente: 0, pendiente_restaurante: 0,
-    asignado: 1, aceptado: 1, en_camino_recogida: 1, llego_recogida: 1, llegado: 1,
-    recogido: 2, en_camino: 2, en_camino_entrega: 2,
+    asignado: 1, aceptado: 1, en_camino_recogida: 1, llego_recogida: 1,
+    // "Llegué" en la app del moto = ya está en el punto de ENTREGA (En camino → Llegué → Entregué).
+    // Antes `llegado` era 1 y el link retrocedía a "va a recoger su pedido" (22-sep).
+    recogido: 2, en_camino: 2, en_camino_entrega: 2, llegado: 2,
     entregado: 3, cancelado: -1
   };
   var MAPA_CARRERA = { recibida: 0, asignada: 1, en_camino: 2, entregada: 3, cancelada: -1 };
@@ -492,8 +497,8 @@
     $('entregada').classList.toggle('oculto', !entregada);
 
     if (!entregada) {
-      $('titulo').textContent = TITULOS[ix];
-      $('subtitulo').textContent = SUBS[ix];
+      $('titulo').textContent = llego() ? '¡Su motorizado llegó! 🛵' : TITULOS[ix];
+      $('subtitulo').textContent = llego() ? 'Está en el punto de entrega.' : SUBS[ix];
       for (var i = 0; i < 4; i++) {
         var el = $('t' + i);
         el.className = 'tramo' + (i < ix ? ' on' : (i === ix ? ' now' : ''));
@@ -558,6 +563,7 @@
   }
 
   function calcularEta(ix) {
+    if (llego()) return '';
     var lm = pedido && num(pedido.moto_lat), gm = pedido && num(pedido.moto_lng);
     var le = num(carrera.lat_entrega), ge = num(carrera.lng_entrega);
     if (ix >= 1 && lm && gm && le && ge) {
