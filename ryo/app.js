@@ -251,10 +251,10 @@
   }
   function qtyDe(p) { return cart.filter((c) => p.variantes.some((v) => v.id === c.id)).reduce((t, c) => t + c.qty, 0); }
   function cardHtml(p) {
-    const q = qtyDe(p); const f = fotoUrl(p.foto); const unaVar = p.variantes.length === 1;
+    const q = qtyDe(p); const f = fotoUrl(p.foto); const unaVar = p.variantes.length === 1; const et = p.salsas.length ? etiquetaOpc(p) : '';
     return '<button class="card" data-prod="' + esc(p.key) + '" aria-label="' + esc(p.nombre) + '">' +
       '<div class="foto">' + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : '<div class="emoji">' + emojiDe(p) + '</div>') +
-      (p.nuevo ? '<span class="tag">Nuevo</span>' : '') + (p.salsas.length ? '<span class="tag rojo">' + etiquetaOpc(p) + '</span>' : '') + '</div>' +
+      (p.nuevo ? '<span class="tag">Nuevo</span>' : '') + (et ? '<span class="tag rojo">' + esc(et) + '</span>' : '') + '</div>' +
       '<div class="cuerpo"><div class="nom tit">' + esc(p.nombre) + '</div>' + (p.desc ? '<div class="desc">' + esc(p.desc) + '</div>' : '') +
       '<div class="pie"><div class="precio">' + (unaVar ? '' : '<small>desde</small>') + money(p.desde) + '</div>' +
       '<span class="mas' + (q ? ' qty' : '') + '">' + (q ? q + ' en tu pedido' : '+') + '</span></div></div></button>';
@@ -381,11 +381,20 @@
     if (g.min >= 2 && g.min === g.max) return g.nombre + ' · elige ' + g.max + ' (una sola = las ' + g.max + ' iguales)';
     return g.nombre + (g.max > 1 ? ' · elige hasta ' + g.max : '');
   }
+  // La bebida del combo se elige dentro de la hoja: en la tarjeta la etiqueta decia
+  // "BEBIDA" encima de una hamburguesa y se leia como si el plato fuera una bebida (22-sep-2026).
+  const grupoDeBebida = (n) => /bebida|gaseosa|refresco/i.test(n || '');
   function etiquetaOpc(p) {
-    const gs = p.grupos || [];
+    const gs = (p.grupos || []).filter((g) => !grupoDeBebida(g.nombre));
     if (gs.length > 1) return 'Elige ' + gs.map((g) => g.nombre.toLowerCase()).join(' y ');
-    if (!p.opcLabel || /salsa/i.test(p.opcLabel)) return p.salsasMax > 1 ? 'Elige ' + p.salsasMax + ' salsas' : 'Elige salsa';
-    return p.opcLabel;
+    if (gs.length === 1) {
+      const g = gs[0];
+      if (/salsa/i.test(g.nombre)) return g.max > 1 ? 'Elige ' + g.max + ' salsas' : 'Elige salsa';
+      return g.nombre;
+    }
+    // sin grupos en la BD: queda lo que se saco de la descripcion, que siempre son salsas
+    if (!(p.grupos || []).length && p.salsas.length) return p.salsasMax > 1 ? 'Elige ' + p.salsasMax + ' salsas' : 'Elige salsa';
+    return '';
   }
   function envMax(p) { return p.variantes.reduce((m, v) => Math.max(m, Number(v.envase) || 0), 0); }
   function placeholderNota(p) {
