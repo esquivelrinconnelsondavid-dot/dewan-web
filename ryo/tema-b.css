@@ -13,7 +13,7 @@
   --promo-bg:linear-gradient(135deg,#FFE9A8,#FFF6EC); --promo-b:#F1CD5A;
   --ultimo-bg:linear-gradient(135deg,#FFE4DC,#FFF6EC); --ultimo-b:#F5B8AE;
   --hero-velo:linear-gradient(90deg,rgba(27,27,30,.92) 0%,rgba(27,27,30,.72) 50%,rgba(27,27,30,.05) 100%);
-  --chip-on-bg:#1B1B1E; --chip-on-c:#fff;
+  --chip-on-bg:#1B1B1E; --chip-on-c:#fff; --desc-c:#1F8F4E;
   --sombra:0 10px 26px rgba(90,50,20,.14);
 }
 .estado.cerrado{color:#C9321F}

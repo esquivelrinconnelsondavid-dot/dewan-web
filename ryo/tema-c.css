@@ -11,7 +11,7 @@
   --promo-bg:#161616; --promo-b:#161616;
   --ultimo-bg:#FFF4E8; --ultimo-b:#F5D5B8;
   --hero-velo:linear-gradient(180deg,rgba(239,65,46,.05) 0%,rgba(239,65,46,.0) 40%,rgba(120,20,10,.85) 100%);
-  --chip-on-bg:#EF412E; --chip-on-c:#fff;
+  --chip-on-bg:#EF412E; --chip-on-c:#fff; --desc-c:#1F8F4E;
   --sombra:0 10px 26px rgba(120,30,10,.16);
 }
 /* cabecera roja, logo grande */
@@ -81,3 +81,6 @@
   html.anim .poster .card,html.anim .lista .fila,html.anim .seccion{animation:entra linear both;animation-timeline:view();animation-range:entry 0% entry 35%}
 }
 @media (prefers-reduced-motion:reduce){html.anim .poster .card,html.anim .lista .fila,html.anim .seccion{animation:none}}
+/* 3x2: el aviso usa el fondo negro de la promo */
+.promo-3x2{color:#fff}
+.promo-3x2 b{color:#FFE27A}

@@ -70,7 +70,7 @@
   const PROMOS_DIA = {
     1: { em: '🔵', k: 'Hoy es lunes', t: 'Lunes para Todos', d: '2 hamburguesas de Colección + papita clásica + 2 colas', p: 11.50, antes: 15.50, buscar: 'lunes para todos' },
     2: { em: '🟠', k: 'Hoy es martes', t: 'Martes Locos', d: '2 hamburguesas de Colección a elección', p: null, antes: 10.00, buscar: 'martes locos' },
-    3: { em: '🟡', k: 'Hoy es miércoles', t: 'Miércoles 3x2', d: 'En hamburguesas · pide 3 y pagas 2 (lo aplica el local)', p: null, antes: null, buscar: null },
+    3: { em: '🟡', k: 'Hoy es miércoles', t: 'Miércoles 3x2', d: 'Por cada 3 hamburguesas, 1 de Colección te sale GRATIS', p: null, antes: null, buscar: null, cat: 'Hamburguesas de Colección' },
     4: { em: '🔴', k: 'Hoy es jueves', t: 'Jueves de Costillas & Alitas', d: '8 alas + papa + cola $6,75 · 15 alas + papa grande + 2 Sprite $12,25', p: null, antes: null, buscar: 'jueves' }
   };
   const $ = (q, el) => (el || document).querySelector(q);
@@ -239,7 +239,7 @@
       const rail = MODELO === 'b' && !c.lista && prods.length > 2 && !abierta;
       html += '<section class="seccion" id="cat-' + slug(c.k) + '"><h2 class="tit">' + c.e + ' ' + esc(c.t) + ' <small>' + prods.length + '</small>' +
         (MODELO === 'b' && !c.lista && prods.length > 2 ? '<button class="ver-todo" data-todo="' + esc(c.k) + '">' + (abierta ? 'Ver menos' : 'Ver todo →') + '</button>' : '') + '</h2>' +
-        (c.sub ? '<div class="sub">' + esc(c.sub) + '</div>' : '') + '</section>';
+        (subCat(c) ? '<div class="sub">' + esc(subCat(c)) + '</div>' : '') + '</section>';
       if (c.lista) html += '<div class="lista">' + prods.map(filaHtml).join('') + '</div>';
       else if (rail) html += '<div class="rail">' + prods.map(cardHtml).join('') + '</div>';
       else if (MODELO === 'c') html += '<div class="poster">' + prods.map(cardHtml).join('') + '</div>';
@@ -249,6 +249,7 @@
     pintarCarritoBadge();
     emitir('ryo:menu');
   }
+  const subCat = (c) => (norm(c.k) === 'hamburguesas de coleccion' && hoy3x2()) ? '🎁 Hoy 3x2: por cada 3 hamburguesas, 1 de estas te sale GRATIS' : c.sub;
   function qtyDe(p) { return cart.filter((c) => p.variantes.some((v) => v.id === c.id)).reduce((t, c) => t + c.qty, 0); }
   function cardHtml(p) {
     const q = qtyDe(p); const f = fotoUrl(p.foto); const unaVar = p.variantes.length === 1; const et = p.salsas.length ? etiquetaOpc(p) : '';
@@ -423,11 +424,98 @@
   const envaseDe = (c) => { if (c.envOpc != null) return Number(c.envOpc) || 0; const p = POR_ID[c.id]; return Number(p && p.envase != null ? p.envase : c.envase) || 0; };
   const envases = () => cart.reduce((t, c) => t + envaseDe(c) * c.qty, 0);
   const nEnvases = () => cart.reduce((t, c) => t + (envaseDe(c) > 0 ? c.qty : 0), 0);
+
+  /* ---------- MIÉRCOLES 3x2 (David, 23-sep-2026) ----------
+     Cuentan TODAS las hamburguesas (Colección, de la casa, pollo, lomo fino y veggie; sola o combo), pero la
+     GRATIS siempre es una de Colección: por cada 3 hamburguesas del pedido, 1 de Colección va gratis. En un
+     combo lo gratis es la hamburguesa (papas y bebida se pagan). Envase: $0,25 por promoción (las 3
+     hamburguesas de cada 3x2) en vez del envase de cada una. Lo decide la app, no el cliente: antes el cartel
+     decía "lo aplica el local" y el carrito cobraba las 3 completas. */
+  const P3X2 = {
+    dia: 3,
+    cuentan: ['hamburguesas de coleccion', 'hamburguesas', 'hamburguesas de pollo', 'hamburguesas lomo fino', 'hamburguesas vegetarianas'],
+    gratis: ['hamburguesas de coleccion'],
+    envase: 0.25
+  };
+  const hoy3x2 = () => diaEC() === P3X2.dia;
+  // Lo que vale la HAMBURGUESA de un plato: la variante "Sola" del mismo producto (en el combo, el resto
+  // son papas y bebida). Sin variante Sola: el combo menos $2 (hoy todo combo = sola + $2).
+  function valorHamburguesa(c) {
+    const base = r2(c.precio - (Number(c.extra) || 0));
+    const prod = PRODUCTOS.find((p) => p.variantes.some((v) => v.id === c.id));
+    const sola = prod && prod.variantes.find((v) => v.label === 'Sola');
+    if (sola) return Math.min(base, Number(sola.precio) || 0);
+    return /combo/i.test(c.nombre) ? Math.max(0, r2(base - 2)) : base;
+  }
+  function promo3x2() {
+    const r = { activa: false, n: 0, gratis: 0, desc: 0, ajusteEnv: 0, porLinea: {}, falta: false, nombres: [] };
+    if (!hoy3x2()) return r;
+    const unidades = [];
+    cart.forEach((c, i) => {
+      const p = POR_ID[c.id]; const cat = norm(p ? p.cat : '');
+      if (P3X2.cuentan.indexOf(cat) === -1) return;
+      for (let k = 0; k < c.qty; k++) unidades.push({ i, colec: P3X2.gratis.indexOf(cat) !== -1, combo: /combo/i.test(c.nombre), valor: valorHamburguesa(c), env: envaseDe(c) });
+    });
+    const n = unidades.length;
+    // las gratis: las de Colección de menor valor y, a igual valor, primero las solas (así va gratis el plato entero)
+    const colec = unidades.filter((u) => u.colec).sort((a, b) => (a.valor - b.valor) || (a.combo - b.combo));
+    const g = Math.min(Math.floor(n / 3), colec.length);
+    const libres = colec.slice(0, g);
+    libres.forEach((u) => { u.gratis = true; r.porLinea[u.i] = (r.porLinea[u.i] || 0) + 1; r.desc += u.valor; r.nombres.push(cart[u.i].nombre.replace(RE_VAR, '')); });
+    // envase: cada 3x2 = la gratis + 2 pagadas → $0,25 la promo en vez del envase de esas 3
+    const enPromo = libres.concat(unidades.filter((u) => !u.gratis).slice(0, 2 * g));
+    r.ajusteEnv = g ? r2(g * P3X2.envase - enPromo.reduce((t, u) => t + u.env, 0)) : 0;
+    r.activa = true; r.n = n; r.gratis = g; r.desc = r2(r.desc);
+    r.falta = Math.min(Math.floor((n + 1) / 3), colec.length + 1) > g;   // con 1 de Colección más sale otra gratis
+    return r;
+  }
+  function totales() {
+    const pr = promo3x2(); const sub = subtotal();
+    const envs = Math.max(0, r2(envases() + pr.ajusteEnv));
+    return { pr, sub, envs, desc: pr.desc, comida: r2(sub - pr.desc) };
+  }
+  function textoGratis(pr) {   // "Ryo Texas gratis" · "2 Ryo Texas gratis" · "Ryo Texas + Ryo Chesse gratis"
+    const cuenta = {}; pr.nombres.forEach((n) => { cuenta[n] = (cuenta[n] || 0) + 1; });
+    const partes = Object.keys(cuenta).map((n) => (cuenta[n] > 1 ? cuenta[n] + ' ' : '') + n);
+    return (partes.length <= 2 ? partes.join(' + ') : pr.gratis + ' hamburguesas') + ' gratis';
+  }
+  // detalle para el local: la unidad gratis va en su PROPIA línea con lo que se cobra de ella ($0 la sola; papas
+  // y bebida el combo) → panel, comanda, link, WhatsApp y moto la muestran, y los platos suman el total.
+  function lineasDetalle(pr) {
+    const out = [];
+    cart.forEach((c, i) => {
+      const g = pr.porLinea[i] || 0; const pag = c.qty - g;
+      if (pag > 0) out.push(pag + 'x ' + c.nombre + ' — $' + (c.precio * pag).toFixed(2));
+      if (g > 0) {
+        const resto = Math.max(0, r2(c.precio - valorHamburguesa(c)));
+        out.push(g + 'x ' + c.nombre + (resto > 0 ? ' (3x2: hamburguesa GRATIS)' : ' (GRATIS 3x2)') + ' — $' + (resto * g).toFixed(2));
+      }
+    });
+    return out;
+  }
+  function irACat(k) {
+    const q = $('#q'); if (q && q.value) { q.value = ''; pintarMenu(''); }
+    const s = $('#cat-' + slug(k)); if (s) window.scrollTo({ top: s.getBoundingClientRect().top + window.scrollY - 128, behavior: 'smooth' });
+  }
+  function pintarPromoCart() {
+    const box = $('#promo-3x2-cart'); if (!box) return;
+    const pr = promo3x2();
+    if (!pr.activa || !pr.falta) { box.innerHTML = ''; return; }
+    box.innerHTML = '<div class="promo-3x2"><span class="em">🎁</span><span>Hoy 3x2: agrega 1 hamburguesa de Colección y te sale <b>GRATIS</b></span><button type="button" id="ver-colec">Ver</button></div>';
+    // bajar a Colección DESPUÉS del history.back() de la hoja: si no, el navegador restaura el scroll de antes
+    $('#ver-colec', box).addEventListener('click', () => {
+      let hecho = false; const ir = () => { if (!hecho) { hecho = true; irACat('Hamburguesas de Colección'); } };
+      window.addEventListener('popstate', () => setTimeout(ir, 30), { once: true });
+      cerrarHoja(); setTimeout(ir, 400);
+    });
+  }
+
   function pintarCarritoBadge(pop) {
     const fab = $('#fab'); const n = nItems();
     fab.classList.toggle('oculto-anim', n === 0);
     const wa = $('#wa-local'); if (wa) wa.classList.toggle('arriba', n === 0);
-    $('#fab-n').textContent = n; $('#fab-t').textContent = money(subtotal() + envases() + (entrega === 'domicilio' && envio.estado === 'ok' ? envio.valor : 0));
+    const t = totales();
+    $('#fab-n').textContent = n; $('#fab-t').textContent = money(t.comida + t.envs + (entrega === 'domicilio' && envio.estado === 'ok' ? envio.valor : 0));
     if (pop) { fab.classList.remove('pop'); void fab.offsetWidth; fab.classList.add('pop'); }
   }
 
@@ -530,7 +618,7 @@
     if (!cart.length) { toast('Tu pedido está vacío 🍔'); return; }
     const html =
       '<div class="hoja-titulo tit">Tu pedido</div><div class="hoja-sub" id="hoja-sub-cart">' + nItems() + ' ítems · ' + (entrega === 'domicilio' ? 'a domicilio' : 'para retirar') + '</div>' +
-      '<div class="cart-items" id="cart-items"></div>' +
+      '<div class="cart-items" id="cart-items"></div><div id="promo-3x2-cart"></div>' +
       '<div class="bloque"><div class="et">Entrega</div><div class="segment" id="seg2">' +
         '<button data-e="domicilio" class="' + (entrega === 'domicilio' ? 'on' : '') + '">🛵 A domicilio</button>' +
         '<button data-e="retiro" class="' + (entrega === 'retiro' ? 'on' : '') + '">🏪 Retiro en local<small>sin costo</small></button></div>' +
@@ -561,13 +649,17 @@
   }
   function pintarCartItems() {
     const c = $('#cart-items'); if (!c) return;
+    const pr = promo3x2();
+    const gratisTxt = (it, g) => '🎁 3x2: ' + g + (/combo/i.test(it.nombre) ? (g > 1 ? ' hamburguesas gratis' : ' hamburguesa gratis') + ' (papas y bebida se pagan)' : (g > 1 ? ' van gratis' : ' va gratis'));
     c.innerHTML = cart.map((it, i) => '<div class="cart-item"><div><div class="n">' + esc(it.nombre) + '</div>' +
       ((it.salsa || it.nota) ? '<div class="d">' + esc([it.salsa ? (it.salsa.indexOf(':') >= 0 ? it.salsa : 'Salsas: ' + it.salsa) : '', it.nota].filter(Boolean).join(' · ')) + '</div>' : '') +
+      (pr.porLinea[i] ? '<div class="d gratis">' + esc(gratisTxt(it, pr.porLinea[i])) + '</div>' : '') +
       (envaseDe(it) > 0 ? '<div class="d">📦 + envase ' + money(envaseDe(it)) + ' c/u</div>' : '') + '</div>' +
       '<div class="r"><div class="p">' + money(it.precio * it.qty) + '</div><div class="stepper chico"><button data-m="' + i + '">−</button><b>' + it.qty + '</b><button data-p="' + i + '">+</button></div></div></div>').join('');
     $$('[data-m]', c).forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.m; cart[i].qty--; if (cart[i].qty <= 0) cart.splice(i, 1); guardarCart(); if (!cart.length) { cerrarHoja(); pintarMenu($('#q').value); return; } pintarCartItems(); pintarResumen(); pintarMenu($('#q').value); }));
     $$('[data-p]', c).forEach((b) => b.addEventListener('click', () => { const i = +b.dataset.p; cart[i].qty = Math.min(20, cart[i].qty + 1); guardarCart(); pintarCartItems(); pintarResumen(); pintarMenu($('#q').value); }));
     const s = $('#hoja-sub-cart'); if (s) s.textContent = nItems() + ' ítems · ' + (entrega === 'domicilio' ? 'a domicilio' : 'para retirar');
+    pintarPromoCart();
   }
   function pintarZonaEntrega() {
     const z = $('#zona-entrega'); if (!z) return;
@@ -595,7 +687,7 @@
   }
   function pintarResumen() {
     const r = $('#resumen'); if (!r) return;
-    const sub = subtotal(); const env2 = envases(); const del = entrega === 'domicilio';
+    const t = totales(); const sub = t.sub; const env2 = t.envs; const del = entrega === 'domicilio';
     const env = del && envio.estado === 'ok' ? envio.valor : 0;
     let notaEnv = '';
     if (del) {
@@ -605,10 +697,11 @@
       else if (envio.estado === 'ok') notaEnv = '<div class="nota-envio ok">🛵 ' + envio.km.toFixed(1) + ' km' + etaTxt() + ' · lo lleva una moto DEWAN</div>';
     }
     r.innerHTML = '<div class="r"><span>Subtotal (' + nItems() + ' ítems)</span><b>' + money(sub) + '</b></div>' +
-      (env2 > 0 ? '<div class="r"><span>Envases para llevar (' + nEnvases() + ')</span><b>' + money(env2) + '</b></div>' : '') +
+      (t.desc > 0 ? '<div class="r desc"><span>🎁 Miércoles 3x2 · ' + esc(textoGratis(t.pr)) + '</span><b>−' + money(t.desc) + '</b></div>' : '') +
+      (env2 > 0 ? '<div class="r"><span>Envases para llevar (' + nEnvases() + ')' + (t.pr.gratis ? ' · 3x2 a $0,25' : '') + '</span><b>' + money(env2) + '</b></div>' : '') +
       (del ? '<div class="r"><span>Envío 🛵</span><b>' + (envio.estado === 'ok' ? money(env) : '—') + '</b></div>' : '<div class="r"><span>Retiro en local</span><b>$0,00</b></div>') + notaEnv +
-      '<div class="r tot"><span>Total a pagar · ' + esc(pago) + '</span><b>' + money(sub + env2 + env) + '</b></div>';
-    const ct = $('#confirmar-total'); if (ct) ct.textContent = money(sub + env2 + env);
+      '<div class="r tot"><span>Total a pagar · ' + esc(pago) + '</span><b>' + money(t.comida + env2 + env) + '</b></div>';
+    const ct = $('#confirmar-total'); if (ct) ct.textContent = money(t.comida + env2 + env);
     const av = $('#aviso-cerrado'); const btn = $('#confirmar'); const bt = $('#confirmar-txt');
     if (av && btn) {
       if (!abierto) { av.innerHTML = '<div class="aviso">⏰ ' + esc(motivoCerrado) + '</div>'; btn.disabled = true; bt.textContent = 'Cerrado ahora'; }
@@ -637,12 +730,13 @@
       if (envio.estado !== 'ok') { cotizar(); toast('⏳ Calculando el envío, intenta en un segundo'); return; }
     }
     const del = entrega === 'domicilio';
-    const sub = r2(subtotal());
-    const envs = r2(envases());
+    const t = totales();
+    const sub = r2(t.comida);   // comida ya con el 3x2 del miércoles
+    const envs = r2(t.envs);
     const env = del ? envio.valor : 0;
     const total = r2(sub + envs + env);
-    let detalle = cart.map((c) => c.qty + 'x ' + c.nombre + ' — ' + '$' + (c.precio * c.qty).toFixed(2)).join('\n');
-    if (envs > 0) detalle += '\n📦 Envases para llevar (' + nEnvases() + ') — $' + envs.toFixed(2);
+    let detalle = lineasDetalle(t.pr).join('\n');
+    if (envs > 0) detalle += '\n📦 Envases para llevar (' + nEnvases() + (t.pr.gratis ? ' · 3x2 a $0.25 la promo' : '') + ') — $' + envs.toFixed(2);
     detalle += '\n💳 ' + pago;
     cart.forEach((c) => { if (c.salsa) detalle += '\n📝 ' + c.nombre + ' — ' + (c.salsa.indexOf(':') >= 0 ? c.salsa : 'Salsas: ' + c.salsa); if (c.nota) detalle += '\n📝 ' + c.nombre + ': ' + c.nota; });
     if (nota) detalle += '\n📝 ' + nota;
@@ -706,16 +800,19 @@
     } catch (e) {}
     const resumen = cart.map((c) => ({ id: c.id, nombre: c.nombre, precio: c.precio, extra: c.extra || 0, envOpc: (c.envOpc != null ? c.envOpc : null), qty: c.qty, salsa: c.salsa, nota: c.nota }));
     ls.set('ryo_ultimo', { codigo, link, ts: Date.now(), items: resumen, total, entrega });
+    const lineasPlata = (t.desc > 0 ? '<div class="r desc"><span>🎁 Miércoles 3x2 · ' + esc(textoGratis(t.pr)) + '</span><b>−' + money(t.desc) + '</b></div>' : '') +
+      (envs > 0 ? '<div class="r"><span>Envases para llevar</span><b>' + money(envs) + '</b></div>' : '');
     cart = []; guardarCart(); pintarMenu($('#q').value); pintarCarritoBadge();
-    mostrarExito(codigo, link, resumen, del, env, total);
+    mostrarExito(codigo, link, resumen, del, env, total, lineasPlata);
     emitir('ryo:pedido', { codigo });
   }
-  function mostrarExito(codigo, link, items, del, env, total) {
+  function mostrarExito(codigo, link, items, del, env, total, lineasPlata) {
     const h = $('#hoja .cuerpo-hoja'); if (!h) return;
     $('#hoja .cerrar').classList.add('oculto');
     h.innerHTML = '<div class="exito"><div class="check">✓</div><h2 class="tit">¡Pedido recibido!</h2><div class="cod">' + esc(codigo) + '</div>' +
       '<p><b>Ryo Burger</b> ya lo tiene en su pantalla y en un momento te confirma el tiempo. ' + (del ? 'Cuando esté listo, una moto DEWAN te lo lleva.' : 'Te avisamos cuando esté listo para retirar.') + '</p>' +
       '<div class="resumen" style="text-align:left">' + items.map((c) => '<div class="r"><span>' + c.qty + 'x ' + esc(c.nombre) + '</span><b>' + money(c.precio * c.qty) + '</b></div>').join('') +
+      (lineasPlata || '') +
       (del ? '<div class="r"><span>Envío 🛵</span><b>' + money(env) + '</b></div>' : '') + '<div class="r tot"><span>Total · ' + esc(pago) + '</span><b>' + money(total) + '</b></div></div>' +
       (pago === 'Transferencia' ? htmlCuentas(total, codigo) : '') +
       '<div class="btns"><a class="btn-p" id="btn-seguir" href="' + esc(link) + '" target="_blank" rel="noopener">📍 Seguir mi pedido en vivo</a>' +
@@ -774,7 +871,7 @@
     box.classList.remove('oculto');
     box.innerHTML = '<div class="em">' + p.em + '</div><div><div class="k">' + esc(p.k) + '</div><b class="tit">' + esc(p.t) + '</b><span>' + esc(p.d) + '</span></div>' +
       (p.p ? '<div class="precio">' + (p.antes ? '<s>' + money(p.antes) + '</s>' : '') + money(p.p) + '</div>' : '');
-    box.onclick = () => { if (p.buscar) { const q = $('#q'); q.value = p.buscar; pintarMenu(p.buscar); const m = $('#menu'); window.scrollTo({ top: m.getBoundingClientRect().top + window.scrollY - 128, behavior: 'smooth' }); } }; // -128: la cabecera y los chips van pegados arriba y tapaban la tarjeta
+    box.onclick = () => { if (p.buscar) { const q = $('#q'); q.value = p.buscar; pintarMenu(p.buscar); const m = $('#menu'); window.scrollTo({ top: m.getBoundingClientRect().top + window.scrollY - 128, behavior: 'smooth' }); } else if (p.cat) irACat(p.cat); }; // -128: la cabecera y los chips van pegados arriba y tapaban la tarjeta
   }
 
   /* ================= PWA (solo en la app principal, no en los modelos de muestra) ================= */
