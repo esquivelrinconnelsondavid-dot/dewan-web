@@ -614,7 +614,9 @@
       f += '<div class="fila"><div class="ic">' + (compraFila ? '🏪' : '📍') + '</div><div><b>' + (compraFila ? 'Comprar en:' : 'Recoger en:') + '</b><br>' + esc(limpiar(pedido.direccion_retiro)) + '</div></div>';
     }
     if (!esRetiro() && pedido.direccion_entrega) f += '<div class="fila"><div class="ic">🏠</div><div><b>Entregar en:</b><br>' + esc(limpiar(pedido.direccion_entrega)) + '</div></div>';
-    if (esRetiro()) f += '<div class="fila"><div class="ic">🏪</div><div><b>Retirar en:</b><br>' + esc((local && local.direccion) || pedido.direccion_retiro || pedido.restaurante || '') + '</div></div>';
+    // Locales con varias sucursales (Super Happy Norte/Avenida): manda la sucursal guardada en el pedido,
+    // no la dirección principal del local (antes el retiro del Norte decía la dirección de la Avenida).
+    if (esRetiro()) f += '<div class="fila"><div class="ic">🏪</div><div><b>Retirar en:</b><br>' + esc(limpiar(pedido.direccion_retiro) || (local && local.direccion) || pedido.restaurante || '') + '</div></div>';
     if (pedido.cliente_nombre && pedido.cliente_nombre !== 'Cliente') f += '<div class="fila"><div class="ic">👤</div><div>' + esc(pedido.cliente_nombre) + '</div></div>';
     if (f) h += '<h4>Entrega</h4>' + f;
     $('detalle').innerHTML = h + '<div style="height:6px"></div>';
