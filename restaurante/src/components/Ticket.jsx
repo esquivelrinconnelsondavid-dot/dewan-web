@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { calcularPagoAlRestaurante, formatDinero, formatHoraEC } from '../lib/formato';
 import { hayImpresion, imprimirComanda } from '../lib/comanda';
 import { MODO_HP, MODO_SISTEMA, codigoPedido, esDomicilio } from '../lib/config';
-import { aceptarPedido, rechazarPedido, marcarEntregado, marcarSalio, sumarMinutos, marcarListoDewan, marcarListoSistema } from '../lib/pedidos';
+import { aceptarPedido, rechazarPedido, marcarEntregado, marcarSalio, sumarMinutos, marcarListoDewan, marcarListoSistema, cancelarPedidoAceptado } from '../lib/pedidos';
 import { parsearDetalle, limpiarDireccion, telefonoLocal, canalPedido, inicial, colorInicial, haceCuanto } from '../lib/detalle';
 import { IcoCheck, IcoImpresora, IcoTelefono, IcoPin, IcoNota, IcoMoto, IcoReloj, IcoAlerta } from './Iconos';
 
@@ -13,6 +13,7 @@ import { IcoCheck, IcoImpresora, IcoTelefono, IcoPin, IcoNota, IcoMoto, IcoReloj
 // de "Nuevo pedido" que toma toda la ventana.
 const TIEMPOS_PRESET = [10, 15, 20, 30, 45];
 const MOTIVOS_RECHAZO = ['Se acabó un producto', 'Cocina saturada', 'Cerramos ya', 'Muy lejos', 'Otro'];
+const MOTIVOS_CANCELAR = ['El cliente canceló', 'Pedido repetido', 'Otro'];
 
 const LABEL_MOTO = {
   confirmado: 'Buscando motorizado',
@@ -178,6 +179,8 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
   });
   const [rechazando, setRechazando] = useState(false);
   const [motivo, setMotivo] = useState('');
+  const [cancelando, setCancelando] = useState(false);
+  const [motivoCancel, setMotivoCancel] = useState('');
   const [, tic] = useState(0);
   // "hace 0:42" se refresca cada 15 s (no hace falta cada segundo)
   useEffect(() => {
@@ -236,6 +239,21 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
     }
   }, 'No se pudo marcar. Intenta de nuevo.');
   const entregado = () => correr(() => marcarEntregado(pedido.id), 'No se pudo marcar como entregado.');
+  // Cancelar un pedido YA aceptado (el cliente se arrepintió). Mensaje de error propio si el pedido se
+  // canceló pero la moto no: el local tiene que avisar al despacho.
+  const cancelarAceptado = async () => {
+    setCargando(true); setError('');
+    try {
+      await cancelarPedidoAceptado(pedido, motivoCancel || 'El cliente canceló');
+      if (onHecho) onHecho();
+    } catch (e) {
+      console.error('[ticket] cancelar', e);
+      setError(e?.avisoLocal || 'No se pudo cancelar. Revisa la conexión e intenta de nuevo.');
+    } finally {
+      setCargando(false);
+    }
+  };
+  const puedeCancelar = MODO_SISTEMA && (columna === 'preparando' || columna === 'listo');
   const reimprimir = async () => {
     const r = await imprimirComanda(pedido, { restauranteNombre: nombreRest });
     if (!r?.ok && r?.motivo === 'no-electron') setError('Solo se imprime desde la app de escritorio (la caja).');
@@ -393,6 +411,33 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
       {columna === 'entregando' && MODO_SISTEMA && (
         <div className="flex gap-2">
           <BotonSecundario onClick={entregado} disabled={cargando} alto="h-10" extra="flex-1" title="Solo si el motorizado no lo marcó">Marcar entregado (si la moto no lo hizo)</BotonSecundario>
+        </div>
+      )}
+      {/* cancelar un pedido YA aceptado (22-sep-2026, pedido de la dueña de Ryo): dos pasos para no tocarlo sin querer */}
+      {puedeCancelar && !cancelando && (
+        <button onClick={() => setCancelando(true)} disabled={cargando}
+          className="self-start text-[12px] font-semibold text-nuevo/80 hover:text-nuevo active:opacity-70 disabled:opacity-50">
+          ✕ Cancelar pedido
+        </button>
+      )}
+      {puedeCancelar && cancelando && (
+        <div className="flex flex-col gap-2 rounded-lg bg-nuevo/10 border border-nuevo/30 p-2.5">
+          <div className="text-[12px] font-bold text-nuevo">
+            ¿Cancelar el pedido {codigoPedido(pedido)}?{motoDewan ? ' También se cancela la moto.' : ''}
+          </div>
+          <div className="text-[11px] text-gray-300">
+            Sale del tablero y no cuenta como venta. Al cliente no le llega mensaje: avísele usted.
+            {motoDewan && moto ? ` La moto de ${moto} ya fue asignada: avísele también.` : ''}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {MOTIVOS_CANCELAR.map((m) => (
+              <button key={m} onClick={() => setMotivoCancel(m)} className={`text-[12px] font-semibold rounded-full px-3 py-1.5 border ${motivoCancel === m ? 'border-nuevo bg-nuevo text-white' : 'border-borde bg-tarjeta text-white'}`}>{m}</button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <BotonSecundario onClick={() => { setCancelando(false); setMotivoCancel(''); }} alto="h-10">Volver</BotonSecundario>
+            <button onClick={cancelarAceptado} disabled={cargando || !motivoCancel} className="flex-1 h-10 rounded-[10px] bg-nuevo text-white font-extrabold disabled:opacity-50">Sí, cancelar el pedido</button>
+          </div>
         </div>
       )}
       {compacto && hayImpresion() && columna === 'listo' && !MODO_SISTEMA && (

@@ -23,6 +23,8 @@ function perteneceAlRestaurante(p, restauranteId, restauranteNombre) {
 }
 
 function esAceptado(p) {
+  // [22-sep-2026] aceptado y DESPUÉS cancelado (el cliente se arrepintió) no es venta: no suma al bruto ni al ticket
+  if (p.estado_pedido === 'cancelado') return false;
   if (p.restaurante_aceptado === true) return true;
   if (p.estado_pedido && ESTADOS_ACEPTADOS.includes(p.estado_pedido)) return true;
   return false;

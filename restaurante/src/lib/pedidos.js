@@ -205,6 +205,43 @@ export async function rechazarPedido(pedidoId, motivo) {
   if (RECHAZO_PATH) avisarEvento(RECHAZO_PATH, { pedido_id: pedidoId, evento: 'rechazo', motivo: motivo || '' });
 }
 
+// CANCELAR un pedido YA ACEPTADO (22-sep-2026, la dueña de Ryo: "cuando el pedido se acepta pero después
+// el cliente quiere cancelar"). Queda 'cancelado' con el motivo, SIN restaurante_rechazado (no es un
+// rechazo del local) y SIN mensaje automático: el cliente ya lo habló con el local. Si es a domicilio,
+// también se cancela el pedido GEMELO de DEWAN (pedidos_delivery) para que no salga la moto y el
+// despacho lo vea. Se verifica que cada update haya tocado la fila (con RLS un update bloqueado no da error).
+export async function cancelarPedidoAceptado(pedido, motivo) {
+  const txt = String(motivo || 'El cliente canceló').trim();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  let data;
+  let error;
+  try {
+    ({ data, error } = await supabase
+      .from(PEDIDOS_TABLE)
+      .update({ estado_pedido: 'cancelado', restaurante_motivo_rechazo: `Cancelado: ${txt}` })
+      .eq('id', pedido.id)
+      .select('id')
+      .abortSignal(ctrl.signal));
+  } finally {
+    clearTimeout(timer);
+  }
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('el pedido no se actualizó');
+  if (pedido.pedido_dewan_id) {
+    const { data: d2, error: e2 } = await supabase
+      .from('pedidos_delivery')
+      .update({ estado_pedido: 'cancelado', restaurante_motivo_rechazo: `El local canceló: ${txt}` })
+      .eq('id', pedido.pedido_dewan_id)
+      .select('id');
+    if (e2 || !d2 || !d2.length) {
+      const err = new Error('gemelo sin cancelar');
+      err.avisoLocal = 'El pedido quedó cancelado, pero no se pudo cancelar la moto: avise al despacho.';
+      throw err;
+    }
+  }
+}
+
 // ── Tablero (14-sep-2026): los botones nuevos del ticket ──────────────────────
 // +5 MIN: corre el reloj del pedido. Como el cron `auto-lanzar` busca motorizado
 // cuando `timer_lanzamiento` vence, correrlo 5 min también retrasa la moto → no
