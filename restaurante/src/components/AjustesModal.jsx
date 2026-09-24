@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Menu from './Menu';
 import MiLocal from './MiLocal';
 import ConfigImpresora from './ConfigImpresora';
 import CrecerConDewan from './CrecerConDewan';
 import { hayImpresion } from '../lib/comanda';
-import { MODO_HP } from '../lib/config';
+import { MODO_HP, MODO_SISTEMA, PEDIDOS_TABLE } from '../lib/config';
+import { supabase } from '../lib/supabase';
+import { getSucursalPanel, setSucursalPanel } from '../lib/sucursal';
 
 const OPCIONES = [
   { id: 'menu', label: 'Menú', icono: '🍔', descripcion: 'Editar productos, precios y disponibilidad' },
@@ -12,7 +14,49 @@ const OPCIONES = [
   ...(hayImpresion()
     ? [{ id: 'impresora', label: 'Impresora', icono: '🖨️', descripcion: 'Comanda automática: elegí impresora y tamaño' }]
     : []),
+  ...(MODO_SISTEMA
+    ? [{ id: 'sucursal', label: 'Sucursal', icono: '📍', descripcion: `Esta PC atiende: ${getSucursalPanel() || 'todas las sucursales'}` }]
+    : []),
 ];
+
+// Locales con varias sucursales y una sola cuenta: cada PC elige la suya y solo ve
+// (y suena con) esos pedidos. Las opciones salen de los pedidos de los últimos 30 días.
+function SucursalPanel({ restaurante }) {
+  const [opciones, setOpciones] = useState(null);
+  const actual = getSucursalPanel();
+  useEffect(() => {
+    let vivo = true;
+    const desde = new Date(Date.now() - 30 * 86400000).toISOString();
+    supabase.from(PEDIDOS_TABLE).select('sucursal_nombre')
+      .eq('restaurante_id', restaurante?.restaurante_id)
+      .gte('fecha_creacion', desde).not('sucursal_nombre', 'is', null).limit(1000)
+      .then(({ data }) => {
+        if (!vivo) return;
+        const set = new Set((data || []).map((r) => String(r.sucursal_nombre || '').trim()).filter(Boolean));
+        if (actual) set.add(actual);
+        setOpciones([...set].sort());
+      });
+    return () => { vivo = false; };
+  }, [restaurante?.restaurante_id, actual]);
+  const elegir = (v) => {
+    setSucursalPanel(v);
+    window.location.reload(); // recarga la lista y la alarma con el filtro nuevo
+  };
+  const Opcion = ({ valor, texto }) => (
+    <button onClick={() => elegir(valor)}
+      className={`w-full rounded-xl p-4 text-left font-bold border ${actual === valor ? 'border-dewan bg-dewan/10 text-dewan' : 'border-borde bg-tarjeta text-white'}`}>
+      {actual === valor ? '✓ ' : ''}{texto}
+    </button>
+  );
+  return (
+    <div className="p-3 space-y-2">
+      <p className="text-[13px] text-gray-400 px-1">Elija qué sucursal atiende esta computadora. Solo verá y sonarán los pedidos de esa sucursal.</p>
+      <Opcion valor="" texto="Todas las sucursales" />
+      {opciones === null && <p className="text-[13px] text-gray-500 px-1">Cargando sucursales…</p>}
+      {(opciones || []).map((o) => <Opcion key={o} valor={o} texto={o} />)}
+    </div>
+  );
+}
 
 export default function AjustesModal({ restaurante, onCerrar, onActualizarRestaurante, onVerTutorial }) {
   const [seccion, setSeccion] = useState(null);
@@ -54,6 +98,20 @@ export default function AjustesModal({ restaurante, onCerrar, onActualizarRestau
         </header>
         <div className="flex-1 overflow-y-auto pb-8">
           <ConfigImpresora restaurante={restaurante} />
+        </div>
+      </div>
+    );
+  }
+
+  if (seccion === 'sucursal') {
+    return (
+      <div className="fixed inset-0 z-50 bg-fondo flex flex-col">
+        <header className="sticky top-0 bg-fondo/95 backdrop-blur border-b border-borde px-3 py-2.5 flex items-center gap-2">
+          <button onClick={() => setSeccion(null)} className="text-gray-400 text-2xl px-1">←</button>
+          <h1 className="text-white font-bold">Sucursal</h1>
+        </header>
+        <div className="flex-1 overflow-y-auto pb-8">
+          <SucursalPanel restaurante={restaurante} />
         </div>
       </div>
     );

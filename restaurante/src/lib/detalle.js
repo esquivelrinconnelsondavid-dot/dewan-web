@@ -5,6 +5,44 @@
 // Misma regla que usa el link de seguimiento (pedido/index.html) y el cerebro.
 const RE_ITEM = /^(\d+)\s*[xX×]\s*(.+?)(?:\s*[—–-]\s*\$?\s*([\d.,]+))?$/;
 
+// 23-sep-2026: el bot del SISTEMA (Super Happy) no hace preguntas para no pasar de 2 mensajes;
+// lo que quedó sin preguntar lo escribe al final del detalle: "⚠️ Por confirmar: a, b".
+// Esa línea NO es una nota: el panel la saca del detalle y la muestra como recuadro rojo.
+const RE_POR_CONFIRMAR = /^⚠️?\s*por confirmar\s*:\s*(.+)$/i;
+// Texto del bot (lo que ve el cliente en el link) → pregunta para la operadora y frase para el WhatsApp.
+const PENDIENTES = {
+  'si las presas van juntas o individuales': {
+    pregunta: '¿Las presas van juntas o individuales?',
+    alCliente: '¿sus presas las desea juntas (una porción de papas para compartir) o individuales (cada presa con sus papas)?',
+  },
+  'el tamaño de la cola': {
+    pregunta: '¿De qué tamaño es la cola?',
+    alCliente: '¿de qué tamaño desea la cola?',
+  },
+  'sus datos para la factura': {
+    pregunta: 'Pedir datos de factura: cédula o RUC, nombre y correo',
+    alCliente: 'para su factura, ¿nos ayuda con su cédula o RUC, nombre y correo?',
+  },
+  'qué presas le enviamos': {
+    pregunta: 'Qué presas enviar: la combinación que pidió no está permitida',
+    alCliente: 'la combinación de presas que pidió no la tenemos, ¿qué presas le enviamos?',
+  },
+};
+
+export function porConfirmar(txt) {
+  const pendientes = [];
+  const resto = [];
+  String(txt || '').split('\n').forEach((raw) => {
+    const m = raw.trim().match(RE_POR_CONFIRMAR);
+    if (!m) { resto.push(raw); return; }
+    m[1].split(',').map((x) => x.trim().replace(/\.$/, '')).filter(Boolean).forEach((x) => {
+      const p = PENDIENTES[x.toLowerCase()];
+      pendientes.push(p ? { ...p } : { pregunta: x.charAt(0).toUpperCase() + x.slice(1), alCliente: x + '?' });
+    });
+  });
+  return { texto: resto.join('\n'), pendientes };
+}
+
 export function parsearDetalle(txt) {
   const items = [];
   const notas = [];
@@ -13,6 +51,7 @@ export function parsearDetalle(txt) {
   String(txt || '').split('\n').forEach((raw) => {
     const l = raw.trim();
     if (!l) return;
+    if (RE_POR_CONFIRMAR.test(l)) return; // va en su propio recuadro (porConfirmar)
     const m = l.match(RE_ITEM);
     if (m) {
       items.push({ q: Number(m[1]) || 1, n: m[2].trim(), p: m[3] ? Number(String(m[3]).replace(',', '.')) : null });

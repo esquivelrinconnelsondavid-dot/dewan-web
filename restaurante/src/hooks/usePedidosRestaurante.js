@@ -4,6 +4,7 @@ import { PEDIDOS_TABLE, MODO_SISTEMA, codigoPedido } from '../lib/config';
 import { marcarDatosOk, tiempoSinDatos } from '../lib/conexion';
 import { startAlertLoop, stopAlertLoop, showPushNotification } from '../lib/notifications';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
+import { esDeMiSucursal } from '../lib/sucursal';
 
 const HOY = () => inicioDelDiaECisoUtc();
 
@@ -99,12 +100,14 @@ export function usePedidosRestaurante(restaurante) {
       return;
     }
 
-    setPedidos(data || []);
+    // Locales con varias sucursales: esta PC solo ve (y suena con) los pedidos de la suya.
+    const visibles = (data || []).filter(esDeMiSucursal);
+    setPedidos(visibles);
     marcarDatosOk(); // fetch OK → reinicia el watchdog/aviso de conexión
     // Para los pedidos que vienen en cargar(): los viejos los marcamos como
     // conocidos (no alarmar) pero los frescos (<2min) sí disparan alarma,
     // porque significa que entraron mientras la app estaba cerrada.
-    (data || []).forEach((p) => {
+    visibles.forEach((p) => {
       // Si la alarma quedó sonando pero el pedido ya avanzó (lo aceptó la
       // operadora, o el UPDATE de realtime se perdió por socket zombi), apagarla.
       if (p.estado_pedido !== 'pendiente_restaurante' || p.restaurante_aceptado) {
@@ -157,6 +160,7 @@ export function usePedidosRestaurante(restaurante) {
           const ref = nuevo || viejo;
           if (!ref) return;
           if (!perteneceAlRestaurante(ref, restauranteId, restauranteNombre)) return;
+          if (!esDeMiSucursal(ref)) return;
 
           if (eventType === 'INSERT') {
             // Solo agregamos si está en un estado abierto.

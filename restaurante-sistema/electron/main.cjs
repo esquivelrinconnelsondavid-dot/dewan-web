@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Notification, ipcMain, powerSaveBlocker, powerMonitor, Menu } = require('electron');
+const { app, BrowserWindow, Notification, ipcMain, powerSaveBlocker, powerMonitor, Menu, shell } = require('electron');
 const path = require('path');
 const { execFile } = require('child_process');
 
@@ -113,6 +113,12 @@ function createWindow() {
   };
   let congelado = 0;
   let muertes = 0, muertesT = 0;
+  // Links externos (botón "Preguntarle por WhatsApp", 23-sep-2026) → navegador / app de
+  // WhatsApp de la PC, no una ventana nueva de Electron dentro del panel.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) { shell.openExternal(url).catch(() => {}); }
+    return { action: 'deny' };
+  });
   mainWindow.webContents.on('responsive', () => { congelado = 0; });
   mainWindow.webContents.on('render-process-gone', async (_e, details) => {
     const reason = details && details.reason;

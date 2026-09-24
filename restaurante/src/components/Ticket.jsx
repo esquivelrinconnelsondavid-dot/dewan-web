@@ -3,7 +3,7 @@ import { calcularPagoAlRestaurante, formatDinero, formatHoraEC } from '../lib/fo
 import { hayImpresion, imprimirComanda } from '../lib/comanda';
 import { MODO_HP, MODO_SISTEMA, codigoPedido, esDomicilio } from '../lib/config';
 import { aceptarPedido, rechazarPedido, marcarEntregado, marcarSalio, sumarMinutos, marcarListoDewan, marcarListoSistema, cancelarPedidoAceptado } from '../lib/pedidos';
-import { parsearDetalle, limpiarDireccion, telefonoLocal, canalPedido, inicial, colorInicial, haceCuanto } from '../lib/detalle';
+import { parsearDetalle, porConfirmar, limpiarDireccion, telefonoLocal, canalPedido, inicial, colorInicial, haceCuanto } from '../lib/detalle';
 import { IcoCheck, IcoImpresora, IcoTelefono, IcoPin, IcoNota, IcoMoto, IcoReloj, IcoAlerta } from './Iconos';
 
 // El ticket del tablero (14-sep-2026), con la anatomía de las apps de socios grandes:
@@ -115,7 +115,7 @@ function Items({ detalle, grande }) {
   const fs = grande ? 'text-lg' : 'text-sm';
   const fq = grande ? 'text-xl' : 'text-[15px]';
   if (!d.items.length) {
-    return <p className={`${grande ? 'text-base' : 'text-sm'} text-white whitespace-pre-line`}>{detalle || '—'}</p>;
+    return <p className={`${grande ? 'text-base' : 'text-sm'} text-white whitespace-pre-line`}>{porConfirmar(detalle).texto || '—'}</p>;
   }
   return (
     <div className="flex flex-col gap-1.5">
@@ -135,6 +135,41 @@ function Items({ detalle, grande }) {
       {d.extras.map((x, i) => (
         <div key={`x${i}`} className="text-[12px] text-gray-400">{x}</div>
       ))}
+    </div>
+  );
+}
+
+// 23-sep-2026: lo que el bot NO le preguntó al cliente (para no pasar de 2 mensajes) lo
+// pregunta la operadora. Recuadro rojo + botón que abre el WhatsApp del cliente con el
+// mensaje ya escrito.
+function FaltaConfirmar({ pedido, grande }) {
+  const { pendientes } = porConfirmar(pedido.detalle_pedido);
+  if (!pendientes.length) return null;
+  const tel = String(pedido.cliente_telefono || '').replace(/\D/g, '');
+  const nombre = String(pedido.cliente_nombre || '').trim().split(' ')[0];
+  const local = pedido.sucursal_nombre || pedido.restaurante || '';
+  const preguntas = pendientes.map((p) => p.alCliente);
+  const msg = `Hola${nombre ? ' ' + nombre : ''} 👋 Le escribimos de ${local || 'su local'} por su pedido ${codigoPedido(pedido)}: `
+    + (preguntas.length > 1 ? preguntas.map((q, i) => `\n${i + 1}. ${q.charAt(0).toUpperCase() + q.slice(1)}`).join('') : preguntas[0]);
+  const abrirWhatsApp = () => {
+    if (!tel) return;
+    const url = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+    try { window.open(url, '_blank'); } catch { window.location.href = url; }
+  };
+  return (
+    <div className={`rounded-lg border-2 border-nuevo bg-nuevo/10 ${grande ? 'p-3.5' : 'p-2.5'} flex flex-col gap-1.5`}>
+      <div className={`flex items-center gap-1.5 font-extrabold text-nuevo tracking-wide ${grande ? 'text-sm' : 'text-[12px]'}`}>
+        <IcoAlerta size={grande ? 16 : 14} />FALTA CONFIRMAR CON EL CLIENTE
+      </div>
+      {pendientes.map((p, i) => (
+        <div key={i} className={`font-bold text-white ${grande ? 'text-base' : 'text-[13px]'}`}>• {p.pregunta}</div>
+      ))}
+      {tel && (
+        <button onClick={abrirWhatsApp}
+          className={`mt-1 self-start rounded-[10px] bg-[#25D366] text-white font-extrabold px-3.5 ${grande ? 'h-11 text-[15px]' : 'h-9 text-[13px]'} active:scale-95 transition-transform`}>
+          Preguntarle por WhatsApp
+        </button>
+      )}
     </div>
   );
 }
@@ -282,6 +317,9 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
           {compacto && (
             <div className="text-xs text-gray-400 mt-1 truncate">{pedido.cliente_nombre || 'Cliente'} · {parsearDetalle(pedido.detalle_pedido).items.map((i) => `${i.q}× ${i.n}`).join(' · ') || '—'}</div>
           )}
+          {compacto && porConfirmar(pedido.detalle_pedido).pendientes.length > 0 && (
+            <div className="mt-1"><Chip tono="rojo">Falta confirmar con el cliente</Chip></div>
+          )}
         </div>
         {esNuevo && (
           <div className="text-right shrink-0">
@@ -309,6 +347,8 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
           <Items detalle={pedido.detalle_pedido} grande={grande} />
         </div>
       )}
+
+      {!compacto && <FaltaConfirmar pedido={pedido} grande={grande} />}
 
       {/* dirección + dinero */}
       {!compacto && (

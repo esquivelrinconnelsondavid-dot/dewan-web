@@ -2,6 +2,7 @@
 // Configurable por local: impresora + ancho (80/76/58mm o normal) + auto al aceptar.
 import { calcularPagoAlRestaurante, formatDinero } from './formato';
 import { MARCA, MODO_HP, MODO_SISTEMA, codigoPedido, esDomicilio } from './config';
+import { porConfirmar } from './detalle';
 
 // Nombre que va arriba del ticket: el pasado por el panel, o el del pedido, o el
 // de la sesión guardada (sucursal logueada), y como último recurso la marca
@@ -221,6 +222,13 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
   const telSistema = (MODO_SISTEMA && pedido.cliente_telefono)
     ? String(pedido.cliente_telefono).replace(/^593/, '0') : '';
   const tiempo = pedido.tiempo_preparacion ? `${pedido.tiempo_preparacion} min` : '';
+  // 23-sep-2026: lo que el bot no preguntó ("⚠️ Por confirmar") sale como bloque aparte, arriba del cliente.
+  const pc = porConfirmar(pedido.detalle_pedido);
+  const bloquePreguntar = pc.pendientes.length ? `
+    ${sep}
+    <div class="c big">PREGUNTAR AL CLIENTE</div>
+    ${pc.pendientes.map((x) => `<div class="plato">&gt; ${esc(limp(x.pregunta.toUpperCase()))}</div>`).join('')}
+    ${telSistema ? `<div class="row"><span class="lbl">Tel:</span><span class="b">${esc(telSistema)}</span></div>` : ''}` : '';
 
   // Precios (mismo cálculo que las tarjetas de la app). Se omite si no hay
   // monto. Compacto: el TOTAL va a fs+3 para no competir con el nº de pedido.
@@ -280,7 +288,8 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
     <div class="c">COMANDA - ${ahoraTexto()}</div>
     <div class="row idrow"><span class="big">${esc(codigoPedido(pedido))}</span><span class="b">${esc(entrega)}</span></div>
     ${sep}
-    ${formatearItems(pedido.detalle_pedido, liviano)}
+    ${formatearItems(pc.texto, liviano)}
+    ${bloquePreguntar}
     ${sep}
     <div class="row"><span class="lbl">Cliente:</span><span class="b">${esc(limp(pedido.cliente_nombre || '-'))}</span></div>
     ${telSistema ? `<div class="row"><span class="lbl">Telefono:</span><span class="b">${esc(telSistema)}</span></div>` : ''}
