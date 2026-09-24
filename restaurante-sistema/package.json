@@ -1,7 +1,7 @@
 {
   "name": "panel-pedidos",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cascarón Electron del Panel de Pedidos (EL SISTEMA para locales): carga dewansas.com/restaurante-sistema/web/ e imprime la comanda en la PC del local.",
   "author": "DEWAN",
   "main": "electron/main.cjs",
