@@ -8,6 +8,7 @@ import DashboardTab from './components/DashboardTab';
 import PedidosTab from './components/PedidosTab';
 import RestaurantesTab from './components/RestaurantesTab';
 import MotorizadosTab from './components/MotorizadosTab';
+import MapaMotosTab from './components/MapaMotosTab';
 import ComisionesTab from './components/ComisionesTab';
 import FinanzasTab from './components/FinanzasTab';
 import { useAdminData } from './hooks/useAdminData';
@@ -59,6 +60,7 @@ function Panel({ admin, onLogout }) {
         {esAdmin && tab === 'dashboard' && <DashboardTab data={data} />}
         {esAdmin && tab === 'restaurantes' && <RestaurantesTab data={data} />}
         {esAdmin && tab === 'motorizados' && <MotorizadosTab data={data} />}
+        {esAdmin && tab === 'mapa' && <MapaMotosTab data={data} />}
         {esAdmin && tab === 'comisiones' && <ComisionesTab data={data} />}
         {esAdmin && tab === 'finanzas' && <FinanzasTab data={data} />}
       </div>

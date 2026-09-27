@@ -3,13 +3,14 @@ const TABS = [
   { id: 'pedidos', label: 'Pedidos', icon: '📦' },
   { id: 'restaurantes', label: 'Rest.', icon: '🍽️' },
   { id: 'motorizados', label: 'Motos', icon: '🏍️' },
+  { id: 'mapa', label: 'Mapa', icon: '🗺️' },
   { id: 'comisiones', label: '$', icon: '💳' },
   { id: 'finanzas', label: 'Finanzas', icon: '💵' },
 ];
 
 // Qué pestañas ve cada rol. La centralista SOLO opera pedidos (sin dinero).
 const TABS_POR_ROL = {
-  admin: ['dashboard', 'pedidos', 'restaurantes', 'motorizados', 'comisiones', 'finanzas'],
+  admin: ['dashboard', 'pedidos', 'restaurantes', 'motorizados', 'mapa', 'comisiones', 'finanzas'],
   centralista: ['pedidos'],
 };
 
