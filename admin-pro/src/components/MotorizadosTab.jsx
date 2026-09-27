@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { money, entregadoHoy } from '../lib/time';
 import { supabase } from '../lib/supabase';
 import DesglosePedido from './DesglosePedido';
+import { codigoPedido } from '../lib/pedidoNum';
 
 function fechaEcHoy() {
   const ahora = new Date();
@@ -175,7 +176,7 @@ function MotoCard({ m, stats, deuda, onMarcarPagado, marcandoId, detalle, onTogg
                 det.carreras.map((c) => (
                   <div key={c.id} className="px-2.5 py-2 space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-white font-semibold truncate">#{c.id} {c.restaurante || 'Local'}</span>
+                      <span className="text-[11px] text-white font-semibold truncate">{codigoPedido(c)} {c.restaurante || 'Local'}</span>
                       <span className="text-[9px] text-gray-500 shrink-0">{fechaCorta(c.fecha_creacion)}</span>
                     </div>
                     <DesglosePedido pedido={c} compact />
@@ -393,7 +394,7 @@ export default function MotorizadosTab({ data }) {
     if (yaCargado) return;
     const { data, error } = await supabase
       .from('pedidos_delivery')
-      .select('id, restaurante, monto_total, precio_base_productos, monto_comision, markup_dewan, comision_la_paga, precio_calculado, carrera_moto, fecha_creacion')
+      .select('id, codigo_pedido, restaurante, monto_total, precio_base_productos, monto_comision, markup_dewan, comision_la_paga, precio_calculado, carrera_moto, fecha_creacion')
       .eq('motorizado_id', motoId)
       .eq('estado_pedido', 'entregado')
       .order('id', { ascending: false })
