@@ -128,7 +128,51 @@ export async function sirenaRechazo() {
 }
 
 const alertIntervals = new Map();
+// Tipo de cada alarma viva: 'nuevo' | 'nuevo_listo' | 'no_acepta' | 'rechazo'.
+// Cada tipo se apaga por su propia regla (ver lib/alarmaPedidos.js).
+const alertTipos = new Map();
 const ALARM_PERIOD_MS = 15000;
+
+// Las tarjetas y la Torre tienen que enterarse cuando una alarma empieza o se apaga
+// (antes el botón 🔇 se quedaba pintado hasta el siguiente render).
+const oyentes = new Set();
+function avisarCambio() {
+  oyentes.forEach((fn) => { try { fn(); } catch {} });
+}
+export function suscribirAlertas(fn) {
+  oyentes.add(fn);
+  return () => oyentes.delete(fn);
+}
+// Copia de las alarmas vivas: Map pedidoId -> tipo.
+export function alertasVivas() {
+  return new Map(alertTipos);
+}
+export function tipoAlerta(pedidoId) {
+  return alertTipos.get(pedidoId) || null;
+}
+
+// "Enterados": pedidos que la operadora ya silenció en ESTE teléfono. Se guardan para
+// que un pedido que todavía no tiene moto no vuelva a sonar si Android cierra la app
+// y ella la abre de nuevo. Se olvidan solos a las 12 h.
+const LS_ENTERADOS = 'dewan_admin_enterados';
+const ENTERADO_TTL_MS = 12 * 60 * 60 * 1000;
+let enterados = null;
+function cargarEnterados() {
+  if (enterados) return enterados;
+  enterados = new Map();
+  try {
+    const crudo = JSON.parse(localStorage.getItem(LS_ENTERADOS) || '{}');
+    const limite = Date.now() - ENTERADO_TTL_MS;
+    Object.entries(crudo).forEach(([id, t]) => { if (Number(t) > limite) enterados.set(String(id), Number(t)); });
+  } catch { /* sin almacenamiento: solo se recuerda mientras la app siga abierta */ }
+  return enterados;
+}
+function guardarEnterados() {
+  try { localStorage.setItem(LS_ENTERADOS, JSON.stringify(Object.fromEntries(cargarEnterados()))); } catch {}
+}
+export function yaEnterado(pedidoId) {
+  return cargarEnterados().has(String(pedidoId));
+}
 
 function audioMudo() {
   return !audioCtx || audioCtx.state !== 'running';
@@ -145,13 +189,16 @@ export function startAlertLoop(pedidoId, tipo = 'nuevo') {
     // Android la reemplaza en vez de apilar, y re-suena en cada ciclo.
     if (audioMudo()) {
       const titulo = tipo === 'rechazo' ? 'Restaurante rechazó'
-        : tipo === 'no_acepta' ? 'Restaurante no responde' : 'Pedido pendiente';
+        : tipo === 'no_acepta' ? 'Restaurante no responde'
+        : tipo === 'nuevo_listo' ? 'Pedido nuevo' : 'Pedido pendiente';
       notify(titulo, `#${pedidoId}`, { id: 700000000 + (Math.abs(Number(pedidoId)) % 1000000) });
     }
   };
   tick();
   const id = setInterval(tick, ALARM_PERIOD_MS);
   alertIntervals.set(pedidoId, id);
+  alertTipos.set(pedidoId, tipo);
+  avisarCambio();
 }
 
 export function stopAlertLoop(pedidoId) {
@@ -159,12 +206,24 @@ export function stopAlertLoop(pedidoId) {
   if (id) {
     clearInterval(id);
     alertIntervals.delete(pedidoId);
+    alertTipos.delete(pedidoId);
+    avisarCambio();
   }
+}
+
+// La operadora tocó el pedido (🔇 / 👍 Enterado o cualquier acción): se calla en este
+// teléfono y queda anotado para que no vuelva a sonar aunque se reabra la app.
+export function silenciarAlerta(pedidoId) {
+  stopAlertLoop(pedidoId);
+  cargarEnterados().set(String(pedidoId), Date.now());
+  guardarEnterados();
 }
 
 export function stopAllAlerts() {
   alertIntervals.forEach((id) => clearInterval(id));
   alertIntervals.clear();
+  alertTipos.clear();
+  avisarCambio();
 }
 
 export function alertActiva(pedidoId) {

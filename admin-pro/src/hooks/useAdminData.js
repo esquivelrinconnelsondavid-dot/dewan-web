@@ -3,10 +3,28 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { supabase, MIN_NO_ACEPTA } from '../lib/supabase';
 import { HOY_ISO, minutosDesde } from '../lib/time';
-import { notify, startAlertLoop, stopAlertLoop, stopAllAlerts, resumeAudio } from '../lib/notifications';
+import {
+  notify, startAlertLoop, stopAlertLoop, stopAllAlerts, resumeAudio,
+  tipoAlerta, yaEnterado, suscribirAlertas, alertasVivas,
+} from '../lib/notifications';
+import { TERMINALES, alarmaAlVer, esReciente, debeCallarse, motivoNuevo } from '../lib/alarmaPedidos';
 
 import { codigoPedido } from '../lib/pedidoNum';
-const TERMINALES = new Set(['entregado', 'cancelado']);
+
+// Pedido que la app ve por primera vez → notificación + alarma si corresponde.
+// Incluye los que nacen ya aceptados (Super Happy y demás locales del sistema, carreras
+// de los locales): suenan hasta que una moto los toma o la operadora toca "Enterado".
+function avisarNuevo(p) {
+  const tipoAlarma = alarmaAlVer(p);
+  if (!tipoAlarma) return;
+  if (yaEnterado(p.id)) return; // ya lo calló en este teléfono (p.ej. antes de que Android cerrara la app)
+  const tipo = p.intencion === 'pedido_comida' ? 'Comida'
+    : p.intencion === 'encomienda' ? 'Encomienda'
+    : p.intencion === 'compras' ? 'Compras' : 'Pedido';
+  const extra = tipoAlarma === 'nuevo_listo' ? ` · ${motivoNuevo(p, tipoAlarma)}` : '';
+  notify(`Nuevo pedido (${tipo})`, `${codigoPedido(p)} ${p.restaurante || p.cliente_nombre || ''}${extra}`);
+  startAlertLoop(p.id, tipoAlarma);
+}
 
 // ─── Identidad estable de las filas ──────────────────────────────────────────
 // El poll trae objetos NUEVOS cada 10s aunque los datos sean idénticos. Eso
@@ -73,14 +91,12 @@ export function useAdminData() {
   const seenIds = useRef(new Set());
   const notifiedNoAcepta = useRef(new Set());
 
-  // <2min = "fresco": disparar alarma aunque venga de cargar() inicial.
-  const MS_FRESCO_ADMIN = 2 * 60 * 1000;
-  const esPendienteFresco = (p) => {
-    if (!p || p.estado_pedido !== 'pendiente_restaurante') return false;
-    if (p.restaurante_aceptado || p.restaurante_rechazado) return false;
-    const creado = p.fecha_creacion ? new Date(p.fecha_creacion).getTime() : 0;
-    return creado > 0 && Date.now() - creado < MS_FRESCO_ADMIN;
-  };
+  // Alarmas vivas (pedidoId -> tipo) para que la Torre y las tarjetas muestren qué suena.
+  const [alertas, setAlertas] = useState(() => alertasVivas());
+  useEffect(() => {
+    const quitar = suscribirAlertas(() => setAlertas(alertasVivas()));
+    return () => { quitar(); };
+  }, []);
 
   const cargarPedidos = useCallback(async () => {
     // Margen de 12h hacia atrás: un pedido en curso creado antes de medianoche EC no debe
@@ -94,16 +110,12 @@ export function useAdminData() {
     if (error) { console.error('[pedidos]', error); return false; }
     const frescos = data || [];
     setPedidos((prev) => fusionarPedidos(prev, frescos));
+    // Primera vez que se ve un pedido (carga inicial, poll o recarga al volver de
+    // WhatsApp): suena si es reciente y nadie se hizo cargo todavía.
     frescos.forEach((p) => {
       if (seenIds.current.has(p.id)) return;
       seenIds.current.add(p.id);
-      if (esPendienteFresco(p)) {
-        const tipo = p.intencion === 'pedido_comida' ? 'Comida'
-          : p.intencion === 'encomienda' ? 'Encomienda'
-          : p.intencion === 'compras' ? 'Compras' : 'Pedido';
-        notify(`Nuevo pedido (${tipo})`, `${codigoPedido(p)} ${p.restaurante || p.cliente_nombre || ''}`);
-        startAlertLoop(p.id, 'nuevo');
-      }
+      if (esReciente(p)) avisarNuevo(p);
     });
     return true;
   }, []);
@@ -163,11 +175,7 @@ export function useAdminData() {
             setPedidos((prev) => prev.find((p) => p.id === nuevo.id) ? prev : [nuevo, ...prev]);
             if (!seenIds.current.has(nuevo.id)) {
               seenIds.current.add(nuevo.id);
-              const tipo = nuevo.intencion === 'pedido_comida' ? 'Comida'
-                : nuevo.intencion === 'encomienda' ? 'Encomienda'
-                : nuevo.intencion === 'compras' ? 'Compras' : 'Pedido';
-              notify(`Nuevo pedido (${tipo})`, `#${nuevo.id} ${nuevo.restaurante || nuevo.cliente_nombre || ''}`);
-              startAlertLoop(nuevo.id, 'nuevo');
+              avisarNuevo(nuevo);
             }
           }
           if (eventType === 'UPDATE') {
@@ -179,11 +187,16 @@ export function useAdminData() {
               notify(`Restaurante RECHAZÓ #${nuevo.id}`, `${nuevo.restaurante || ''}: ${nuevo.restaurante_motivo_rechazo || 'sin motivo'}`);
               startAlertLoop(nuevo.id, 'rechazo');
             }
-            // Si el pedido avanzó → parar alarma EN TODOS los dispositivos.
-            // Incluye cuando la OPERADORA atiende: los silenciosos/cliente_paga NUNCA "aceptan"
-            // por la app, solo se les pone el tiempo (operadora_atendido=true / estado 'preparando').
-            // Sin esto, la alarma seguía sonando tras confirmar el tiempo en locales silenciosos.
-            if (
+            if (tipoAlerta(nuevo.id) === 'nuevo_listo') {
+              // Nació ya aceptado (sistema / carrera): solo se calla cuando una moto lo toma o
+              // se cierra. La regla de abajo lo callaba en el acto, porque esos pedidos ya
+              // traen restaurante_aceptado / operadora_atendido y otro estado.
+              if (debeCallarse('nuevo_listo', nuevo)) stopAlertLoop(nuevo.id);
+            } else if (
+              // Si el pedido avanzó → parar alarma EN TODOS los dispositivos.
+              // Incluye cuando la OPERADORA atiende: los silenciosos/cliente_paga NUNCA "aceptan"
+              // por la app, solo se les pone el tiempo (operadora_atendido=true / estado 'preparando').
+              // Sin esto, la alarma seguía sonando tras confirmar el tiempo en locales silenciosos.
               (nuevo.restaurante_aceptado && !viejo?.restaurante_aceptado) ||
               (nuevo.operadora_atendido && !viejo?.operadora_atendido) ||
               (viejo?.estado_pedido === 'pendiente_restaurante' && nuevo.estado_pedido && nuevo.estado_pedido !== 'pendiente_restaurante') ||
@@ -320,10 +333,10 @@ export function useAdminData() {
         notify(`Restaurante no responde`, `${codigoPedido(p)} ${p.restaurante || ''} (${minutosDesde(p.fecha_creacion)}m)`);
         startAlertLoop(p.id, 'no_acepta');
       }
-      // Si el pedido YA fue atendido (operadora puso tiempo / avanzó), apagar cualquier alarma viva.
-      if (p.operadora_atendido || (p.estado_pedido && p.estado_pedido !== 'pendiente_restaurante')) {
-        stopAlertLoop(p.id);
-      }
+      // Si el pedido YA fue atendido (operadora puso tiempo / avanzó), apagar su alarma.
+      // Los que nacieron aceptados ('nuevo_listo') siguen sonando hasta que haya moto.
+      const tipoVivo = tipoAlerta(p.id);
+      if (tipoVivo && debeCallarse(tipoVivo, p)) stopAlertLoop(p.id);
     });
   }, [pedidos, tick, gestionOperadora]);
 
@@ -344,7 +357,7 @@ export function useAdminData() {
 
   return {
     pedidos, restaurantes, motorizados, cargando,
-    colgados, rechazados,
+    colgados, rechazados, alertas,
     recargar: cargarTodo,
     _tick: tick,
   };

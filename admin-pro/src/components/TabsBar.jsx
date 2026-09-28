@@ -14,7 +14,7 @@ const TABS_POR_ROL = {
   centralista: ['pedidos'],
 };
 
-export default function TabsBar({ tab, setTab, alertasRest, rol }) {
+export default function TabsBar({ tab, setTab, alertasRest, sonando = 0, rol }) {
   const permitidos = TABS_POR_ROL[rol] || TABS_POR_ROL.admin;
   const visibles = TABS.filter((t) => permitidos.includes(t.id));
   return (
@@ -32,6 +32,12 @@ export default function TabsBar({ tab, setTab, alertasRest, rol }) {
           {t.id === 'restaurantes' && alertasRest > 0 && (
             <span className="absolute top-1 right-2 bg-alerta text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center">
               {alertasRest}
+            </span>
+          )}
+          {/* Pedidos que están sonando ahora mismo en este teléfono */}
+          {t.id === 'pedidos' && sonando > 0 && (
+            <span className="absolute top-1 right-2 bg-alerta text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center">
+              🔔{sonando}
             </span>
           )}
         </button>

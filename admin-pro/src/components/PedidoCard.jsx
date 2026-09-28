@@ -7,7 +7,8 @@ import TimerDisplay from './TimerDisplay';
 import SelectorSucursal from './SelectorSucursal';
 import ModalAsignarMoto from './ModalAsignarMoto';
 import { lanzarMotorizado, cancelarPedido as wCancelarPedido, restauranteNoPuede, timerRestaurante, pedidoAceptado } from '../lib/webhooks';
-import { stopAlertLoop, alertActiva } from '../lib/notifications';
+import { silenciarAlerta } from '../lib/notifications';
+import { motivoNuevo } from '../lib/alarmaPedidos';
 
 import { codigoPedido } from '../lib/pedidoNum';
 import { BadgePromesa } from './TorreControl';
@@ -91,7 +92,8 @@ function Boton({ children, onClick, color = 'dewan', disabled, full, grande }) {
   );
 }
 
-function PedidoCard({ p, tipoAcuerdo, motorizados }) {
+// `alerta` = tipo de la alarma que está sonando por este pedido en este teléfono (o null).
+function PedidoCard({ p, tipoAcuerdo, motorizados, alerta = null }) {
   const [cargando, setCargando] = useState(false);
   const [modalAsignar, setModalAsignar] = useState(false);
   // Pedidos que NO llegan por WhatsApp (los de la app y la web) dejaban a la operadora
@@ -227,7 +229,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
       }
       await supabase.from('pedidos_delivery').update(updateData).eq('id', p.id);
       await timerRestaurante(p, minutos).catch((e) => console.warn('webhook timer:', e?.message));
-      stopAlertLoop(p.id);
+      silenciarAlerta(p.id);
     } catch (e) {
       console.error('seleccionarTiempo:', e);
       alert('No se pudo procesar');
@@ -249,7 +251,9 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
       }
       await supabase.from('pedidos_delivery').update(updateData).eq('id', p.id);
       await lanzarMotorizado(p.id, auto, sucursalId).catch((e) => console.warn('webhook lanzar:', e?.message));
-      stopAlertLoop(p.id);
+      // El lanzamiento AUTOMÁTICO (se cumplió el tiempo) no calla la alarma: los pedidos que
+      // nacen aceptados (Super Happy…) tienen que seguir sonando hasta que una moto los tome.
+      if (!auto) silenciarAlerta(p.id);
     } catch (e) {
       console.error('lanzar:', e);
       alert('No se pudo lanzar el pedido');
@@ -277,7 +281,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
         })
         .eq('id', p.id);
       await lanzarMotorizado(p.id, false, sucursalId).catch((e) => console.warn('webhook lanzar:', e?.message));
-      stopAlertLoop(p.id);
+      silenciarAlerta(p.id);
     } catch (e) {
       console.error('quitarMotoYRelanzar:', e);
       alert('No se pudo relanzar el pedido');
@@ -317,7 +321,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
         return false;
       }
       await pedidoAceptado(p.id, moto.id).catch((e) => console.warn('webhook aceptado:', e?.message));
-      stopAlertLoop(p.id);
+      silenciarAlerta(p.id);
       return true;
     } catch (e) {
       console.error('asignarMoto:', e);
@@ -348,6 +352,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
         })
         .eq('id', p.id);
       lanzadoRef.current = false;
+      silenciarAlerta(p.id);
     } catch (e) { console.error(e); }
     setCargando(false);
   };
@@ -367,7 +372,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
         .update({ estado_pedido: 'cancelado', ...(motivo ? { restaurante_motivo_rechazo: motivo } : {}) })
         .eq('id', p.id);
       await wCancelarPedido(p, motivo || 'Cancelado por admin').catch(() => {});
-      stopAlertLoop(p.id);
+      silenciarAlerta(p.id);
     } catch (e) {
       console.error(e); alert('No se pudo cancelar');
     }
@@ -386,12 +391,12 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
         })
         .eq('id', p.id);
       await restauranteNoPuede(p).catch(() => {});
-      stopAlertLoop(p.id);
+      silenciarAlerta(p.id);
     } catch (e) { console.error(e); }
     setCargando(false);
   };
 
-  const silenciar = () => stopAlertLoop(p.id);
+  const silenciar = () => silenciarAlerta(p.id);
 
   return (
     <div
@@ -415,6 +420,19 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
           <span className="text-[10px] text-gray-500">{fmtHora(p.fecha_creacion)}</span>
         )}
       </div>
+
+      {/* Pedido que nació ya aceptado (Super Happy y demás locales del sistema, carreras de
+          locales): suena hasta que una moto lo toma. "Enterado" lo calla en este teléfono. */}
+      {alerta === 'nuevo_listo' && (
+        <div className="bg-dewan/15 border-2 border-dewan rounded-lg p-2 space-y-1.5">
+          <div className="text-xs font-black text-dewan leading-snug">
+            🔔 PEDIDO NUEVO — {motivoNuevo(p, alerta)}
+          </div>
+          <div className="flex">
+            <Boton grande full color="dewan" onClick={silenciar}>👍 Enterado (dejar de sonar)</Boton>
+          </div>
+        </div>
+      )}
 
       {(rechazado || colgado) && (
         <div className="text-[11px] font-bold text-alerta">
@@ -600,7 +618,7 @@ function PedidoCard({ p, tipoAcuerdo, motorizados }) {
       <div className="flex items-center justify-between pt-1 border-t border-borde">
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-gray-500">{hace(p.fecha_creacion)}</span>
-          {alertActiva(p.id) && (
+          {alerta && alerta !== 'nuevo_listo' && (
             <button onClick={silenciar} className="text-[10px] text-alerta border border-alerta/40 rounded px-1.5 py-0.5">
               🔇 Silenciar
             </button>

@@ -22,7 +22,7 @@ const ESTADOS_ACTIVOS = new Set([
 export default function PedidosTab({ data }) {
   const [filtro, setFiltro] = useState('torre');
   const [avisandoMotos, setAvisandoMotos] = useState(false);
-  const { pedidos, colgados, rechazados, restaurantes } = data;
+  const { pedidos, colgados, rechazados, restaurantes, alertas } = data;
 
   // "☔ Modo lluvia": +$0.30 empaquetado en la carrera (lo paga el cliente y va
   // íntegro al moto). El flag vive en configuracion_delivery vía RPC (SQL 013);
@@ -83,8 +83,8 @@ export default function PedidosTab({ data }) {
 
   // Torre de control: solo lo que necesita acción humana (gestión por excepción)
   const excepciones = useMemo(
-    () => calcularExcepciones({ pedidos, colgados, rechazados }),
-    [pedidos, colgados, rechazados, data._tick]
+    () => calcularExcepciones({ pedidos, colgados, rechazados, alertas }),
+    [pedidos, colgados, rechazados, alertas, data._tick]
   );
 
   const lista = useMemo(() => {
@@ -153,6 +153,7 @@ export default function PedidosTab({ data }) {
                   p={e.p}
                   tipoAcuerdo={e.p.restaurante_id ? tipoPorRest.get(e.p.restaurante_id) : null}
                   motorizados={data.motorizados}
+                  alerta={alertas.get(e.p.id) || null}
                 />
               </div>
             ))}
@@ -171,6 +172,7 @@ export default function PedidosTab({ data }) {
               p={p}
               tipoAcuerdo={p.restaurante_id ? tipoPorRest.get(p.restaurante_id) : null}
               motorizados={data.motorizados}
+              alerta={alertas.get(p.id) || null}
             />
           ))}
         </div>
