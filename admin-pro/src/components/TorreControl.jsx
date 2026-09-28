@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { minutosDesde, fmtHora, HOY_ISO } from '../lib/time';
 import { viajeEstimadoMin, promesaDe, minutosTarde, aTiempo } from '../lib/puntualidad';
-import { motivoNuevo } from '../lib/alarmaPedidos';
 
 // ── Torre de control (patrón "gestión por excepción" de las apps grandes) ──
 // La operadora NO debería buscar el problema en la lista completa: lo roto la
@@ -29,7 +28,7 @@ const MIN_VIAJE_EXTRA = 8;         // en camino por encima del viaje estimado
 const MIN_LLEGO_SIN_ENTREGAR = 8;  // "llegué" sin "entregado"
 const MIN_ENTREGA_LARGA = 50;      // sin promesa: pedido vivo demasiado tiempo
 
-export function calcularExcepciones({ pedidos, colgados, rechazados, alertas }) {
+export function calcularExcepciones({ pedidos, colgados, rechazados }) {
   const excepciones = [];
   const yaEsta = new Set();
   const meter = (p, emoji, motivo, orden) => {
@@ -41,14 +40,6 @@ export function calcularExcepciones({ pedidos, colgados, rechazados, alertas }) 
   (rechazados || []).forEach((p) => meter(p, '❌', `Rechazado por el local — reubicar o cancelar`, 0));
   (colgados || []).forEach((p) =>
     meter(p, '🏪', `Local no confirma hace ${minutosDesde(p.fecha_creacion)} min`, 1));
-  // [28-sep] Lo que está SONANDO por nuevo se ve aquí arriba: antes sonaba y en la Torre
-  // no aparecía nada (los pedidos de Super Happy nacen aceptados y no eran "excepción").
-  if (alertas && alertas.size) {
-    (pedidos || []).forEach((p) => {
-      const tipo = alertas.get(p.id);
-      if (tipo === 'nuevo' || tipo === 'nuevo_listo') meter(p, '🔔', `PEDIDO NUEVO — ${motivoNuevo(p, tipo)}`, 0);
-    });
-  }
 
   (pedidos || []).forEach((p) => {
     if (!ESTADOS_EN_CURSO.has(p.estado_pedido)) return;
