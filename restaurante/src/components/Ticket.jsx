@@ -328,7 +328,7 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
           </div>
         )}
         {columna === 'preparando' && <AnilloTiempo pedido={pedido} tam={grande ? 72 : 56} />}
-        {columna === 'listo' && <Chip tono="verde">{MODO_SISTEMA && !domicilio ? 'Listo · lo retira el cliente' : 'Listo · buscando moto'}</Chip>}
+        {columna === 'listo' && <Chip tono="verde">{MODO_SISTEMA && !domicilio ? 'Listo · lo retira el cliente' : (moto ? `Listo · esperando a ${moto}` : 'Listo · buscando moto')}</Chip>}
         {columna === 'entregando' && <Chip tono="azul">{LABEL_MOTO[pedido.estado_pedido] || 'Con el motorizado'}</Chip>}
       </div>
 

@@ -304,6 +304,10 @@ export function usePedidosRestaurante(restaurante) {
   const conMoto = (p) => !!(p.motorizado_id || p.nombre_moto);
   const esListo = (p) => {
     if (p.estado_pedido === 'listo') return true;
+    // SISTEMA (2-oct-2026, Super Happy SH-20): el local tocó "Listo" pero la moto YA había aceptado y
+    // aún no lo recoge (sigue `preparando`) → va a Listos ("esperando a la moto"). Antes se quedaba en
+    // "En preparación" con el mismo botón y parecía que "Listo" no funcionaba.
+    if (MODO_SISTEMA && p.estado_pedido === 'preparando' && p.fecha_listo) return true;
     // DEWAN: el local tocó "Listo" → sigue `preparando` hasta que una moto lo toma
     if (p.estado_pedido === 'preparando' && p.fecha_listo) return !conMoto(p);
     // DEWAN: la moto aún no lo tomó pero ya se lanzó (buscando motorizado)
