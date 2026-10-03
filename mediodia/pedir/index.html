@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#CFA47C">
+<title>Crepería El Mediodía · Pedidos (demostración)</title>
+<meta name="description" content="Demostración de la app web de pedidos de Crepería El Mediodía, preparada por DEWAN.">
+<link rel="icon" href="/mediodia/img/sello.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#E9DDCD;
+  --paper:#FFFDF9;
+  --kraft:#CFA47C;
+  --kraft-d:#9C6B43;
+  --kraft-l:#F4EADD;
+  --ink:#16120F;
+  --ink-2:#5C534C;
+  --ink-3:#978D85;
+  --line:#EDE5DA;
+  --line-2:#D9CEC1;
+  --red:#D2382E;
+  --green:#1E8F4E;
+  --f:"Raleway",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --col:480px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:lining-nums tabular-nums;padding-bottom:96px}
+body.lock{overflow:hidden}
+img{max-width:100%;display:block}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--kraft-d);outline-offset:2px;border-radius:8px}
+h1,h2,h3,p{margin:0}
+
+/* Aviso de demostración */
+.demo-bar{background:var(--ink);color:#F4EADD;font-size:12.5px;line-height:1.4;padding:9px 16px;text-align:center}
+.demo-bar b{display:inline-block;background:#F4EADD;color:var(--ink);font-size:10.5px;font-weight:800;letter-spacing:.12em;padding:2px 7px;border-radius:5px;margin-right:6px;vertical-align:1px}
+.demo-bar a{color:#fff;font-weight:700;text-underline-offset:3px;white-space:nowrap}
+
+/* Columna de la app */
+.app{max-width:var(--col);margin:0 auto;background:var(--paper);min-height:100vh;box-shadow:0 0 0 1px rgba(22,18,15,.04),0 30px 60px -40px rgba(22,18,15,.45)}
+
+/* Encabezado tipo papel kraft (como sus conos) */
+.top{background:var(--kraft);background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1.3px),radial-gradient(rgba(60,35,15,.06) 1px,transparent 1.3px);background-size:9px 9px,13px 13px;background-position:0 0,4px 6px;padding:22px 18px 18px;display:grid;gap:16px}
+.brand{display:flex;align-items:center;gap:14px}
+.seal{width:72px;height:72px;flex:none}
+.brand h1{font-size:23px;font-weight:900;line-height:1.02;letter-spacing:.005em;text-transform:uppercase}
+.slogan{font-style:italic;font-weight:800;font-size:15px;margin-top:4px}
+.loc-lbl{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(22,18,15,.7);margin-bottom:7px}
+.loc-chips{display:flex;flex-wrap:wrap;gap:7px}
+.loc-chips label{position:relative}
+.loc-chips input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.loc-chips span{display:block;font-size:13.5px;font-weight:700;padding:7px 13px;border-radius:999px;background:rgba(255,253,249,.6);border:1.5px solid rgba(22,18,15,.18)}
+.loc-chips input:checked+span{background:var(--ink);color:#fff;border-color:var(--ink)}
+.loc-chips input:focus-visible+span{outline:3px solid var(--ink);outline-offset:2px}
+.loc-info{font-size:13px;font-weight:600;color:rgba(22,18,15,.78);margin-top:8px}
+
+/* Foto principal */
+.hero{margin:16px 16px 6px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:1000/620;background:var(--kraft-l)}
+.hero img{width:100%;height:100%;object-fit:cover}
+.hero figcaption{position:absolute;left:0;right:0;bottom:0;padding:40px 16px 14px;background:linear-gradient(transparent,rgba(16,10,6,.72));color:#fff;display:grid;gap:2px}
+.hero b{font-size:20px;font-weight:800;line-height:1.15}
+.hero span{font-size:13.5px;font-weight:600;opacity:.92}
+
+/* Categorías */
+.cats{position:sticky;top:0;z-index:5;background:var(--paper);display:flex;gap:6px;overflow-x:auto;padding:10px 16px;border-bottom:1px solid var(--line);scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cats a{flex:none;text-decoration:none;font-size:13.5px;font-weight:700;padding:7px 12px;border-radius:999px;background:var(--kraft-l);color:var(--ink)}
+.cats a:hover{background:#EBDCC9}
+
+/* Productos */
+main{padding:0 16px}
+.cat{padding-top:18px;scroll-margin-top:56px}
+.cat h2{font-size:19px;font-weight:900;letter-spacing:.005em;text-transform:uppercase;padding:6px 0 2px}
+.items{list-style:none;margin:0;padding:0}
+.item{display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item-txt{display:grid;gap:4px}
+.item h3{font-size:16px;font-weight:800;line-height:1.25}
+.num{display:inline-block;font-size:12px;font-weight:900;background:var(--ink);color:#fff;border-radius:6px;padding:1px 6px;margin-right:2px;vertical-align:2px}
+.desc{font-size:13.5px;color:var(--ink-2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.price{font-size:15px;font-weight:800;margin-top:2px}
+.item-pic{position:relative;width:104px;height:104px}
+.item-pic img,.ph{width:104px;height:104px;border-radius:16px;background:#fff;border:1px solid var(--line);object-fit:cover}
+.ph{display:grid;place-items:center;background:var(--kraft-l);border-color:transparent}
+.ph svg{width:54px;height:54px}
+.add{position:absolute;right:-6px;bottom:-6px;width:38px;height:38px;border-radius:50%;border:3px solid var(--paper);background:var(--ink);color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:25px;font-weight:400;line-height:1;display:grid;place-items:center;padding:0}
+.add.has{background:var(--red);font-size:15px;font-weight:700}
+
+/* WhatsApp */
+.wa-note{margin:22px 16px 6px;background:var(--kraft-l);border-radius:16px;padding:16px;display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start}
+.wa-ic{width:44px;height:44px;border-radius:50%;background:#00A884;display:grid;place-items:center}
+.wa-ic svg{width:24px;height:24px}
+.wa-note h2{font-size:16px;font-weight:800;margin-bottom:3px}
+.wa-note p{font-size:14px;color:var(--ink-2)}
+.foot{padding:22px 16px 28px;font-size:12.5px;color:var(--ink-3);display:grid;gap:4px;text-align:center}
+.foot a{color:var(--ink-2);font-weight:700}
+
+/* Barra del pedido */
+.cart-bar{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(var(--col),100%);padding:10px 14px calc(12px + env(safe-area-inset-bottom,0px));z-index:20;background:linear-gradient(transparent,rgba(255,253,249,.96) 30%)}
+.cart-bar button{width:100%;display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border:0;border-radius:999px;padding:13px 18px 13px 13px;font-weight:800;font-size:16px;box-shadow:0 14px 30px -12px rgba(22,18,15,.6)}
+.cnt{min-width:28px;height:28px;border-radius:999px;background:var(--kraft);color:var(--ink);display:grid;place-items:center;font-size:14px;padding:0 6px}
+.cart-bar b{margin-left:auto}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:14px;font-weight:700;padding:9px 16px;border-radius:999px;z-index:40;max-width:calc(100% - 32px);text-align:center}
+
+/* Capas */
+.scrim{position:fixed;inset:0;background:rgba(22,18,15,.45);z-index:30}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(var(--col),100%);max-height:88vh;overflow:auto;background:var(--paper);border-radius:22px 22px 0 0;z-index:31;padding:14px 18px calc(16px + env(safe-area-inset-bottom,0px))}
+.x{position:absolute;top:10px;right:12px;width:36px;height:36px;border-radius:50%;border:0;background:var(--kraft-l);font-size:22px;line-height:1}
+.sh-pic{display:flex;justify-content:center;padding:8px 0 4px}
+.sh-pic img,.sh-pic .ph{width:170px;height:170px;border:0}
+.sh-pic .ph svg{width:84px;height:84px}
+.sheet h3{font-size:20px;font-weight:900;line-height:1.2;margin-top:6px}
+.sh-desc{font-size:14px;color:var(--ink-2);margin-top:4px}
+.grp{border:0;margin:16px 0 0;padding:0}
+.grp legend{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px;padding:0}
+.opt{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);cursor:pointer;font-weight:600}
+.opt input{width:20px;height:20px;margin:0;accent-color:var(--ink);flex:none}
+.opt em{margin-left:auto;font-style:normal;font-weight:700;color:var(--ink-2)}
+.sh-foot{display:flex;gap:12px;align-items:center;margin-top:18px}
+.qty{display:flex;align-items:center;border:1.5px solid var(--line-2);border-radius:999px;flex:none}
+.qty button{width:40px;height:44px;border:0;background:none;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:400;line-height:1}
+.qty b{min-width:22px;text-align:center;font-size:16px}
+.qty.sm button{width:32px;height:34px;font-size:18px}
+.btn-main{flex:1;border:0;background:var(--ink);color:#fff;border-radius:999px;padding:14px 18px;font-weight:800;font-size:16px;width:100%}
+.btn-main:hover{background:#2A221C}
+
+.panel{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(var(--col),100%);background:var(--paper);z-index:31;display:flex;flex-direction:column}
+.pn-head{display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;border-bottom:1px solid var(--line)}
+.back{width:38px;height:38px;border-radius:50%;border:0;background:var(--kraft-l);font-size:24px;line-height:1}
+.pn-head h2{font-size:19px;font-weight:900;text-transform:uppercase}
+.pn-body{flex:1;overflow:auto;padding:14px 18px 20px;display:grid;gap:16px;align-content:start}
+.pn-foot{padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);display:grid;gap:6px}
+.tiny{font-size:12px;color:var(--ink-3);text-align:center}
+.lines{list-style:none;margin:0;padding:0}
+.lines li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.lines li>div:first-child{flex:1;display:grid;gap:2px}
+.lines b{font-weight:800;font-size:15px}
+.lines span{font-size:13px;color:var(--ink-2)}
+.lines em{font-style:normal;font-weight:700;font-size:14px}
+.more{font-weight:800;font-size:14px;color:var(--kraft-d);text-decoration:none}
+.seg{border:0;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg legend{grid-column:1/-1;font-size:13px;font-weight:800;margin-bottom:8px;padding:0}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg span{display:block;text-align:center;font-weight:700;font-size:14.5px;padding:11px 8px;border-radius:12px;border:1.5px solid var(--line-2);background:#fff}
+.seg input:checked+span{background:var(--ink);border-color:var(--ink);color:#fff}
+.seg input:focus-visible+span{outline:3px solid var(--kraft-d);outline-offset:2px}
+.fld{display:grid;gap:6px}
+.fld span{font-size:13px;font-weight:800}
+.fld input,.fld textarea{width:100%;font-size:16px;border:1.5px solid var(--line-2);border-radius:12px;padding:12px;background:#fff}
+.fld input:focus,.fld textarea:focus{outline:none;border-color:var(--ink)}
+.ubi{justify-self:start;border:1.5px solid var(--ink);background:none;border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;margin-top:8px}
+.ubi-msg{font-size:13px;color:var(--ink-2);margin-top:6px}
+.ret{font-size:14.5px;background:var(--kraft-l);border-radius:12px;padding:12px}
+.sum{display:grid;gap:8px;border-top:1px dashed var(--line-2);padding-top:14px}
+.sum>div{display:flex;justify-content:space-between;gap:12px;font-size:15px}
+.sum b{font-weight:800}
+.env{color:var(--ink-2);font-size:13.5px;text-align:right}
+.err{color:var(--red);font-weight:700;font-size:14px;min-height:1px}
+
+/* Pedido recibido */
+.ok-badge{width:64px;height:64px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:34px;font-weight:900;margin:8px auto 0}
+#ls-title{text-align:center;font-size:22px;font-weight:900;line-height:1.2}
+.ok-sub{text-align:center;font-size:14px;color:var(--ink-2);margin-top:-8px}
+.mini-h{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.track{list-style:none;margin:-6px 0 0;padding:0;position:relative}
+.track li{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start;padding:8px 0;color:var(--ink-3)}
+.track li i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-2);background:#fff;margin-top:3px;transition:background .3s,border-color .3s}
+.track li b{display:block;font-size:15px;font-weight:800}
+.track li span{display:block;font-size:13px}
+.track time{font-size:12.5px;font-weight:700}
+.track li.ok,.track li.now{color:var(--ink)}
+.track li.ok i{background:var(--green);border-color:var(--green)}
+.track li.now i{background:var(--red);border-color:var(--red);box-shadow:0 0 0 4px rgba(210,56,46,.16)}
+.ticket{border:1.5px dashed var(--line-2);border-radius:14px;padding:14px;display:grid;gap:8px;background:#fff}
+.tk-top{display:flex;justify-content:space-between;align-items:center}
+.tk-top b{font-size:16px;font-weight:900}
+.tk-top span{font-size:11.5px;font-weight:800;color:var(--red);background:#FBE7E5;border-radius:999px;padding:2px 9px}
+.tk-loc{font-size:13px;color:var(--ink-2);font-weight:600}
+.ticket ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:14.5px}
+.ticket em{font-style:normal;color:var(--ink-3)}
+.tk-meta{font-size:13px;font-weight:700}
+.tk-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px dashed var(--line-2);padding-top:10px}
+.tk-btns span{grid-column:1/-1;font-size:12px;color:var(--ink-2)}
+.tk-btns b{text-align:center;border:1.5px solid var(--line-2);border-radius:9px;padding:7px 0;font-size:13.5px}
+.tk-btns b.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media (min-width:700px){
+  body{padding-top:20px}
+  .app{border-radius:24px;overflow:hidden}
+  .demo-bar{border-radius:12px;max-width:var(--col);margin:0 auto 12px}
+}
+</style>
+</head>
+<body>
+
+<p class="demo-bar"><b>DEMOSTRACIÓN</b>Preparada por DEWAN para Crepería El Mediodía. No envía pedidos reales. <a href="/mediodia/">Ver la propuesta</a></p>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <img class="seal" src="/mediodia/img/sello.png" width="72" height="72" alt="Sello de Crepería El Mediodía">
+      <div><h1>Crepería<br>El Mediodía</h1><p class="slogan">Delicias para todos!</p></div>
+    </div>
+    <div>
+      <p class="loc-lbl">Pedir en</p>
+      <div class="loc-chips" role="radiogroup" aria-label="Local">
+        <label><input type="radio" name="local" value="Paseo Shopping" checked data-info="Av. Antonio José de Sucre y Begonias · todos los días de 10:00 a 21:00"><span>Paseo Shopping</span></label>
+        <label><input type="radio" name="local" value="Café París" data-info="Av. Daniel León Borja y Av. Miguel Ángel León · todos los días desde las 07:30"><span>Café París</span></label>
+        <label><input type="radio" name="local" value="Plaza Alfaro" data-info="Av. Daniel León Borja y Juan Montalvo · todos los días de 14:30 a 19:30"><span>Plaza Alfaro</span></label>
+      </div>
+      <p class="loc-info" id="loc-info">Av. Antonio José de Sucre y Begonias · todos los días de 10:00 a 21:00</p>
+    </div>
+  </header>
+
+  <figure class="hero">
+    <img src="/mediodia/img/conos.jpg" width="1000" height="620" alt="Crepes en cono de Crepería El Mediodía">
+    <figcaption><b>Crepes en cono, a domicilio</b><span>Elija, pida y siga su pedido en vivo</span></figcaption>
+  </figure>
+
+  <nav class="cats" aria-label="Categorías"><a href="#cat-nutella">Crepes de Nutella</a><a href="#cat-clasicos">Clásicos</a><a href="#cat-fruta">Con fruta y chocolate</a><a href="#cat-helado">Con helado</a><a href="#cat-sal">Crepes de sal</a><a href="#cat-gourmet">Gourmet</a><a href="#cat-frappes">Frappés y milkshakes</a><a href="#cat-bebidas">Tés, jugos y cafés</a></nav>
+
+  <main><section class="cat" id="cat-nutella"><h2>Crepes de Nutella</h2><ul class="items"><li class="item" data-id="c1"><div class="item-txt"><h3><span class="num">#1</span> Nutella y almendra</h3><p class="price">$3,45</p></div><div class="item-pic"><img src="/mediodia/img/crepe-1.jpg" width="104" height="104" loading="lazy" alt="Crepe Nutella y almendra"><button type="button" class="add" data-add="c1" aria-label="Agregar Nutella y almendra">+</button></div></li><li class="item" data-id="c2"><div class="item-txt"><h3><span class="num">#2</span> Nutella con fruta</h3><p class="desc">Nutella con frutilla, banano o mixto</p><p class="price">$3,45</p></div><div class="item-pic"><img src="/mediodia/img/crepe-2.jpg" width="104" height="104" loading="lazy" alt="Crepe Nutella con fruta"><button type="button" class="add" data-add="c2" aria-label="Agregar Nutella con fruta">+</button></div></li><li class="item" data-id="c3"><div class="item-txt"><h3><span class="num">#3</span> Nutella, fruta y helado</h3><p class="desc">Nutella, frutilla o banano y helado de vainilla</p><p class="price">$3,95</p></div><div class="item-pic"><img src="/mediodia/img/crepe-3.jpg" width="104" height="104" loading="lazy" alt="Crepe Nutella, fruta y helado"><button type="button" class="add" data-add="c3" aria-label="Agregar Nutella, fruta y helado">+</button></div></li></ul></section><section class="cat" id="cat-clasicos"><h2>Clásicos</h2><ul class="items"><li class="item" data-id="c4"><div class="item-txt"><h3><span class="num">#4</span> Mantequilla y azúcar</h3><p class="price">$1,70</p></div><div class="item-pic"><img src="/mediodia/img/crepe-4.jpg" width="104" height="104" loading="lazy" alt="Crepe Mantequilla y azúcar"><button type="button" class="add" data-add="c4" aria-label="Agregar Mantequilla y azúcar">+</button></div></li><li class="item" data-id="c5"><div class="item-txt"><h3><span class="num">#5</span> Mantequilla, azúcar y limón</h3><p class="desc">Mantequilla, limón y azúcar</p><p class="price">$1,80</p></div><div class="item-pic"><img src="/mediodia/img/crepe-5.jpg" width="104" height="104" loading="lazy" alt="Crepe Mantequilla, azúcar y limón"><button type="button" class="add" data-add="c5" aria-label="Agregar Mantequilla, azúcar y limón">+</button></div></li><li class="item" data-id="c6"><div class="item-txt"><h3><span class="num">#6</span> Caramelo y almendra</h3><p class="desc">Mantequilla, almendra y caramelo</p><p class="price">$2,20</p></div><div class="item-pic"><img src="/mediodia/img/crepe-6.jpg" width="104" height="104" loading="lazy" alt="Crepe Caramelo y almendra"><button type="button" class="add" data-add="c6" aria-label="Agregar Caramelo y almendra">+</button></div></li><li class="item" data-id="c7"><div class="item-txt"><h3><span class="num">#7</span> Banano y miel</h3><p class="desc">Banano, miel de abeja, almendra caramelizada</p><p class="price">$2,50</p></div><div class="item-pic"><img src="/mediodia/img/crepe-7.jpg" width="104" height="104" loading="lazy" alt="Crepe Banano y miel"><button type="button" class="add" data-add="c7" aria-label="Agregar Banano y miel">+</button></div></li></ul></section><section class="cat" id="cat-fruta"><h2>Con fruta y chocolate</h2><ul class="items"><li class="item" data-id="c8"><div class="item-txt"><h3><span class="num">#8</span> Banano y chocolate</h3><p class="desc">Banano, crema chantilly, salsa de chocolate</p><p class="price">$2,80</p></div><div class="item-pic"><img src="/mediodia/img/crepe-8.jpg" width="104" height="104" loading="lazy" alt="Crepe Banano y chocolate"><button type="button" class="add" data-add="c8" aria-label="Agregar Banano y chocolate">+</button></div></li><li class="item" data-id="c9"><div class="item-txt"><h3><span class="num">#9</span> Frutilla y chocolate</h3><p class="desc">Frutilla, crema chantilly, salsa de chocolate</p><p class="price">$2,80</p></div><div class="item-pic"><img src="/mediodia/img/crepe-9.jpg" width="104" height="104" loading="lazy" alt="Crepe Frutilla y chocolate"><button type="button" class="add" data-add="c9" aria-label="Agregar Frutilla y chocolate">+</button></div></li><li class="item" data-id="c10"><div class="item-txt"><h3><span class="num">#10</span> Banano, frutilla y chocolate</h3><p class="desc">Banano, frutilla, crema chantilly, salsa de chocolate</p><p class="price">$3,00</p></div><div class="item-pic"><img src="/mediodia/img/crepe-10.jpg" width="104" height="104" loading="lazy" alt="Crepe Banano, frutilla y chocolate"><button type="button" class="add" data-add="c10" aria-label="Agregar Banano, frutilla y chocolate">+</button></div></li><li class="item" data-id="c13"><div class="item-txt"><h3><span class="num">#13</span> Chantilly y chocolate</h3><p class="desc">Crema chantilly, salsa de chocolate, almendra caramelizada</p><p class="price">$2,60</p></div><div class="item-pic"><img src="/mediodia/img/crepe-13.jpg" width="104" height="104" loading="lazy" alt="Crepe Chantilly y chocolate"><button type="button" class="add" data-add="c13" aria-label="Agregar Chantilly y chocolate">+</button></div></li><li class="item" data-id="c14"><div class="item-txt"><h3><span class="num">#14</span> Chantilly, caramelo y nuez</h3><p class="desc">Crema chantilly, caramelo y nuez</p><p class="price">$2,60</p></div><div class="item-pic"><img src="/mediodia/img/crepe-14.jpg" width="104" height="104" loading="lazy" alt="Crepe Chantilly, caramelo y nuez"><button type="button" class="add" data-add="c14" aria-label="Agregar Chantilly, caramelo y nuez">+</button></div></li><li class="item" data-id="c15"><div class="item-txt"><h3><span class="num">#15</span> Kiwi y durazno</h3><p class="desc">Kiwi, almendra, durazno, crema chantilly</p><p class="price">$3,00</p></div><div class="item-pic"><img src="/mediodia/img/crepe-15.jpg" width="104" height="104" loading="lazy" alt="Crepe Kiwi y durazno"><button type="button" class="add" data-add="c15" aria-label="Agregar Kiwi y durazno">+</button></div></li></ul></section><section class="cat" id="cat-helado"><h2>Con helado</h2><ul class="items"><li class="item" data-id="c11"><div class="item-txt"><h3><span class="num">#11</span> Frutilla con helado</h3><p class="desc">Frutilla, almendra caramelizada, crema chantilly, helado de frutilla, salsa de chocolate</p><p class="price">$3,30</p></div><div class="item-pic"><img src="/mediodia/img/crepe-11.jpg" width="104" height="104" loading="lazy" alt="Crepe Frutilla con helado"><button type="button" class="add" data-add="c11" aria-label="Agregar Frutilla con helado">+</button></div></li><li class="item" data-id="c12"><div class="item-txt"><h3><span class="num">#12</span> Banano con helado</h3><p class="desc">Banano, almendra caramelizada, crema chantilly, salsa de chocolate, helado de vainilla</p><p class="price">$3,30</p></div><div class="item-pic"><img src="/mediodia/img/crepe-12.jpg" width="104" height="104" loading="lazy" alt="Crepe Banano con helado"><button type="button" class="add" data-add="c12" aria-label="Agregar Banano con helado">+</button></div></li><li class="item" data-id="c16"><div class="item-txt"><h3><span class="num">#16</span> Frutas con helado</h3><p class="desc">Frutas varias, crema chantilly, salsa de chocolate, salsa de fresa, helado de vainilla</p><p class="price">$3,30</p></div><div class="item-pic"><img src="/mediodia/img/crepe-16.jpg" width="104" height="104" loading="lazy" alt="Crepe Frutas con helado"><button type="button" class="add" data-add="c16" aria-label="Agregar Frutas con helado">+</button></div></li><li class="item" data-id="c17"><div class="item-txt"><h3><span class="num">#17</span> Tiramisú</h3><p class="desc">Tiramisú, crema chantilly, frutilla, durazno</p><p class="price">$3,40</p></div><div class="item-pic"><img src="/mediodia/img/crepe-17.jpg" width="104" height="104" loading="lazy" alt="Crepe Tiramisú"><button type="button" class="add" data-add="c17" aria-label="Agregar Tiramisú">+</button></div></li><li class="item" data-id="c18"><div class="item-txt"><h3><span class="num">#18</span> Frutilla y Oreo</h3><p class="desc">Frutilla, oreo, crema chantilly, salsa de chocolate, helado de oreo</p><p class="price">$3,40</p></div><div class="item-pic"><img src="/mediodia/img/crepe-18.jpg" width="104" height="104" loading="lazy" alt="Crepe Frutilla y Oreo"><button type="button" class="add" data-add="c18" aria-label="Agregar Frutilla y Oreo">+</button></div></li><li class="item" data-id="c19"><div class="item-txt"><h3><span class="num">#19</span> Frutilla y brownie</h3><p class="desc">Frutilla, salsa de chocolate, brownie, crema chantilly, helado de frutilla</p><p class="price">$3,50</p></div><div class="item-pic"><img src="/mediodia/img/crepe-19.jpg" width="104" height="104" loading="lazy" alt="Crepe Frutilla y brownie"><button type="button" class="add" data-add="c19" aria-label="Agregar Frutilla y brownie">+</button></div></li><li class="item" data-id="cbm"><div class="item-txt"><h3>Bésame Mucho</h3><p class="desc">Frutilla, crema chantilly, galleta Hanuta, helado de chocolate con trocitos de avellana</p><p class="price">$3,80</p></div><div class="item-pic"><img src="/mediodia/img/crepe-bm.jpg" width="104" height="104" loading="lazy" alt="Crepe Bésame Mucho"><button type="button" class="add" data-add="cbm" aria-label="Agregar Bésame Mucho">+</button></div></li><li class="item" data-id="cfr"><div class="item-txt"><h3>Frutos rojos</h3><p class="desc">Frutilla, arándanos, crema chantilly, salsa de mora, suspiros, helado de frutos rojos</p><p class="price">$3,70</p></div><div class="item-pic"><img src="/mediodia/img/crepe-fr.jpg" width="104" height="104" loading="lazy" alt="Crepe Frutos rojos"><button type="button" class="add" data-add="cfr" aria-label="Agregar Frutos rojos">+</button></div></li></ul></section><section class="cat" id="cat-sal"><h2>Crepes de sal</h2><ul class="items"><li class="item" data-id="c20"><div class="item-txt"><h3><span class="num">#20</span> Jamón y queso</h3><p class="desc">Lechuga, jamón, queso hierbas</p><p class="price">$3,00</p></div><div class="item-pic"><img src="/mediodia/img/crepe-20.jpg" width="104" height="104" loading="lazy" alt="Crepe Jamón y queso"><button type="button" class="add" data-add="c20" aria-label="Agregar Jamón y queso">+</button></div></li><li class="item" data-id="c21"><div class="item-txt"><h3><span class="num">#21</span> Ensalada César</h3><p class="desc">Lechuga, pan frito, queso parmesano y pimiento rojo, con tocino o pollo</p><p class="price">desde $3,30</p></div><div class="item-pic"><img src="/mediodia/img/crepe-21.jpg" width="104" height="104" loading="lazy" alt="Crepe Ensalada César"><button type="button" class="add" data-add="c21" aria-label="Agregar Ensalada César">+</button></div></li><li class="item" data-id="c22"><div class="item-txt"><h3><span class="num">#22</span> Jamón, maíz dulce y pollo</h3><p class="desc">Lechuga, jamón, maíz dulce, queso parmentano, mozzarella, pimiento rojo</p><p class="price">$3,30</p></div><div class="item-pic"><img src="/mediodia/img/crepe-22.jpg" width="104" height="104" loading="lazy" alt="Crepe Jamón, maíz dulce y pollo"><button type="button" class="add" data-add="c22" aria-label="Agregar Jamón, maíz dulce y pollo">+</button></div></li><li class="item" data-id="c23"><div class="item-txt"><h3><span class="num">#23</span> Camarón y aguacate</h3><p class="desc">Lechuga, camarones salteados, tomate deshidratado, mozzarella, albahaca, queso parmesano, pimiento rojo, aguacate</p><p class="price">$3,90</p></div><div class="item-pic"><img src="/mediodia/img/crepe-23.jpg" width="104" height="104" loading="lazy" alt="Crepe Camarón y aguacate"><button type="button" class="add" data-add="c23" aria-label="Agregar Camarón y aguacate">+</button></div></li></ul></section><section class="cat" id="cat-gourmet"><h2>Gourmet</h2><ul class="items"><li class="item" data-id="c24"><div class="item-txt"><h3><span class="num">#24</span> Pizza hawaiana</h3><p class="desc">Queso fundido, champiñón, jamón, piña, maíz dulce, queso parmesano</p><p class="price">$3,90</p></div><div class="item-pic"><img src="/mediodia/img/crepe-24.jpg" width="104" height="104" loading="lazy" alt="Crepe Pizza hawaiana"><button type="button" class="add" data-add="c24" aria-label="Agregar Pizza hawaiana">+</button></div></li><li class="item" data-id="c25"><div class="item-txt"><h3><span class="num">#25</span> Pollo y tomate seco</h3><p class="desc">Pechuga de pollo, tomate deshidratado, berenjena, albahaca, queso parmesano</p><p class="price">$4,90</p></div><div class="item-pic"><img src="/mediodia/img/crepe-25.jpg" width="104" height="104" loading="lazy" alt="Crepe Pollo y tomate seco"><button type="button" class="add" data-add="c25" aria-label="Agregar Pollo y tomate seco">+</button></div></li><li class="item" data-id="c26"><div class="item-txt"><h3><span class="num">#26</span> Pernil y champiñón</h3><p class="desc">Pernil, champiñón, nuez, albahaca, queso hierbas</p><p class="price">$4,90</p></div><div class="item-pic"><img src="/mediodia/img/crepe-26.jpg" width="104" height="104" loading="lazy" alt="Crepe Pernil y champiñón"><button type="button" class="add" data-add="c26" aria-label="Agregar Pernil y champiñón">+</button></div></li></ul></section><section class="cat" id="cat-frappes"><h2>Frappés y milkshakes</h2><ul class="items"><li class="item" data-id="f1"><div class="item-txt"><h3>Frappé de capuccino</h3><p class="price">desde $2,90</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="f1" aria-label="Agregar Frappé de capuccino">+</button></div></li><li class="item" data-id="f2"><div class="item-txt"><h3>Frappé de mocaccino</h3><p class="price">desde $3,10</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="f2" aria-label="Agregar Frappé de mocaccino">+</button></div></li><li class="item" data-id="f3"><div class="item-txt"><h3>Frappé de caramelo</h3><p class="price">desde $2,90</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="f3" aria-label="Agregar Frappé de caramelo">+</button></div></li><li class="item" data-id="f4"><div class="item-txt"><h3>Frappé de chocolate y almendra</h3><p class="price">desde $3,40</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="f4" aria-label="Agregar Frappé de chocolate y almendra">+</button></div></li><li class="item" data-id="f5"><div class="item-txt"><h3>Frappé de chai</h3><p class="price">desde $2,90</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="f5" aria-label="Agregar Frappé de chai">+</button></div></li><li class="item" data-id="f6"><div class="item-txt"><h3>Frappé de frutas</h3><p class="desc">Mora, frutilla, guanábana, kiwi y piña o maracuyá</p><p class="price">desde $2,40</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="f6" aria-label="Agregar Frappé de frutas">+</button></div></li><li class="item" data-id="m1"><div class="item-txt"><h3>Milkshake clásico</h3><p class="desc">Vainilla, Oreo, chocolate o mango</p><p class="price">$2,90</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="m1" aria-label="Agregar Milkshake clásico">+</button></div></li><li class="item" data-id="m2"><div class="item-txt"><h3>Milkshake de la casa</h3><p class="desc">Café, mora o frutilla</p><p class="price">$3,10</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="m2" aria-label="Agregar Milkshake de la casa">+</button></div></li><li class="item" data-id="m3"><div class="item-txt"><h3>Milkshake de Nutella</h3><p class="price">$3,60</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="m3" aria-label="Agregar Milkshake de Nutella">+</button></div></li></ul></section><section class="cat" id="cat-bebidas"><h2>Tés, jugos y cafés</h2><ul class="items"><li class="item" data-id="t1"><div class="item-txt"><h3>Té de frutos rojos</h3><p class="desc">Té helado</p><p class="price">$1,90</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="t1" aria-label="Agregar Té de frutos rojos">+</button></div></li><li class="item" data-id="t2"><div class="item-txt"><h3>Té verde helado</h3><p class="price">$2,30</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="t2" aria-label="Agregar Té verde helado">+</button></div></li><li class="item" data-id="t3"><div class="item-txt"><h3>Té negro con limón</h3><p class="desc">Té helado</p><p class="price">$1,70</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="t3" aria-label="Agregar Té negro con limón">+</button></div></li><li class="item" data-id="j1"><div class="item-txt"><h3>Jugo de naranja</h3><p class="desc">100 % natural, sin azúcar añadida</p><p class="price">desde $1,90</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="j1" aria-label="Agregar Jugo de naranja">+</button></div></li><li class="item" data-id="j2"><div class="item-txt"><h3>Jugo natural</h3><p class="desc">Mora, frutilla, guanábana, kiwi y piña o maracuyá</p><p class="price">desde $1,60</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 13h16l-2.2 21.2a2 2 0 0 1-2 1.8h-7.6a2 2 0 0 1-2-1.8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 19h14l-1.4 13.5a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="#E9C9A6"/><path d="M11 13h18" stroke="#3B2A1E" stroke-width="2" stroke-linecap="round"/><path d="M22 13l3-8h3" fill="none" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/><path d="M14 12.5q6-6 12 0" fill="#fff" stroke="#3B2A1E" stroke-width="1.6"/></svg></span><button type="button" class="add" data-add="j2" aria-label="Agregar Jugo natural">+</button></div></li><li class="item" data-id="k1"><div class="item-txt"><h3>Capuccino</h3><p class="price">desde $2,10</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 17h19v8a8 8 0 0 1-8 8h-3a8 8 0 0 1-8-8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M28 19.5h2.2a3.3 3.3 0 0 1 0 6.6H27" fill="none" stroke="#3B2A1E" stroke-width="1.8"/><path d="M10.5 19h16v5.5a6.5 6.5 0 0 1-6.5 6.5h-3a6.5 6.5 0 0 1-6.5-6.5z" fill="#B88458"/><path d="M15 6c-1.5 2 1.5 3-.2 5.5M20 5c-1.5 2 1.5 3-.2 5.5" fill="none" stroke="#B9A595" stroke-width="1.6" stroke-linecap="round"/><path d="M7 35h23" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/></svg></span><button type="button" class="add" data-add="k1" aria-label="Agregar Capuccino">+</button></div></li><li class="item" data-id="k2"><div class="item-txt"><h3>Café latte</h3><p class="price">desde $2,10</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 17h19v8a8 8 0 0 1-8 8h-3a8 8 0 0 1-8-8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M28 19.5h2.2a3.3 3.3 0 0 1 0 6.6H27" fill="none" stroke="#3B2A1E" stroke-width="1.8"/><path d="M10.5 19h16v5.5a6.5 6.5 0 0 1-6.5 6.5h-3a6.5 6.5 0 0 1-6.5-6.5z" fill="#B88458"/><path d="M15 6c-1.5 2 1.5 3-.2 5.5M20 5c-1.5 2 1.5 3-.2 5.5" fill="none" stroke="#B9A595" stroke-width="1.6" stroke-linecap="round"/><path d="M7 35h23" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/></svg></span><button type="button" class="add" data-add="k2" aria-label="Agregar Café latte">+</button></div></li><li class="item" data-id="k3"><div class="item-txt"><h3>Mocaccino</h3><p class="price">desde $2,20</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 17h19v8a8 8 0 0 1-8 8h-3a8 8 0 0 1-8-8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M28 19.5h2.2a3.3 3.3 0 0 1 0 6.6H27" fill="none" stroke="#3B2A1E" stroke-width="1.8"/><path d="M10.5 19h16v5.5a6.5 6.5 0 0 1-6.5 6.5h-3a6.5 6.5 0 0 1-6.5-6.5z" fill="#B88458"/><path d="M15 6c-1.5 2 1.5 3-.2 5.5M20 5c-1.5 2 1.5 3-.2 5.5" fill="none" stroke="#B9A595" stroke-width="1.6" stroke-linecap="round"/><path d="M7 35h23" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/></svg></span><button type="button" class="add" data-add="k3" aria-label="Agregar Mocaccino">+</button></div></li><li class="item" data-id="k4"><div class="item-txt"><h3>Americano</h3><p class="price">desde $1,80</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 17h19v8a8 8 0 0 1-8 8h-3a8 8 0 0 1-8-8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M28 19.5h2.2a3.3 3.3 0 0 1 0 6.6H27" fill="none" stroke="#3B2A1E" stroke-width="1.8"/><path d="M10.5 19h16v5.5a6.5 6.5 0 0 1-6.5 6.5h-3a6.5 6.5 0 0 1-6.5-6.5z" fill="#B88458"/><path d="M15 6c-1.5 2 1.5 3-.2 5.5M20 5c-1.5 2 1.5 3-.2 5.5" fill="none" stroke="#B9A595" stroke-width="1.6" stroke-linecap="round"/><path d="M7 35h23" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/></svg></span><button type="button" class="add" data-add="k4" aria-label="Agregar Americano">+</button></div></li><li class="item" data-id="k5"><div class="item-txt"><h3>Chocolate caliente</h3><p class="price">desde $2,00</p></div><div class="item-pic"><span class="ph"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 17h19v8a8 8 0 0 1-8 8h-3a8 8 0 0 1-8-8z" fill="#fff" stroke="#3B2A1E" stroke-width="1.8" stroke-linejoin="round"/><path d="M28 19.5h2.2a3.3 3.3 0 0 1 0 6.6H27" fill="none" stroke="#3B2A1E" stroke-width="1.8"/><path d="M10.5 19h16v5.5a6.5 6.5 0 0 1-6.5 6.5h-3a6.5 6.5 0 0 1-6.5-6.5z" fill="#B88458"/><path d="M15 6c-1.5 2 1.5 3-.2 5.5M20 5c-1.5 2 1.5 3-.2 5.5" fill="none" stroke="#B9A595" stroke-width="1.6" stroke-linecap="round"/><path d="M7 35h23" stroke="#3B2A1E" stroke-width="1.8" stroke-linecap="round"/></svg></span><button type="button" class="add" data-add="k5" aria-label="Agregar Chocolate caliente">+</button></div></li></ul></section></main>
+
+  <section class="wa-note">
+    <span class="wa-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12.5a8 8 0 0 1-11.6 7.1L4 21l1.4-4.2A8 8 0 1 1 20 12.5z"/><path d="M9 11h6M9 14h4"/></svg></span>
+    <div>
+      <h2>También por WhatsApp</h2>
+      <p>Esta misma carta funciona dentro del WhatsApp del local: el cliente escribe, arma su pedido en el chat y llega a la misma pantalla.</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>Demostración preparada por <a href="https://dewansas.com" target="_blank" rel="noopener">DEWAN</a> · Riobamba</p>
+    <p>Carta y fotos: Crepería El Mediodía. Precios referenciales.</p>
+  </footer>
+</div>
+
+<div class="cart-bar" id="cart-bar" hidden>
+  <button type="button" id="ver-pedido"><span class="cnt" id="cb-cnt">0</span><span>Ver mi pedido</span><b id="cb-total">$0,00</b></button>
+</div>
+<p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-name" hidden>
+  <button type="button" class="x" id="sh-x" aria-label="Cerrar">×</button>
+  <div class="sh-pic" id="sh-pic"></div>
+  <h3 id="sh-name"></h3>
+  <p class="sh-desc" id="sh-desc"></p>
+  <div id="sh-groups"></div>
+  <div class="sh-foot">
+    <div class="qty"><button type="button" id="sh-menos" aria-label="Menos">−</button><b id="sh-q">1</b><button type="button" id="sh-mas" aria-label="Más">+</button></div>
+    <button type="button" class="btn-main" id="sh-add">Agregar</button>
+  </div>
+</div>
+
+<div class="panel" id="pedido" role="dialog" aria-modal="true" aria-labelledby="pd-title" hidden>
+  <header class="pn-head"><button type="button" class="back" id="pd-back" aria-label="Volver a la carta">‹</button><h2 id="pd-title">Mi pedido</h2></header>
+  <div class="pn-body">
+    <ul class="lines" id="pd-lines"></ul>
+    <a class="more" href="#" id="pd-more">+ Agregar más productos</a>
+    <fieldset class="seg">
+      <legend>¿Cómo lo quiere?</legend>
+      <label><input type="radio" name="entrega" value="domicilio" checked><span>A domicilio</span></label>
+      <label><input type="radio" name="entrega" value="retiro"><span>Retiro en el local</span></label>
+    </fieldset>
+    <div id="pd-dom">
+      <label class="fld"><span>Dirección de entrega</span><input id="f-dir" type="text" placeholder="Calles, número y una referencia" autocomplete="street-address"></label>
+      <button type="button" class="ubi" id="f-ubi">Usar mi ubicación actual</button>
+      <p class="ubi-msg" id="ubi-msg" aria-live="polite"></p>
+    </div>
+    <p class="ret" id="pd-ret" hidden>Lo retira en <b id="pd-local">Paseo Shopping</b>.</p>
+    <label class="fld"><span>Su nombre</span><input id="f-nombre" type="text" autocomplete="name"></label>
+    <label class="fld"><span>Su WhatsApp</span><input id="f-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="0991234567"></label>
+    <fieldset class="seg">
+      <legend>Forma de pago</legend>
+      <label><input type="radio" name="pago" value="efectivo" checked><span>Efectivo</span></label>
+      <label><input type="radio" name="pago" value="transferencia"><span>Transferencia</span></label>
+    </fieldset>
+    <label class="fld"><span>Nota para el local (opcional)</span><textarea id="f-nota" rows="2" placeholder="Ej.: sin almendras, por favor"></textarea></label>
+    <div class="sum">
+      <div><span>Productos</span><b id="pd-sub">$0,00</b></div>
+      <div id="pd-envrow"><span>Envío con motorizado DEWAN</span><span class="env">Se calcula con su ubicación</span></div>
+    </div>
+    <p class="err" id="pd-err" role="alert"></p>
+  </div>
+  <footer class="pn-foot">
+    <button type="button" class="btn-main" id="pd-enviar">Enviar pedido de prueba</button>
+    <p class="tiny">Demostración: el pedido no se envía a ningún local.</p>
+  </footer>
+</div>
+
+<div class="panel" id="listo" role="dialog" aria-modal="true" aria-labelledby="ls-title" hidden>
+  <div class="pn-body">
+    <div class="ok-badge" aria-hidden="true">✓</div>
+    <h2 id="ls-title">¡Pedido <span id="ls-code">EMD-0000</span> recibido!</h2>
+    <p class="ok-sub">Es una demostración: el pedido no se envió a ningún local.</p>
+    <h3 class="mini-h">Así lo sigue su cliente</h3>
+    <ol class="track" id="track">
+      <li><i></i><div><b>Pedido recibido</b><span>Crepería El Mediodía</span></div><time></time></li>
+      <li><i></i><div><b>El local lo está preparando</b><span>Listo en 15 minutos</span></div><time></time></li>
+      <li><i></i><div><b>Un motorizado DEWAN va al local</b><span>Retira su pedido apenas esté listo</span></div><time></time></li>
+      <li><i></i><div><b>En camino</b><span>Llega en unos minutos</span></div><time></time></li>
+      <li><i></i><div><b>Entregado</b><span>¡Buen provecho!</span></div><time></time></li>
+    </ol>
+    <h3 class="mini-h">Así le llega al local</h3>
+    <div class="ticket">
+      <div class="tk-top"><b id="tk-code">EMD-0000</b><span>Nuevo</span></div>
+      <p class="tk-loc" id="tk-loc"></p>
+      <ul id="tk-items"></ul>
+      <p class="tk-meta" id="tk-meta"></p>
+      <div class="tk-btns"><span>Aceptar · listo en</span><b>10 min</b><b class="on">15 min</b><b>20 min</b></div>
+    </div>
+    <button type="button" class="btn-main" id="ls-otro">Hacer otro pedido</button>
+  </div>
+</div>
+
+<script type="application/json" id="datos">{"c1":{"n":"Nutella y almendra","num":"#1","p":3.45,"d":"","img":"crepe-1","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c2":{"n":"Nutella con fruta","num":"#2","p":3.45,"d":"Nutella con frutilla, banano o mixto","img":"crepe-2","sizes":null,"sl":null,"opts":["Frutilla","Banano","Mixto"],"ol":"Fruta","icon":null},"c3":{"n":"Nutella, fruta y helado","num":"#3","p":3.95,"d":"Nutella, frutilla o banano y helado de vainilla","img":"crepe-3","sizes":null,"sl":null,"opts":["Frutilla","Banano","Mixto"],"ol":"Fruta","icon":null},"c4":{"n":"Mantequilla y azúcar","num":"#4","p":1.7,"d":"","img":"crepe-4","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c5":{"n":"Mantequilla, azúcar y limón","num":"#5","p":1.8,"d":"Mantequilla, limón y azúcar","img":"crepe-5","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c6":{"n":"Caramelo y almendra","num":"#6","p":2.2,"d":"Mantequilla, almendra y caramelo","img":"crepe-6","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c7":{"n":"Banano y miel","num":"#7","p":2.5,"d":"Banano, miel de abeja, almendra caramelizada","img":"crepe-7","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c8":{"n":"Banano y chocolate","num":"#8","p":2.8,"d":"Banano, crema chantilly, salsa de chocolate","img":"crepe-8","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c9":{"n":"Frutilla y chocolate","num":"#9","p":2.8,"d":"Frutilla, crema chantilly, salsa de chocolate","img":"crepe-9","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c10":{"n":"Banano, frutilla y chocolate","num":"#10","p":3.0,"d":"Banano, frutilla, crema chantilly, salsa de chocolate","img":"crepe-10","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c13":{"n":"Chantilly y chocolate","num":"#13","p":2.6,"d":"Crema chantilly, salsa de chocolate, almendra caramelizada","img":"crepe-13","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c14":{"n":"Chantilly, caramelo y nuez","num":"#14","p":2.6,"d":"Crema chantilly, caramelo y nuez","img":"crepe-14","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c15":{"n":"Kiwi y durazno","num":"#15","p":3.0,"d":"Kiwi, almendra, durazno, crema chantilly","img":"crepe-15","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c11":{"n":"Frutilla con helado","num":"#11","p":3.3,"d":"Frutilla, almendra caramelizada, crema chantilly, helado de frutilla, salsa de chocolate","img":"crepe-11","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c12":{"n":"Banano con helado","num":"#12","p":3.3,"d":"Banano, almendra caramelizada, crema chantilly, salsa de chocolate, helado de vainilla","img":"crepe-12","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c16":{"n":"Frutas con helado","num":"#16","p":3.3,"d":"Frutas varias, crema chantilly, salsa de chocolate, salsa de fresa, helado de vainilla","img":"crepe-16","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c17":{"n":"Tiramisú","num":"#17","p":3.4,"d":"Tiramisú, crema chantilly, frutilla, durazno","img":"crepe-17","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c18":{"n":"Frutilla y Oreo","num":"#18","p":3.4,"d":"Frutilla, oreo, crema chantilly, salsa de chocolate, helado de oreo","img":"crepe-18","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c19":{"n":"Frutilla y brownie","num":"#19","p":3.5,"d":"Frutilla, salsa de chocolate, brownie, crema chantilly, helado de frutilla","img":"crepe-19","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"cbm":{"n":"Bésame Mucho","num":null,"p":3.8,"d":"Frutilla, crema chantilly, galleta Hanuta, helado de chocolate con trocitos de avellana","img":"crepe-bm","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"cfr":{"n":"Frutos rojos","num":null,"p":3.7,"d":"Frutilla, arándanos, crema chantilly, salsa de mora, suspiros, helado de frutos rojos","img":"crepe-fr","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c20":{"n":"Jamón y queso","num":"#20","p":3.0,"d":"Lechuga, jamón, queso hierbas","img":"crepe-20","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c21":{"n":"Ensalada César","num":"#21","p":3.3,"d":"Lechuga, pan frito, queso parmesano y pimiento rojo, con tocino o pollo","img":"crepe-21","sizes":[["Con tocino",3.3],["Con pollo",3.9]],"sl":"Proteína","opts":null,"ol":null,"icon":null},"c22":{"n":"Jamón, maíz dulce y pollo","num":"#22","p":3.3,"d":"Lechuga, jamón, maíz dulce, queso parmentano, mozzarella, pimiento rojo","img":"crepe-22","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c23":{"n":"Camarón y aguacate","num":"#23","p":3.9,"d":"Lechuga, camarones salteados, tomate deshidratado, mozzarella, albahaca, queso parmesano, pimiento rojo, aguacate","img":"crepe-23","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c24":{"n":"Pizza hawaiana","num":"#24","p":3.9,"d":"Queso fundido, champiñón, jamón, piña, maíz dulce, queso parmesano","img":"crepe-24","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c25":{"n":"Pollo y tomate seco","num":"#25","p":4.9,"d":"Pechuga de pollo, tomate deshidratado, berenjena, albahaca, queso parmesano","img":"crepe-25","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"c26":{"n":"Pernil y champiñón","num":"#26","p":4.9,"d":"Pernil, champiñón, nuez, albahaca, queso hierbas","img":"crepe-26","sizes":null,"sl":null,"opts":null,"ol":null,"icon":null},"f1":{"n":"Frappé de capuccino","num":null,"p":2.9,"d":"","img":null,"sizes":[["Mediano",2.9],["Grande",3.3]],"sl":"Tamaño","opts":null,"ol":null,"icon":"frio"},"f2":{"n":"Frappé de mocaccino","num":null,"p":3.1,"d":"","img":null,"sizes":[["Mediano",3.1],["Grande",3.5]],"sl":"Tamaño","opts":null,"ol":null,"icon":"frio"},"f3":{"n":"Frappé de caramelo","num":null,"p":2.9,"d":"","img":null,"sizes":[["Mediano",2.9],["Grande",3.3]],"sl":"Tamaño","opts":null,"ol":null,"icon":"frio"},"f4":{"n":"Frappé de chocolate y almendra","num":null,"p":3.4,"d":"","img":null,"sizes":[["Mediano",3.4],["Grande",3.8]],"sl":"Tamaño","opts":null,"ol":null,"icon":"frio"},"f5":{"n":"Frappé de chai","num":null,"p":2.9,"d":"","img":null,"sizes":[["Mediano",2.9],["Grande",3.3]],"sl":"Tamaño","opts":null,"ol":null,"icon":"frio"},"f6":{"n":"Frappé de frutas","num":null,"p":2.4,"d":"Mora, frutilla, guanábana, kiwi y piña o maracuyá","img":null,"sizes":[["Mediano",2.4],["Grande",2.8]],"sl":"Tamaño","opts":["Mora","Frutilla","Guanábana","Kiwi y piña","Maracuyá"],"ol":"Sabor","icon":"frio"},"m1":{"n":"Milkshake clásico","num":null,"p":2.9,"d":"Vainilla, Oreo, chocolate o mango","img":null,"sizes":null,"sl":null,"opts":["Vainilla","Oreo","Chocolate","Mango"],"ol":"Sabor","icon":"frio"},"m2":{"n":"Milkshake de la casa","num":null,"p":3.1,"d":"Café, mora o frutilla","img":null,"sizes":null,"sl":null,"opts":["Café","Mora","Frutilla"],"ol":"Sabor","icon":"frio"},"m3":{"n":"Milkshake de Nutella","num":null,"p":3.6,"d":"","img":null,"sizes":null,"sl":null,"opts":null,"ol":null,"icon":"frio"},"t1":{"n":"Té de frutos rojos","num":null,"p":1.9,"d":"Té helado","img":null,"sizes":null,"sl":null,"opts":null,"ol":null,"icon":"frio"},"t2":{"n":"Té verde helado","num":null,"p":2.3,"d":"","img":null,"sizes":null,"sl":null,"opts":null,"ol":null,"icon":"frio"},"t3":{"n":"Té negro con limón","num":null,"p":1.7,"d":"Té helado","img":null,"sizes":null,"sl":null,"opts":null,"ol":null,"icon":"frio"},"j1":{"n":"Jugo de naranja","num":null,"p":1.9,"d":"100 % natural, sin azúcar añadida","img":null,"sizes":[["Mediano",1.9],["Grande",2.2]],"sl":"Tamaño","opts":null,"ol":null,"icon":"frio"},"j2":{"n":"Jugo natural","num":null,"p":1.6,"d":"Mora, frutilla, guanábana, kiwi y piña o maracuyá","img":null,"sizes":[["Mediano",1.6],["Grande",1.9]],"sl":"Tamaño","opts":["Mora","Frutilla","Guanábana","Kiwi y piña","Maracuyá"],"ol":"Sabor","icon":"frio"},"k1":{"n":"Capuccino","num":null,"p":2.1,"d":"","img":null,"sizes":[["Mediano",2.1],["Grande",2.4],["Extragrande",2.9]],"sl":"Tamaño","opts":null,"ol":null,"icon":"caliente"},"k2":{"n":"Café latte","num":null,"p":2.1,"d":"","img":null,"sizes":[["Mediano",2.1],["Grande",2.4],["Extragrande",2.9]],"sl":"Tamaño","opts":null,"ol":null,"icon":"caliente"},"k3":{"n":"Mocaccino","num":null,"p":2.2,"d":"","img":null,"sizes":[["Mediano",2.2],["Grande",2.5],["Extragrande",3.0]],"sl":"Tamaño","opts":null,"ol":null,"icon":"caliente"},"k4":{"n":"Americano","num":null,"p":1.8,"d":"","img":null,"sizes":[["Mediano",1.8],["Grande",2.1],["Extragrande",2.6]],"sl":"Tamaño","opts":null,"ol":null,"icon":"caliente"},"k5":{"n":"Chocolate caliente","num":null,"p":2.0,"d":"","img":null,"sizes":[["Mediano",2.0],["Grande",2.4],["Extragrande",2.9]],"sl":"Tamaño","opts":null,"ol":null,"icon":"caliente"}}</script>
+<script>
+(function () {
+  'use strict';
+  var P = JSON.parse(document.getElementById('datos').textContent);
+  var $ = function (id) { return document.getElementById(id); };
+  var cart = [];
+  var money = function (v) { return '$' + v.toFixed(2).replace('.', ','); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var count = function () { return cart.reduce(function (a, l) { return a + l.q; }, 0); };
+  var sub = function () { return cart.reduce(function (a, l) { return a + l.q * l.p; }, 0); };
+  var valor = function (n) { var r = document.querySelector('input[name="' + n + '"]:checked'); return r ? r.value : ''; };
+  var nombre = function (l) { return (l.num ? l.num + ' ' : '') + l.n; };
+
+  document.querySelectorAll('input[name="local"]').forEach(function (r) {
+    r.addEventListener('change', function () { $('loc-info').textContent = r.dataset.info; });
+  });
+
+  var tToast;
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(tToast); tToast = setTimeout(function () { t.hidden = true; }, 1600);
+  }
+  function pintarBarra() {
+    var n = count();
+    $('cart-bar').hidden = n === 0;
+    $('cb-cnt').textContent = n;
+    $('cb-total').textContent = money(sub());
+    document.querySelectorAll('.item').forEach(function (li) {
+      var id = li.dataset.id;
+      var q = cart.filter(function (l) { return l.id === id; }).reduce(function (a, l) { return a + l.q; }, 0);
+      var b = li.querySelector('.add');
+      b.textContent = q ? q : '+';
+      b.classList.toggle('has', q > 0);
+    });
+  }
+  function agregar(id, si, op, q) {
+    var pr = P[id], precio = pr.p, det = [];
+    if (pr.sizes) { precio = pr.sizes[si][1]; det.push(pr.sizes[si][0]); }
+    if (pr.opts) { det.push(pr.opts[op]); }
+    var key = id + '|' + si + '|' + op;
+    var l = cart.filter(function (x) { return x.key === key; })[0];
+    if (l) { l.q += q; } else { cart.push({ key: key, id: id, n: pr.n, num: pr.num, det: det.join(' · '), p: precio, q: q }); }
+    pintarBarra();
+    toast((q > 1 ? q + '× ' : '') + pr.n + ' agregado');
+  }
+
+  // Capas
+  var abierto = null;
+  function abrir(id) {
+    if (abierto) { $(abierto).hidden = true; }
+    abierto = id;
+    $('scrim').hidden = false; $(id).hidden = false;
+    document.body.classList.add('lock');
+  }
+  function cerrar() {
+    if (!abierto) return;
+    $(abierto).hidden = true; $('scrim').hidden = true;
+    document.body.classList.remove('lock');
+    abierto = null;
+  }
+  $('scrim').addEventListener('click', function () { if (abierto !== 'listo') cerrar(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && abierto && abierto !== 'listo') cerrar(); });
+
+  // Hoja de opciones
+  var cur = null, curQ = 1, curS = 0, curO = 0;
+  function grupo(k, titulo, items) {
+    return '<fieldset class="grp"><legend>' + esc(titulo) + '</legend>' + items.map(function (it, i) {
+      return '<label class="opt"><input type="radio" name="g-' + k + '" value="' + i + '"' + (i === 0 ? ' checked' : '') + '><span>' + esc(it[0]) + '</span>' + (it[1] ? '<em>' + it[1] + '</em>' : '') + '</label>';
+    }).join('') + '</fieldset>';
+  }
+  function pintarHoja() {
+    var pr = P[cur], precio = pr.sizes ? pr.sizes[curS][1] : pr.p;
+    $('sh-q').textContent = curQ;
+    $('sh-add').textContent = 'Agregar · ' + money(precio * curQ);
+  }
+  function abrirHoja(id) {
+    var pr = P[id]; cur = id; curQ = 1; curS = 0; curO = 0;
+    var ph = document.querySelector('.item[data-id="' + id + '"] .ph');
+    $('sh-pic').innerHTML = pr.img ? '<img src="/mediodia/img/' + pr.img + '.jpg" alt="">' : (ph ? ph.outerHTML : '');
+    $('sh-name').textContent = nombre(pr);
+    $('sh-desc').textContent = pr.d || '';
+    $('sh-desc').hidden = !pr.d;
+    var g = '';
+    if (pr.sizes) { g += grupo('s', pr.sl || 'Tamaño', pr.sizes.map(function (s) { return [s[0], money(s[1])]; })); }
+    if (pr.opts) { g += grupo('o', pr.ol || 'Opción', pr.opts.map(function (o) { return [o, '']; })); }
+    $('sh-groups').innerHTML = g;
+    $('sh-groups').querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('change', function () { if (inp.name === 'g-s') { curS = +inp.value; } else { curO = +inp.value; } pintarHoja(); });
+    });
+    pintarHoja();
+    abrir('sheet');
+  }
+  $('sh-x').addEventListener('click', cerrar);
+  $('sh-menos').addEventListener('click', function () { if (curQ > 1) { curQ--; pintarHoja(); } });
+  $('sh-mas').addEventListener('click', function () { if (curQ < 20) { curQ++; pintarHoja(); } });
+  $('sh-add').addEventListener('click', function () { agregar(cur, P[cur].sizes ? curS : 0, P[cur].opts ? curO : 0, curQ); cerrar(); });
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-add]');
+    if (!b) return;
+    var id = b.dataset.add, pr = P[id];
+    if (pr.sizes || pr.opts) { abrirHoja(id); } else { agregar(id, 0, 0, 1); }
+  });
+
+  // Mi pedido
+  function pintarPedido() {
+    if (!cart.length) { cerrar(); return; }
+    $('pd-lines').innerHTML = cart.map(function (l, i) {
+      return '<li><div><b>' + esc(nombre(l)) + '</b>' + (l.det ? '<span>' + esc(l.det) + '</span>' : '') + '<em>' + money(l.p * l.q) + '</em></div>' +
+        '<div class="qty sm"><button type="button" data-l="' + i + '" data-d="-1" aria-label="Quitar uno">−</button><b>' + l.q + '</b>' +
+        '<button type="button" data-l="' + i + '" data-d="1" aria-label="Agregar uno">+</button></div></li>';
+    }).join('');
+    $('pd-sub').textContent = money(sub());
+    $('pd-local').textContent = valor('local');
+  }
+  $('ver-pedido').addEventListener('click', function () { abrir('pedido'); pintarPedido(); });
+  $('pd-back').addEventListener('click', cerrar);
+  $('pd-more').addEventListener('click', function (e) { e.preventDefault(); cerrar(); });
+  $('pd-lines').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-l]');
+    if (!b) return;
+    var i = +b.dataset.l, l = cart[i];
+    l.q += +b.dataset.d;
+    if (l.q <= 0) { cart.splice(i, 1); }
+    pintarBarra(); pintarPedido();
+  });
+  document.querySelectorAll('input[name="entrega"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      var dom = valor('entrega') === 'domicilio';
+      $('pd-dom').hidden = !dom; $('pd-ret').hidden = dom; $('pd-envrow').hidden = !dom;
+    });
+  });
+  var ubic = null;
+  $('f-ubi').addEventListener('click', function () {
+    var m = $('ubi-msg');
+    if (!navigator.geolocation) { m.textContent = 'Su navegador no comparte la ubicación. Escriba la dirección.'; return; }
+    m.textContent = 'Buscando su ubicación…';
+    navigator.geolocation.getCurrentPosition(function (p) {
+      ubic = p.coords;
+      m.textContent = 'Ubicación lista (precisión de ' + Math.round(p.coords.accuracy) + ' m).';
+    }, function () {
+      m.textContent = 'No pudimos obtener su ubicación. Escriba la dirección.';
+    }, { enableHighAccuracy: true, timeout: 10000 });
+  });
+  $('pd-enviar').addEventListener('click', function () {
+    var err = $('pd-err');
+    var nom = $('f-nombre').value.trim();
+    var tel = $('f-tel').value.replace(/\D/g, '');
+    var dom = valor('entrega') === 'domicilio';
+    if (!cart.length) { err.textContent = 'Agregue al menos un producto.'; return; }
+    if (dom && !ubic && $('f-dir').value.trim().length < 5) { err.textContent = 'Escriba la dirección de entrega o use su ubicación.'; $('f-dir').focus(); return; }
+    if (nom.length < 2) { err.textContent = 'Escriba su nombre.'; $('f-nombre').focus(); return; }
+    if (tel.length < 9) { err.textContent = 'Escriba un WhatsApp válido, por ejemplo 0991234567.'; $('f-tel').focus(); return; }
+    err.textContent = '';
+    mostrarListo(dom);
+  });
+
+  // Pedido recibido (simulación)
+  var timers = [];
+  function hhmm(min) {
+    var d = new Date(Date.now() + min * 60000);
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+  function mostrarListo(dom) {
+    var code = 'EMD-0' + Math.floor(100 + Math.random() * 900);
+    $('ls-code').textContent = code; $('tk-code').textContent = code;
+    $('tk-loc').textContent = 'Crepería El Mediodía · ' + valor('local');
+    $('tk-items').innerHTML = cart.map(function (l) {
+      return '<li><b>' + l.q + '×</b> ' + esc(nombre(l)) + (l.det ? ' <em>· ' + esc(l.det) + '</em>' : '') + '</li>';
+    }).join('');
+    var nota = $('f-nota').value.trim();
+    $('tk-meta').textContent = (dom ? 'A domicilio' : 'Retiro en el local') + ' · ' + (valor('pago') === 'transferencia' ? 'Transferencia' : 'Efectivo') + (nota ? ' · Nota: ' + nota : '');
+    var steps = [].slice.call(document.querySelectorAll('#track li'));
+    steps[2].hidden = !dom; steps[3].hidden = !dom;
+    steps[4].querySelector('b').textContent = dom ? 'Entregado' : 'Listo para retirar';
+    steps[4].querySelector('span').textContent = dom ? '¡Buen provecho!' : 'Lo esperan en ' + valor('local');
+    var vis = steps.filter(function (li) { return !li.hidden; });
+    var mins = dom ? [0, 1, 14, 16, 24] : [0, 1, 15];
+    vis.forEach(function (li, i) { li.className = ''; li.querySelector('time').textContent = hhmm(mins[i]); });
+    timers.forEach(clearTimeout); timers = [];
+    vis.forEach(function (li, i) {
+      timers.push(setTimeout(function () {
+        vis.forEach(function (x, j) { x.className = j < i ? 'ok' : (j === i ? 'now' : ''); });
+        if (i === vis.length - 1) { li.className = 'ok'; }
+      }, 400 + i * 2200));
+    });
+    abrir('listo');
+  }
+  $('ls-otro').addEventListener('click', function () {
+    timers.forEach(clearTimeout); timers = [];
+    cart = []; pintarBarra(); cerrar();
+    window.scrollTo(0, 0);
+  });
+})();
+</script>
+</body>
+</html>
