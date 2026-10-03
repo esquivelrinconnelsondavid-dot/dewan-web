@@ -312,12 +312,16 @@ export async function marcarListoSistema(pedido) {
   }
   if (error) throw error;
   // El gemelo vive en pedidos_delivery (es el que ven las motos).
+  // OJO (2-oct-2026): pedidos_delivery NO tiene `fecha_listo` → antes este update fallaba entero (sin
+  // aviso) y el reloj del gemelo nunca se adelantaba. Solo el reloj, y solo si aún no tiene moto.
   if (pedido.pedido_dewan_id) {
     try {
-      await supabase
+      const { error: e2 } = await supabase
         .from('pedidos_delivery')
-        .update({ timer_lanzamiento: ahora, fecha_listo: ahora })
-        .eq('id', pedido.pedido_dewan_id);
+        .update({ timer_lanzamiento: ahora })
+        .eq('id', pedido.pedido_dewan_id)
+        .is('motorizado_id', null);
+      if (e2) console.warn('[marcarListoSistema] no se pudo adelantar el gemelo', e2.message || e2);
     } catch (e) {
       console.warn('[marcarListoSistema] no se pudo adelantar el gemelo', e?.message || e);
     }
