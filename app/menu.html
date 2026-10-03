@@ -4868,9 +4868,28 @@
         // Para volver a las miniaturas cuando la transformacion este activa otra vez:
         // poner IMG_TRANSFORM_ON=true (verificar antes con
         //   /storage/v1/render/image/public/menu-fotos/<rid>/<archivo>.jpg?width=480 -> 200).
+        // [2-oct-2026] FOTOS LIVIANAS: cada foto de menu-fotos tiene una copia de 640 px (WebP,
+        // SIN recortar, misma ruta) en el bucket menu-fotos-640 (Desktop\DEWAN-fotos-livianas\
+        // crear_copias_chicas.py). Se usa donde la caja pide hasta 640 px (listas, tarjetas,
+        // carrito: 3x de cajas de 100-160 px); portadas y fotos grandes (720/1080) siguen con la
+        // original. Si una copia no existe todavía (foto recién subida), el escucha de errores de
+        // abajo carga la original antes de que el onerror de la etiqueta ponga el emoji.
+        // OJO: NO volver a /render/image: Pro trae solo 100 imágenes/mes y con el tope de gasto
+        // encendido, pasadas las 100 se bloquean hasta el mes siguiente (= emojis otra vez).
         var IMG_TRANSFORM_ON=false;
+        var FOTO_CHICA_MAX=640;
+        var FOTO_ORIG='/storage/v1/object/public/menu-fotos/',FOTO_CHICA='/storage/v1/object/public/menu-fotos-640/';
+        window.addEventListener('error',function(e){
+            var t=e.target;
+            if(!t||t.tagName!=='IMG') return;
+            var s=t.getAttribute('src')||'';
+            if(s.indexOf(FOTO_CHICA)===-1) return;
+            e.stopPropagation(); e.stopImmediatePropagation();
+            t.setAttribute('src',s.replace(FOTO_CHICA,FOTO_ORIG));
+        },true);
         function thumb(u,w){
-            if(!u||String(u).indexOf('/storage/v1/object/public/menu-fotos/')===-1) return u;
+            if(!u||String(u).indexOf(FOTO_ORIG)===-1) return u;
+            if(w&&w<=FOTO_CHICA_MAX) return String(u).replace(FOTO_ORIG,FOTO_CHICA);
             if(!IMG_TRANSFORM_ON) return u;
             // resize=contain OBLIGATORIO: sin él, Supabase encoge el ancho pero deja el ALTO
             // original (320x1080 de una foto 1080x1080) = imagen deformada "con zoom".
