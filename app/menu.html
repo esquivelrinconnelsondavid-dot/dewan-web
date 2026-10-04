@@ -2613,8 +2613,8 @@
                 if(currentView==='home') renderHome();
             });
         };
-        // ── Puertas: Compras y Encomiendas. Paso 1: la hoja arma el pedido y lo manda al mismo WhatsApp
-        // que los pedidos de la web (WA: despacho; bot si el cliente llegó por link de campaña ?b=1).
+        // ── Puertas: Compras y Encomiendas. Paso 1: la hoja arma el pedido y lo manda SIEMPRE al WhatsApp
+        // del despacho (WA_MANUAL), donde las operadoras ya atienden compras y encomiendas (David, 4-oct).
         function nhPuertasHTML(){
             if(OP_MODE) return '';
             var nuevo=Date.now()<Date.parse('2026-11-04T00:00:00-05:00')?'<span class="nh-nuevo">Nuevo</span>':'';
@@ -2708,7 +2708,7 @@
                     '*Entregar en:* '+hasta+
                     (recibe?'\n*Recibe:* '+recibe:'');
             }
-            var url='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
+            var url='https://wa.me/'+WA_MANUAL+'?text='+encodeURIComponent(msg); // SIEMPRE al despacho (decisión de David 4-oct)
             cerrarPuerta();
             var w=null; try{w=window.open(url,'_blank');}catch(e){}
             if(!w) location.href=url; // popup bloqueado o webview: abrir en la misma pestaña
