@@ -942,6 +942,21 @@
         #pwa-ios-sheet h3{margin:0 0 12px;font-size:1.05rem}
         #pwa-ios-sheet ol{margin:0 0 16px;padding-left:20px;font-size:.92rem;line-height:1.65}
         #pwa-ios-sheet button{width:100%;border:none;background:var(--cta);color:#fff;font-weight:800;border-radius:12px;padding:13px;font-size:.95rem;cursor:pointer}
+        /* ── VIDA (4-oct-2026, "que se vea viva"): como la Home viva de la app nativa. Quietas con "reducir movimiento". ── */
+        @keyframes nhPulso{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+        @keyframes nhKen{from{transform:scale(1)}to{transform:scale(1.09)}}
+        @keyframes nhSalto{0%,62%,100%{transform:translateY(0)}20%{transform:translateY(-5px)}38%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+        .nh-pin{display:inline-block}
+        .nh-puerta{position:relative}
+        .nh-nuevo{position:absolute;top:-7px;right:9px;background:var(--cta);color:#fff;font-size:.54rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;box-shadow:0 3px 8px rgba(217,58,11,.35)}
+        @media (prefers-reduced-motion:no-preference){
+            .nh-hb-slide.con-foto>img.foto{animation:nhKen 9s ease-in-out infinite alternate}
+            .fresh-hoy,.fresh-nuevo,.nh-nuevo{display:inline-block;animation:nhPulso 2.6s ease-in-out infinite}
+            .nh-lista>*:nth-child(3n+2) .fresh-chip{animation-delay:.7s}
+            .nh-lista>*:nth-child(3n+3) .fresh-chip{animation-delay:1.4s}
+            .nh-puerta+.nh-puerta .nh-nuevo{animation-delay:1.3s}
+            .nh-dir-v.vacia .nh-pin{animation:nhSalto 2.8s ease-in-out 1.2s infinite}
+        }
     </style>
 </head>
 <body>
@@ -2576,7 +2591,7 @@
                 '<img class="nh-marca" src="/app/icons-cliente/icon-192.png" alt="DEWAN" width="32" height="32">'+
                 '<button class="nh-dir" onclick="pedirUbicacionInicio()" aria-label="Elegir dónde te lo llevamos">'+
                     '<span class="nh-dir-l">Entregar en</span>'+
-                    '<span class="nh-dir-v'+(hasGPS?'':' vacia')+'" id="nh-dir-v">📍 '+esc(val)+' <span class="nh-chev">▾</span></span>'+
+                    '<span class="nh-dir-v'+(hasGPS?'':' vacia')+'" id="nh-dir-v"><span class="nh-pin">📍</span> '+esc(val)+' <span class="nh-chev">▾</span></span>'+
                 '</button>'+
                 '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">'+(window._cart.length?'🛒 '+cartTotals().items+' items':'🛒')+'</button>'+
             '</div>';
@@ -2602,9 +2617,10 @@
         // que los pedidos de la web (WA: despacho; bot si el cliente llegó por link de campaña ?b=1).
         function nhPuertasHTML(){
             if(OP_MODE) return '';
+            var nuevo=Date.now()<Date.parse('2026-11-04T00:00:00-05:00')?'<span class="nh-nuevo">Nuevo</span>':'';
             return '<div class="nh-puertas">'+
-                '<button class="nh-puerta" onclick="abrirPuerta(\'compra\')"><img src="/app/img/cat3d/compras.webp" alt="" width="36" height="36"><div><b>Compras</b><span>Farmacia, súper, mercado</span></div></button>'+
-                '<button class="nh-puerta" onclick="abrirPuerta(\'encomienda\')"><img src="/app/img/cat3d/encomienda.webp" alt="" width="36" height="36"><div><b>Encomiendas</b><span>Si cabe en la mochila</span></div></button>'+
+                '<button class="nh-puerta" onclick="abrirPuerta(\'compra\')">'+nuevo+'<img src="/app/img/cat3d/compras.webp" alt="" width="36" height="36"><div><b>Compras</b><span>Farmacia, súper, mercado</span></div></button>'+
+                '<button class="nh-puerta" onclick="abrirPuerta(\'encomienda\')">'+nuevo+'<img src="/app/img/cat3d/encomienda.webp" alt="" width="36" height="36"><div><b>Encomiendas</b><span>Si cabe en la mochila</span></div></button>'+
             '</div>';
         }
         var NH_PUERTA={
@@ -2773,6 +2789,36 @@
             for(var k=0;k<d.children.length;k++) d.children[k].className=(k===i?'on':'');
         };
 
+        // ── VIDA: entrada en cascada UNA vez por visita (el esqueleto al abrir; carriles y lista cuando llegan
+        // las fotos) y el primer carril "asoma" para que se note que se desliza. Nada si "reducir movimiento".
+        var NH_SIN_MOV=false; try{NH_SIN_MOV=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);}catch(e){}
+        function nhAnimar(els,frames,base,paso,dur){
+            for(var i=0;i<els.length;i++){try{els[i].animate(frames,{duration:dur||420,delay:base+i*paso,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'});}catch(e){}}
+        }
+        function nhVida(){
+            if(NH_SIN_MOV||currentView!=='home'||window._activeCat||!app.animate) return;
+            var subir=[{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}];
+            if(!window._nhVidaCab){
+                window._nhVidaCab=true;
+                nhAnimar(app.querySelectorAll('.pwa-bar, .nh-top, .nh-busca, .nh-confia, .nh-puerta'),subir,0,60,420);
+                nhAnimar(app.querySelectorAll('.cat-chips-wrap .cat-chip'),[{opacity:0,transform:'scale(.55)'},{opacity:1,transform:'none'}],240,45,340);
+                nhAnimar(app.querySelectorAll('.nh-hb'),subir,420,0,520);
+            }
+            if(!window._nhVidaDatos&&window._destHome&&window._destHome.length){
+                window._nhVidaDatos=true;
+                var der=[{opacity:0,transform:'translateX(30px)'},{opacity:1,transform:'none'}];
+                app.querySelectorAll('.destacados-scroll').forEach(function(sc,k){nhAnimar([].slice.call(sc.children,0,4),der,80+k*90,70,400);});
+                nhAnimar(app.querySelectorAll('.nh-logo'),[{opacity:0,transform:'scale(.7)'},{opacity:1,transform:'none'}],120,35,320);
+                nhAnimar([].slice.call(app.querySelectorAll('.nh-lista>*'),0,4),subir,160,90,440);
+                setTimeout(function(){
+                    try{
+                        var sc=app.querySelector('.destacados-scroll');
+                        if(!sc||sc.scrollLeft>0||currentView!=='home') return;
+                        sc.animate([{transform:'none'},{transform:'translateX(-64px)'},{transform:'none'}],{duration:1000,easing:'ease-in-out'});
+                    }catch(e){}
+                },1700);
+            }
+        }
         window.renderHome=function(){
             currentView='home';
             currentRestIdx=null;
@@ -2998,6 +3044,7 @@
             app.innerHTML=h;
             bindSortEvents();
             updateCartFloat();
+            nhVida();
         }
 
         // ── RESTAURANT VIEW ──
