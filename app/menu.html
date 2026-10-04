@@ -957,6 +957,21 @@
             .nh-puerta+.nh-puerta .nh-nuevo{animation-delay:1.3s}
             .nh-dir-v.vacia .nh-pin{animation:nhSalto 2.8s ease-in-out 1.2s infinite}
         }
+        /* selector de ubicación: mapa bajo un pin fijo + la calle */
+        #nh-ubic .nh-velo{z-index:130}
+        #nh-ubic .nh-hoja{z-index:131;gap:10px}
+        .nh-mapa{position:relative;height:min(46vh,340px);border-radius:16px;overflow:hidden;background:#EDE9E3}
+        #nh-mapa-el{position:absolute;inset:0}
+        .nh-pin-fijo{position:absolute;left:50%;top:50%;width:36px;height:46px;margin:-46px 0 0 -18px;z-index:500;pointer-events:none;transition:transform .15s ease}
+        .nh-pin-fijo svg{display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))}
+        .nh-pin-fijo::after{content:"";position:absolute;left:50%;bottom:-3px;width:12px;height:5px;margin-left:-6px;border-radius:50%;background:rgba(0,0,0,.28)}
+        .nh-pin-fijo.arriba{transform:translateY(-9px)}
+        .nh-calle{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:14px;padding:10px 12px;min-height:54px}
+        .nh-calle .ic{font-size:1.15rem}
+        .nh-calle b{display:block;font-size:.98rem;font-weight:900;letter-spacing:-.01em;line-height:1.25}
+        .nh-calle span{display:block;font-size:.72rem;color:var(--gris);font-weight:600}
+        #nh-ubic .nh-aqui{margin-top:0}
+        .pwa-bar img{width:40px!important;height:40px!important;border-radius:10px!important;box-shadow:0 2px 6px rgba(0,0,0,.18)}
     </style>
 </head>
 <body>
@@ -1104,6 +1119,7 @@
             try{updateCartFloat()}catch(e){} // vuelve a mostrar el sticky 🛒 si hay items
         };
         function closeAnyOverlay(){
+            if(window.cerrarUbicacion&&cerrarUbicacion()) return true;
             var np=document.getElementById('nh-puerta'); if(np){ np.parentNode.removeChild(np); document.body.classList.remove('sheet-locked'); return true; }
             if(_cartSheetOpen()){ closeCart(); return true; }
             var fz=document.querySelector('.foto-zoom'); if(_isVisible(fz)){fz.parentNode.removeChild(fz);return true;}
@@ -2586,7 +2602,9 @@
         }
         // Encabezado: lo primero es DÓNDE te lo llevamos (antes: logo D + "Riobamba, Ecuador" + saludo).
         function nhHeaderHTML(hasGPS){
-            var val=hasGPS?((typeof ubicRestaurada==='function'&&ubicRestaurada())?'Tu ubicación de hace '+ubicEdadTxt():'Tu ubicación actual'):'Elige dónde';
+            var g=window._clientGPS,guardada=hasGPS?nhCalleGuardada(g.lat,g.lng):null;
+            var val=hasGPS?(guardada?guardada.txt:((typeof ubicRestaurada==='function'&&ubicRestaurada())?'Tu ubicación de hace '+ubicEdadTxt():'Tu ubicación actual')):'Elige dónde';
+            if(hasGPS&&!guardada) setTimeout(function(){nhCalle(g.lat,g.lng,function(info){var v=document.getElementById('nh-dir-v');if(info&&info.txt&&v&&window._clientGPS===g)v.innerHTML='<span class="nh-pin">📍</span> '+esc(info.txt)+' <span class="nh-chev">▾</span>';});},0);
             return '<div class="nh-top">'+
                 '<img class="nh-marca" src="/app/icons-cliente/icon-192.png" alt="DEWAN" width="32" height="32">'+
                 '<button class="nh-dir" onclick="pedirUbicacionInicio()" aria-label="Elegir dónde te lo llevamos">'+
@@ -2596,22 +2614,13 @@
                 '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">'+(window._cart.length?'🛒 '+cartTotals().items+' items':'🛒')+'</button>'+
             '</div>';
         }
-        // Mismo efecto que la vieja tarjeta "Pon tu ubicación" (requestGPSFromBanner), pero desde el encabezado.
+        // "Entregar en" abre el selector con mapa: el cliente VE la calle antes de confirmar (David, 4-oct).
         window.pedirUbicacionInicio=function(){
-            var v=document.getElementById('nh-dir-v');
-            if(!navigator.geolocation){nhAviso('Este navegador no deja usar tu ubicación. Al pedir puedes marcar tu casa en el mapa.');return;}
-            if(v) v.textContent='🔎 Buscando tu ubicación…';
-            getBestPosition(function(pos){
-                if(!gpsEnZona(pos)){nhAviso('Tu GPS te ubicó fuera de Riobamba. Al pedir puedes marcar tu casa en el mapa.');if(currentView==='home')renderHome();return;}
-                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};
-                window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);
-                window._pinLejosKm=null;window._gpsFixTs=Date.now();window._ubicRestauradaTs=null;
-                guardarUbic();
+            var g=window._clientGPS;
+            abrirUbicacion({titulo:'¿Dónde te lo llevamos?',lat:g?g.lat:null,lng:g?g.lng:null,onOk:function(lat,lng,info,gps){
+                nhAplicarEntrega(lat,lng,info,gps);
                 if(currentView==='home') renderHome(); // tiempos y envíos de cada local con la distancia real
-            },function(err){
-                nhAviso((err&&err.code===1)?'Sin permiso de ubicación. Al pedir puedes marcar tu casa en el mapa.':'No pudimos ubicarte. Intenta otra vez o marca tu casa en el mapa al pedir.');
-                if(currentView==='home') renderHome();
-            });
+            }});
         };
         // ── Puertas: Compras y Encomiendas. Paso 1: la hoja arma el pedido y lo manda SIEMPRE al WhatsApp
         // del despacho (WA_MANUAL), donde las operadoras ya atienden compras y encomiendas (David, 4-oct).
@@ -2818,6 +2827,150 @@
                     }catch(e){}
                 },1700);
             }
+        }
+        // ══════ UBICACIÓN CON CALLE (4-oct-2026, David: "que al tocar 'Entregar en' salga por lo menos una calle") ══════
+        // Selector: mapa que se mueve bajo un PIN FIJO (más preciso con el dedo que arrastrar un marcador) y, debajo,
+        // el nombre de la calle ("Junín y Los Álamos") sacado de OpenStreetMap con Photon (gratis, sin clave).
+        // Lo usan "Entregar en" y, después, las hojas de Compras y Encomiendas.
+        var NH_CENTRO=[-1.6635,-78.6547];
+        var NH_SVG_PIN='<svg viewBox="0 0 36 46" width="36" height="46"><path d="M18 44.5S3 29.2 3 17.5a15 15 0 0 1 30 0C33 29.2 18 44.5 18 44.5z" fill="#E8431A" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="17.5" r="5.5" fill="#fff"/></svg>';
+        window._nhCalles=window._nhCalles||{};
+        function _nhClaveCalle(lat,lng){return Number(lat).toFixed(4)+','+Number(lng).toFixed(4);}
+        function nhCalleGuardada(lat,lng){
+            var k=_nhClaveCalle(lat,lng);
+            if(window._nhCalles[k]) return window._nhCalles[k];
+            try{var c=JSON.parse(localStorage.getItem('dewan_calles')||'{}');if(c[k]){window._nhCalles[k]=c[k];return c[k];}}catch(e){}
+            return null;
+        }
+        function nhGuardarCalle(lat,lng,info){
+            if(!info||!info.txt) return;
+            var k=_nhClaveCalle(lat,lng); window._nhCalles[k]=info;
+            try{var c=JSON.parse(localStorage.getItem('dewan_calles')||'{}');c[k]=info;var ks=Object.keys(c);while(ks.length>40){delete c[ks.shift()];}localStorage.setItem('dewan_calles',JSON.stringify(c));}catch(e){}
+        }
+        // Nombre de la calle: las 2 calles más cercanas = la esquina ("Brasil y Junín"); si hay una sola, "Calle X".
+        function nhCalle(lat,lng,cb){
+            var ya=nhCalleGuardada(lat,lng); if(ya) return cb(ya);
+            var ctl=('AbortController' in window)?new AbortController():null; if(ctl) setTimeout(function(){ctl.abort();},6000);
+            fetch('https://photon.komoot.io/reverse?lat='+Number(lat).toFixed(6)+'&lon='+Number(lng).toFixed(6)+'&limit=8&radius=0.15',{signal:ctl?ctl.signal:undefined})
+                .then(function(r){return r.json();}).then(function(j){
+                    var calles=[],vistos={},cerca='',barrio='';
+                    function add(n){n=String(n||'').replace(/\s+/g,' ').trim();if(!n||/^sin nombre$/i.test(n))return;var kk=removeAccents(n.toLowerCase());if(vistos[kk])return;vistos[kk]=1;calles.push(n);}
+                    (j&&j.features||[]).forEach(function(f){
+                        var p=f.properties||{};
+                        if(!barrio&&p.district) barrio=p.district;
+                        if(p.osm_key==='highway'&&p.osm_value==='bus_stop') String(p.name||'').split(/\s+y\s+/i).forEach(add);
+                        else if(p.osm_key==='highway') add(p.name);
+                        else if(p.street) String(p.street).split(/\s+y\s+/i).forEach(add);
+                        if(!cerca&&p.name&&p.osm_key!=='highway'&&p.osm_key!=='building'&&p.osm_key!=='place') cerca=p.name;
+                    });
+                    var c0=calles[0]||'';
+                    var txt=calles.length>=2?calles[0]+' y '+calles[1]:(c0?(/^(av\b|av\.|avenida|calle|pasaje|v[ií]a|panamericana|circunvalaci)/i.test(c0)?c0:'Calle '+c0):'');
+                    var info={txt:txt||'Calle sin nombre',cerca:cerca,barrio:barrio};
+                    if(txt) nhGuardarCalle(lat,lng,info);
+                    cb(info);
+                }).catch(function(){cb(null);});
+        }
+        window.abrirUbicacion=function(o){
+            cerrarUbicacion();
+            o=o||{};
+            var w=document.createElement('div'); w.id='nh-ubic';
+            w.innerHTML='<div class="nh-velo" onclick="cerrarUbicacion()"></div>'+
+                '<div class="nh-hoja nh-hoja-mapa" role="dialog" aria-modal="true" aria-labelledby="nh-ubic-t">'+
+                    '<div class="nh-asa"></div>'+
+                    '<div class="nh-hh"><div><b id="nh-ubic-t">'+esc(o.titulo||'¿Dónde te lo llevamos?')+'</b><span>Mueve el mapa hasta que el pin quede en la puerta</span></div><button class="nh-x" onclick="cerrarUbicacion()" aria-label="Cerrar">✕</button></div>'+
+                    '<div class="nh-mapa"><div id="nh-mapa-el"></div><div class="nh-pin-fijo" aria-hidden="true">'+NH_SVG_PIN+'</div></div>'+
+                    '<div class="nh-calle"><span class="ic" aria-hidden="true">📍</span><div><b id="nh-calle-t">Buscando…</b><span id="nh-calle-s">Riobamba</span></div></div>'+
+                    '<button type="button" class="nh-aqui" onclick="nhUbicGPS()">📍 Usar mi ubicación actual</button>'+
+                    '<button class="nh-btn" id="nh-ubic-ok" onclick="nhUbicOk()">'+esc(o.boton||'Confirmar esta ubicación')+'</button>'+
+                '</div>';
+            document.body.appendChild(w); document.body.classList.add('sheet-locked');
+            try{history.pushState({v:currentView,r:currentRestIdx,ov:'ubic'},'');}catch(e){}
+            window._nhUbic={o:o,lat:null,lng:null,gps:null,info:null,seq:0};
+            opLoadLeaflet(function(){
+                var el=document.getElementById('nh-mapa-el'); if(!el||!window.L) return;
+                var la=Number(o.lat),lo=Number(o.lng),tiene=isFinite(la)&&isFinite(lo)&&Math.abs(la)>0.0001;
+                var map=L.map(el,{zoomControl:false}).setView(tiene?[la,lo]:NH_CENTRO,tiene?17:14);
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+                try{map.attributionControl.setPrefix(false);}catch(e){} // solo el crédito de OpenStreetMap
+                window._nhUbicMap=map;
+                map.on('movestart',function(){var p=document.querySelector('#nh-ubic .nh-pin-fijo');if(p)p.classList.add('arriba');});
+                map.on('moveend',function(){var p=document.querySelector('#nh-ubic .nh-pin-fijo');if(p)p.classList.remove('arriba');nhUbicLeer();});
+                setTimeout(function(){try{map.invalidateSize();}catch(e){}},160);
+                if(!tiene&&o.gps!==false) nhUbicGPS(); else nhUbicLeer();
+            });
+        };
+        window.cerrarUbicacion=function(){
+            var w=document.getElementById('nh-ubic'); if(!w) return false;
+            try{if(window._nhUbicMap)window._nhUbicMap.remove();}catch(e){} window._nhUbicMap=null;
+            w.parentNode.removeChild(w);
+            if(!document.getElementById('nh-puerta')) document.body.classList.remove('sheet-locked');
+            return true;
+        };
+        function nhUbicLeer(){
+            var u=window._nhUbic,map=window._nhUbicMap; if(!u||!map) return;
+            var c=map.getCenter(); u.lat=c.lat; u.lng=c.lng;
+            if(u.gps&&haversine(c.lat,c.lng,u.gps.coords.latitude,u.gps.coords.longitude)>0.025) u.gps=null; // lo movió: ya es un pin a mano
+            var t=document.getElementById('nh-calle-t'),s=document.getElementById('nh-calle-s');
+            if(t) t.textContent='Buscando la calle…';
+            var seq=++u.seq;
+            clearTimeout(window._nhUbicT);
+            window._nhUbicT=setTimeout(function(){
+                nhCalle(c.lat,c.lng,function(info){
+                    if(!window._nhUbic||seq!==window._nhUbic.seq) return; // ya se movió otra vez
+                    window._nhUbic.info=info;
+                    var t2=document.getElementById('nh-calle-t'),s2=document.getElementById('nh-calle-s');
+                    if(t2) t2.textContent=info?info.txt:'Aquí';
+                    if(s2) s2.textContent=info&&(info.cerca||info.barrio)?((info.cerca?'Cerca de '+info.cerca:'')+(info.cerca&&info.barrio?' · ':'')+(info.barrio||'')):'Riobamba';
+                });
+            },350);
+        }
+        window.nhUbicGPS=function(){
+            var t=document.getElementById('nh-calle-t');
+            if(!navigator.geolocation){if(t)t.textContent='Mueve el mapa hasta tu casa';return;}
+            if(t) t.textContent='Buscando tu ubicación…';
+            getBestPosition(function(pos){
+                var map=window._nhUbicMap; if(!map||!window._nhUbic) return;
+                if(!gpsEnZona(pos)){if(t)t.textContent='Tu GPS te ubica fuera de Riobamba: mueve el mapa';return;}
+                window._nhUbic.gps=pos;
+                map.setView([pos.coords.latitude,pos.coords.longitude],17);
+                nhUbicLeer();
+            },function(err){
+                var t2=document.getElementById('nh-calle-t');
+                if(t2) t2.textContent=(err&&err.code===1)?'Sin permiso de ubicación: mueve el mapa hasta tu casa':'No pudimos ubicarte: mueve el mapa hasta tu casa';
+            });
+        };
+        window.nhUbicOk=function(){
+            var u=window._nhUbic; if(!u||u.lat==null) return;
+            var o=u.o,lat=u.lat,lng=u.lng,info=u.info,gps=u.gps;
+            cerrarUbicacion();
+            try{o.onOk&&o.onOk(lat,lng,info,gps);}catch(e){}
+        };
+        // Aplicar el punto de ENTREGA del cliente igual que lo hacen el banner de GPS (GPS) y el mapa del carrito (pin a mano).
+        function nhRecalcCarrito(){
+            try{
+                var byR={}; getFilteredRestaurantes().forEach(function(r){byR[r.nombre]=r.precio_delivery||0;});
+                (window._cart||[]).forEach(function(c){if(byR[c.restaurante]!=null)c.delivery=byR[c.restaurante];});
+                saveCart();
+            }catch(e){}
+        }
+        function nhAplicarEntrega(lat,lng,info,gps){
+            if(gps){
+                window._clientGPS={lat:gps.coords.latitude,lng:gps.coords.longitude,acc:Math.round(gps.coords.accuracy||0)};
+                window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);
+                window._pinLejosKm=null;
+            } else {
+                var la=Number(lat).toFixed(6),lo=Number(lng).toFixed(6);
+                window._clientGPS={lat:la,lng:lo,acc:0}; // acc:0 = pin puesto A MANO (como el mapa del carrito)
+                window._pinLejosKm=null;
+                var fx=window._lastGpsFix;
+                if(fx&&(Date.now()-fx.ts)<2*60*60*1000){var dk=haversine(parseFloat(la),parseFloat(lo),fx.lat,fx.lng);if(dk>Math.max(0.5,((fx.acc||0)*2)/1000))window._pinLejosKm=dk;}
+                window._opGpsApplied='map';
+            }
+            window._gpsFixTs=Date.now(); window._ubicRestauradaTs=null;
+            if(info&&info.txt) nhGuardarCalle(window._clientGPS.lat,window._clientGPS.lng,info);
+            guardarUbic();
+            try{trackUbicacionPixel();}catch(e){}
+            nhRecalcCarrito();
         }
         window.renderHome=function(){
             currentView='home';
@@ -3037,8 +3190,8 @@
                 h+='<a href="https://play.google.com/store/apps/details?id=com.dewan.cliente" target="_blank" rel="noopener" '+
                    'style="display:flex;align-items:center;gap:10px;justify-content:center;margin:18px 16px 0;padding:13px 16px;'+
                    'background:#1f1a17;color:#fff;border-radius:14px;text-decoration:none;font-weight:800;font-size:.92rem">'+
-                   '<img src="/app/icons-cliente/icon-192.png" alt="" style="width:30px;height:30px;border-radius:8px">'+
-                   '<span>Descarga la app de DEWAN<br><span style="font-weight:600;font-size:.76rem;color:#cfc7bd">Gratis en Google Play</span></span></a>';
+                   '<img src="/app/icons-cliente/icon-192.png" alt="App DEWAN, la campana roja" style="width:40px;height:40px;border-radius:10px">'+
+                   '<span>Descarga la app de DEWAN<br><span style="font-weight:600;font-size:.76rem;color:#cfc7bd">Es la de la campana roja · gratis en Google Play</span></span></a>';
             }
             h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
             app.innerHTML=h;
@@ -5957,9 +6110,9 @@
 
         window.pwaBarHTML = function(){
             var m = window._pwaModo; if (!m) return '';
-            var t = m === 'play' ? ['Descarga la app DEWAN','Sigue a tu moto en vivo · gratis','Descargar']
-                  : (m === 'ios' ? ['Ten DEWAN en tu inicio','Pide en 2 toques','Ver cómo'] : ['Ábrelo en Chrome','y descarga la app DEWAN','Abrir']);
-            return '<div class="pwa-bar" id="pwa-bar"><img src="/app/icons-cliente/icon-192.png" alt="" width="30" height="30"><div class="t"><b>'+t[0]+'</b><span>'+t[1]+'</span></div>'+
+            var t = m === 'play' ? ['Descarga la app DEWAN','Es la de la campana roja · gratis','Descargar']
+                  : (m === 'ios' ? ['Ten DEWAN en tu inicio','Pide en 2 toques','Ver cómo'] : ['Ábrelo en Chrome','y descarga la app de la campana roja','Abrir']);
+            return '<div class="pwa-bar" id="pwa-bar"><img src="/app/icons-cliente/icon-192.png" alt="App DEWAN, la campana roja" width="40" height="40"><div class="t"><b>'+t[0]+'</b><span>'+t[1]+'</span></div>'+
                 '<button class="ok" onclick="_pwaAccion()">'+t[2]+'</button><button class="no" onclick="_pwaCerrar()" aria-label="Cerrar">✕</button></div>';
         };
         function pintarBanner(modo){
