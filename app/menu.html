@@ -800,6 +800,148 @@
         .prod-price,.dest-price{color:#9A3412}
         .prod-emoji,.dest-emoji{background:linear-gradient(180deg,#FAF0E2,#F1E2CF)}
         .prod-card,.rest-card,.rest-compact,.dest-card{box-shadow:0 6px 18px rgba(74,42,20,0.08)}
+        /* ══════ NUEVO INICIO (4-oct-2026): el orden de las apps grandes ══════
+           dónde te lo llevamos → buscador → puertas (Compras/Encomiendas) → categorías → promo que se desliza →
+           carriles → logos → lista con filtros. Un solo color fuerte (brasa); precios y textos en negro. */
+        .nh-top{display:flex;align-items:center;gap:10px;padding:12px 16px 0}
+        .nh-marca{width:32px;height:32px;border-radius:9px;flex:0 0 auto;display:block}
+        .nh-dir{flex:1;min-width:0;background:none;border:none;padding:2px 0;text-align:left;cursor:pointer;font-family:inherit;color:var(--texto);min-height:var(--tap-min)}
+        .nh-dir-l{display:block;font-size:.68rem;font-weight:700;color:var(--gris);letter-spacing:.01em;line-height:1.2}
+        .nh-dir-v{display:block;font-size:1rem;font-weight:900;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+        .nh-dir-v.vacia{color:var(--acc)}
+        .nh-chev{color:var(--acc);font-size:.78rem}
+        .nh-busca{display:flex;align-items:center;gap:10px;width:calc(100% - 32px);margin:12px 16px 0;padding:13px 16px;background:var(--card2);border:none;border-radius:999px;cursor:pointer;font-family:inherit;color:var(--gris);font-size:.92rem;font-weight:600;text-align:left}
+        .nh-busca span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .nh-busca svg{width:18px;height:18px;color:var(--texto);flex:0 0 auto}
+        .nh-busca:active{transform:scale(.985)}
+        .nh-confia{font-size:.68rem;color:var(--gris);font-weight:700;padding:8px 16px 0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .nh-puertas{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 0}
+        .nh-puerta{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:16px;background:#FFF2EC;border:none;cursor:pointer;font-family:inherit;text-align:left;color:var(--texto);min-height:58px;min-width:0}
+        .nh-puerta:active{transform:scale(.97)}
+        .nh-puerta img{width:36px;height:36px;flex:0 0 auto}
+        .nh-puerta div{min-width:0}
+        .nh-puerta b{display:block;font-size:.86rem;font-weight:900;letter-spacing:-.01em;line-height:1.15}
+        .nh-puerta span{display:block;font-size:.64rem;color:var(--gris);font-weight:700;line-height:1.2;margin-top:2px}
+        /* categorías con ícono 3D propio (se ve igual en todos los celulares) */
+        .cat-chips-wrap{padding:12px 0 2px}
+        .cat-chip-icon img{width:32px;height:32px;display:block}
+        .cat-chips-wrap .cat-chips-scroll{gap:4px;padding:0 12px 4px}
+        .cat-chips-wrap .cat-chip{flex:0 0 72px;width:72px;min-width:72px;white-space:normal}
+        .cat-chips-wrap .cat-chip>span:last-child{text-align:center;line-height:1.15}
+        /* promo grande que se desliza */
+        .nh-hb{padding:12px 0 2px}
+        .nh-hb-scroll{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 16px;-webkit-overflow-scrolling:touch}
+        .nh-hb-scroll::-webkit-scrollbar{display:none}
+        .nh-hb-slide{position:relative;flex:0 0 100%;height:136px;border-radius:18px;overflow:hidden;scroll-snap-align:center;cursor:pointer;background:#3A2418;color:#fff;border:none;padding:0;text-align:left;font-family:inherit;display:block}
+        .nh-hb-slide>img.foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+        .nh-hb-slide.con-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(20,12,8,.9) 0%,rgba(20,12,8,.6) 48%,rgba(20,12,8,.05) 88%)}
+        .nh-hb-slide.marca{background:linear-gradient(120deg,#E8431A 0%,#C2340F 100%)}
+        .nh-hb-slide>img.ico{position:absolute;right:12px;bottom:12px;width:96px;height:96px;z-index:1}
+        .nh-hb-slide>img.logo{position:absolute;right:12px;top:12px;width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;background:#fff;z-index:3}
+        .nh-hb-txt{position:absolute;left:16px;top:15px;right:112px;z-index:2}
+        .nh-hb-txt small{display:block;font-size:.6rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#FFCBB8}
+        .nh-hb-slide.marca .nh-hb-txt small{color:#FFE3D8}
+        .nh-hb-txt b{display:block;font-size:1.16rem;font-weight:900;line-height:1.12;letter-spacing:-.02em;margin-top:3px}
+        .nh-hb-txt span{display:block;font-size:.72rem;font-weight:600;color:#F4E9E2;margin-top:4px;line-height:1.3}
+        .nh-hb-txt em{display:inline-block;font-style:normal;margin-top:9px;font-size:.68rem;font-weight:900;background:#fff;color:#1B1B1B;padding:4px 11px;border-radius:999px}
+        .nh-hb-dots{display:flex;gap:5px;justify-content:center;padding-top:8px}
+        .nh-hb-dots i{width:6px;height:6px;border-radius:50%;background:#DAD5CF;transition:width .2s}
+        .nh-hb-dots i.on{width:16px;border-radius:3px;background:var(--texto)}
+        /* títulos de carril: en una línea; la bajada chica, debajo */
+        .destacados{padding:14px 0 6px}
+        .destacados .destacados-head{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:1px;padding:0 16px 10px}
+        .destacados .destacados-title{padding:0;font-size:1.06rem;font-weight:900;letter-spacing:-.02em;color:var(--texto)}
+        .destacados .destacados-sub{text-transform:none;letter-spacing:0;font-weight:600;font-size:.74rem;color:var(--gris)}
+        .destacados .destacados-scroll{gap:12px;padding:0 16px 4px}
+        /* tarjetas de plato planas, foto primero (como las grandes) */
+        body .dest-card,body .dest-card.in-cart{width:148px;padding:0;border:none;background:transparent;box-shadow:none;border-radius:0}
+        body .dest-emoji{width:148px;height:111px;border-radius:14px;margin-bottom:7px;border:none}
+        body .dest-card .dest-name{font-size:.84rem;min-height:0;margin-bottom:1px;line-height:1.2}
+        body .dest-card .dest-rest-tag{margin:0 0 4px}
+        body .dest-logo-chip{width:28px;height:28px;top:6px;left:6px}
+        body .dest-price,body .prod-price{color:var(--texto)}
+        /* secciones de la lista */
+        .nh-sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:20px 16px 10px}
+        .nh-sec b{font-size:1.06rem;font-weight:900;letter-spacing:-.02em}
+        .nh-sec span{font-size:.74rem;color:var(--gris);font-weight:700}
+        .nh-logos{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:0 16px 4px;-webkit-overflow-scrolling:touch}
+        .nh-logos::-webkit-scrollbar{display:none}
+        .nh-logo{flex:0 0 64px;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;color:var(--texto)}
+        .nh-logo .ci{position:relative;width:58px;height:58px;border-radius:50%;overflow:hidden;border:1px solid var(--border);background:#fff}
+        .nh-logo .ci i{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-weight:900;color:#fff;font-size:1.1rem}
+        .nh-logo .ci img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
+        .nh-logo span{font-size:.64rem;font-weight:700;max-width:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .nh-logo.cerrado .ci{opacity:.45}
+        .sort-bar.nh-filtros{padding:0 16px 14px;gap:7px}
+        .sort-bar.nh-filtros .pill{padding:8px 13px;font-size:.74rem;border-width:1px;color:var(--texto)}
+        .sort-bar.nh-filtros .pill-gps{flex-shrink:0;padding:8px 13px;border-radius:100px;border:1px dashed var(--acc);background:transparent;color:var(--cta-hover);font-weight:800;font-size:.74rem;cursor:pointer;font-family:inherit;white-space:nowrap}
+        .sort-bar.nh-filtros .pill.active{background:var(--texto);color:#fff;border-color:var(--texto)}
+        /* tarjeta del local: foto 2:1 que se desliza + logo, nombre, tiempo y envío */
+        .grid3-wrap.nh-lista{gap:20px;padding:0 16px 10px}
+        .grid3-card.rc2{border:none;background:transparent;border-radius:0;overflow:visible;box-shadow:none}
+        .rc2 .grid3-top{aspect-ratio:2/1;border-radius:16px;overflow:hidden;background:var(--card2)}
+        .rc2-fotos{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;z-index:2;-webkit-overflow-scrolling:touch}
+        .rc2-fotos::-webkit-scrollbar{display:none}
+        .rc2-fotos img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;display:block}
+        .rc2.cerrado .rc2-fotos img{opacity:.45}
+        .rc2-dots{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:4px;z-index:3;pointer-events:none}
+        .rc2-dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.55)}
+        .rc2-dots i.on{background:#fff}
+        .rc2 .grid3-closed{font-size:.62rem;padding:3px 9px;top:8px;right:8px}
+        .rc2-chip{position:absolute;left:8px;top:8px;z-index:3;background:#fff;color:#1B1B1B;font-size:.62rem;font-weight:900;border-radius:999px;padding:3px 9px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+        .rc2-body{display:flex;align-items:center;gap:10px;padding:9px 2px 0}
+        .rc2-logo{width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border);flex:0 0 auto;background:#fff}
+        .rc2-txt{flex:1;min-width:0}
+        .rc2 .grid3-name{font-size:1rem;-webkit-line-clamp:1}
+        .rc2-meta{font-size:.74rem;color:var(--gris);font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .rc2-perks{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:3px}
+        .rc2-perks:empty{display:none}
+        .rc2-pl{font-size:.68rem;font-weight:800;color:var(--green)}
+        .rc2 .fresh-chips{margin-top:0}
+        .rc2 .grid3-suc{margin-top:0}
+        /* hoja de Compras / Encomiendas */
+        .nh-velo{position:fixed;inset:0;background:rgba(20,8,2,.5);z-index:120;animation:nhFade .2s ease}
+        .nh-hoja{position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;max-height:92vh;overflow-y:auto;background:var(--bg);z-index:121;border-radius:22px 22px 0 0;padding:8px 18px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:11px;animation:nhSube .28s cubic-bezier(.32,.72,0,1);box-shadow:0 -10px 30px rgba(0,0,0,.18)}
+        @keyframes nhSube{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+        @keyframes nhFade{from{opacity:0}to{opacity:1}}
+        .nh-asa{width:42px;height:5px;border-radius:999px;background:var(--border);margin:2px auto 2px}
+        .nh-hh{display:flex;align-items:center;gap:11px}
+        .nh-hh img{width:44px;height:44px;flex:0 0 auto}
+        .nh-hh div{flex:1;min-width:0}
+        .nh-hh b{display:block;font-size:1.2rem;font-weight:900;letter-spacing:-.02em}
+        .nh-hh span{display:block;font-size:.76rem;color:var(--gris);font-weight:600;line-height:1.35;margin-top:1px}
+        .nh-x{background:var(--card2);border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:.9rem;color:var(--gris);flex:0 0 auto;position:relative}
+        .nh-x::after{content:"";position:absolute;inset:-5px}
+        .nh-lb{display:block;font-size:.66rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin-bottom:-4px}
+        .nh-lb small{text-transform:none;letter-spacing:0;font-weight:700}
+        .nh-ch{display:flex;flex-wrap:wrap;gap:6px}
+        .nh-ch button{font-family:inherit;font-size:.78rem;font-weight:800;border:1px solid var(--border);background:var(--bg);color:var(--texto);border-radius:999px;padding:8px 12px;cursor:pointer}
+        .nh-ch button.on{background:var(--texto);color:#fff;border-color:var(--texto)}
+        .nh-campo{width:100%;font-family:inherit;font-size:.92rem;color:var(--texto);border:1px solid var(--border);border-radius:14px;padding:11px 12px;background:var(--bg);resize:vertical}
+        .nh-campo:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(232,67,26,.1)}
+        .nh-aqui{align-self:flex-start;font-family:inherit;font-size:.72rem;font-weight:800;border:none;background:#FFF2EC;color:var(--cta-hover);border-radius:999px;padding:6px 11px;cursor:pointer;margin-top:-4px}
+        .nh-aqui.on{background:var(--texto);color:#fff}
+        .nh-ent{display:flex;align-items:center;gap:8px;background:var(--card2);border-radius:14px;padding:10px 12px;font-size:.8rem;line-height:1.35}
+        .nh-nt{font-size:.74rem;color:var(--gris);font-weight:600;line-height:1.45}
+        .nh-err{font-size:.78rem;color:#B42318;font-weight:800}
+        .nh-btn{width:100%;border:none;background:var(--cta);color:#fff;font-family:inherit;font-weight:900;font-size:1rem;border-radius:14px;padding:14px;cursor:pointer;box-shadow:0 6px 16px rgba(217,58,11,.3)}
+        .nh-btn:active{transform:scale(.985);background:var(--cta-hover)}
+        .nh-toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9999;max-width:min(92vw,400px);background:#1F1A17;color:#fff;font-size:.8rem;font-weight:700;line-height:1.4;padding:11px 15px;border-radius:13px;box-shadow:0 10px 26px rgba(0,0,0,.3);transition:opacity .4s}
+        .nh-toast.fuera{opacity:0}
+        /* aviso de la app: delgado, arriba del inicio y una sola vez (antes tapaba 1/6 de la pantalla) */
+        .pwa-bar{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 16px;background:#FFF2EC;border-bottom:1px solid rgba(232,67,26,.14)}
+        .pwa-bar img{width:30px;height:30px;border-radius:8px;flex:0 0 auto}
+        .pwa-bar .t{flex:1;min-width:0;line-height:1.25}
+        .pwa-bar .t b{display:block;font-size:.8rem;font-weight:900}
+        .pwa-bar .t span{display:block;font-size:.68rem;color:var(--gris);font-weight:700}
+        .pwa-bar .ok{border:none;background:var(--cta);color:#fff;font-family:inherit;font-weight:900;font-size:.76rem;border-radius:999px;padding:8px 13px;cursor:pointer;flex:0 0 auto}
+        .pwa-bar .no{border:none;background:none;color:var(--gris);font-size:.95rem;padding:8px 6px;cursor:pointer;flex:0 0 auto}
+        /* hoja de "Instalar en iPhone" (antes vivía dentro del banner flotante que ya no se pinta) */
+        #pwa-ios-sheet{position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+        #pwa-ios-sheet .card{background:#fff;color:#1f1a17;border-radius:20px 20px 0 0;padding:22px 20px 30px;max-width:520px;width:100%}
+        #pwa-ios-sheet h3{margin:0 0 12px;font-size:1.05rem}
+        #pwa-ios-sheet ol{margin:0 0 16px;padding-left:20px;font-size:.92rem;line-height:1.65}
+        #pwa-ios-sheet button{width:100%;border:none;background:var(--cta);color:#fff;font-weight:800;border-radius:12px;padding:13px;font-size:.95rem;cursor:pointer}
     </style>
 </head>
 <body>
@@ -947,6 +1089,7 @@
             try{updateCartFloat()}catch(e){} // vuelve a mostrar el sticky 🛒 si hay items
         };
         function closeAnyOverlay(){
+            var np=document.getElementById('nh-puerta'); if(np){ np.parentNode.removeChild(np); document.body.classList.remove('sheet-locked'); return true; }
             if(_cartSheetOpen()){ closeCart(); return true; }
             var fz=document.querySelector('.foto-zoom'); if(_isVisible(fz)){fz.parentNode.removeChild(fz);return true;}
             var sf=document.getElementById('service-fee-modal'); if(_isVisible(sf)){ if(window.closeServiceFeeInfo){closeServiceFeeInfo();}else{sf.style.display='none';} return true;}
@@ -2196,7 +2339,7 @@
 
         function greetingV2(){
             var h=new Date().getHours();
-            if(h<11) return {g:'Buenos días',s:'¿Qué desayunamos?'};
+            if(h<12) return {g:'Buenos días',s:'¿Qué desayunamos?'};
             if(h<15) return {g:'Buenas tardes',s:'¿Qué almorzamos?'};
             if(h<19) return {g:'Buenas tardes',s:'¿Te provoca un antojo?'};
             return {g:'Buenas noches',s:'¿Qué cenamos?'};
@@ -2396,6 +2539,240 @@
                 });
         };
 
+        // ══════ NUEVO INICIO (4-oct-2026): piezas del inicio con el orden de las apps grandes ══════
+        // dónde te lo llevamos → buscador → puertas (Compras/Encomiendas) → categorías → promo que se desliza →
+        // carriles → logos de los aliados → lista con filtros. Ver artefacto "Nuevo inicio DEWAN".
+        var NH_SVG_BUSCA='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M20 20l-4-4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>';
+        // Íconos 3D propios (Microsoft Fluent Emoji, licencia MIT) en /app/img/cat3d/<clave>.webp:
+        // se ven iguales en todos los celulares. Si una imagen no carga, queda el emoji de siempre.
+        var NH_CAT3D={promohoy:1,tipica:1,almuerzo:1,desayunos:1,fastfood:1,mariscos:1,cafeteria:1,pizza:1,parrilla:1,pollo:1,chifa:1,postres:1,internacional:1,mexicana:1,sushi:1,partido:1};
+        function nhIconoCat(k,emoji){
+            if(!NH_CAT3D[k]) return emoji;
+            return '<img src="/app/img/cat3d/'+k+'.webp" alt="" width="32" height="32" loading="lazy" onerror="this.replaceWith(document.createTextNode(\''+jsEsc(emoji)+'\'))">';
+        }
+        function nhSinEmoji(t){return String(t||'').replace(/^[^0-9A-Za-zÁÉÍÓÚÑáéíóúñ¿¡]+/,'').trim();}
+        function nhMayus(t){t=String(t||'');return t.charAt(0).toUpperCase()+t.slice(1);}
+        function nhAviso(msg){
+            try{
+                var t=document.createElement('div');t.className='nh-toast';t.setAttribute('role','status');t.textContent=msg;
+                document.body.appendChild(t);
+                setTimeout(function(){t.classList.add('fuera');},3800);
+                setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},4300);
+            }catch(e){}
+        }
+        // Tiempo en RANGO conservador (igual que la app nativa: +5 a +20) y el envío que de verdad paga:
+        // con GPS el de su distancia; sin GPS "desde" el mínimo de ese local (aliado $1.30, sin convenio +servicio).
+        function nhMetaLocal(r){
+            var t=Number(r.tiempo_estimado_min)||25;
+            var envio=(window._clientGPS&&Number(r.precio_delivery)>0)
+                ?'Envío $'+Number(r.precio_delivery).toFixed(2)
+                :'Envío desde $'+Number(precioEnvioCliente(0,servicioRest(r))).toFixed(2);
+            return (t+5)+'–'+(t+20)+' min · '+envio;
+        }
+        // Encabezado: lo primero es DÓNDE te lo llevamos (antes: logo D + "Riobamba, Ecuador" + saludo).
+        function nhHeaderHTML(hasGPS){
+            var val=hasGPS?((typeof ubicRestaurada==='function'&&ubicRestaurada())?'Tu ubicación de hace '+ubicEdadTxt():'Tu ubicación actual'):'Elige dónde';
+            return '<div class="nh-top">'+
+                '<img class="nh-marca" src="/app/icons-cliente/icon-192.png" alt="DEWAN" width="32" height="32">'+
+                '<button class="nh-dir" onclick="pedirUbicacionInicio()" aria-label="Elegir dónde te lo llevamos">'+
+                    '<span class="nh-dir-l">Entregar en</span>'+
+                    '<span class="nh-dir-v'+(hasGPS?'':' vacia')+'" id="nh-dir-v">📍 '+esc(val)+' <span class="nh-chev">▾</span></span>'+
+                '</button>'+
+                '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">'+(window._cart.length?'🛒 '+cartTotals().items+' items':'🛒')+'</button>'+
+            '</div>';
+        }
+        // Mismo efecto que la vieja tarjeta "Pon tu ubicación" (requestGPSFromBanner), pero desde el encabezado.
+        window.pedirUbicacionInicio=function(){
+            var v=document.getElementById('nh-dir-v');
+            if(!navigator.geolocation){nhAviso('Este navegador no deja usar tu ubicación. Al pedir puedes marcar tu casa en el mapa.');return;}
+            if(v) v.textContent='🔎 Buscando tu ubicación…';
+            getBestPosition(function(pos){
+                if(!gpsEnZona(pos)){nhAviso('Tu GPS te ubicó fuera de Riobamba. Al pedir puedes marcar tu casa en el mapa.');if(currentView==='home')renderHome();return;}
+                window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};
+                window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);
+                window._pinLejosKm=null;window._gpsFixTs=Date.now();window._ubicRestauradaTs=null;
+                guardarUbic();
+                if(currentView==='home') renderHome(); // tiempos y envíos de cada local con la distancia real
+            },function(err){
+                nhAviso((err&&err.code===1)?'Sin permiso de ubicación. Al pedir puedes marcar tu casa en el mapa.':'No pudimos ubicarte. Intenta otra vez o marca tu casa en el mapa al pedir.');
+                if(currentView==='home') renderHome();
+            });
+        };
+        // ── Puertas: Compras y Encomiendas. Paso 1: la hoja arma el pedido y lo manda al mismo WhatsApp
+        // que los pedidos de la web (WA: despacho; bot si el cliente llegó por link de campaña ?b=1).
+        function nhPuertasHTML(){
+            if(OP_MODE) return '';
+            return '<div class="nh-puertas">'+
+                '<button class="nh-puerta" onclick="abrirPuerta(\'compra\')"><img src="/app/img/cat3d/compras.webp" alt="" width="36" height="36"><div><b>Compras</b><span>Farmacia, súper, mercado</span></div></button>'+
+                '<button class="nh-puerta" onclick="abrirPuerta(\'encomienda\')"><img src="/app/img/cat3d/encomienda.webp" alt="" width="36" height="36"><div><b>Encomiendas</b><span>Si cabe en la mochila</span></div></button>'+
+            '</div>';
+        }
+        var NH_PUERTA={
+            compra:{titulo:'Compras',img:'compras',bajada:'Te lo compramos y te lo llevamos. Si cabe en la mochila de la moto, va.',
+                chipsTit:'¿Dónde?',chips:['Farmacia','Súper o tienda','Panadería','Mercado','Otro lugar'],
+                nota:'El motorizado compra con su dinero y tú pagas lo que diga el recibo más el envío, cuando te llega. Si la compra es grande, te pedimos transferir antes.',
+                btn:'Pedir por WhatsApp'},
+            encomienda:{titulo:'Encomiendas',img:'encomienda',bajada:'Llaves, documentos, remedios, un regalo… Si cabe en la mochila, te lo llevamos.',
+                chipsTit:'¿Qué envías?',chips:['Documentos','Llaves','Paquete pequeño','Comida','Otro'],
+                nota:'Te confirmamos el precio por WhatsApp antes de que salga la moto.',
+                btn:'Enviar por WhatsApp'}
+        };
+        window.abrirPuerta=function(tipo){
+            var c=NH_PUERTA[tipo]; if(!c) return;
+            cerrarPuerta();
+            var gps=!!window._clientGPS;
+            var h='<div class="nh-velo" onclick="cerrarPuerta()"></div>'+
+                '<div class="nh-hoja" role="dialog" aria-modal="true" aria-labelledby="nh-hoja-t">'+
+                '<div class="nh-asa"></div>'+
+                '<div class="nh-hh"><img src="/app/img/cat3d/'+c.img+'.webp" alt="" width="44" height="44"><div><b id="nh-hoja-t">'+c.titulo+'</b><span>'+c.bajada+'</span></div><button class="nh-x" onclick="cerrarPuerta()" aria-label="Cerrar">✕</button></div>'+
+                '<span class="nh-lb">'+c.chipsTit+'</span><div class="nh-ch" id="nh-ch">';
+            c.chips.forEach(function(x,i){h+='<button type="button" onclick="nhChip(this)"'+(i===0?' class="on"':'')+'>'+x+'</button>';});
+            h+='</div>';
+            if(tipo==='compra'){
+                h+='<label class="nh-lb" for="nh-que">¿Qué necesitas?</label>'+
+                   '<textarea class="nh-campo" id="nh-que" rows="3" maxlength="400" placeholder="Ej.: jarabe para la tos y 2 sueros de uva"></textarea>'+
+                   '<div class="nh-ent">📍 <span>Entregar en: <b>'+(gps?'tu ubicación actual':'te pedimos tu ubicación en el chat')+'</b></span></div>';
+            } else {
+                h+='<label class="nh-lb" for="nh-desde">¿Dónde lo recogemos?</label>'+
+                   '<input class="nh-campo" id="nh-desde" maxlength="160" autocomplete="off" placeholder="Dirección o una referencia">'+
+                   (gps?'<button type="button" class="nh-aqui" id="nh-aqui-desde" onclick="nhAqui(\'desde\')">📍 Es donde estoy ahora</button>':'')+
+                   '<label class="nh-lb" for="nh-hasta">¿A dónde lo llevamos?</label>'+
+                   '<input class="nh-campo" id="nh-hasta" maxlength="160" autocomplete="off" placeholder="Dirección o una referencia">'+
+                   (gps?'<button type="button" class="nh-aqui" id="nh-aqui-hasta" onclick="nhAqui(\'hasta\')">📍 Es donde estoy ahora</button>':'')+
+                   '<label class="nh-lb" for="nh-recibe">¿Quién recibe? <small>(opcional)</small></label>'+
+                   '<input class="nh-campo" id="nh-recibe" maxlength="80" autocomplete="off" placeholder="Nombre y celular">';
+            }
+            h+='<div class="nh-nt">'+c.nota+'</div>'+
+               '<div class="nh-err" id="nh-err" hidden></div>'+
+               '<button class="nh-btn" onclick="enviarPuerta(\''+tipo+'\')">'+c.btn+'</button>'+
+               '</div>';
+            var w=document.createElement('div'); w.id='nh-puerta'; w.innerHTML=h; document.body.appendChild(w);
+            document.body.classList.add('sheet-locked');
+            try{history.pushState({v:currentView,r:currentRestIdx,ov:'puerta'},'');}catch(e){} // atrás = cerrar la hoja
+        };
+        window.cerrarPuerta=function(){
+            var w=document.getElementById('nh-puerta'); if(!w) return false;
+            w.parentNode.removeChild(w); document.body.classList.remove('sheet-locked'); return true;
+        };
+        window.nhChip=function(b){var p=b.parentNode;for(var i=0;i<p.children.length;i++)p.children[i].classList.remove('on');b.classList.add('on');};
+        // "Es donde estoy ahora": usa el GPS para UNO de los dos puntos de la encomienda (no para los dos).
+        window.nhAqui=function(campo){
+            var otro=campo==='desde'?'hasta':'desde';
+            var b=document.getElementById('nh-aqui-'+campo),inp=document.getElementById('nh-'+campo);
+            var bo=document.getElementById('nh-aqui-'+otro),io=document.getElementById('nh-'+otro);
+            if(!b||!inp) return;
+            var on=!b.classList.contains('on');
+            b.classList.toggle('on',on); inp.value=on?'Donde estoy ahora':''; inp.readOnly=on;
+            if(on&&bo&&bo.classList.contains('on')){bo.classList.remove('on');if(io){io.value='';io.readOnly=false;}}
+        };
+        window.enviarPuerta=function(tipo){
+            var err=document.getElementById('nh-err');
+            function falta(m){if(err){err.textContent=m;err.hidden=false;}}
+            function val(id){var e=document.getElementById(id);return e?String(e.value||'').trim():'';}
+            function aqui(campo){var b=document.getElementById('nh-aqui-'+campo);return !!(b&&b.classList.contains('on'));}
+            var chip=document.querySelector('#nh-ch button.on'); chip=chip?chip.textContent:'';
+            var g=window._clientGPS, mapa=g?'https://maps.google.com/?q='+Number(g.lat).toFixed(6)+','+Number(g.lng).toFixed(6):'';
+            var msg;
+            if(tipo==='compra'){
+                var que=val('nh-que');
+                if(que.length<3) return falta('Cuéntanos qué necesitas que compremos.');
+                msg='Hola DEWAN 👋 Quiero una *COMPRA* 🛒\n'+
+                    '*Dónde:* '+chip+'\n'+
+                    '*Qué:* '+que+'\n'+
+                    '*Entregar en:* '+(mapa?'mi ubicación 📍 '+mapa:'ahora les mando mi ubicación 📍');
+            } else {
+                var desde=aqui('desde')&&mapa?'donde estoy ahora 📍 '+mapa:val('nh-desde');
+                var hasta=aqui('hasta')&&mapa?'donde estoy ahora 📍 '+mapa:val('nh-hasta');
+                if(desde.length<3) return falta('Cuéntanos dónde lo recogemos.');
+                if(hasta.length<3) return falta('Cuéntanos a dónde lo llevamos.');
+                var recibe=val('nh-recibe');
+                msg='Hola DEWAN 👋 Quiero enviar una *ENCOMIENDA* 📦\n'+
+                    '*Qué envío:* '+chip+'\n'+
+                    '*Recoger en:* '+desde+'\n'+
+                    '*Entregar en:* '+hasta+
+                    (recibe?'\n*Recibe:* '+recibe:'');
+            }
+            var url='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
+            cerrarPuerta();
+            var w=null; try{w=window.open(url,'_blank');}catch(e){}
+            if(!w) location.href=url; // popup bloqueado o webview: abrir en la misma pestaña
+        };
+        // ── Promo grande que se desliza (con puntitos y avance solo cada 5 s hasta que el cliente la toca).
+        // Sale de datos que la web YA tiene: tema del día, envío $1 (lun-mié), locales nuevos y el servicio de encomiendas.
+        function nhPromosHTML(){
+            var s=[];
+            var col=_colTema(), tem=window._temaHome;
+            if(col&&(tem===undefined||(tem&&tem.length))){
+                var foto=tem&&tem[0]&&tem[0].foto_url?thumb(tem[0].foto_url,720):'';
+                var dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+                s.push({foto:foto,k:'Hoy '+dias[_hNowEc().getDay()],t:nhSinEmoji(col.titulo),d:nhMayus(col.sub),cta:'Ver platos',on:"nhIrA('home-tema-rail')"});
+            }
+            if(promoEnvioDiaActivo()) s.push({ico:'/app/img/cat3d/promohoy.webp',k:'Hoy '+nombreDiaPromo(),t:'Envío a $1',d:'En aliados cercanos · pedidos desde $10',cta:'Ver locales',on:"nhIrA('nh-todos')"});
+            var nuevos=((sessionData&&sessionData.resultados)||[]).filter(function(r){return _esNuevoRest(r)&&(r.tipo_acuerdo==='aliado'||r.tipo_acuerdo==='cliente_paga');});
+            nuevos.sort(function(a,b){return (isRestOpen(a.horario)===false?1:0)-(isRestOpen(b.horario)===false?1:0);});
+            nuevos.slice(0,2).forEach(function(r){
+                var f=((window._fotoRest&&window._fotoRest[r.id])||[])[0];
+                s.push({foto:f?thumb(f,720):'',logo:r.logo_url||'',k:'Nuevo en DEWAN',t:r.nombre,d:nhMayus(r.categoria_canonica||r.categoria||''),cta:'Ver el menú',on:"openRest('"+jsEsc(r.nombre)+"')"});
+            });
+            if(!OP_MODE) s.push({ico:'/app/img/cat3d/encomienda.webp',k:'Encomiendas',t:'Si cabe en la mochila, te lo llevamos',d:'Llaves, documentos, remedios, un regalo',cta:'Enviar algo',on:"abrirPuerta('encomienda')"});
+            if(!s.length) return '';
+            var h='<div class="nh-hb"><div class="nh-hb-scroll" id="nh-hb" onscroll="nhHbDots(this)">';
+            s.forEach(function(x){
+                h+='<button class="nh-hb-slide'+(x.foto?' con-foto':' marca')+'" onclick="'+x.on+'">'+
+                    (x.foto?'<img class="foto" src="'+esc(x.foto)+'" alt="" loading="lazy" onerror="this.parentNode.classList.remove(\'con-foto\');this.parentNode.classList.add(\'marca\');this.remove()">':'')+
+                    (x.ico?'<img class="ico" src="'+x.ico+'" alt="" width="96" height="96">':'')+
+                    (x.logo?'<img class="logo" src="'+esc(x.logo)+'" alt="" loading="lazy" onerror="this.remove()">':'')+
+                    '<span class="nh-hb-txt"><small>'+esc(x.k)+'</small><b>'+esc(x.t)+'</b>'+(x.d?'<span>'+esc(x.d)+'</span>':'')+'<em>'+esc(x.cta)+'</em></span>'+
+                '</button>';
+            });
+            h+='</div>';
+            if(s.length>1){h+='<div class="nh-hb-dots" id="nh-hb-dots" aria-hidden="true">';s.forEach(function(x,i){h+='<i'+(i===0?' class="on"':'')+'></i>';});h+='</div>';}
+            return h+'</div>';
+        }
+        window.nhHbDots=function(sc){
+            if(!sc||!sc.children.length) return;
+            var i=Math.round(sc.scrollLeft/Math.max(1,sc.children[0].offsetWidth+16));
+            var d=document.getElementById('nh-hb-dots'); if(!d) return;
+            for(var k=0;k<d.children.length;k++) d.children[k].className=(k===i?'on':'');
+        };
+        window.nhIrA=function(id){
+            var el=document.getElementById(id);
+            if(!el||!el.innerHTML.trim()) return;
+            window.scrollTo({top:el.getBoundingClientRect().top+window.pageYOffset-8,behavior:'smooth'});
+        };
+        setInterval(function(){
+            try{
+                if(document.hidden||window._nhHbTocado||currentView!=='home') return;
+                var sc=document.getElementById('nh-hb'); if(!sc||sc.children.length<2) return;
+                var rc=sc.getBoundingClientRect(); if(rc.bottom<0||rc.top>(window.innerHeight||1e4)) return;
+                var w=sc.children[0].offsetWidth+16;
+                var i=Math.round(sc.scrollLeft/w)+1; if(i>=sc.children.length) i=0;
+                sc.scrollTo({left:i*w,behavior:'smooth'});
+            }catch(e){}
+        },5000);
+        ['touchstart','mousedown','wheel'].forEach(function(ev){
+            document.addEventListener(ev,function(e){try{if(e.target&&e.target.closest&&e.target.closest('#nh-hb'))window._nhHbTocado=true;}catch(x){}},{passive:true});
+        });
+        // ── Logos de los aliados (antes: tarjetas grandes "Aliados de hoy")
+        function nhLogosHTML(rests){
+            var h='<div class="nh-sec"><b>Nuestros locales</b><span>toca y entra</span></div><div class="nh-logos">';
+            rests.slice(0,16).forEach(function(r){
+                var logo=r.logo_url||r.imagen_url||'';
+                h+='<button class="nh-logo'+(isRestOpen(r.horario)===false?' cerrado':'')+'" onclick="openRest(\''+jsEsc(r.nombre)+'\')">'+
+                    '<span class="ci"><i style="background:'+monoColor(r.nombre)+'">'+esc(inicialLocal(r.nombre))+'</i>'+
+                        (logo?'<img src="'+esc(logo)+'" alt="" loading="lazy" onerror="this.remove()">':'')+'</span>'+
+                    '<span>'+esc(r.nombre)+'</span>'+
+                '</button>';
+            });
+            return h+'</div>';
+        }
+        // Fotos de la tarjeta del local: se deslizan con el dedo (como la app nativa desde el 20-jul), sin rotar solas.
+        window.nhRc2Dots=function(sc){
+            var i=Math.round(sc.scrollLeft/Math.max(1,sc.clientWidth));
+            var d=sc.parentNode&&sc.parentNode.querySelector('.rc2-dots'); if(!d) return;
+            for(var k=0;k<d.children.length;k++) d.children[k].className=(k===i?'on':'');
+        };
+
         window.renderHome=function(){
             currentView='home';
             currentRestIdx=null;
@@ -2441,33 +2818,15 @@
             });
 
             var hasGPS=!!window._clientGPS;
-            var gr=greetingV2();
             var searchPrefill=(sessionData.busqueda_texto||'').trim();
 
-            var h='<div class="home-v2-top">'+'<div class="home-v2-brand"><span class="app-logo" role="img" aria-label="DEWAN"></span></div>'+
-                '<div class="home-v2-row">'+
-                    '<div style="flex:1;min-width:0">'+
-                        '<div class="home-v2-loc">📍 Riobamba, Ecuador</div>'+
-                        '<div class="home-v2-greeting">'+gr.g+'</div>'+
-                    '</div>'+
-                    '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">'+(window._cart.length?'🛒 '+cartTotals().items+' items':'🛒')+'</button>'+
-                '</div>'+
-                '<button class="search-hero" onclick="showSearch()">'+
-                    '<span class="search-hero-icon">🔍</span>'+
-                    '<span class="search-hero-text">'+(searchPrefill?esc(searchPrefill):'¿Qué se te antoja?')+'</span>'+
-                    '<span class="search-hero-tag">BUSCAR</span>'+
-                '</button>'+
-                '<div class="home-trust"><span>🛵 Entregas en todo Riobamba</span><span class="trust-dot">·</span><span>💵 Pagas al recibir</span><span class="trust-dot">·</span><span>✓ Sin registro</span></div>'+
-            '</div>';
-
-            // 🔥 Carril de COMIDA arriba del todo (solo home sin filtro): la comida es lo que vende,
-            // debe verse en la primera pantalla, antes del banner/chips/GPS/sort.
-            if(!window._activeCat) h+=renderHomeCtxRail('momento'); // HOME VIVA: lo de AHORA (☕ mañana · 🍱 almuerzo · 🧁 tarde · 🌙 noche)
-            if(!window._activeCat) h+=renderHomeFoodRail();
-
-            // Home liviano: UN solo banner por prioridad (cupón > promo envío > Mundial > precio del local)
-            h+=renderHomeBanner();
-            if(!window._activeCat) h+=renderHomeCtxRail('tema');    // HOME VIVA: tema del día (🍕 martes de pizza, 🍗 jueves de alitas…)
+            // NUEVO INICIO (4-oct-2026): el orden de las apps grandes. Arriba, DÓNDE te lo llevamos;
+            // luego el buscador, las puertas (Compras/Encomiendas) y las categorías; después la promo
+            // que se desliza y los carriles de comida (la comida sigue en la primera pantalla).
+            var h=(window._pwaModo&&!window._activeCat&&!OP_MODE&&window.pwaBarHTML?window.pwaBarHTML():'')+
+                nhHeaderHTML(hasGPS)+
+                '<button class="nh-busca" onclick="showSearch()">'+NH_SVG_BUSCA+'<span>'+(searchPrefill?esc(searchPrefill):'Buscar locales o platos')+'</span></button>'+
+                (window._activeCat?'':'<div class="nh-confia">🛵 Todo Riobamba · 💵 Pagas al recibir · ✓ Sin registro</div>'+nhPuertasHTML());
 
             // Chips de categoría. Mundial: 'partido' solo aparece en período.
             // En horario de almuerzo (12-15h) el chip 🍱 Almuerzo va PRIMERO (al mediodía la gente busca almuerzo, no promos).
@@ -2479,11 +2838,19 @@
                 var c=CAT_MAP_V2[k];
                 var active=window._activeCat===k;
                 h+='<button class="cat-chip'+(active?' active':'')+'" onclick="toggleCategoryV2(\''+k+'\')">'+
-                    '<span class="cat-chip-icon">'+c.icon+'</span>'+
+                    '<span class="cat-chip-icon">'+nhIconoCat(k,c.icon)+'</span>'+
                     '<span>'+c.label+'</span>'+
                 '</button>';
             });
             h+='</div></div>';
+
+            // Promo grande que se desliza + carriles de comida (solo el inicio sin filtro)
+            if(!window._activeCat){
+                h+=nhPromosHTML();
+                h+=renderHomeCtxRail('momento'); // HOME VIVA: lo de AHORA (☕ mañana · 🍱 almuerzo · 🧁 tarde · 🌙 noche)
+                h+=renderHomeFoodRail();         // 🔥 Los más pedidos (ventas reales)
+                h+=renderHomeCtxRail('tema');    // HOME VIVA: tema del día (🍕 martes de pizza, 🍗 jueves de alitas…)
+            }
 
             // Banner filtro activo
             if(window._activeCat){
@@ -2512,30 +2879,11 @@
                 if(_cmRail&&_railCat&&_railCat.length) h+=renderCtxPhotoRail(_railCat,_cmRail.icon+' '+_cmRail.label,'📸 con foto · toca para agregar');
             }
 
-            // Banner GPS (si no tiene, no está descartado). No mostrarlo con filtro activo: ya hay banner de filtro → evita doble franja ámbar.
-            if(!hasGPS&&!window._activeCat){
-                var dismissed=false;
-                try{dismissed=sessionStorage.getItem('dewan_gps_dismissed')==='1'}catch(e){}
-                try{if(!dismissed){var _gd=parseInt(localStorage.getItem('dewan_gps_dismissed_ts')||'0',10);dismissed=_gd>0&&(Date.now()-_gd)<24*60*60*1000;}}catch(e){}
-                if(!dismissed){
-                    var gpsTxt=promoEnvioDiaActivo()
-                        ? 'Pon tu ubicación<small>Mira el envío real de cada local · hoy puede bajar a $1 con un aliado cerca (Lun-Mié, desde $10)</small>'
-                        : 'Pon tu ubicación<small>Mira distancias y el envío real — y al pedir ya no te la pedimos otra vez 🛵</small>';
-                    h+='<div class="gps-banner" id="gps-banner" onclick="requestGPSFromBanner(event)">'+
-                        '<span class="gps-banner-icon">📍</span>'+
-                        '<span class="gps-banner-text">'+gpsTxt+'</span>'+
-                        '<button class="gps-banner-cta" onclick="requestGPSFromBanner(event)">Activar</button>'+
-                        '<button class="gps-banner-close" onclick="event.stopPropagation();dismissGPSBanner()">✕</button>'+
-                    '</div>';
-                }
-            }
-
-            // Sort pills (solo si no hay filtro de categoría activo, para no abarrotar)
-            if(!window._activeCat){
-                h+='<div class="sort-bar">'+
-                    pillBtn('recomendado','✨ Recomendado',false)+pillBtn('distancia','📍 Mas cerca',!hasGPS)+pillBtn('precio','💰 Menor precio',false)+pillBtn('delivery','🚚 Menor delivery',false)+
-                '</div>';
-            }
+            // [4-oct-2026] La tarjeta "Pon tu ubicación" se fue: la ubicación se elige arriba ("Entregar en ▾").
+            // Los filtros (antes aquí) ahora van pegados a la lista "Todos los locales".
+            var sortBarH='<div class="sort-bar nh-filtros">'+
+                pillBtn('recomendado','✨ Recomendado',false)+(hasGPS?pillBtn('distancia','📍 Más cerca',false):'<button class="pill-gps" onclick="pedirUbicacionInicio()">📍 Más cerca</button>')+pillBtn('precio','💰 Menor precio',false)+pillBtn('delivery','🛵 Envío más barato',false)+
+            '</div>';
 
             // V3.0: Skeleton mientras carga categoría (skeletons en grilla 3 para consistencia)
             if(window._activeCat&&window._catLoading){
@@ -2615,52 +2963,22 @@
                         }
                     }
                 } else {
-                    // Home sin filtro: socios primero, silenciosos detrás de botón
-                    // (el carril "Para ti" ya se renderizó arriba, antes del banner)
+                    // Home sin filtro: logos de los aliados → "Todos los locales" con filtros → lista.
+                    // Los silenciosos siguen detrás de un botón.
                     var homeBy=partitionBySocio(rests);
-                    // Sección destacada: carousel horizontal con aliados (solo si hay aliados)
                     var aliadosDestacados=dailyShuffle(homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'}));
-                    // Empujar los CERRADOS al final del carrusel (de noche era un mar de "CERRADO" rojo arriba)
+                    // CERRADOS al final (de noche era un mar de "CERRADO" arriba)
                     aliadosDestacados.sort(function(a,b){var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);var va=sa===true?0:sa===null?1:2,vb=sb===true?0:sb===null?1:2;return va-vb;});
-                    if(aliadosDestacados.length){
-                        h+='<div class="destacados-section">';
-                        h+='<div class="destacados-title">⭐ <span class="destacados-title-acc">Aliados de hoy'+(promoEnvioDiaActivo()?' · 🛵 envío $1 Lun-Mié':'')+'</span></div>';
-                        h+='<div class="destacados-scroll">';
-                        aliadosDestacados.forEach(function(r,idx){
-                            var hasImg=r.imagen_url||r.logo_url||r.foto_url;
-                            var isOpen=isRestOpen(r.horario);
-                            var color=monoColor(r.nombre);
-                            h+='<div class="destacados-card grid3-card" onclick="openRest(\''+jsEsc(r.nombre)+'\')" style="border-color:rgba(34,197,94,0.35)">'+
-                                '<div class="grid3-top" style="background:linear-gradient(135deg,'+color+'3A 0%,'+color+'12 100%)">'+
-                                    (descuentoPctRest(r)>0?'<span class="grid3-sello">-'+descuentoPctRest(r)+'%</span>':'')+
-                                    '<span class="aliado-badge">⭐ Aliado</span>'+
-                                    (r.top_semana?'<span class="top-semana-badge">🔥 Top semana</span>':'')+
-                                    '<span class="grid3-mono">'+esc(inicialLocal(r.nombre))+'</span>'+
-                                    (hasImg?'<img class="grid3-img" src="'+esc(thumb(hasImg,360))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()">':'<span class="grid3-mono-cat">'+getEmoji(r.nombre)+'</span>')+
-                                    (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
-                                '</div>'+
-                                '<div class="grid3-body">'+
-                                    '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
-                                    sucursalHTML(r)+
-                                    ((Number(r.markup_pct)||0)===0?'<div class="grid3-precio-local">✓ Mismo precio que en el local</div>':'')+
-                                    (promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005?'<div style="margin-top:3px"><span class="grid3-envio1">🛵 Hoy envío $1</span></div>':'')+
-                                '</div>'+
-                            '</div>';
-                        });
-                        h+='</div></div>';
-                    }
-                    h+='<section class="home-card">';
-                    h+='<div class="list-section-title">'+(hasGPS?'📍 Cerca de ti':'✨ Descubre')+' · '+homeBy.socios.length+'</div>';
+                    if(aliadosDestacados.length>=4) h+=nhLogosHTML(aliadosDestacados);
+                    h+='<div class="nh-sec" id="nh-todos"><b>'+(hasGPS?'Cerca de ti':'Todos los locales')+'</b><span>'+homeBy.socios.length+'</span></div>';
+                    h+=sortBarH;
                     if(homeBy.socios.length){
-                        // [14-jul] Socios COMPLETOS en la home (pedido de David): la vitrina
-                        // principal muestra todos los aliados + cliente_paga, sin preview.
-                        h+='<div class="grid3-wrap">';
+                        h+='<div class="grid3-wrap nh-lista">';
                         homeBy.socios.forEach(function(r,idx){
                             h+=renderRestCardGrid(r,idx,'openRest(\''+jsEsc(r.nombre)+'\')');
                         });
                         h+='</div>';
                     }
-                    h+='</section>';
                     // "Más opciones": no-aliados (silenciosos). En la HOME van colapsados a un
                     // solo botón (preview 0): la vitrina principal es de los socios. En categorías
                     // y búsqueda siguen con preview normal (variedad donde el cliente ya busca).
@@ -3497,10 +3815,8 @@
             var cat=esc(r.categoria_canonica||r.categoria||'');
             var metaBits=[];
             if(r._matchCount) metaBits.push('<span class="grid3-badge-count">'+r._matchCount+'</span>');
-            // Tiempo SIEMPRE (fallback ~25m si no hay GPS, igual que la tarjeta grande)
-            metaBits.push('⏱ '+(r.tiempo_estimado_min||25)+'m');
-            if(window._clientGPS&&r.precio_delivery) metaBits.push('🛵 $'+Number(r.precio_delivery).toFixed(2));
-            else if(r.distancia_km) metaBits.push('📍 '+r.distancia_km+'km');
+            // [4-oct-2026] Tiempo en RANGO + lo que cuesta el envío (antes "⏱ 25m" igual en todas y sin envío)
+            metaBits.push(nhMetaLocal(r));
             // Badges según tipo de acuerdo
             var isAliado=r.tipo_acuerdo==='aliado';
             var aliadoBadge=isAliado?'<span class="aliado-badge">⭐ Aliado</span>':'';
@@ -3520,24 +3836,30 @@
             var cover=covers?covers[0]:null;
             var perksH=(isAliado?'<div class="grid3-aliado-perks">'+((Number(r.markup_pct)||0)===0?'<span class="grid3-pl">✓ Mismo precio en el local</span>':'')+((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="grid3-envio1">🛵 Envío $1</span>':'')+'</div>':'');
             if(cover){
-                return '<div class="grid3-card" onclick="'+openCmd+'" style="border-color:'+borderCol+'">'+
-                    '<div class="grid3-top" style="background:var(--card2)">'+
-                        aliadoBadge+
+                // [4-oct-2026] Tarjeta estilo apps grandes: foto 2:1 que se desliza con el dedo, logo + nombre,
+                // "30–45 min · Envío $1.30 · categoría" y "Precio del local" en verde. Sin el sello amarillo "Aliado"
+                // (la ⭐ junto al nombre queda, como en la app nativa).
+                var cerr=isOpen===false, fotos=covers.slice(0,3), fotosH='';
+                fotos.forEach(function(cv,i){fotosH+='<img src="'+esc(thumb(cv,720))+'" alt="'+(i===0?esc(r.nombre):'')+'"'+(i?' loading="lazy"':'')+' onerror="this.remove()">';});
+                var chipH=r.top_semana?'<span class="rc2-chip">🔥 Top semana</span>'
+                    :((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="rc2-chip">🛵 Envío $1 hoy</span>':'');
+                var plH=(isAliado&&(Number(r.markup_pct)||0)===0)?'<span class="rc2-pl">✓ Precio del local</span>':'';
+                return '<div class="grid3-card rc2'+(cerr?' cerrado':'')+'" onclick="'+openCmd+'">'+
+                    '<div class="grid3-top">'+
+                        '<div class="rc2-fotos"'+(fotos.length>1?' onscroll="nhRc2Dots(this)"':'')+'>'+fotosH+'</div>'+
+                        (fotos.length>1?'<div class="rc2-dots">'+fotos.map(function(x,i){return '<i'+(i===0?' class="on"':'')+'></i>';}).join('')+'</div>':'')+
+                        chipH+
                         feeBadge+
-                        topBadge+
-                        '<img class="grid3-img" src="'+esc(thumb(cover,720))+'" alt="'+esc(r.nombre)+'" loading="lazy" onerror="this.remove()"'+
-                            (isOpen!==false&&covers.length>1?' data-covers="'+esc(covers.join('|'))+'" data-ci="0" data-ph="'+Math.floor(Math.random()*3)+'"':'')+
-                            (isOpen===false?' style="opacity:0.45"':'')+'>'+
-                        (r.logo_url?'<img class="grid3-logochip" src="'+esc(r.logo_url)+'" alt="" loading="lazy" onerror="this.remove()">':'')+
-                        (isOpen===false?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
+                        (cerr?'<span class="grid3-closed">'+(proximaApertura(r.horario)?'Abre '+proximaApertura(r.horario):'Cerrado')+'</span>':'')+
                     '</div>'+
-                    '<div class="grid3-body">'+
-                        '<div class="grid3-name">'+esc(r.nombre)+'</div>'+
-                        sucursalHTML(r)+
-                        (cat?'<div class="grid3-cat"><span class="grid3-cat-name">'+cat+'</span></div>':'')+
-                        perksH+
-                        '<div class="grid3-meta">'+metaBits.join(' · ')+'</div>'+
-                        _freshChips(r)+
+                    '<div class="rc2-body">'+
+                        (r.logo_url?'<img class="rc2-logo" src="'+esc(r.logo_url)+'" alt="" loading="lazy" onerror="this.remove()">':'')+
+                        '<div class="rc2-txt">'+
+                            '<div class="grid3-name">'+(isAliado?'⭐ ':'')+esc(r.nombre)+'</div>'+
+                            sucursalHTML(r)+
+                            '<div class="rc2-meta">'+metaBits.join(' · ')+(cat?' · '+cat:'')+'</div>'+
+                            '<div class="rc2-perks">'+plH+_freshChips(r)+'</div>'+
+                        '</div>'+
                     '</div>'+
                 '</div>';
             }
@@ -5586,6 +5908,13 @@
         var deferredPrompt = null;
         var URL_PLAY = 'https://play.google.com/store/apps/details?id=com.dewan.cliente';
 
+        window.pwaBarHTML = function(){
+            var m = window._pwaModo; if (!m) return '';
+            var t = m === 'play' ? ['Descarga la app DEWAN','Sigue a tu moto en vivo · gratis','Descargar']
+                  : (m === 'ios' ? ['Ten DEWAN en tu inicio','Pide en 2 toques','Ver cómo'] : ['Ábrelo en Chrome','y descarga la app DEWAN','Abrir']);
+            return '<div class="pwa-bar" id="pwa-bar"><img src="/app/icons-cliente/icon-192.png" alt="" width="30" height="30"><div class="t"><b>'+t[0]+'</b><span>'+t[1]+'</span></div>'+
+                '<button class="ok" onclick="_pwaAccion()">'+t[2]+'</button><button class="no" onclick="_pwaCerrar()" aria-label="Cerrar">✕</button></div>';
+        };
         function pintarBanner(modo){
             if (document.getElementById('pwa-banner')) return;
             var b = document.createElement('div');
@@ -5644,7 +5973,7 @@
                 '<button id="pwa-ios-ok">Entendido</button></div>';
             document.body.appendChild(s);
             s.addEventListener('click', function(e){ if (e.target === s) s.remove(); });
-            document.getElementById('pwa-ios-ok').onclick = function(){ s.remove(); dormir(14); var bb=document.getElementById('pwa-banner'); if(bb) bb.remove(); };
+            document.getElementById('pwa-ios-ok').onclick = function(){ s.remove(); dormir(14); window._pwaModo = null; var bb=document.getElementById('pwa-banner')||document.getElementById('pwa-bar'); if(bb) bb.remove(); };
         }
 
         // 27-jul: en Android ya NO se ofrece instalar la web. Hay app nativa en Play y es
@@ -5655,14 +5984,29 @@
         });
         window.addEventListener('appinstalled', function(){
             try{ if(typeof fbq==='function') fbq('trackCustom','PWAInstall'); }catch(e){}
-            var bb = document.getElementById('pwa-banner'); if (bb) bb.remove();
+            var bb = document.getElementById('pwa-banner')||document.getElementById('pwa-bar'); if (bb) bb.remove();
+            window._pwaModo = null;
             dormir(3650);
         });
-        if (esIOS && !esInApp) setTimeout(function(){ pintarBanner('ios'); }, 15000);
-        else if (esAndroid && esInApp) setTimeout(function(){ pintarBanner('chrome'); }, 12000);
-        // Android en navegador normal -> la app de Play (no depende de beforeinstallprompt,
-        // que en muchos navegadores ni dispara).
-        else if (esAndroid) setTimeout(function(){ pintarBanner('play'); }, 12000);
+        // [4-oct-2026] Nuevo inicio: el aviso ya no flota abajo tapando platos y el botón del carrito
+        // (pintarBanner queda sin uso). Es una franja delgada ARRIBA del inicio que pinta renderHome;
+        // "✕" la duerme 7 días. Mismos destinos de siempre: iPhone = cómo instalar, Android = Play,
+        // navegador dentro de Facebook/Instagram en Android = abrir en Chrome.
+        var modoBar = (esIOS && !esInApp) ? 'ios' : ((esAndroid && esInApp) ? 'chrome' : (esAndroid ? 'play' : null));
+        if (modoBar) {
+            window._pwaModo = modoBar;
+            window._pwaAccion = function(){
+                var bar = document.getElementById('pwa-bar');
+                if (modoBar === 'play') { if (bar) bar.remove(); window._pwaModo = null; dormir(30); window.open(URL_PLAY, '_blank'); return; }
+                if (modoBar === 'ios') { hojaIOS(); return; }
+                if (bar) bar.remove(); window._pwaModo = null; dormir(1);
+                location.href = 'intent://pedir.dewansas.com/#Intent;scheme=https;package=com.android.chrome;end';
+            };
+            window._pwaCerrar = function(){ var bar = document.getElementById('pwa-bar'); if (bar) bar.remove(); window._pwaModo = null; dormir(7); };
+            // Si el inicio ya se pintó antes de este script, la franja se agrega arriba ahora.
+            var app0 = document.getElementById('app');
+            if (app0 && !document.getElementById('pwa-bar') && document.querySelector('.nh-top') && !/[?&]op=1/.test(location.search)) app0.insertAdjacentHTML('afterbegin', window.pwaBarHTML());
+        }
     })();
     </script>
     <script>
