@@ -2655,8 +2655,21 @@
             }});
         };
         // ── Puertas: Compras y Encomiendas. Abren una hoja que se confirma AQUÍ (ver abrirPuerta más abajo).
+        // Las puertas solo las ven los clientes cuando la web ACEPTA carreras de verdad (carrera_config.web_carreras = on).
+        // En 'prueba' solo las ve quien abrió la web con ?prueba=1 (David y las operadoras); ?prueba=0 lo quita.
+        window._webCarreras=null;
+        try{var _qsPr=new URLSearchParams(location.search).get('prueba');if(_qsPr==='1')localStorage.setItem('dewan_tester','1');if(_qsPr==='0')localStorage.removeItem('dewan_tester');}catch(e){}
+        function nhTester(){try{return localStorage.getItem('dewan_tester')==='1';}catch(e){return false;}}
+        function nhPuertasVisibles(){if(OP_MODE)return false;var m=window._webCarreras;return m==='on'||(m==='prueba'&&nhTester());}
+        (function(){
+            fetch(SB_URL+'/rest/v1/carrera_config?select=valor&clave=eq.web_carreras',{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(j){
+                var antes=nhPuertasVisibles();
+                window._webCarreras=(j&&j[0]&&j[0].valor)?String(j[0].valor).toLowerCase():'prueba';
+                if(antes!==nhPuertasVisibles()&&currentView==='home'){try{renderHome();}catch(e){}}
+            }).catch(function(){window._webCarreras='prueba';});
+        })();
         function nhPuertasHTML(){
-            if(OP_MODE) return '';
+            if(!nhPuertasVisibles()) return '';
             var nuevo=Date.now()<Date.parse('2026-11-04T00:00:00-05:00')?'<span class="nh-nuevo">Nuevo</span>':'';
             return '<div class="nh-puertas">'+
                 '<button class="nh-puerta" onclick="abrirPuerta(\'compra\')">'+nuevo+'<img src="/app/img/cat3d/compras.webp" alt="" width="36" height="36"><div><b>Compras</b><span>Farmacia, súper, mercado</span></div></button>'+
@@ -2876,7 +2889,7 @@
                 var f=((window._fotoRest&&window._fotoRest[r.id])||[])[0];
                 s.push({foto:f?thumb(f,720):'',logo:r.logo_url||'',k:'Nuevo en DEWAN',t:r.nombre,d:nhMayus(r.categoria_canonica||r.categoria||''),cta:'Ver el menú',on:"openRest('"+jsEsc(r.nombre)+"')"});
             });
-            if(!OP_MODE) s.push({ico:'/app/img/cat3d/encomienda.webp',k:'Encomiendas',t:'Si cabe en la mochila, te lo llevamos',d:'Llaves, documentos, remedios, un regalo',cta:'Enviar algo',on:"abrirPuerta('encomienda')"});
+            if(nhPuertasVisibles()) s.push({ico:'/app/img/cat3d/encomienda.webp',k:'Encomiendas',t:'Si cabe en la mochila, te lo llevamos',d:'Llaves, documentos, remedios, un regalo',cta:'Enviar algo',on:"abrirPuerta('encomienda')"});
             if(!s.length) return '';
             var h='<div class="nh-hb"><div class="nh-hb-scroll" id="nh-hb" onscroll="nhHbDots(this)">';
             s.forEach(function(x){
