@@ -972,6 +972,38 @@
         .nh-calle span{display:block;font-size:.72rem;color:var(--gris);font-weight:600}
         #nh-ubic .nh-aqui{margin-top:0}
         .pwa-bar img{width:40px!important;height:40px!important;border-radius:10px!important;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+        /* hojas de Compras / Encomiendas dentro de la web */
+        .nh-punto{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--card2);border:1.5px dashed rgba(232,67,26,.45);border-radius:14px;padding:10px 12px;font-family:inherit;color:var(--texto);cursor:pointer;min-height:54px}
+        .nh-punto.ok{border-style:solid;border-color:var(--border);background:var(--bg)}
+        .nh-punto .ic{font-size:1.15rem;flex:0 0 auto}
+        .nh-punto .tx{flex:1;min-width:0}
+        .nh-punto b{display:block;font-size:.9rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .nh-punto small{display:block;font-size:.7rem;color:var(--gris);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .nh-quitar{width:28px;height:28px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-size:.75rem;color:var(--gris);flex:0 0 auto}
+        .nh-quitar[hidden]{display:none}
+        .nh-hoja>*{flex-shrink:0} /* la hoja hace scroll: nada se aplasta (antes el cuadro de texto quedaba de 1 línea) */
+        .nh-dos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .nh-precio{background:#FFF7F3;border-radius:14px;padding:11px 13px;font-size:.8rem;display:flex;flex-direction:column;gap:3px;min-height:46px;justify-content:center}
+        .nh-precio-fila{display:flex;justify-content:space-between;align-items:baseline;font-size:.95rem;font-weight:800}
+        .nh-precio-fila b{font-size:1.3rem;font-weight:900}
+        .nh-precio small{color:var(--gris);font-weight:600;font-size:.72rem}
+        .nh-precio .mut{color:var(--gris);font-weight:700}
+        .nh-precio .err{color:#B42318;font-weight:800}
+        .nh-prueba{margin-top:4px;font-size:.72rem;font-weight:800;color:#92400E;background:#FEF3C7;border-radius:8px;padding:5px 8px}
+        .nh-aviso{font-size:.74rem;font-weight:700;color:#92400E;background:#FEF3C7;border-radius:10px;padding:8px 10px}
+        .nh-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+        .nh-pie{text-align:center;font-size:.7rem;color:var(--gris);font-weight:600}
+        .nh-ok-ic{width:66px;height:66px;border-radius:50%;background:var(--green);color:#fff;font-size:2.1rem;font-weight:900;display:grid;place-items:center;margin:10px auto 2px}
+        .nh-ok-t{display:block;text-align:center;font-size:1.15rem;font-weight:900;letter-spacing:-.01em}
+        .nh-ok-cod{text-align:center;font-weight:900;font-size:1.35rem;letter-spacing:.04em;color:var(--acc)}
+        .nh-ok-p{text-align:center;color:var(--gris);font-size:.86rem;margin:0;line-height:1.45}
+        a.nh-btn{display:block;text-align:center;text-decoration:none}
+        .nh-btn2{width:100%;border:1px solid var(--border);background:var(--bg);color:var(--texto);font-family:inherit;font-weight:800;font-size:.92rem;border-radius:14px;padding:12px;cursor:pointer}
+        .nh-activa{display:flex;align-items:center;gap:10px;margin:10px 16px 0;padding:10px 12px;border-radius:14px;background:var(--green);color:#fff;text-decoration:none}
+        .nh-activa div{flex:1;min-width:0}
+        .nh-activa b{display:block;font-size:.86rem;font-weight:900}
+        .nh-activa small{display:block;font-size:.7rem;opacity:.92;font-weight:600}
+        .nh-activa .nh-chev{color:#fff;font-size:1.25rem}
     </style>
 </head>
 <body>
@@ -1120,7 +1152,7 @@
         };
         function closeAnyOverlay(){
             if(window.cerrarUbicacion&&cerrarUbicacion()) return true;
-            var np=document.getElementById('nh-puerta'); if(np){ np.parentNode.removeChild(np); document.body.classList.remove('sheet-locked'); return true; }
+            if(window.cerrarPuerta&&cerrarPuerta()) return true;
             if(_cartSheetOpen()){ closeCart(); return true; }
             var fz=document.querySelector('.foto-zoom'); if(_isVisible(fz)){fz.parentNode.removeChild(fz);return true;}
             var sf=document.getElementById('service-fee-modal'); if(_isVisible(sf)){ if(window.closeServiceFeeInfo){closeServiceFeeInfo();}else{sf.style.display='none';} return true;}
@@ -2622,8 +2654,7 @@
                 if(currentView==='home') renderHome(); // tiempos y envíos de cada local con la distancia real
             }});
         };
-        // ── Puertas: Compras y Encomiendas. Paso 1: la hoja arma el pedido y lo manda SIEMPRE al WhatsApp
-        // del despacho (WA_MANUAL), donde las operadoras ya atienden compras y encomiendas (David, 4-oct).
+        // ── Puertas: Compras y Encomiendas. Abren una hoja que se confirma AQUÍ (ver abrirPuerta más abajo).
         function nhPuertasHTML(){
             if(OP_MODE) return '';
             var nuevo=Date.now()<Date.parse('2026-11-04T00:00:00-05:00')?'<span class="nh-nuevo">Nuevo</span>':'';
@@ -2632,95 +2663,201 @@
                 '<button class="nh-puerta" onclick="abrirPuerta(\'encomienda\')">'+nuevo+'<img src="/app/img/cat3d/encomienda.webp" alt="" width="36" height="36"><div><b>Encomiendas</b><span>Si cabe en la mochila</span></div></button>'+
             '</div>';
         }
-        var NH_PUERTA={
-            compra:{titulo:'Compras',img:'compras',bajada:'Te lo compramos y te lo llevamos. Si cabe en la mochila de la moto, va.',
-                chipsTit:'¿Dónde?',chips:['Farmacia','Súper o tienda','Panadería','Mercado','Otro lugar'],
-                nota:'El motorizado compra con su dinero y tú pagas lo que diga el recibo más el envío, cuando te llega. Si la compra es grande, te pedimos transferir antes.',
-                btn:'Pedir por WhatsApp'},
-            encomienda:{titulo:'Encomiendas',img:'encomienda',bajada:'Llaves, documentos, remedios, un regalo… Si cabe en la mochila, te lo llevamos.',
-                chipsTit:'¿Qué envías?',chips:['Documentos','Llaves','Paquete pequeño','Comida','Otro'],
-                nota:'Te confirmamos el precio por WhatsApp antes de que salga la moto.',
-                btn:'Enviar por WhatsApp'}
+        // ── Compras y Encomiendas DENTRO de la web (David, 4-oct: "que no se vaya a WhatsApp"): los puntos se marcan
+        // en el mapa, el precio lo calcula el servidor (misma tabla del bot de carreras) y se confirma aquí mismo.
+        // Webhook n8n "Carreras web" (mykeHM2k3gWDTZ4g): accion cotizar|crear. Modo prueba/real lo decide el servidor
+        // (carrera_config.web_carreras); en prueba se guarda la carrera PRUEBA-… pero no sale una moto real.
+        var NH_CARRERA_URL='https://n8n.dewansas.com/webhook/carrera-web';
+        var NH_LUGARES=[['farmacia','Farmacia'],['supermercado','Supermercado'],['tienda','Tienda'],['mercado','Mercado'],['panaderia','Panadería'],['otro','Otro']];
+        var NH_PRESUP=[['hasta10','Hasta $10'],['10a20','$10 a $20'],['mas20','Más de $20']];
+        var NH_SINO=[['llamar','Que me llame'],['parecido','Lo más parecido'],['no_traer','No lo traigan']];
+        var NH_QUE=[['Documentos','Documentos'],['Llaves','Llaves'],['Paquete pequeño','Paquete pequeño'],['Remedios','Remedios'],['Comida','Comida'],['Otro','Otro']];
+        function nhAttr(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+        function nhVal(id){var e=document.getElementById(id);return e?String(e.value||'').trim():'';}
+        function nhTelBonito(t){var d=String(t||'').replace(/\D/g,'');if(d.length===12&&d.indexOf('593')===0)d='0'+d.slice(3);if(d.length===9&&d.charAt(0)==='9')d='0'+d;return d.length===10?d.slice(0,3)+' '+d.slice(3,6)+' '+d.slice(6):String(t||'');}
+        function nhDatosCliente(){try{return JSON.parse(localStorage.getItem('dewan_cliente_web')||'{}')||{};}catch(e){return {};}}
+        function nhChips(id,ops,sel){var h='<div class="nh-ch" id="'+id+'">';ops.forEach(function(o){h+='<button type="button" data-v="'+nhAttr(o[0])+'" onclick="nhChipV(this)"'+(o[0]===sel?' class="on"':'')+'>'+esc(o[1])+'</button>';});return h+'</div>';}
+        window.nhChipV=function(b){
+            var p=b.parentNode,P=window._nhP;
+            for(var i=0;i<p.children.length;i++) p.children[i].classList.remove('on');
+            b.classList.add('on');
+            if(!P) return;
+            P[p.id]=b.getAttribute('data-v');
+            var av=document.getElementById('nh-aviso-20'); if(av) av.hidden=P.presup!=='mas20';
+            if(p.id==='lugar'||p.id==='paga') nhCotizar();
         };
-        window.abrirPuerta=function(tipo){
-            var c=NH_PUERTA[tipo]; if(!c) return;
-            cerrarPuerta();
-            var gps=!!window._clientGPS;
-            var h='<div class="nh-velo" onclick="cerrarPuerta()"></div>'+
-                '<div class="nh-hoja" role="dialog" aria-modal="true" aria-labelledby="nh-hoja-t">'+
-                '<div class="nh-asa"></div>'+
-                '<div class="nh-hh"><img src="/app/img/cat3d/'+c.img+'.webp" alt="" width="44" height="44"><div><b id="nh-hoja-t">'+c.titulo+'</b><span>'+c.bajada+'</span></div><button class="nh-x" onclick="cerrarPuerta()" aria-label="Cerrar">✕</button></div>'+
-                '<span class="nh-lb">'+c.chipsTit+'</span><div class="nh-ch" id="nh-ch">';
-            c.chips.forEach(function(x,i){h+='<button type="button" onclick="nhChip(this)"'+(i===0?' class="on"':'')+'>'+x+'</button>';});
-            h+='</div>';
-            if(tipo==='compra'){
-                h+='<label class="nh-lb" for="nh-que">¿Qué necesitas?</label>'+
-                   '<textarea class="nh-campo" id="nh-que" rows="3" maxlength="400" placeholder="Ej.: jarabe para la tos y 2 sueros de uva"></textarea>'+
-                   '<div class="nh-ent">📍 <span>Entregar en: <b>'+(gps?'tu ubicación actual':'te pedimos tu ubicación en el chat')+'</b></span></div>';
-            } else {
-                h+='<label class="nh-lb" for="nh-desde">¿Dónde lo recogemos?</label>'+
-                   '<input class="nh-campo" id="nh-desde" maxlength="160" autocomplete="off" placeholder="Dirección o una referencia">'+
-                   (gps?'<button type="button" class="nh-aqui" id="nh-aqui-desde" onclick="nhAqui(\'desde\')">📍 Es donde estoy ahora</button>':'')+
-                   '<label class="nh-lb" for="nh-hasta">¿A dónde lo llevamos?</label>'+
-                   '<input class="nh-campo" id="nh-hasta" maxlength="160" autocomplete="off" placeholder="Dirección o una referencia">'+
-                   (gps?'<button type="button" class="nh-aqui" id="nh-aqui-hasta" onclick="nhAqui(\'hasta\')">📍 Es donde estoy ahora</button>':'')+
-                   '<label class="nh-lb" for="nh-recibe">¿Quién recibe? <small>(opcional)</small></label>'+
-                   '<input class="nh-campo" id="nh-recibe" maxlength="80" autocomplete="off" placeholder="Nombre y celular">';
+        function nhBotonPunto(cual,vacio){
+            return '<button type="button" class="nh-punto" id="nh-pt-'+cual+'" onclick="nhElegirPunto(\''+cual+'\')">'+
+                '<span class="ic" aria-hidden="true">📍</span><span class="tx"><b id="nh-pt-'+cual+'-t">'+esc(vacio)+'</b><small id="nh-pt-'+cual+'-s">Toca para marcarlo en el mapa</small></span>'+
+                '<span class="nh-chev">▾</span></button>';
+        }
+        function nhPintarPunto(cual){
+            var P=window._nhP,p=P&&P[cual],b=document.getElementById('nh-pt-'+cual),t=document.getElementById('nh-pt-'+cual+'-t'),s=document.getElementById('nh-pt-'+cual+'-s');
+            if(!b||!t) return;
+            if(P.tipo==='compra'&&cual==='R'){
+                var x=document.getElementById('nh-pt-R-x');
+                if(p){t.textContent=p.txt;s.textContent=p.cerca?'Cerca de '+p.cerca:'Toca para cambiarlo';b.classList.add('ok');if(x)x.hidden=false;}
+                else{t.textContent='La más cercana a la entrega';s.textContent='¿Tienes un lugar exacto? Toca para marcarlo';b.classList.remove('ok');if(x)x.hidden=true;}
+                return;
             }
-            h+='<div class="nh-nt">'+c.nota+'</div>'+
-               '<div class="nh-err" id="nh-err" hidden></div>'+
-               '<button class="nh-btn" onclick="enviarPuerta(\''+tipo+'\')">'+c.btn+'</button>'+
-               '</div>';
+            if(p){t.textContent=p.txt;s.textContent=p.cerca?'Cerca de '+p.cerca:'Toca para cambiarlo';b.classList.add('ok');}
+        }
+        window.nhElegirPunto=function(cual){
+            var P=window._nhP; if(!P) return;
+            var g=window._clientGPS,actual=P[cual]||(cual==='E'&&g?{lat:g.lat,lng:g.lng}:null)||(cual==='R'&&P.E?{lat:P.E.lat,lng:P.E.lng}:null);
+            var tit=cual==='R'?(P.tipo==='compra'?'¿Dónde compramos?':'¿Dónde lo recogemos?'):'¿Dónde lo entregamos?';
+            abrirUbicacion({titulo:tit,lat:actual?actual.lat:null,lng:actual?actual.lng:null,boton:'Usar este punto',onOk:function(lat,lng,info){
+                if(!window._nhP) return;
+                window._nhP[cual]={lat:Number(lat),lng:Number(lng),txt:(info&&info.txt)||'Punto del mapa',cerca:(info&&info.cerca)||''};
+                nhPintarPunto(cual); nhCotizar();
+            }});
+        };
+        window.nhQuitarR=function(){var P=window._nhP;if(!P)return;P.R=null;nhPintarPunto('R');nhCotizar();};
+        function nhPayload(accion){
+            var P=window._nhP,d={accion:accion,tipo:P.tipo,orden_uid:P.uid};
+            if(P.E) d.entrega={lat:P.E.lat,lng:P.E.lng,texto:P.E.txt,referencia:nhVal('nh-ref-E')};
+            if(P.R) d.recogida={lat:P.R.lat,lng:P.R.lng,texto:P.R.txt,referencia:nhVal('nh-ref-R')};
+            if(P.tipo==='compra') d.compra={lugar:P.lugar,lista:nhVal('nh-que'),presupuesto:P.presup||'',si_no_hay:P.sino};
+            else d.encomienda={que:P.que,recibe_nombre:nhVal('nh-rnom'),recibe_telefono:nhVal('nh-rtel'),paga:P.paga};
+            d.cliente={nombre:nhVal('nh-nom'),telefono:nhVal('nh-tel')};
+            if(OP_MODE) d.prueba=true;
+            return d;
+        }
+        function nhPost(d){
+            var ctl=('AbortController' in window)?new AbortController():null; if(ctl) setTimeout(function(){ctl.abort();},25000);
+            return fetch(NH_CARRERA_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d),signal:ctl?ctl.signal:undefined})
+                .then(function(r){return r.json();});
+        }
+        function nhCotizar(){
+            var P=window._nhP; if(!P) return;
+            var box=document.getElementById('nh-precio');
+            var listo=P.tipo==='compra'?!!P.E:!!(P.E&&P.R);
+            P.cot=null;
+            if(!listo){if(box)box.innerHTML='<span class="mut">'+(P.tipo==='compra'?'Marca dónde lo entregamos y te decimos el precio':'Marca los dos puntos y te decimos el precio')+'</span>';nhBotonEstado();return;}
+            if(box) box.innerHTML='<span class="mut">Calculando el precio…</span>';
+            nhBotonEstado();
+            var seq=++P.seqCot;
+            nhPost(nhPayload('cotizar')).then(function(j){
+                if(!window._nhP||seq!==window._nhP.seqCot) return;
+                window._nhP.cot=j&&j.ok?j:null; nhPintarPrecio(j);
+            }).catch(function(){
+                if(!window._nhP||seq!==window._nhP.seqCot) return;
+                nhPintarPrecio({ok:false,mensaje:'No pudimos calcular el precio. Revisa tu conexión e intenta otra vez.'});
+            });
+        }
+        function nhPintarPrecio(j){
+            var P=window._nhP,box=document.getElementById('nh-precio'); if(!box||!P) return;
+            if(!j||!j.ok){box.innerHTML='<span class="err">'+esc((j&&j.mensaje)||'No pudimos calcular el precio.')+'</span>';nhBotonEstado();return;}
+            var det=[];
+            if(Number(j.km)>0) det.push(Number(j.km).toFixed(1)+' km');
+            if(j.desglose&&Number(j.desglose.recargo)>0) det.push('incluye $'+Number(j.desglose.recargo).toFixed(2)+' por hacer la compra');
+            box.innerHTML='<div class="nh-precio-fila"><span>Envío</span><b>$'+Number(j.precio).toFixed(2)+'</b></div>'+
+                (det.length?'<small>'+esc(det.join(' · '))+'</small>':'')+
+                '<small>'+(P.tipo==='compra'?'Al recibir pagas lo comprado (con su recibo) + el envío.':(P.paga==='recibe'?'Paga quien recibe, al entregar.':'Pagas al motorizado cuando recoge.'))+'</small>'+
+                (j.en_horario===false?'<div class="err">Atendemos de 08:00 a 22:00.</div>':'')+
+                (j.modo==='prueba'?'<div class="nh-prueba">🧪 Modo prueba: el pedido se guarda, pero no sale una moto real.</div>':'');
+            nhBotonEstado();
+        }
+        function nhBotonEstado(){
+            var P=window._nhP,b=document.getElementById('nh-confirmar'); if(!b||!P) return;
+            var ok=!!(P.cot&&P.cot.ok&&P.cot.en_horario!==false);
+            b.disabled=!ok||P.enviando;
+            b.textContent=P.enviando?'Enviando…':((P.tipo==='compra'?'Confirmar compra':'Confirmar encomienda')+(ok?' · $'+Number(P.cot.precio).toFixed(2):''));
+        }
+        window.nhConfirmar=function(){
+            var P=window._nhP; if(!P||P.enviando) return;
+            var err=document.getElementById('nh-err');
+            function falta(m,id){if(err){err.textContent=m;err.hidden=false;}var e=id&&document.getElementById(id);if(e){try{e.focus();}catch(x){}}else if(err){try{err.scrollIntoView({block:'center',behavior:'smooth'});}catch(x){}}}
+            if(P.tipo==='compra'&&nhVal('nh-que').length<3) return falta('Cuéntanos qué necesitas que compremos.','nh-que');
+            if(!P.E) return falta('Marca en el mapa dónde lo entregamos.');
+            if(P.tipo==='encomienda'&&!P.R) return falta('Marca en el mapa dónde lo recogemos.');
+            var nom=nhVal('nh-nom'),tel=nhVal('nh-tel').replace(/\D/g,'');
+            if(nom.length<2) return falta('Escribe tu nombre.','nh-nom');
+            if(!/^(09\d{8}|5939\d{8}|9\d{8})$/.test(tel)) return falta('Escribe tu celular de 10 dígitos (ej. 0991234567).','nh-tel');
+            if(err) err.hidden=true;
+            try{localStorage.setItem('dewan_cliente_web',JSON.stringify({nombre:nom,telefono:nhVal('nh-tel')}));}catch(e){}
+            P.telCliente=tel; P.enviando=true; nhBotonEstado();
+            nhPost(nhPayload('crear')).then(function(j){
+                P.enviando=false;
+                if(!j||!j.ok){nhBotonEstado();return falta((j&&j.mensaje)||'No pudimos confirmar. Intenta de nuevo.');}
+                try{localStorage.setItem('dewan_carrera_web',JSON.stringify({codigo:j.codigo,link:j.link,tipo:P.tipo,modo:j.modo,ts:Date.now()}));}catch(e){}
+                nhExito(j);
+            }).catch(function(){
+                P.enviando=false; nhBotonEstado();
+                falta('No pudimos confirmar: revisa tu conexión e intenta de nuevo (no se duplica).');
+            });
+        };
+        function nhExito(j){
+            var P=window._nhP,h=document.querySelector('#nh-puerta .nh-hoja'); if(!h||!P) return;
+            var esC=P.tipo==='compra',prueba=j.modo==='prueba',que=esC?'compra':'encomienda';
+            h.innerHTML='<div class="nh-asa"></div>'+
+                '<div class="nh-ok-ic" aria-hidden="true">✓</div>'+
+                '<b class="nh-ok-t">'+(prueba?'Prueba guardada':'¡Tu '+que+' ya salió a los motorizados!')+'</b>'+
+                '<div class="nh-ok-cod">'+esc(j.codigo)+'</div>'+
+                '<p class="nh-ok-p">'+(prueba?'Es una prueba: no sale una moto real.':'El motorizado que la tome te llamará al '+esc(nhTelBonito(P.telCliente))+'.')+
+                    (j.transferencia?' Como es más de $20, te pedirá transferir antes de comprar.':'')+'</p>'+
+                '<a class="nh-btn" href="'+nhAttr(j.link)+'" target="_blank" rel="noopener">Seguir mi '+que+' en vivo</a>'+
+                '<button class="nh-btn2" onclick="cerrarPuerta();if(currentView===\'home\')renderHome();">Volver al inicio</button>';
+            if(!prueba){try{if(typeof fbq==='function')fbq('trackCustom','CarreraWeb',{tipo:P.tipo,value:Number(j.precio)||0,currency:'USD'});}catch(e){}}
+        }
+        // Barra en el inicio con la compra/encomienda de las últimas 3 h (el seguimiento vive en el link).
+        function nhCarreraActivaHTML(){
+            try{
+                var c=JSON.parse(localStorage.getItem('dewan_carrera_web')||'null');
+                if(!c||!c.link||Date.now()-c.ts>3*3600*1000) return '';
+                return '<a class="nh-activa" href="'+nhAttr(c.link)+'" target="_blank" rel="noopener"><span aria-hidden="true">🛵</span><div><b>Tu '+(c.tipo==='compra'?'compra':'encomienda')+' '+esc(c.codigo)+'</b><small>'+(c.modo==='prueba'?'Prueba · ':'')+'Toca para seguirla en vivo</small></div><span class="nh-chev">›</span></a>';
+            }catch(e){return '';}
+        }
+        window.abrirPuerta=function(tipo){
+            if(tipo!=='compra'&&tipo!=='encomienda') return;
+            cerrarPuerta();
+            var dc=nhDatosCliente(),esC=tipo==='compra';
+            var P=window._nhP={tipo:tipo,uid:Date.now().toString(36)+Math.random().toString(36).slice(2,8),seqCot:0,
+                lugar:'farmacia',presup:'',sino:'llamar',que:'Documentos',paga:'envia',R:null,E:null,cot:null,enviando:false};
+            var g=window._clientGPS;
+            if(g){var ci=nhCalleGuardada(g.lat,g.lng);P.E={lat:Number(g.lat),lng:Number(g.lng),txt:ci?ci.txt:'Tu ubicación actual',cerca:ci?ci.cerca:''};}
+            var h='<div class="nh-velo" onclick="cerrarPuerta()"></div><div class="nh-hoja" role="dialog" aria-modal="true" aria-labelledby="nh-hoja-t">'+
+                '<div class="nh-asa"></div>'+
+                '<div class="nh-hh"><img src="/app/img/cat3d/'+(esC?'compras':'encomienda')+'.webp" alt="" width="44" height="44"><div><b id="nh-hoja-t">'+(esC?'Compras':'Encomiendas')+'</b><span>'+
+                    (esC?'Te lo compramos y te lo llevamos. Si cabe en la mochila de la moto, va.':'Llaves, documentos, remedios, un regalo… Si cabe en la mochila, te lo llevamos.')+
+                '</span></div><button class="nh-x" onclick="cerrarPuerta()" aria-label="Cerrar">✕</button></div>';
+            if(esC){
+                h+='<span class="nh-lb">¿Dónde compramos?</span>'+nhChips('lugar',NH_LUGARES,'farmacia')+
+                    '<button type="button" class="nh-punto" id="nh-pt-R" onclick="nhElegirPunto(\'R\')"><span class="ic" aria-hidden="true">🏬</span><span class="tx"><b id="nh-pt-R-t">La más cercana a la entrega</b><small id="nh-pt-R-s">¿Tienes un lugar exacto? Toca para marcarlo</small></span><span class="nh-quitar" id="nh-pt-R-x" role="button" aria-label="Quitar el lugar" onclick="event.stopPropagation();nhQuitarR()" hidden>✕</span></button>'+
+                    '<label class="nh-lb" for="nh-que">¿Qué necesitas?</label><textarea class="nh-campo" id="nh-que" rows="3" maxlength="400" placeholder="Ej.: jarabe para la tos y 2 sueros de uva"></textarea>'+
+                    '<span class="nh-lb">¿Cuánto cuesta, más o menos?</span>'+nhChips('presup',NH_PRESUP,'')+
+                    '<div class="nh-aviso" id="nh-aviso-20" hidden>💳 Para compras de más de $20, el motorizado te llamará para que le transfieras antes de comprar.</div>'+
+                    '<span class="nh-lb">Si no hay el producto</span>'+nhChips('sino',NH_SINO,'llamar')+
+                    '<span class="nh-lb">Entregar en</span>'+nhBotonPunto('E','Elige dónde lo entregamos')+
+                    '<input class="nh-campo" id="nh-ref-E" maxlength="140" placeholder="Referencia: casa verde, 2do piso…">';
+            } else {
+                h+='<span class="nh-lb">¿Qué envías?</span>'+nhChips('que',NH_QUE,'Documentos')+
+                    '<span class="nh-lb">Recoger en</span>'+nhBotonPunto('R','Elige dónde lo recogemos')+
+                    '<input class="nh-campo" id="nh-ref-R" maxlength="140" placeholder="Referencia: local, casa, piso…">'+
+                    '<span class="nh-lb">Entregar en</span>'+nhBotonPunto('E','Elige dónde lo entregamos')+
+                    '<input class="nh-campo" id="nh-ref-E" maxlength="140" placeholder="Referencia: casa verde, 2do piso…">'+
+                    '<span class="nh-lb">¿Quién recibe? <small>(opcional)</small></span>'+
+                    '<div class="nh-dos"><input class="nh-campo" id="nh-rnom" maxlength="60" autocomplete="off" placeholder="Nombre"><input class="nh-campo" id="nh-rtel" maxlength="14" inputmode="tel" autocomplete="off" placeholder="Celular"></div>'+
+                    '<span class="nh-lb">¿Quién paga la carrera?</span>'+nhChips('paga',[['envia','Yo'],['recibe','Quien recibe']],'envia');
+            }
+            h+='<span class="nh-lb">Tus datos</span>'+
+                '<div class="nh-dos"><input class="nh-campo" id="nh-nom" maxlength="60" autocomplete="name" placeholder="Tu nombre" value="'+nhAttr(dc.nombre||'')+'">'+
+                '<input class="nh-campo" id="nh-tel" maxlength="14" inputmode="tel" autocomplete="tel" placeholder="Tu celular" value="'+nhAttr(dc.telefono||'')+'"></div>'+
+                '<div class="nh-precio" id="nh-precio" aria-live="polite"></div>'+
+                '<div class="nh-err" id="nh-err" hidden></div>'+
+                '<button class="nh-btn" id="nh-confirmar" onclick="nhConfirmar()" disabled>Confirmar</button>'+
+                '<div class="nh-pie">Sin WhatsApp: tu pedido sale directo a los motorizados y lo sigues en vivo.</div>'+
+            '</div>';
             var w=document.createElement('div'); w.id='nh-puerta'; w.innerHTML=h; document.body.appendChild(w);
             document.body.classList.add('sheet-locked');
             try{history.pushState({v:currentView,r:currentRestIdx,ov:'puerta'},'');}catch(e){} // atrás = cerrar la hoja
+            if(P.E) nhPintarPunto('E');
+            nhCotizar();
         };
         window.cerrarPuerta=function(){
             var w=document.getElementById('nh-puerta'); if(!w) return false;
-            w.parentNode.removeChild(w); document.body.classList.remove('sheet-locked'); return true;
-        };
-        window.nhChip=function(b){var p=b.parentNode;for(var i=0;i<p.children.length;i++)p.children[i].classList.remove('on');b.classList.add('on');};
-        // "Es donde estoy ahora": usa el GPS para UNO de los dos puntos de la encomienda (no para los dos).
-        window.nhAqui=function(campo){
-            var otro=campo==='desde'?'hasta':'desde';
-            var b=document.getElementById('nh-aqui-'+campo),inp=document.getElementById('nh-'+campo);
-            var bo=document.getElementById('nh-aqui-'+otro),io=document.getElementById('nh-'+otro);
-            if(!b||!inp) return;
-            var on=!b.classList.contains('on');
-            b.classList.toggle('on',on); inp.value=on?'Donde estoy ahora':''; inp.readOnly=on;
-            if(on&&bo&&bo.classList.contains('on')){bo.classList.remove('on');if(io){io.value='';io.readOnly=false;}}
-        };
-        window.enviarPuerta=function(tipo){
-            var err=document.getElementById('nh-err');
-            function falta(m){if(err){err.textContent=m;err.hidden=false;}}
-            function val(id){var e=document.getElementById(id);return e?String(e.value||'').trim():'';}
-            function aqui(campo){var b=document.getElementById('nh-aqui-'+campo);return !!(b&&b.classList.contains('on'));}
-            var chip=document.querySelector('#nh-ch button.on'); chip=chip?chip.textContent:'';
-            var g=window._clientGPS, mapa=g?'https://maps.google.com/?q='+Number(g.lat).toFixed(6)+','+Number(g.lng).toFixed(6):'';
-            var msg;
-            if(tipo==='compra'){
-                var que=val('nh-que');
-                if(que.length<3) return falta('Cuéntanos qué necesitas que compremos.');
-                msg='Hola DEWAN 👋 Quiero una *COMPRA* 🛒\n'+
-                    '*Dónde:* '+chip+'\n'+
-                    '*Qué:* '+que+'\n'+
-                    '*Entregar en:* '+(mapa?'mi ubicación 📍 '+mapa:'ahora les mando mi ubicación 📍');
-            } else {
-                var desde=aqui('desde')&&mapa?'donde estoy ahora 📍 '+mapa:val('nh-desde');
-                var hasta=aqui('hasta')&&mapa?'donde estoy ahora 📍 '+mapa:val('nh-hasta');
-                if(desde.length<3) return falta('Cuéntanos dónde lo recogemos.');
-                if(hasta.length<3) return falta('Cuéntanos a dónde lo llevamos.');
-                var recibe=val('nh-recibe');
-                msg='Hola DEWAN 👋 Quiero enviar una *ENCOMIENDA* 📦\n'+
-                    '*Qué envío:* '+chip+'\n'+
-                    '*Recoger en:* '+desde+'\n'+
-                    '*Entregar en:* '+hasta+
-                    (recibe?'\n*Recibe:* '+recibe:'');
-            }
-            var url='https://wa.me/'+WA_MANUAL+'?text='+encodeURIComponent(msg); // SIEMPRE al despacho (decisión de David 4-oct)
-            cerrarPuerta();
-            var w=null; try{w=window.open(url,'_blank');}catch(e){}
-            if(!w) location.href=url; // popup bloqueado o webview: abrir en la misma pestaña
+            cerrarUbicacion();
+            w.parentNode.removeChild(w); document.body.classList.remove('sheet-locked'); window._nhP=null; return true;
         };
         // ── Promo grande que se desliza (con puntitos y avance solo cada 5 s hasta que el cliente la toca).
         // Sale de datos que la web YA tiene: tema del día, envío $1 (lun-mié), locales nuevos y el servicio de encomiendas.
@@ -3023,7 +3160,7 @@
             // luego el buscador, las puertas (Compras/Encomiendas) y las categorías; después la promo
             // que se desliza y los carriles de comida (la comida sigue en la primera pantalla).
             var h=(window._pwaModo&&!window._activeCat&&!OP_MODE&&window.pwaBarHTML?window.pwaBarHTML():'')+
-                nhHeaderHTML(hasGPS)+
+                nhHeaderHTML(hasGPS)+(window._activeCat?'':nhCarreraActivaHTML())+
                 '<button class="nh-busca" onclick="showSearch()">'+NH_SVG_BUSCA+'<span>'+(searchPrefill?esc(searchPrefill):'Buscar locales o platos')+'</span></button>'+
                 (window._activeCat?'':'<div class="nh-confia">🛵 Todo Riobamba · 💵 Pagas al recibir · ✓ Sin registro</div>'+nhPuertasHTML());
 
