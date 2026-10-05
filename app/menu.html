@@ -2661,7 +2661,7 @@
         window._webCarreras=null; window._webPuertas='probadores';
         try{var _qsPr=new URLSearchParams(location.search).get('prueba');if(_qsPr==='1')localStorage.setItem('dewan_tester','1');if(_qsPr==='0')localStorage.removeItem('dewan_tester');}catch(e){}
         function nhTester(){try{return localStorage.getItem('dewan_tester')==='1';}catch(e){return false;}}
-        function nhPuertasVisibles(){if(OP_MODE)return false;var m=window._webCarreras;return (m==='on'&&window._webPuertas==='todos')||((m==='on'||m==='prueba')&&nhTester());}
+        function nhPuertasVisibles(){if(OP_MODE)return false;var m=window._webCarreras;if(nhTester())return m!=='off';return m==='on'&&window._webPuertas==='todos';}
         (function(){
             fetch(SB_URL+'/rest/v1/carrera_config?select=clave,valor&clave=in.(web_carreras,web_puertas)',{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(j){
                 var antes=nhPuertasVisibles(),cfg={};
@@ -4193,7 +4193,9 @@
                 // "30–45 min · Envío $1.30 · categoría" y "Precio del local" en verde. Sin el sello amarillo "Aliado"
                 // (la ⭐ junto al nombre queda, como en la app nativa).
                 var cerr=isOpen===false, fotos=covers.slice(0,3), fotosH='';
-                fotos.forEach(function(cv,i){fotosH+='<img src="'+esc(thumb(cv,720))+'" alt="'+(i===0?esc(r.nombre):'')+'"'+(i?' loading="lazy"':'')+' onerror="this.remove()">';});
+                // Solo la 1ª foto de las 2 primeras tarjetas carga al abrir; las demás cuando se acercan a la pantalla
+                // (antes del 4-oct-noche cargaban ~34 fotos de golpe y la web se sentía lenta).
+                fotos.forEach(function(cv,i){fotosH+='<img src="'+esc(thumb(cv,720))+'" alt="'+(i===0?esc(r.nombre):'')+'"'+((i||idx>1)?' loading="lazy"':'')+' decoding="async" onerror="this.remove()">';});
                 var chipH=r.top_semana?'<span class="rc2-chip">🔥 Top semana</span>'
                     :((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="rc2-chip">🛵 Envío $1 hoy</span>':'');
                 var plH=(isAliado&&(Number(r.markup_pct)||0)===0)?'<span class="rc2-pl">✓ Precio del local</span>':'';
