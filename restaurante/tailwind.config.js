@@ -21,6 +21,7 @@ export default {
         buscando: c('buscando'),
         encamino: c('encamino'),
         alerta: c('alerta'),
+        ok: c('ok'),
       },
       fontFamily: {
         sans: ['DM Sans', 'system-ui', 'sans-serif'],

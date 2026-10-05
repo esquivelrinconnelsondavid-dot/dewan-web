@@ -105,7 +105,7 @@ export default function MiLocal({ restaurante, onActualizado }) {
         <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Estado del local</p>
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <p className={`text-base font-black ${cerradoHasta ? 'text-nuevo' : 'text-dewan'}`}>
+            <p className={`text-base font-black ${cerradoHasta ? 'text-nuevo' : 'text-ok'}`}>
               {cerradoHasta ? '🔴 Cerrado por hoy' : '🟢 Recibiendo pedidos'}
             </p>
             <p className="text-[11px] text-gray-400 mt-0.5">
@@ -119,7 +119,7 @@ export default function MiLocal({ restaurante, onActualizado }) {
             disabled={cambiandoCierre}
             className={`text-sm font-bold py-2.5 px-4 rounded-lg border active:scale-95 transition-transform whitespace-nowrap ${
               cerradoHasta
-                ? 'bg-dewan/15 text-dewan border-dewan/30'
+                ? 'bg-ok/15 text-ok border-ok/30'
                 : 'bg-nuevo/15 text-nuevo border-nuevo/30'
             }`}
           >

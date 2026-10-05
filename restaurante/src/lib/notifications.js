@@ -25,7 +25,7 @@ async function asegurarCanal() {
       sound: 'default',
       vibration: true,
       lights: true,
-      lightColor: '#0BFE9F',
+      lightColor: '#E8431A',
       bypassDnd: true,
     });
     canalCreado = true;

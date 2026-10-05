@@ -17,6 +17,7 @@
   --c-buscando: 59 130 246;
   --c-encamino: 139 92 246;
   --c-alerta: 220 38 38;
+  --c-ok: 16 185 129;
   --c-text: 255 255 255;
   --scrollbar: 51 51 51;
 }
@@ -35,6 +36,7 @@
   --c-buscando: 243 159 7;  /* naranja */
   --c-encamino: 31 157 85;  /* verde */
   --c-alerta: 228 27 23;    /* rojo */
+  --c-ok: 173 24 38;        /* = su acento vino: Happy Pollo no cambia */
   --c-text: 63 35 16;       /* tinta café #3F2310 */
   --scrollbar: 213 184 138;
 }
@@ -50,13 +52,17 @@
   --c-tarjeta: 255 255 255;
   --c-dewan: 16 120 90;
   --c-nuevo: 220 38 38;
-  --c-preparando: 217 119 6;
+  --c-preparando: 180 83 9;   /* #B45309: letra blanca 5,0:1 */
   --c-buscando: 37 99 235;
-  --c-encamino: 22 163 74;
+  --c-encamino: 21 128 61;   /* #15803D: letra blanca 5,0:1 */
   --c-alerta: 220 38 38;
+  --c-ok: 21 128 61;
   --c-text: 17 24 39;
   --scrollbar: 190 196 204;
 }
+/* DEWAN: el acento de la marca es la BRASA (5-oct-2026). Solo el panel DEWAN pone
+   data-acento="brasa"; el SISTEMA sigue con el color de cada local. */
+[data-marca="claro"][data-acento="brasa"] { --c-dewan: 207 58 18; }
 [data-marca="claro"] .text-white   { color: #111827; }
 [data-marca="claro"] .text-gray-200 { color: #1f2937; }
 [data-marca="claro"] .text-gray-300 { color: #374151; }
@@ -66,7 +72,8 @@
 [data-marca="claro"] .bg-nuevo,
 [data-marca="claro"] .bg-encamino,
 [data-marca="claro"] .bg-preparando,
-[data-marca="claro"] .bg-alerta { color: #ffffff; }
+[data-marca="claro"] .bg-alerta,
+[data-marca="claro"] .bg-ok { color: #ffffff; }
 [data-marca="claro"] .bg-tarjeta { box-shadow: 0 4px 14px rgba(0,0,0,.06); }
 
 html, body, #root {
@@ -97,7 +104,8 @@ html, body, #root {
 [data-marca="hp"] .bg-nuevo,
 [data-marca="hp"] .bg-encamino,
 [data-marca="hp"] .bg-preparando,
-[data-marca="hp"] .bg-alerta { color: #FFF8E6; }
+[data-marca="hp"] .bg-alerta,
+[data-marca="hp"] .bg-ok { color: #FFF8E6; }
 
 /* Sombras cálidas en las tarjetas HP (en vez de los bordes secos del tema oscuro) */
 [data-marca="hp"] .bg-tarjeta { box-shadow: 0 6px 18px rgba(173,24,38,.08); }

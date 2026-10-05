@@ -47,7 +47,7 @@ export default function EstadoLocal({ estado, compacto = false }) {
   const tam = compacto ? 'text-[12px] px-3 py-1.5' : 'text-[13px] px-3.5 py-1.5';
   return (
     <div className={`flex items-center gap-0.5 p-[3px] rounded-full bg-bg4 ${ocupando ? 'opacity-60 pointer-events-none' : ''}`}>
-      <button onClick={pausado ? reabrir : undefined} className={`${seg} ${tam} ${!pausado ? 'bg-dewan text-white' : 'text-gray-300'}`}>
+      <button onClick={pausado ? reabrir : undefined} className={`${seg} ${tam} ${!pausado ? 'bg-ok text-white' : 'text-gray-300'}`}>
         <span className={`w-2 h-2 rounded-full ${!pausado ? 'bg-white/80' : 'bg-gray-400'}`} />
         {pausado ? 'Reabrir' : 'Abierto'}
       </button>

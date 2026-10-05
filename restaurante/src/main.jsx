@@ -15,6 +15,7 @@ if (MODO_SISTEMA) {
   // DEWAN (14-sep-2026): tema CLARO, como la cocina de las apps de socios grandes
   // (Uber Eats Orders, DoorDash, iFood, PedidosYa). Misma paleta que ya usa el SISTEMA.
   document.documentElement.dataset.marca = 'claro';
+  document.documentElement.dataset.acento = 'brasa'; // color DEWAN = brasa (5-oct-2026)
   const tc = document.querySelector('meta[name="theme-color"]');
   if (tc) tc.setAttribute('content', '#f4f5f7');
 }

@@ -310,7 +310,7 @@ export default function PedidoEntrante({ pedido }) {
             key={min}
             onClick={() => aceptar(min)}
             disabled={cargando}
-            className="bg-dewan/15 text-dewan text-sm font-bold py-3 rounded-lg active:scale-95 transition-transform border border-dewan/30 hover:bg-dewan/25"
+            className="bg-tarjeta text-dewan text-sm font-extrabold py-3 rounded-lg active:scale-95 transition-transform border-2 border-dewan/50 hover:bg-dewan/10"
           >
             {min}'
           </button>
@@ -320,7 +320,7 @@ export default function PedidoEntrante({ pedido }) {
       <button
         onClick={rechazar}
         disabled={cargando}
-        className="w-full bg-nuevo/10 text-nuevo text-xs font-bold py-2.5 rounded-lg active:scale-95 border border-nuevo/30"
+        className="w-full bg-tarjeta/70 text-gray-400 text-xs font-bold py-2.5 rounded-lg active:scale-95 border border-borde"
       >
         No podemos preparar este pedido
       </button>

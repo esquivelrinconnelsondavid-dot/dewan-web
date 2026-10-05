@@ -33,8 +33,8 @@ export default class ErrorBoundary extends React.Component {
               location.reload();
             }}
             style={{
-              marginTop: 16, padding: '10px 16px', background: '#0BFE9F',
-              color: '#000', fontWeight: 'bold', border: 0, borderRadius: 8,
+              marginTop: 16, padding: '10px 16px', background: '#CF3A12',
+              color: '#fff', fontWeight: 'bold', border: 0, borderRadius: 8,
             }}
           >
             Limpiar y reiniciar
