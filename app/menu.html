@@ -1004,6 +1004,33 @@
         .nh-activa b{display:block;font-size:.86rem;font-weight:900}
         .nh-activa small{display:block;font-size:.7rem;opacity:.92;font-weight:600}
         .nh-activa .nh-chev{color:#fff;font-size:1.25rem}
+        /* seguimiento dentro de la web */
+        .nh-seg-ok{background:var(--green);color:#fff;font-weight:900;font-size:.86rem;border-radius:12px;padding:10px 12px;text-align:center;line-height:1.3}
+        .nh-pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+        .nh-paso{display:flex;flex-direction:column;gap:5px;font-size:.62rem;font-weight:800;color:var(--gris);text-align:center;line-height:1.15}
+        .nh-paso i{height:5px;border-radius:3px;background:var(--border)}
+        .nh-paso.on{color:var(--texto)}
+        .nh-paso.on i{background:var(--green)}
+        .nh-paso.now{color:var(--acc)}
+        .nh-paso.now i{background:var(--acc)}
+        @media (prefers-reduced-motion:no-preference){.nh-paso.now i{animation:nhLatido 1.4s ease-in-out infinite}}
+        @keyframes nhLatido{50%{opacity:.4}}
+        .nh-mapa-seg{height:min(34vh,250px)}
+        #nh-seg-mapa{position:absolute;inset:0}
+        .nh-mk{display:grid!important;place-items:center;font-size:18px;line-height:1;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.3);border:2px solid #fff}
+        .nh-mk.e{background:#FFF2EC}
+        .nh-mk.m{background:#E8431A}
+        .nh-moto{display:flex;align-items:center;gap:10px;background:var(--card2);border-radius:14px;padding:10px 12px}
+        .nh-moto img,.nh-moto .av{width:46px;height:46px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:#fff;display:grid;place-items:center;font-size:1.35rem}
+        .nh-moto .tx{flex:1;min-width:0}
+        .nh-moto b{display:block;font-size:.95rem;font-weight:900}
+        .nh-moto small{display:block;font-size:.72rem;color:var(--gris);font-weight:700}
+        .nh-llamar{background:var(--green);color:#fff;text-decoration:none;font-weight:900;font-size:.8rem;border-radius:999px;padding:10px 14px;white-space:nowrap;flex:0 0 auto}
+        .nh-wa-moto{display:block;text-align:center;font-size:.78rem;font-weight:800;color:var(--green);text-decoration:none;margin-top:-4px}
+        .nh-seg-det{background:var(--card2);border-radius:14px;padding:10px 12px;font-size:.78rem;color:var(--texto);line-height:1.45}
+        .nh-seg-det div{display:flex;justify-content:space-between;font-weight:900;margin-bottom:4px}
+        .nh-seg-det p{margin:2px 0;color:var(--gris)}
+        .nh-seg-det p b{color:var(--texto)}
     </style>
 </head>
 <body>
@@ -2784,6 +2811,7 @@
             var P=window._nhP; if(!P||P.enviando) return;
             var err=document.getElementById('nh-err');
             function falta(m,id){if(err){err.textContent=m;err.hidden=false;}var e=id&&document.getElementById(id);if(e){try{e.focus();}catch(x){}}else if(err){try{err.scrollIntoView({block:'center',behavior:'smooth'});}catch(x){}}}
+            if(P.tipo==='compra'&&!P.lugar){falta('Elige dónde compramos: farmacia, súper, tienda…');try{document.getElementById('lugar').scrollIntoView({block:'center',behavior:'smooth'});}catch(e){}return;}
             if(P.tipo==='compra'&&nhVal('nh-que').length<3) return falta('Cuéntanos qué necesitas que compremos.','nh-que');
             if(!P.E) return falta('Marca en el mapa dónde lo entregamos.');
             if(P.tipo==='encomienda'&&!P.R) return falta('Marca en el mapa dónde lo recogemos.');
@@ -2796,7 +2824,7 @@
             nhPost(nhPayload('crear')).then(function(j){
                 P.enviando=false;
                 if(!j||!j.ok){nhBotonEstado();return falta((j&&j.mensaje)||'No pudimos confirmar. Intenta de nuevo.');}
-                try{localStorage.setItem('dewan_carrera_web',JSON.stringify({codigo:j.codigo,link:j.link,tipo:P.tipo,modo:j.modo,ts:Date.now()}));}catch(e){}
+                try{localStorage.setItem('dewan_carrera_web',JSON.stringify({codigo:j.codigo,link:j.link,token:nhTokenDe(j.link),tipo:P.tipo,modo:j.modo,ts:Date.now()}));}catch(e){}
                 nhExito(j);
             }).catch(function(){
                 P.enviando=false; nhBotonEstado();
@@ -2804,24 +2832,173 @@
             });
         };
         function nhExito(j){
-            var P=window._nhP,h=document.querySelector('#nh-puerta .nh-hoja'); if(!h||!P) return;
-            var esC=P.tipo==='compra',prueba=j.modo==='prueba',que=esC?'compra':'encomienda';
-            h.innerHTML='<div class="nh-asa"></div>'+
-                '<div class="nh-ok-ic" aria-hidden="true">✓</div>'+
-                '<b class="nh-ok-t">'+(prueba?'Prueba guardada':'¡Tu '+que+' ya salió a los motorizados!')+'</b>'+
-                '<div class="nh-ok-cod">'+esc(j.codigo)+'</div>'+
-                '<p class="nh-ok-p">'+(prueba?'Es una prueba: no sale una moto real.':'El motorizado que la tome te llamará al '+esc(nhTelBonito(P.telCliente))+'.')+
-                    (j.transferencia?' Como es más de $20, te pedirá transferir antes de comprar.':'')+'</p>'+
-                '<a class="nh-btn" href="'+nhAttr(j.link)+'" target="_blank" rel="noopener">Seguir mi '+que+' en vivo</a>'+
-                '<button class="nh-btn2" onclick="cerrarPuerta();if(currentView===\'home\')renderHome();">Volver al inicio</button>';
+            var P=window._nhP; if(!P) return;
+            var esC=P.tipo==='compra',prueba=j.modo==='prueba';
+            var msg=prueba?'Prueba guardada (no sale una moto real)':'¡Listo! Tu '+(esC?'compra':'encomienda')+' ya salió a los motorizados';
+            if(j.transferencia&&!prueba) msg+=' · te pedirán transferir antes de comprar';
             if(!prueba){try{if(typeof fbq==='function')fbq('trackCustom','CarreraWeb',{tipo:P.tipo,value:Number(j.precio)||0,currency:'USD'});}catch(e){}}
+            window._nhP=null;
+            nhSeguir(nhTokenDe(j.link),msg); // se queda en la web: estado, mapa y número del motorizado
         }
-        // Barra en el inicio con la compra/encomienda de las últimas 3 h (el seguimiento vive en el link).
+        // ── Seguimiento DENTRO de la web (David, 4-oct: "que se quede en la misma app y lo siga de allí, con el número del
+        // motorizado"). Lee lo mismo que la página dewansas.com/carrera: carreras (token) → pedidos_delivery (estado y moto)
+        // → motorizados_publico (posición y ficha; si no existe, motorizados con solo esas columnas). Se refresca cada 12 s.
+        var NH_EST={confirmado:0,buscando_motorizado:0,pendiente:0,pendiente_restaurante:0,asignado:1,aceptado:1,en_camino_recogida:1,llego_recogida:1,
+            recogido:2,en_camino:2,en_camino_entrega:2,llegado:2,entregado:3,cancelado:-1};
+        var NH_PASOS=['Buscando moto','Moto asignada','En camino','Entregado'];
+        var NH_CAMPOS_MOTO='ubicacion_lat,ubicacion_lng,last_seen_at,updated_at,foto_perfil_url,placa,calificacion_promedio';
+        function nhSb(path){return fetch(SB_URL+'/rest/v1'+path,{headers:supaHeaders()}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();});}
+        function nhEdad(x){return x?(Date.now()-new Date(x).getTime()):Infinity;}
+        function nhSinMapa(x){return String(x||'').replace(/\s*\(pin\)/g,'').replace(/\s*🗺️\s*https?:\/\/\S+/g,'').trim();}
+        function nhTokenDe(link){var m=String(link||'').match(/[?&]t=([a-z0-9]+)/i);return m?m[1]:'';}
+        window.nhSeguir=function(token,exito){
+            if(!token) return;
+            var w=document.getElementById('nh-puerta');
+            if(!w){
+                w=document.createElement('div'); w.id='nh-puerta';
+                w.innerHTML='<div class="nh-velo" onclick="cerrarPuerta()"></div><div class="nh-hoja" role="dialog" aria-modal="true" aria-label="Seguimiento de tu pedido"></div>';
+                document.body.appendChild(w); document.body.classList.add('sheet-locked');
+                try{history.pushState({v:currentView,r:currentRestIdx,ov:'puerta'},'');}catch(e){}
+            }
+            nhSegParar();
+            var h=w.querySelector('.nh-hoja');
+            window._nhSeg={token:token,carrera:null,pedido:null,moto:null,timer:null,mapa:null,capas:{},encuadre:''};
+            h.innerHTML='<div class="nh-asa"></div>'+
+                (exito?'<div class="nh-seg-ok">✓ '+esc(exito)+'</div>':'')+
+                '<div class="nh-hh"><div><b id="nh-seg-t">Cargando tu pedido…</b><span id="nh-seg-s">&nbsp;</span></div><button class="nh-x" onclick="cerrarPuerta()" aria-label="Cerrar">✕</button></div>'+
+                '<div class="nh-pasos" id="nh-seg-pasos">'+NH_PASOS.map(function(p,i){return '<div class="nh-paso" data-i="'+i+'"><i></i><span>'+p+'</span></div>';}).join('')+'</div>'+
+                '<div class="nh-mapa nh-mapa-seg"><div id="nh-seg-mapa"></div></div>'+
+                '<div id="nh-seg-moto"></div>'+
+                '<div class="nh-seg-det" id="nh-seg-det"></div>'+
+                '<button class="nh-btn2" onclick="nhCompartirSeg()">Compartir el seguimiento</button>';
+            nhSegCargar();
+        };
+        function nhSegParar(){
+            var S=window._nhSeg; if(!S) return;
+            clearTimeout(S.timer);
+            try{if(S.mapa)S.mapa.remove();}catch(e){}
+            window._nhSeg=null;
+        }
+        function nhSegIx(S){
+            if(S.pedido){var e=NH_EST[S.pedido.estado_pedido];return e!=null?e:0;}
+            var c={recibida:0,asignada:1,en_camino:2,entregada:3,cancelada:-1}[S.carrera&&S.carrera.estado];
+            return c!=null?c:0;
+        }
+        function nhSegCargar(){
+            var S=window._nhSeg; if(!S) return;
+            clearTimeout(S.timer);
+            nhSb('/carreras?select=codigo,tipo,resumen,recogida,entrega,lat_recogida,lng_recogida,lat_entrega,lng_entrega,precio,estado,moto_nombre,moto_telefono,pedido_id&token=eq.'+encodeURIComponent(S.token)+'&limit=1')
+                .then(function(c){
+                    if(window._nhSeg!==S) return null;
+                    S.carrera=(c&&c[0])||null;
+                    if(!S.carrera||!S.carrera.pedido_id) return null;
+                    return nhSb('/pedidos_delivery?select=estado_pedido,nombre_moto,telefono_moto,motorizado_id,fecha_entregado&id=eq.'+S.carrera.pedido_id+'&limit=1').then(function(p){
+                        S.pedido=(p&&p[0])||null;
+                        if(!S.pedido||!S.pedido.motorizado_id) return null;
+                        var q='?select='+NH_CAMPOS_MOTO+'&id=eq.'+S.pedido.motorizado_id+'&limit=1';
+                        return nhSb('/motorizados_publico'+q).catch(function(){return [];}).then(function(m){
+                            if(m&&m[0]) return m;
+                            return nhSb('/motorizados'+q).catch(function(){return [];});
+                        }).then(function(m){S.moto=(m&&m[0])||null;});
+                    });
+                })
+                .then(function(){
+                    if(window._nhSeg!==S) return;
+                    nhSegPintar();
+                    var ix=nhSegIx(S);
+                    if(S.carrera&&ix>=0&&ix<3&&!/^PRUEBA-/.test(S.carrera.codigo)) S.timer=setTimeout(nhSegCargar,12000);
+                    else if(!S.carrera) S.timer=setTimeout(nhSegCargar,5000);
+                })
+                .catch(function(){
+                    if(window._nhSeg!==S) return;
+                    var s=document.getElementById('nh-seg-s'); if(s) s.textContent='Sin conexión: reintentando…';
+                    S.timer=setTimeout(nhSegCargar,15000);
+                });
+        }
+        function nhSegPintar(){
+            var S=window._nhSeg; if(!S) return;
+            var c=S.carrera,t=document.getElementById('nh-seg-t'),s=document.getElementById('nh-seg-s');
+            if(!t) return;
+            if(!c){t.textContent='Buscando tu pedido…';s.textContent='Si acabas de pedirlo, en unos segundos aparece aquí.';return;}
+            var ix=nhSegIx(S),prueba=/^PRUEBA-/.test(c.codigo),esC=c.tipo==='compra',que=esC?'compra':'encomienda';
+            var llego=!!(S.pedido&&S.pedido.estado_pedido==='llegado');
+            var tit=ix===-1?'Pedido cancelado':(prueba?'Prueba guardada':(llego?'¡Tu motorizado llegó! 🛵':['Buscando motorizado','Motorizado asignado','Va en camino','¡Entregado!'][ix]));
+            var sub=ix===-1?'Si fue un error, vuelve a pedirlo.':(prueba?'Es una prueba: no sale una moto real.':
+                (ix===0?'Tu '+que+' ya está en la app de los motorizados: el primero que la tome aparece aquí.':
+                (ix===1?(esC?'Va a hacer tu compra.':'Va a recoger tu encomienda.'):(ix===2?(llego?'Está en el punto de entrega.':'Va hacia el punto de entrega.'):'Gracias por pedir con DEWAN.'))));
+            t.textContent=tit; s.textContent=c.codigo+' · '+sub;
+            var pasos=document.querySelectorAll('#nh-seg-pasos .nh-paso');
+            for(var i=0;i<pasos.length;i++) pasos[i].className='nh-paso'+(ix>=0&&i<ix?' on':(i===ix?(ix===3?' on':' now'):''));
+            // ficha del motorizado: nombre, placa, estrellas, número y botones (llamar / WhatsApp)
+            var nom=String((S.pedido&&S.pedido.nombre_moto)||c.moto_nombre||'').trim();
+            var tel=String((S.pedido&&S.pedido.telefono_moto)||c.moto_telefono||'').replace(/\D/g,'');
+            var telL=tel.length===12&&tel.indexOf('593')===0?'0'+tel.slice(3):tel;
+            var telW=telL.length===10&&telL.charAt(0)==='0'?'593'+telL.slice(1):tel;
+            var mh='';
+            if((nom||telL)&&ix>=1){
+                var m=S.moto||{},vivo=ix>=1&&ix<3;
+                var info=[m.placa?'Placa '+esc(m.placa):'',Number(m.calificacion_promedio)>0?'⭐ '+Number(m.calificacion_promedio).toFixed(1):'',telL?esc(nhTelBonito(telL)):''].filter(Boolean).join(' · ');
+                mh='<div class="nh-moto">'+(m.foto_perfil_url?'<img src="'+nhAttr(m.foto_perfil_url)+'" alt="" onerror="this.remove()">':'<span class="av" aria-hidden="true">🛵</span>')+
+                    '<div class="tx"><b>'+esc(nom||'Tu motorizado')+'</b><small>'+info+'</small></div>'+
+                    (vivo&&telL?'<a class="nh-llamar" href="tel:'+nhAttr(telL)+'">📞 Llamar</a>':'')+'</div>'+
+                    (vivo&&telW?'<a class="nh-wa-moto" href="https://wa.me/'+nhAttr(telW)+'" target="_blank" rel="noopener">Escribirle por WhatsApp</a>':'');
+            }
+            var mo=document.getElementById('nh-seg-moto'); if(mo) mo.innerHTML=mh;
+            var det=document.getElementById('nh-seg-det');
+            if(det){
+                var res=String(c.resumen||'').split('\n').filter(function(l){return /^(🛒|📦|🏬)/.test(l);}).slice(0,3);
+                det.innerHTML='<div><span>'+(esC?'🛒 Compra':'📦 Encomienda')+'</span><b>Envío $'+Number(c.precio||0).toFixed(2)+'</b></div>'+
+                    res.map(function(l){return '<p>'+esc(l)+'</p>';}).join('')+
+                    (c.recogida&&!/la más cercana/i.test(c.recogida)?'<p><b>Recoger:</b> '+esc(nhSinMapa(c.recogida))+'</p>':'')+
+                    '<p><b>Entregar:</b> '+esc(nhSinMapa(c.entrega))+'</p>'+
+                    '<p>'+(esC?'Pagas lo comprado (con su recibo) + el envío al recibir.':'Pagas el envío en efectivo al motorizado.')+'</p>';
+            }
+            nhSegMapa(S,ix);
+        }
+        function nhSegMapa(S,ix){
+            var c=S.carrera; if(!c) return;
+            opLoadLeaflet(function(){
+                if(window._nhSeg!==S||!window.L) return;
+                var el=document.getElementById('nh-seg-mapa'); if(!el) return;
+                if(!S.mapa){
+                    S.mapa=L.map(el,{zoomControl:false});
+                    try{S.mapa.attributionControl.setPrefix(false);}catch(e){}
+                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(S.mapa);
+                    S.mapa.setView([Number(c.lat_entrega)||-1.6635,Number(c.lng_entrega)||-78.6547],15);
+                    setTimeout(function(){try{S.mapa.invalidateSize();}catch(e){}},160);
+                }
+                var pts=[];
+                function marca(k,lat,lng,emoji,cls){
+                    lat=Number(lat);lng=Number(lng);
+                    if(!isFinite(lat)||!isFinite(lng)||!lat){if(S.capas[k]){S.mapa.removeLayer(S.capas[k]);S.capas[k]=null;}return;}
+                    if(S.capas[k]) S.capas[k].setLatLng([lat,lng]);
+                    else S.capas[k]=L.marker([lat,lng],{icon:L.divIcon({className:'nh-mk '+cls,html:emoji,iconSize:[34,34],iconAnchor:[17,17]})}).addTo(S.mapa);
+                    pts.push([lat,lng]);
+                }
+                marca('E',c.lat_entrega,c.lng_entrega,'🏠','e');
+                marca('R',c.lat_recogida,c.lng_recogida,c.tipo==='compra'?'🛒':'📦','r');
+                var m=S.moto,fresca=!!(m&&Math.min(nhEdad(m.last_seen_at),nhEdad(m.updated_at))<10*60*1000);
+                if(fresca&&ix>=1&&ix<3) marca('M',m.ubicacion_lat,m.ubicacion_lng,'🛵','m'); else marca('M',null,null);
+                var clave=pts.length+(S.capas.M?'m':'');
+                if(pts.length&&S.encuadre!==clave){
+                    try{if(pts.length===1)S.mapa.setView(pts[0],16);else S.mapa.fitBounds(pts,{padding:[34,34],maxZoom:16});}catch(e){}
+                    S.encuadre=clave;
+                }
+            });
+        }
+        window.nhCompartirSeg=function(){
+            var S=window._nhSeg; if(!S) return;
+            var url='https://dewansas.com/carrera/?t='+S.token;
+            if(navigator.share){navigator.share({title:'Mi pedido DEWAN',text:'Sigue mi pedido DEWAN en vivo:',url:url}).catch(function(){});return;}
+            try{navigator.clipboard.writeText(url).then(function(){nhAviso('Enlace copiado: pégalo en el chat de quien recibe.');},function(){location.href=url;});}catch(e){location.href=url;}
+        };
+        // Barra en el inicio con la compra/encomienda de las últimas 3 h: abre el seguimiento AQUÍ (no otro link).
         function nhCarreraActivaHTML(){
             try{
                 var c=JSON.parse(localStorage.getItem('dewan_carrera_web')||'null');
                 if(!c||!c.link||Date.now()-c.ts>3*3600*1000) return '';
-                return '<a class="nh-activa" href="'+nhAttr(c.link)+'" target="_blank" rel="noopener"><span aria-hidden="true">🛵</span><div><b>Tu '+(c.tipo==='compra'?'compra':'encomienda')+' '+esc(c.codigo)+'</b><small>'+(c.modo==='prueba'?'Prueba · ':'')+'Toca para seguirla en vivo</small></div><span class="nh-chev">›</span></a>';
+                var tk=c.token||nhTokenDe(c.link);
+                return '<a class="nh-activa" href="'+nhAttr(c.link)+'" onclick="event.preventDefault();nhSeguir(\''+nhAttr(tk)+'\')"><span aria-hidden="true">🛵</span><div><b>Tu '+(c.tipo==='compra'?'compra':'encomienda')+' '+esc(c.codigo)+'</b><small>'+(c.modo==='prueba'?'Prueba · ':'')+'Toca para ver dónde va</small></div><span class="nh-chev">›</span></a>';
             }catch(e){return '';}
         }
         window.abrirPuerta=function(tipo){
@@ -2829,7 +3006,7 @@
             cerrarPuerta();
             var dc=nhDatosCliente(),esC=tipo==='compra';
             var P=window._nhP={tipo:tipo,uid:Date.now().toString(36)+Math.random().toString(36).slice(2,8),seqCot:0,
-                lugar:'farmacia',presup:'',sino:'llamar',que:'Documentos',paga:'envia',R:null,E:null,cot:null,enviando:false};
+                lugar:'',presup:'',sino:'llamar',que:'Documentos',paga:'envia',R:null,E:null,cot:null,enviando:false};
             var g=window._clientGPS;
             if(g){var ci=nhCalleGuardada(g.lat,g.lng);P.E={lat:Number(g.lat),lng:Number(g.lng),txt:ci?ci.txt:'Tu ubicación actual',cerca:ci?ci.cerca:''};}
             var h='<div class="nh-velo" onclick="cerrarPuerta()"></div><div class="nh-hoja" role="dialog" aria-modal="true" aria-labelledby="nh-hoja-t">'+
@@ -2838,7 +3015,7 @@
                     (esC?'Te lo compramos y te lo llevamos. Si cabe en la mochila de la moto, va.':'Llaves, documentos, remedios, un regalo… Si cabe en la mochila, te lo llevamos.')+
                 '</span></div><button class="nh-x" onclick="cerrarPuerta()" aria-label="Cerrar">✕</button></div>';
             if(esC){
-                h+='<span class="nh-lb">¿Dónde compramos?</span>'+nhChips('lugar',NH_LUGARES,'farmacia')+
+                h+='<span class="nh-lb">¿Dónde compramos?</span>'+nhChips('lugar',NH_LUGARES,'')+
                     '<button type="button" class="nh-punto" id="nh-pt-R" onclick="nhElegirPunto(\'R\')"><span class="ic" aria-hidden="true">🏬</span><span class="tx"><b id="nh-pt-R-t">La más cercana a la entrega</b><small id="nh-pt-R-s">¿Tienes un lugar exacto? Toca para marcarlo</small></span><span class="nh-quitar" id="nh-pt-R-x" role="button" aria-label="Quitar el lugar" onclick="event.stopPropagation();nhQuitarR()" hidden>✕</span></button>'+
                     '<label class="nh-lb" for="nh-que">¿Qué necesitas?</label><textarea class="nh-campo" id="nh-que" rows="3" maxlength="400" placeholder="Ej.: jarabe para la tos y 2 sueros de uva"></textarea>'+
                     '<span class="nh-lb">¿Cuánto cuesta, más o menos?</span>'+nhChips('presup',NH_PRESUP,'')+
@@ -2872,7 +3049,7 @@
         };
         window.cerrarPuerta=function(){
             var w=document.getElementById('nh-puerta'); if(!w) return false;
-            cerrarUbicacion();
+            cerrarUbicacion(); nhSegParar();
             w.parentNode.removeChild(w); document.body.classList.remove('sheet-locked'); window._nhP=null; return true;
         };
         // ── Promo grande que se desliza (con puntitos y avance solo cada 5 s hasta que el cliente la toca).
