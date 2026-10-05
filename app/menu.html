@@ -66,12 +66,12 @@
                blanco 90% + un solo acento brasa; las fotos ponen el color */
             --bg:#FFFFFF;--card:#FFFFFF;--card2:#F5F4F2;--border:#EBEAE8;
             --acc:#E8431A;--acc-soft:rgba(232,67,26,0.10);
-            --cta:#E8431A;--cta-hover:#CF3A12;--cta-soft:rgba(232,67,26,0.10);
-            --texto:#1B1B1B;--gris:#6E6A66;--gris-2:#A3A09C;
+            --cta:#CF3A12;--cta-hover:#B5320A;--cta-soft:rgba(232,67,26,0.10);
+            --texto:#1B1B1B;--gris:#6E6A66;--gris-2:#736F6B;
             /* Escala de espaciado base-4 + tap-target mínimo (audit visual 2026-06-13) */
             --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--sp-8:32px;
             --pad-x:14px;--gap-card:10px;--gap-section:24px;--tap-min:44px;
-            --green:#1F9D55;--wa:#25D366;--radius:16px;--logo:url("/app/img/logo.png");
+            --green:#1F9D55;--green-ink:#15703F;--wa:#25D366;--radius:16px;--logo:url("/app/img/logo.png");
         }
         html,body{overscroll-behavior-y:none} /* evita pull-to-refresh accidental que recarga toda la app */
         body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;max-width:430px;margin:0 auto}
@@ -115,7 +115,7 @@
 
         /* GPS status */
         .gps-status{text-align:center;font-size:0.82rem;color:var(--gris);margin-bottom:10px;min-height:20px;transition:all 0.3s}
-        .gps-status.success{color:var(--green);font-weight:700}
+        .gps-status.success{color:var(--green-ink);font-weight:700}
         .gps-status.error{color:var(--gris);font-weight:600}
 
         /* Welcome features row */
@@ -132,10 +132,10 @@
 
         .btn{border:none;border-radius:14px;padding:14px 20px;font-weight:800;font-size:0.95rem;cursor:pointer;font-family:inherit;width:100%;max-width:320px;transition:all 0.2s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
         .btn:active{transform:scale(0.97)}
-        .btn-accent{background:var(--acc);color:#111}
+        .btn-accent{background:var(--cta);color:#fff}
         .btn-accent:disabled{opacity:0.5;cursor:not-allowed}
         .btn-outline{background:transparent;color:var(--gris);border:1.5px solid var(--border)}
-        .btn-green{background:var(--green);color:white}
+        .btn-green{background:var(--green-ink);color:white}
 
         /* Header sticky */
         .header-sticky{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);padding:calc(20px + env(safe-area-inset-top,0px)) var(--pad-x) 16px}
@@ -145,13 +145,13 @@
         .home-trust{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:7px;margin-top:11px;font-size:0.72rem;font-weight:700;color:var(--gris-2);background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:9px 10px;line-height:1}
         .home-trust .trust-dot{color:var(--border);font-weight:900}
         .btn-cart{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:9px 16px;cursor:pointer;color:var(--gris);font-weight:800;font-size:0.82rem;font-family:inherit;display:flex;align-items:center;gap:8px;transition:all 0.2s}
-        .btn-cart.has-items{background:var(--acc);color:#111;border-color:var(--acc)}
+        .btn-cart.has-items{background:var(--cta);color:#fff;border-color:var(--cta)}
 
         /* Sort pills */
         .sort-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px var(--pad-x)}
         .sort-bar::-webkit-scrollbar{display:none}
         .pill{flex-shrink:0;padding:11px 16px;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--gris);font-weight:800;font-size:0.75rem;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.2s}
-        .pill.active{background:var(--acc);color:#111;border-color:var(--acc)}
+        .pill.active{background:var(--cta);color:#fff;border-color:var(--cta)}
         .pill.disabled{opacity:0.4;cursor:not-allowed;pointer-events:none}
 
         /* GPS Banner */
@@ -160,7 +160,7 @@
         .gps-banner-icon{font-size:1.5rem;flex-shrink:0;line-height:1}
         .gps-banner-text{flex:1;line-height:1.28;font-weight:800;letter-spacing:-0.01em}
         .gps-banner-text small{display:block;font-weight:600;font-size:0.75rem;color:var(--gris);margin-top:2px;letter-spacing:0}
-        .gps-banner-cta{flex-shrink:0;background:var(--acc);color:#1d1d1f;font-weight:900;font-size:0.82rem;padding:9px 15px;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;font-family:inherit}
+        .gps-banner-cta{flex-shrink:0;background:var(--cta);color:#fff;font-weight:900;font-size:0.82rem;padding:9px 15px;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;font-family:inherit}
         .gps-banner-cta:active{transform:scale(0.96)}
         .gps-banner-close{background:none;border:none;color:var(--gris);font-size:1rem;cursor:pointer;padding:6px;min-width:30px;min-height:30px;display:flex;align-items:center;justify-content:center;opacity:0.45;flex-shrink:0}
         .gps-banner-close:hover{opacity:1}
@@ -233,7 +233,7 @@
         .badge{font-size:0.6rem;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:0.04em;display:inline-flex;align-items:center;gap:3px}
         .badge-recomendado{background:var(--acc-soft);color:var(--acc)}
         .badge-popular{background:var(--acc-soft);color:var(--acc)}
-        .badge-cart{background:var(--acc);color:#111}
+        .badge-cart{background:var(--cta);color:#fff}
         .badge-cat{background:var(--card2);color:var(--gris-2);border:1px solid var(--border)}
         .prod-name{font-weight:800;font-size:0.96rem;line-height:1.25;letter-spacing:-0.01em}
         .prod-desc{color:var(--gris-2);font-size:0.78rem;margin-top:4px;line-height:1.45}
@@ -241,7 +241,7 @@
         .prod-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px}
         .prod-price{font-weight:900;font-size:1.1rem;color:var(--texto);letter-spacing:-0.01em}
         .prod-price-antes{font-weight:600;font-size:0.85rem;color:var(--gris);text-decoration:line-through;margin-right:6px;opacity:0.7}
-        .prod-price-badge{font-size:0.62rem;font-weight:800;color:var(--green);background:rgba(31,157,85,0.12);border-radius:6px;padding:2px 6px;margin-left:6px;text-transform:uppercase;letter-spacing:0.03em;vertical-align:middle}
+        .prod-price-badge{font-size:0.62rem;font-weight:800;color:var(--green-ink);background:rgba(31,157,85,0.12);border-radius:6px;padding:2px 6px;margin-left:6px;text-transform:uppercase;letter-spacing:0.03em;vertical-align:middle}
         .promo-badge{display:inline-block;background:#ff3b30;color:#fff;font-size:0.6rem;font-weight:900;padding:2px 7px;border-radius:6px;margin-left:4px;letter-spacing:0.02em;vertical-align:middle}
         .prod-disc-pct{font-size:0.66rem;font-weight:900;color:#ff3b30;margin-left:6px;white-space:nowrap}
         .btn-agregar{position:relative;width:36px;height:36px;border-radius:50%;background:var(--cta-soft);color:var(--cta);border:1.5px solid rgba(232,67,26,0.32);font-weight:900;font-size:1.3rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s,background 0.15s;flex-shrink:0}
@@ -263,13 +263,13 @@
         .menu-count{color:var(--gris);font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;padding:0 14px}
 
         /* Sticky category tabs (within restaurant view) */
-        .cat-tabs-wrap{position:sticky;top:0;z-index:45;background:rgba(243,236,224,0.92);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border-bottom:1px solid var(--border);padding:10px 0;display:flex;align-items:center;gap:8px}
+        .cat-tabs-wrap{position:sticky;top:0;z-index:45;background:rgba(255,255,255,0.94);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border-bottom:1px solid var(--border);padding:10px 0;display:flex;align-items:center;gap:8px}
         .cat-tabs-back{flex-shrink:0;margin-left:12px;width:36px;height:36px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--texto);display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;font-family:inherit;transition:transform 0.15s}
         .cat-tabs-back:active{transform:scale(0.9)}
         .cat-tabs{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 12px 0 4px;scroll-behavior:smooth}
         .cat-tabs::-webkit-scrollbar{display:none}
         .cat-tab{flex-shrink:0;padding:11px 14px;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--gris-2);font-weight:800;font-size:0.78rem;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.2s;letter-spacing:0.01em}
-        .cat-tab.active{background:var(--acc);color:#111;border-color:var(--acc)}
+        .cat-tab.active{background:var(--cta);color:#fff;border-color:var(--cta)}
         .cat-tabs-restname{flex:1;font-weight:800;font-size:0.9rem;color:var(--texto);padding:0 14px 0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.01em}
 
         /* Destacados horizontal carousel */
@@ -294,7 +294,7 @@
         .dest-plus{position:relative;width:30px;height:30px;border-radius:50%;background:var(--cta-soft);color:var(--cta);border:1.5px solid rgba(232,67,26,0.32);font-weight:900;font-size:1.15rem;line-height:1;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;padding:0;transition:transform 0.15s,background 0.15s;flex-shrink:0}
         .dest-plus::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:var(--tap-min);height:var(--tap-min);border-radius:50%}
         .dest-plus:active{transform:scale(0.88)}
-        .dest-qty-mini{background:var(--acc);color:#111;border-radius:100px;padding:4px 10px;font-weight:900;font-size:0.74rem;display:inline-flex;align-items:center;gap:4px}
+        .dest-qty-mini{background:var(--cta);color:#fff;border-radius:100px;padding:4px 10px;font-weight:900;font-size:0.74rem;display:inline-flex;align-items:center;gap:4px}
         .dest-rest-tag{font-size:0.68rem;color:var(--gris);font-weight:700;margin:7px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         /* Tarjeta de local CERRADO en el carril: foto en gris + cinta de apertura (variedad de noche, honesta) */
         .dest-card-cerrada .dest-emoji{filter:grayscale(45%) brightness(0.82);opacity:0.92}
@@ -318,7 +318,7 @@
         .foto-zoom-note{text-align:center;font-size:0.74rem;color:var(--gris);font-weight:600;padding:0 18px 16px;margin-top:-6px}
         /* CTA con verbo en la tarjeta del carril (mejor que un "+" mudo) */
         .dest-cta-full{margin-top:9px;padding:9px 0;border-radius:11px;background:var(--cta);color:#fff;font-weight:800;font-size:0.82rem;text-align:center;letter-spacing:-0.01em}
-        .dest-cta-full.in-cart{background:rgba(34,197,94,0.16);color:var(--green);border:1px solid rgba(34,197,94,0.4)}
+        .dest-cta-full.in-cart{background:rgba(34,197,94,0.16);color:var(--green-ink);border:1px solid rgba(34,197,94,0.4)}
 
         /* Cart floating — V4: Premium two-section bar (dark + orange CTA) */
         .cart-float{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:94%;max-width:402px;z-index:60;animation:cart-rise 0.35s cubic-bezier(0.34,1.3,0.64,1)}
@@ -339,7 +339,7 @@
         .fly-particle{position:fixed;z-index:200;pointer-events:none;font-size:1.4rem;will-change:transform,opacity;filter:drop-shadow(0 4px 12px rgba(232,67,26,0.55));font-family:system-ui;line-height:1;user-select:none}
 
         /* Cart page — V4 Premium */
-        .cart-header{padding:20px 16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(243,236,224,0.9);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);z-index:50}
+        .cart-header{padding:20px 16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);z-index:50}
         .cart-header-title{font-weight:900;font-size:1.45rem;letter-spacing:-0.03em;line-height:1}
         .cart-header-count{margin-left:auto;background:var(--card2);border:1px solid var(--border);border-radius:999px;padding:5px 14px;font-size:0.75rem;color:var(--gris-2);font-weight:800;letter-spacing:0.02em}
         .btn-back{background:var(--card2);border:1px solid var(--border);border-radius:12px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.15rem;color:var(--texto);transition:all 0.15s}
@@ -400,7 +400,7 @@
         /* Zona de foto del local (cabecera). Si no hay imagen real, usa un gradient con el color del restaurante. */
         .rest-detail-photo{position:relative;height:180px;background-color:var(--card2);background-size:cover;background-position:center;background-repeat:no-repeat;overflow:hidden}
         .rest-detail-photo::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 30%,var(--rest-color,rgba(232,67,26,0.2)) 0%,transparent 55%),radial-gradient(ellipse at 80% 60%,rgba(232,67,26,0.10) 0%,transparent 55%);pointer-events:none;mix-blend-mode:screen}
-        .rest-detail-photo::after{content:'';position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(180deg,transparent 0%,rgba(243,236,224,0.85) 80%,var(--bg) 100%);pointer-events:none}
+        .rest-detail-photo::after{content:'';position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(180deg,transparent 0%,rgba(255,255,255,0.85) 80%,var(--bg) 100%);pointer-events:none}
         .rest-detail-photo-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:0.18;filter:blur(0.5px) drop-shadow(0 6px 20px rgba(0,0,0,0.4))}
         .rest-detail-nav{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 0;position:absolute;top:0;left:0;right:0;z-index:3}
         .rest-detail-nav .btn-back,.rest-detail-nav .btn-cart{background:rgba(20,20,24,0.78);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 14px rgba(0,0,0,0.45)}
@@ -414,15 +414,15 @@
         .rest-meta span{color:var(--gris-2);display:inline-flex;align-items:center;gap:3px;font-weight:600;letter-spacing:-0.01em}
         /* Pills de "Rapido 25min" / "Envio gratis" */
         .rest-pills{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
-        .rest-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(31,157,85,0.12);color:var(--green);font-size:0.72rem;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:-0.01em;border:1px solid rgba(31,157,85,0.28)}
-        .rest-pill.is-rating{background:rgba(232,67,26,0.1);color:var(--acc);border-color:rgba(232,67,26,0.22)}
-        .rest-pill.is-neutral{background:var(--card2);color:var(--gris-2);border-color:var(--border)}
+        .rest-pill{display:inline-flex;align-items:center;gap:5px;background:var(--card2);color:var(--texto);font-size:0.72rem;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:-0.01em;border:1px solid var(--border)}
+        .rest-pill.is-rating{color:var(--texto)}
+        .rest-pill.is-neutral{background:var(--card2);color:var(--gris);border-color:var(--border)}
 
         .app-footer{text-align:center;padding:20px 20px 80px;font-size:0.7rem;color:var(--gris)}
         body.has-cart{padding-bottom:80px}
 
         /* Badge abierto/cerrado — CAMBIO 4 */
-        .badge-open{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(31,157,85,0.16);color:var(--green);margin-left:6px;vertical-align:middle}
+        .badge-open{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(31,157,85,0.16);color:var(--green-ink);margin-left:6px;vertical-align:middle}
         .badge-closed{font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:20px;background:rgba(255,59,48,0.18);color:#FF3B30;margin-left:6px;vertical-align:middle}
         /* Toast de aviso (local cerrado) — 2026-06-19 */
         .dewan-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(18px);max-width:90%;background:#1f1a17;color:#fff;padding:12px 18px;border-radius:14px;font-size:0.9rem;line-height:1.32;text-align:center;box-shadow:0 12px 34px rgba(0,0,0,0.34);opacity:0;pointer-events:none;z-index:9999;transition:opacity .22s ease,transform .22s ease}
@@ -437,7 +437,7 @@
 
         /* Checkout inline (dentro del carrito) */
         .checkout-gps-box{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}
-        .checkout-gps-ok{color:var(--green);font-weight:800;font-size:0.88rem}
+        .checkout-gps-ok{color:var(--green-ink);font-weight:800;font-size:0.88rem}
         .checkout-gps-searching{color:var(--acc);font-size:0.82rem}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
         .checkout-gps-searching{animation:pulse 1.5s ease-in-out infinite}
@@ -478,7 +478,7 @@
         .loc-addr-input::placeholder{color:var(--gris-2);font-size:0.88rem;font-weight:500}
         .loc-addr-input:focus{border-color:var(--acc);background:rgba(232,67,26,0.04);box-shadow:0 0 0 3px rgba(232,67,26,0.1)}
         .loc-gps-ok{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(31,157,85,0.1);border:1px solid rgba(31,157,85,0.28);border-radius:12px;margin-bottom:10px}
-        .loc-gps-ok span{color:var(--green);font-weight:800;font-size:0.85rem}
+        .loc-gps-ok span{color:var(--green-ink);font-weight:800;font-size:0.85rem}
         .loc-ref-label{font-size:0.75rem;color:var(--gris);font-weight:700;margin-bottom:6px}
 
         /* Aviso "local sin convenio": el precio del menu es referencial y se paga contra recibo.
@@ -503,7 +503,7 @@
         .almuerzo-cat-title{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--gris);margin-bottom:8px;display:flex;align-items:center;gap:6px}
         .almuerzo-cat-badge{font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px}
         .almuerzo-cat-badge.elige{background:rgba(217,58,11,0.2);color:#FF6B35}
-        .almuerzo-cat-badge.incluido{background:rgba(37,211,102,0.15);color:var(--green)}
+        .almuerzo-cat-badge.incluido{background:rgba(37,211,102,0.15);color:var(--green-ink)}
         .almuerzo-opt{background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color 0.2s}
         .almuerzo-opt.selected{border-color:var(--acc);background:rgba(232,67,26,0.06)}
         .almuerzo-opt.single{cursor:default;border-color:var(--green);background:rgba(37,211,102,0.06)}
@@ -535,7 +535,7 @@
         .search-hero:active{transform:scale(0.985);border-color:var(--acc);box-shadow:0 0 0 3px rgba(232,67,26,0.08)}
         .search-hero-icon{font-size:1.1rem;color:var(--gris-2)}
         .search-hero-text{color:var(--gris-2);font-size:0.95rem;font-weight:600;flex:1;text-align:left;letter-spacing:-0.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .search-hero-tag{background:var(--acc);color:#111;font-size:0.58rem;font-weight:900;padding:3px 7px;border-radius:20px;letter-spacing:0.05em;flex-shrink:0}
+        .search-hero-tag{background:var(--cta);color:#fff;font-size:0.58rem;font-weight:900;padding:3px 7px;border-radius:20px;letter-spacing:0.05em;flex-shrink:0}
 
         /* Category chips row */
         .cat-chips-wrap{padding:14px 0 6px}
@@ -615,8 +615,8 @@
         /* HOME VIVA (19-sep): chips de frescura en la tarjeta del local (Nuevo · N pedidos hoy · Cierra en X min) */
         .fresh-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
         .fresh-chip{font-size:0.64rem;font-weight:800;padding:2px 7px;border-radius:20px;white-space:nowrap;line-height:1.5}
-        .fresh-nuevo{background:#E8F6EE;color:#1F9D55}
-        .fresh-hoy{background:rgba(232,67,26,0.10);color:#CF3A12}
+        .fresh-nuevo{background:rgba(232,67,26,0.10);color:var(--cta-hover)}
+        .fresh-hoy{background:rgba(232,67,26,0.10);color:var(--cta-hover)}
         .fresh-cierra{background:#FEF3C7;color:#92400E}
 
         /* V4.2: Banner premium de "falta ubicacion" en checkout */
@@ -685,18 +685,18 @@
         .grid3-cat{display:flex;align-items:center;gap:5px;margin-top:2px;min-width:0}
         .grid3-cat-name{font-size:0.66rem;color:var(--acc);font-weight:800;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
         .grid3-suc{font-size:0.61rem;color:#6b7280;font-weight:800;margin-top:1px;line-height:1.18;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-        .grid3-pl{font-size:0.6rem;color:var(--green);font-weight:800;white-space:nowrap;flex:0 0 auto;display:flex;align-items:center;gap:2px}
+        .grid3-pl{font-size:0.6rem;color:var(--green-ink);font-weight:800;white-space:nowrap;flex:0 0 auto;display:flex;align-items:center;gap:2px}
         .grid3-aliado-perks{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:2px}
         .grid3-envio1{font-size:0.58rem;color:var(--cta-hover);font-weight:900;background:var(--cta-soft);border:1px solid rgba(217,58,11,0.30);border-radius:6px;padding:1px 5px;white-space:nowrap}
         /* Banner de la sección de aliados destacados (categoría/búsqueda) */
-        .aliados-banner{margin:0 14px 10px;padding:8px 12px;background:linear-gradient(135deg,rgba(34,197,94,0.14),rgba(232,67,26,0.10));border:1px solid rgba(34,197,94,0.30);border-radius:12px;font-size:0.72rem;font-weight:800;color:var(--green);display:flex;align-items:center;gap:6px;line-height:1.3}
+        .aliados-banner{margin:0 14px 10px;padding:8px 12px;background:linear-gradient(135deg,rgba(34,197,94,0.14),rgba(232,67,26,0.10));border:1px solid rgba(34,197,94,0.30);border-radius:12px;font-size:0.72rem;font-weight:800;color:var(--green-ink);display:flex;align-items:center;gap:6px;line-height:1.3}
         .almuerzo-day-banner{margin:0 14px 10px;padding:8px 12px;background:var(--card2);border:1px solid rgba(232,67,26,0.35);border-radius:12px;font-size:0.72rem;font-weight:800;color:var(--acc);display:flex;align-items:center;gap:6px;line-height:1.3}
         /* [25-jun] cupones Bienvenida/Vuelve removidos (.promo-chip era el chip del cupón) */
         /* Pills de valor en la cabecera del restaurante */
-        .rest-pill-aliado{background:rgba(34,197,94,0.14)!important;border-color:rgba(34,197,94,0.35)!important;color:var(--green)!important;font-weight:800}
+        .rest-pill-aliado{background:rgba(34,197,94,0.14)!important;border-color:rgba(34,197,94,0.35)!important;color:var(--green-ink)!important;font-weight:800}
         .rest-pill-envio1{background:var(--cta-soft)!important;border-color:rgba(217,58,11,0.30)!important;color:var(--cta-hover)!important;font-weight:800}
         /* Gancho de retorno en la pantalla de éxito */
-        .success-return{margin:14px auto 0;max-width:320px;padding:10px 14px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.25);border-radius:12px;font-size:0.82rem;font-weight:700;color:var(--green);line-height:1.35}
+        .success-return{margin:14px auto 0;max-width:320px;padding:10px 14px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.25);border-radius:12px;font-size:0.82rem;font-weight:700;color:var(--green-ink);line-height:1.35}
         /* Modal de alas con salsas */
         .wings-counter{margin:4px 0 12px;padding:9px 12px;background:var(--cta-soft);border:1px solid rgba(217,58,11,0.30);border-radius:10px;font-size:0.82rem;font-weight:800;color:var(--cta-hover);text-align:center}
         .wings-list{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto}
@@ -705,11 +705,11 @@
         .wings-stepper{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:2px;flex-shrink:0}
         .wings-salsa-count{min-width:18px;text-align:center;font-weight:900;font-size:0.95rem;color:var(--acc)}
         /* "Precio del local" — claim verde discreto bajo el nombre del aliado */
-        .grid3-precio-local{font-size:0.62rem;color:var(--green);font-weight:800;margin-top:3px;letter-spacing:0.01em;display:flex;align-items:center;gap:2px}
+        .grid3-precio-local{font-size:0.62rem;color:var(--green-ink);font-weight:800;margin-top:3px;letter-spacing:0.01em;display:flex;align-items:center;gap:2px}
         /* Sección destacada de aliados en home */
         .destacados-section{margin:6px 0 12px}
         .destacados-title{padding:0 14px 8px;font-size:0.78rem;font-weight:900;color:var(--texto);letter-spacing:-0.01em;display:flex;align-items:center;gap:6px}
-        .destacados-title-acc{color:var(--green)}
+        .destacados-title-acc{color:var(--green-ink)}
         .destacados-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:0 14px 6px;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}
         .destacados-scroll::-webkit-scrollbar{display:none}
         .destacados-card{flex:0 0 130px;scroll-snap-align:start;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s;position:relative}
@@ -730,11 +730,11 @@
         .promo-home-banner-sub{font-size:0.74rem;font-weight:800;opacity:0.85;margin-top:2px;line-height:1.2;color:#1c2a0a}
         /* [25-jun] cupones Bienvenida/Vuelve removidos (.cupon-banner / .cart-row-cupon) */
         .precio-tachado{text-decoration:line-through;color:var(--gris);opacity:0.7;font-weight:600;margin-right:4px}
-        .cart-row-ahorro{color:var(--green);font-weight:900;background:rgba(34,197,94,0.10);border-radius:8px;padding:8px 10px;margin-top:2px}
-        .cart-row-ahorro .cart-row-val{color:var(--green);font-size:1.05rem}
-        .cart-row-final{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px;margin-top:6px;background:linear-gradient(90deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08));border:2px solid var(--green);border-radius:12px;color:var(--green);font-weight:900;font-size:1.35rem}
+        .cart-row-ahorro{color:var(--green-ink);font-weight:900;background:rgba(34,197,94,0.10);border-radius:8px;padding:8px 10px;margin-top:2px}
+        .cart-row-ahorro .cart-row-val{color:var(--green-ink);font-size:1.05rem}
+        .cart-row-final{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px;margin-top:6px;background:linear-gradient(90deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08));border:2px solid var(--green);border-radius:12px;color:var(--green-ink);font-weight:900;font-size:1.35rem}
         .cart-row-final span:first-child{font-size:0.95rem;text-transform:uppercase;letter-spacing:0.04em}
-        .cart-row-final-hint{font-size:0.72rem;color:var(--green);font-weight:700;margin-top:4px;text-align:right;padding-right:4px}
+        .cart-row-final-hint{font-size:0.72rem;color:var(--green-ink);font-weight:700;margin-top:4px;text-align:right;padding-right:4px}
         .cart-total-sub{font-size:0.74rem;color:var(--gris);text-align:right;margin-top:3px;font-weight:600}
         .btn-whatsapp{background:linear-gradient(180deg,#25D366 0%,#1da851 100%);color:#fff;font-size:1.08rem;font-weight:900;padding:18px 22px;border-radius:18px;box-shadow:0 8px 28px rgba(37,211,102,0.4);border:none;font-family:inherit;cursor:pointer;width:100%;display:block;text-align:center;text-decoration:none;letter-spacing:-0.01em}
         .btn-whatsapp:active{transform:scale(0.98)}
@@ -759,7 +759,7 @@
         .sf-modal-body{padding:18px}
         .sf-modal-body p{margin:0 0 12px;line-height:1.55;font-size:0.9rem;color:var(--texto)}
         .sf-modal-body p:last-of-type{margin-bottom:18px}
-        .sf-modal-ok{width:100%;background:var(--acc);color:#111;border:none;border-radius:14px;padding:13px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit}
+        .sf-modal-ok{width:100%;background:var(--cta);color:#fff;border:none;border-radius:14px;padding:13px;font-weight:900;font-size:0.95rem;cursor:pointer;font-family:inherit}
         .sf-modal-ok:active{transform:scale(0.98)}
         @keyframes sfModalFadeIn{from{opacity:0}to{opacity:1}}
         /* Botón "Ver otros restaurantes" — separa visualmente a los no-socios */
@@ -774,7 +774,7 @@
         .destacados-section .destacados-title{padding-left:6px}
         .ver-otros-btn:active{transform:scale(0.985);border-color:var(--acc)}
         .ver-otros-title{display:block;font-size:0.92rem;font-weight:900;margin-bottom:3px}
-        .ver-otros-count{display:inline-block;background:var(--acc);color:#111;font-size:0.72rem;font-weight:900;padding:1px 8px;border-radius:20px;margin-left:5px;vertical-align:middle}
+        .ver-otros-count{display:inline-block;background:var(--cta);color:#fff;font-size:0.72rem;font-weight:900;padding:1px 8px;border-radius:20px;margin-left:5px;vertical-align:middle}
         .ver-otros-hint{display:block;font-size:0.72rem;color:var(--gris);font-weight:600}
         .ocultar-otros-btn{display:block;width:calc(100% - 28px);margin:16px 14px 4px;padding:10px;background:transparent;border:1px solid var(--border);border-radius:14px;color:var(--gris);font-family:inherit;font-size:0.78rem;font-weight:800;cursor:pointer}
         .ocultar-otros-btn:active{background:var(--card2)}
@@ -798,7 +798,7 @@
         body.sheet-locked{overflow:hidden}
         /* ── PALETA "Pan y Brasa" 2026-06-19: calidez/apetito (override final) ── */
         .prod-price,.dest-price{color:#9A3412}
-        .prod-emoji,.dest-emoji{background:linear-gradient(180deg,#FAF0E2,#F1E2CF)}
+        .prod-emoji,.dest-emoji{background:var(--card2)}
         .prod-card,.rest-card,.rest-compact,.dest-card{box-shadow:0 6px 18px rgba(74,42,20,0.08)}
         /* ══════ NUEVO INICIO (4-oct-2026): el orden de las apps grandes ══════
            dónde te lo llevamos → buscador → puertas (Compras/Encomiendas) → categorías → promo que se desliza →
@@ -896,7 +896,7 @@
         .rc2-meta{font-size:.74rem;color:var(--gris);font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .rc2-perks{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:3px}
         .rc2-perks:empty{display:none}
-        .rc2-pl{font-size:.68rem;font-weight:800;color:var(--green)}
+        .rc2-pl{font-size:.68rem;font-weight:800;color:var(--green-ink)}
         .rc2 .fresh-chips{margin-top:0}
         .rc2 .grid3-suc{margin-top:0}
         /* hoja de Compras / Encomiendas */
@@ -948,7 +948,7 @@
         @keyframes nhSalto{0%,62%,100%{transform:translateY(0)}20%{transform:translateY(-5px)}38%{transform:translateY(0)}50%{transform:translateY(-2px)}}
         .nh-pin{display:inline-block}
         .nh-puerta{position:relative}
-        .nh-nuevo{position:absolute;top:-7px;right:9px;background:var(--cta);color:#fff;font-size:.54rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;box-shadow:0 3px 8px rgba(217,58,11,.35)}
+        .nh-puerta .nh-nuevo{position:absolute;top:-8px;right:10px;display:inline-block;margin:0;background:var(--cta);color:#fff;font-size:.6rem;font-weight:900;line-height:1.35;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:999px;box-shadow:0 2px 6px rgba(207,58,18,.35)}
         @media (prefers-reduced-motion:no-preference){
             .nh-hb-slide.con-foto>img.foto{animation:nhKen 9s ease-in-out infinite alternate}
             .fresh-hoy,.fresh-nuevo,.nh-nuevo{display:inline-block;animation:nhPulso 2.6s ease-in-out infinite}
@@ -1005,7 +1005,7 @@
         .nh-activa small{display:block;font-size:.7rem;opacity:.92;font-weight:600}
         .nh-activa .nh-chev{color:#fff;font-size:1.25rem}
         /* seguimiento dentro de la web */
-        .nh-seg-ok{background:var(--green);color:#fff;font-weight:900;font-size:.86rem;border-radius:12px;padding:10px 12px;text-align:center;line-height:1.3}
+        .nh-seg-ok{background:var(--green-ink);color:#fff;font-weight:900;font-size:.86rem;border-radius:12px;padding:10px 12px;text-align:center;line-height:1.3}
         .nh-pasos{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
         .nh-paso{display:flex;flex-direction:column;gap:5px;font-size:.62rem;font-weight:800;color:var(--gris);text-align:center;line-height:1.15}
         .nh-paso i{height:5px;border-radius:3px;background:var(--border)}
@@ -1025,8 +1025,8 @@
         .nh-moto .tx{flex:1;min-width:0}
         .nh-moto b{display:block;font-size:.95rem;font-weight:900}
         .nh-moto small{display:block;font-size:.72rem;color:var(--gris);font-weight:700}
-        .nh-llamar{background:var(--green);color:#fff;text-decoration:none;font-weight:900;font-size:.8rem;border-radius:999px;padding:10px 14px;white-space:nowrap;flex:0 0 auto}
-        .nh-wa-moto{display:block;text-align:center;font-size:.78rem;font-weight:800;color:var(--green);text-decoration:none;margin-top:-4px}
+        .nh-llamar{background:var(--green-ink);color:#fff;text-decoration:none;font-weight:900;font-size:.8rem;border-radius:999px;padding:10px 14px;white-space:nowrap;flex:0 0 auto}
+        .nh-wa-moto{display:block;text-align:center;font-size:.78rem;font-weight:800;color:var(--green-ink);text-decoration:none;margin-top:-4px}
         .nh-seg-det{background:var(--card2);border-radius:14px;padding:10px 12px;font-size:.78rem;color:var(--texto);line-height:1.45}
         .nh-seg-det div{display:flex;justify-content:space-between;font-weight:900;margin-bottom:4px}
         .nh-seg-det p{margin:2px 0;color:var(--gris)}
@@ -6556,7 +6556,7 @@
             var h='';
             for(var i=0;i<6;i++){
                 h+='<span style="width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;'+
-                   (i<n?'background:#F59E0B;color:#fff;':'background:#EDE4D3;color:#B9A88F;')+'margin:0 3px;">'+(i<n?'🎟':'')+'</span>';
+                   (i<n?'background:#F59E0B;color:#fff;':'background:var(--border);color:var(--gris-2);')+'margin:0 3px;">'+(i<n?'🎟':'')+'</span>';
             }
             return h;
         }
@@ -6574,7 +6574,7 @@
                     (premio
                         ? '<div style="font-weight:800;color:#1F9D55;font-size:.92rem">🎁 ¡Tienes un ENVÍO GRATIS para tu próximo pedido!</div>'
                         : '<div style="font-size:.88rem;color:#4A2C17">Llevas <b>'+d.sellos+' de 6</b> — te '+(d.faltan===1?'falta <b>1 pedido</b>':'faltan <b>'+d.faltan+' pedidos</b>')+' para tu <b>envío GRATIS</b> 🛵</div>')+
-                    '<button onclick="dewanSellosCambiarTel()" style="background:none;border:0;color:#B9A88F;font-size:.72rem;margin-top:4px;text-decoration:underline;font-family:inherit">consultar otro número</button>';
+                    '<button onclick="dewanSellosCambiarTel()" style="background:none;border:0;color:var(--gris-2);font-size:.72rem;margin-top:4px;text-decoration:underline;font-family:inherit">consultar otro número</button>';
             })
             .catch(function(){ cont.innerHTML='<div style="font-size:.82rem;color:#8a7a6d">Sin conexión — intenta más tarde.</div>'; });
         }
@@ -6585,7 +6585,7 @@
         function pintarForm(cont){
             cont.innerHTML='<div style="font-size:.88rem;color:#4A2C17;margin-bottom:6px">Cada 6 pedidos, tu carrera va <b>GRATIS</b> (¡y ya llevas 2 de regalo!)</div>'+
                 '<div style="display:flex;gap:6px;justify-content:center">'+
-                '<input id="dewan-sellos-tel" type="tel" inputmode="tel" placeholder="Tu número (09...)" style="border:1.5px solid #EDE4D3;border-radius:10px;padding:8px 10px;font-size:.9rem;width:170px;font-family:inherit">'+
+                '<input id="dewan-sellos-tel" type="tel" inputmode="tel" placeholder="Tu número (09...)" style="border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-size:.9rem;width:170px;font-family:inherit">'+
                 '<button onclick="dewanSellosVer()" style="background:#F59E0B;color:#fff;border:0;border-radius:10px;padding:8px 14px;font-weight:800;font-family:inherit;font-size:.88rem">Ver mis sellos</button></div>';
         }
         window.dewanSellosVer=function(){
@@ -6605,11 +6605,11 @@
             for(var i=0;i<6;i++){
                 var on=premio||i<d.sellos;
                 puntos+='<span style="width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;'+
-                        (on?'background:#F59E0B;':'border:1.5px solid #EDE4D3;')+'"></span>';
+                        (on?'background:#F59E0B;':'border:1.5px solid var(--border);')+'"></span>';
             }
             t.style.cssText='display:flex;align-items:center;gap:9px;margin:10px 12px 0;padding:9px 12px;border-radius:14px;'+
                 'max-width:406px;margin-left:auto;margin-right:auto;font-family:inherit;'+
-                (premio?'background:#E8F6EE;border:1px solid #1F9D55;':'background:#fff;border:1px solid #EDE4D3;');
+                (premio?'background:#E8F6EE;border:1px solid #1F9D55;':'background:#fff;border:1px solid var(--border);');
             t.innerHTML='<span style="flex:0 0 auto;display:flex;align-items:center">'+puntos+'</span>'+
                 '<span style="flex:1;font-size:.8rem;font-weight:800;color:'+(premio?'#12703C':'#7a6a5d')+'">'+
                 (premio?'🎁 ¡Tienes un ENVÍO GRATIS! Úsalo en tu próximo pedido'
