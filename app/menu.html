@@ -2351,12 +2351,17 @@
         // Mientras no pase esa fecha sale PRIMERO ENTRE LOS ABIERTOS (un cerrado no encabeza nada) en el inicio, en la
         // búsqueda y la categoría de SU rubro y en el carril del día, con la etiqueta "Destacado".
         function esDestacado(r){if(!r||!r.destacado_hasta)return false;var t=Date.parse(r.destacado_hasta);return !isNaN(t)&&t>Date.now();}
-        // ¿Lo que se busca es de su rubro? pizza ↔ "pizzas", "pizzería" (no la sube al buscar "hamburguesa").
+        // ¿Lo que se BUSCA es de su rubro? Raíz de su categoría + las palabras de esa categoría (CAT_MAP_V2):
+        // pizza ↔ "pizzas", "pizzería"; marisquería ↔ "ceviche", "encebollado", "camarones". No la sube al buscar "hamburguesa".
         function _destacaPara(r,keywords){
             if(!esDestacado(r)) return false;
             var raiz=removeAccents((r.categoria_canonica||'').toLowerCase()).trim().slice(0,4);
-            if(raiz.length<4) return false;
-            return (keywords||[]).some(function(k){return removeAccents(String(k||'').toLowerCase()).indexOf(raiz)!==-1;});
+            var pal=raiz.length===4?[raiz]:[];
+            Object.keys(CAT_MAP_V2).forEach(function(k){
+                var c=CAT_MAP_V2[k];
+                if(c.canonica&&c.canonica===r.categoria_canonica) (c.kw||[]).forEach(function(w){w=removeAccents(String(w).toLowerCase());if(w.length>=4)pal.push(w);});
+            });
+            return (keywords||[]).some(function(k){k=removeAccents(String(k||'').toLowerCase());return pal.some(function(w){return k.indexOf(w)!==-1;});});
         }
         function _scoreRecomendado(r){
             var s=0;
@@ -2629,6 +2634,8 @@
                         });
                     }
                     rankRestsByKeywords(rests,cm.kw);
+                    // En una CATEGORÍA, el destacado sube solo en la de su rubro (Mozzarella en Pizza, no en Hamburguesas)
+                    rests.forEach(function(r){r._destacado=esDestacado(r)&&!!cm.canonica&&r.categoria_canonica===cm.canonica;});
                     // Boost aliados al top: primero aliado, luego cliente_paga, luego silencioso
                     rests.sort(function(a,b){
                         var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
