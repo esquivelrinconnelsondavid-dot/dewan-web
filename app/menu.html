@@ -899,6 +899,11 @@
         .rc2-pl{font-size:.68rem;font-weight:800;color:var(--green-ink)}
         .rc2 .fresh-chips{margin-top:0}
         .rc2 .grid3-suc{margin-top:0}
+        /* Local DESTACADO (publicidad pagada, 8-oct-2026) */
+        .rc2-chip.rc2-dest{background:var(--acc);color:#fff}
+        .dest-fila{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:3px 0 1px}
+        .dest-chip{font-size:.62rem;font-weight:900;color:#fff;background:var(--acc);border-radius:999px;padding:2px 8px;white-space:nowrap}
+        .dest-promo{font-size:.66rem;font-weight:800;color:var(--cta-hover);background:var(--acc-soft);border-radius:999px;padding:2px 8px;white-space:nowrap}
         /* hoja de Compras / Encomiendas */
         .nh-velo{position:fixed;inset:0;background:rgba(20,8,2,.5);z-index:120;animation:nhFade .2s ease}
         .nh-hoja{position:fixed;left:0;right:0;bottom:0;max-width:430px;margin:0 auto;max-height:92vh;overflow-y:auto;background:var(--bg);z-index:121;border-radius:22px 22px 0 0;padding:8px 18px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:11px;animation:nhSube .28s cubic-bezier(.32,.72,0,1);box-shadow:0 -10px 30px rgba(0,0,0,.18)}
@@ -1366,7 +1371,10 @@
                 // v29.1 (16-sep-2026): % de comisión que da el aliado — decide su servicio DEWAN
                 pct_comision_local:Number(r.pct_comision_local)||0,
                 // Vitrina justa (2026-07-22): antigüedad para el bono "nuevo"
-                created_at:r.created_at
+                created_at:r.created_at,
+                // Local DESTACADO (8-oct-2026, publicidad pagada): hasta cuándo + su promo a la vista
+                destacado_hasta:r.destacado_hasta||null,
+                destacado_texto:r.destacado_texto||''
             };
         }
 
@@ -1836,6 +1844,7 @@
                                 g[p.rest].push(p);
                             });
                             ord=_dayShuffle(ord,function(x){return x+col.key}).sort(function(a,b){return (_vLocal[a]?1:0)-(_vLocal[b]?1:0)});
+                            ord=ord.filter(function(x){return esDestacado(getRestByName(x));}).concat(ord.filter(function(x){return !esDestacado(getRestByName(x));})); // el destacado abre el carril (si tiene platos de ese tema)
                             var items=[];
                             for(var ronda=0;ronda<2&&items.length<10;ronda++){
                                 for(var i=0;i<ord.length&&items.length<10;i++){
@@ -1960,7 +1969,9 @@
                 logo:(rest.logo_url||rest.imagen_url||rest.foto_url||null)
             };
         }
-        function buildPhotoRail(plates,limit){
+        // Nombres de los locales destacados para ESTA búsqueda/categoría (r._destacado lo pone scoreRestRelevance).
+        function _destacadosDe(rests){var m={};(rests||[]).forEach(function(r){if(r._destacado)m[r.nombre]=1;});return m;}
+        function buildPhotoRail(plates,limit,primero){
             var seen={},seenF={},groups={},order=[];
             (plates||[]).forEach(function(it){
                 var p=plateToRailItem(it); if(!p) return;
@@ -1974,6 +1985,7 @@
             // (evita que un local con muchas fotos, ej. una cevichería, inunde el carril).
             Object.keys(groups).forEach(function(r){groups[r]=_railShuffle(groups[r]).slice(0,3);});
             var localOrder=_railShuffle(order);
+            if(primero) localOrder=localOrder.filter(function(r){return primero[r];}).concat(localOrder.filter(function(r){return !primero[r];})); // el destacado abre el carril
             var g={}; localOrder.forEach(function(r){g[r]=groups[r].slice();});
             var pick=[],added=true;
             while(added){ added=false; localOrder.forEach(function(r){ if(g[r].length){pick.push(g[r].shift());added=true;} }); }
@@ -2335,8 +2347,20 @@
         function _dayHash(id){var h=_daySeed()>>>0,str=String(id);for(var i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),2654435761)>>>0;}h^=h>>>15;return h%101;} // 0..100
         function _esNuevoRest(r){if(!r||!r.created_at)return false;var t=Date.parse(r.created_at);if(isNaN(t))return false;return (Date.now()-t)<30*86400000;} // 21→30 días (19-sep, badge "Nuevo" + vitrina)
         function _tieneFotoRest(r){return !!(r&&(r.logo_url||r.foto_url||r.imagen_url));}
+        // Local DESTACADO (8-oct-2026, publicidad pagada — 1º: Pizzería Mozzarella): restaurantes.destacado_hasta.
+        // Mientras no pase esa fecha sale PRIMERO ENTRE LOS ABIERTOS (un cerrado no encabeza nada) en el inicio, en la
+        // búsqueda y la categoría de SU rubro y en el carril del día, con la etiqueta "Destacado".
+        function esDestacado(r){if(!r||!r.destacado_hasta)return false;var t=Date.parse(r.destacado_hasta);return !isNaN(t)&&t>Date.now();}
+        // ¿Lo que se busca es de su rubro? pizza ↔ "pizzas", "pizzería" (no la sube al buscar "hamburguesa").
+        function _destacaPara(r,keywords){
+            if(!esDestacado(r)) return false;
+            var raiz=removeAccents((r.categoria_canonica||'').toLowerCase()).trim().slice(0,4);
+            if(raiz.length<4) return false;
+            return (keywords||[]).some(function(k){return removeAccents(String(k||'').toLowerCase()).indexOf(raiz)!==-1;});
+        }
         function _scoreRecomendado(r){
             var s=0;
+            if(esDestacado(r)) s+=5000;                          // publicidad pagada: primero (entre los abiertos)
             if(_tieneFotoRest(r)) s+=1000;                       // vitrina: los que se ven bien, arriba
             s+=_dayHash(r.id);                                   // rotación diaria (0..100) — mover principal
             if(_esNuevoRest(r)) s+=45;                           // exploración: empujón a locales nuevos
@@ -2611,6 +2635,7 @@
                         var va=sa===true?0:sa===null?1:2;
                         var vb=sb===true?0:sb===null?1:2;
                         if(va!==vb) return va-vb;
+                        if(!!a._destacado!==!!b._destacado) return a._destacado?-1:1;
                         var ta={aliado:0,cliente_paga:1,silencioso:2}[a.tipo_acuerdo]||2;
                         var tb={aliado:0,cliente_paga:1,silencioso:2}[b.tipo_acuerdo]||2;
                         if(ta!==tb) return ta-tb;
@@ -2618,7 +2643,7 @@
                         return (a.distancia_km||999)-(b.distancia_km||999);
                     });
                     window._catRestsCache[key]=rests;
-                    window._catPlatesCache[key]=buildPhotoRail(plates,12); // carril de fotos de aliados arriba
+                    window._catPlatesCache[key]=buildPhotoRail(plates,12,_destacadosDe(rests)); // carril de fotos de aliados arriba
                     window._catLoading=false;
                     if(window._activeCat===key) renderHome();
                 }).catch(function(){
@@ -3056,6 +3081,11 @@
         // Sale de datos que la web YA tiene: tema del día, envío $1 (lun-mié), locales nuevos y el servicio de encomiendas.
         function nhPromosHTML(){
             var s=[];
+            // Local DESTACADO abierto = 1ª lámina de la portada, con su promo
+            ((sessionData&&sessionData.resultados)||[]).filter(function(r){return esDestacado(r)&&isRestOpen(r.horario)!==false;}).slice(0,2).forEach(function(r){
+                var f=((window._fotoRest&&window._fotoRest[r.id])||[])[0];
+                s.push({foto:f?thumb(f,720):'',logo:r.logo_url||'',k:'★ Destacado',t:r.nombre,d:r.destacado_texto||nhMayus(r.categoria_canonica||r.categoria||''),cta:'Ver el menú',on:"openRest('"+jsEsc(r.nombre)+"')"});
+            });
             var col=_colTema(), tem=window._temaHome;
             if(col&&(tem===undefined||(tem&&tem.length))){
                 var foto=tem&&tem[0]&&tem[0].foto_url?thumb(tem[0].foto_url,720):'';
@@ -3497,7 +3527,7 @@
                     var homeBy=partitionBySocio(rests);
                     var aliadosDestacados=dailyShuffle(homeBy.socios.filter(function(r){return r.tipo_acuerdo==='aliado'}));
                     // CERRADOS al final (de noche era un mar de "CERRADO" arriba)
-                    aliadosDestacados.sort(function(a,b){var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);var va=sa===true?0:sa===null?1:2,vb=sb===true?0:sb===null?1:2;return va-vb;});
+                    aliadosDestacados.sort(function(a,b){var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);var va=sa===true?0:sa===null?1:2,vb=sb===true?0:sb===null?1:2;return (va-vb)||((esDestacado(b)?1:0)-(esDestacado(a)?1:0));});
                     if(aliadosDestacados.length>=4) h+=nhLogosHTML(aliadosDestacados);
                     h+='<div class="nh-sec" id="nh-todos"><b>'+(hasGPS?'Cerca de ti':'Todos los locales')+'</b><span>'+homeBy.socios.length+'</span></div>';
                     h+=sortBarH;
@@ -4132,6 +4162,7 @@
             r._specialist=score>=3000;
             r._nameMatch=nameMatch;
             r._catMatch=catMatch;
+            r._destacado=_destacaPara(r,keywords);
             return score;
         }
 
@@ -4142,6 +4173,7 @@
                 var va=sa===true?0:sa===null?1:2;
                 var vb=sb===true?0:sb===null?1:2;
                 if(va!==vb) return va-vb;
+                if(!!a._destacado!==!!b._destacado) return a._destacado?-1:1;
                 if(a._score!==b._score) return b._score-a._score;
                 return (a.distancia_km||999)-(b.distancia_km||999);
             });
@@ -4338,6 +4370,8 @@
         }
 
         // V3.0: Tarjeta tipo grilla 3 columnas (home default). Muestra foto si existe, sino emoji.
+        // Promo del local destacado a la vista en su tarjeta (restaurantes.destacado_texto, ej. "2 pizzas medianas $10")
+        function _destPromoH(r){return (esDestacado(r)&&r.destacado_texto)?'<span class="dest-promo">'+esc(r.destacado_texto)+'</span>':'';}
         function renderRestCardGrid(r,idx,openCmd){
             var color=monoColor(r.nombre);
             var isOpen=isRestOpen(r.horario);
@@ -4373,7 +4407,8 @@
                 // Solo la 1ª foto de las 2 primeras tarjetas carga al abrir; las demás cuando se acercan a la pantalla
                 // (antes del 4-oct-noche cargaban ~34 fotos de golpe y la web se sentía lenta).
                 fotos.forEach(function(cv,i){fotosH+='<img src="'+esc(thumb(cv,720))+'" alt="'+(i===0?esc(r.nombre):'')+'"'+((i||idx>1)?' loading="lazy"':'')+' decoding="async" onerror="this.remove()">';});
-                var chipH=r.top_semana?'<span class="rc2-chip">🔥 Top semana</span>'
+                var chipH=esDestacado(r)?'<span class="rc2-chip rc2-dest">★ Destacado</span>'
+                    :r.top_semana?'<span class="rc2-chip">🔥 Top semana</span>'
                     :((promoEnvioDiaActivo()&&window._clientGPS&&r.precio_delivery&&r.precio_delivery<=2.005)?'<span class="rc2-chip">🛵 Envío $1 hoy</span>':'');
                 var plH=(isAliado&&(Number(r.markup_pct)||0)===0)?'<span class="rc2-pl">✓ Precio del local</span>':'';
                 return '<div class="grid3-card rc2'+(cerr?' cerrado':'')+'" onclick="'+openCmd+'">'+
@@ -4390,7 +4425,7 @@
                             '<div class="grid3-name">'+(isAliado?'⭐ ':'')+esc(r.nombre)+'</div>'+
                             sucursalHTML(r)+
                             '<div class="rc2-meta">'+metaBits.join(' · ')+(cat?' · '+cat:'')+'</div>'+
-                            '<div class="rc2-perks">'+plH+_freshChips(r)+'</div>'+
+                            '<div class="rc2-perks">'+plH+_destPromoH(r)+_freshChips(r)+'</div>'+
                         '</div>'+
                     '</div>'+
                 '</div>';
@@ -4403,6 +4438,7 @@
                 logoH+
                 '<div class="grid3-row-body">'+
                     '<div class="grid3-name" style="-webkit-line-clamp:1">'+(isAliado?'⭐ ':'')+esc(r.nombre)+'</div>'+
+                    (esDestacado(r)?'<div class="dest-fila"><span class="dest-chip">★ Destacado</span>'+_destPromoH(r)+'</div>':'')+
                     (isOpen===false
                         ?'<div class="grid3-meta">'+(proximaApertura(r.horario)?'Cerrado · abre '+proximaApertura(r.horario):'Cerrado')+'</div>'
                         :'<div class="grid3-meta">'+(cat?'<span class="grid3-cat-name">'+cat+'</span> · ':'')+metaBits.join(' · ')+'</div>')+
@@ -4547,7 +4583,7 @@
                 return;
             }
             // Carril de FOTOS de platos (aliados) que matchean la búsqueda — arriba del todo, estilo "Para ti".
-            var railSearch=buildPhotoRail(plates,12);
+            var railSearch=buildPhotoRail(plates,12,_destacadosDe(rests));
             var railKeys={}; railSearch.forEach(function(p){railKeys[p.rest+'|'+p.nombre]=1;});
             var html='';
             if(railSearch.length){
