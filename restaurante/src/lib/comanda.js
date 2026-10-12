@@ -86,6 +86,24 @@ export async function listarImpresoras() {
   try { return await window.electronAPI.listarImpresoras(); } catch { return []; }
 }
 
+// "Como la configuró Windows" (11-oct-2026: en los aliados salía el PAPEL EN BLANCO).
+// Electron NO usa el papel del driver cuando no le pasamos tamaño: pone A4 por
+// defecto (medido con Electron 33, el del EXE: el trabajo llega a Windows como
+// 210x297 mm aunque la POS-80 esté en rollo 72x297). Con el ticket centrado
+// (19-sep) caía en el medio de la hoja, de 72 a 138 mm, FUERA de los 72 mm que
+// pinta el rollo → salía ~30 cm de papel en blanco por pedido. Ahora 'auto' en
+// una impresora de rollo se imprime como rollo, igual que "Rollo 80mm", con la
+// franja que Windows dice (EXE nuevo) o, si el EXE no la sabe, la que dice el
+// nombre de la impresora. Las de hojas (PDF, láser, tinta) siguen en hoja.
+const NOMBRE_DE_HOJA = /pdf|xps|onenote|fax|anydesk|laserjet|deskjet|officejet|envy|smart ?tank|pixma|canon|brother|ecotank|kyocera|ricoh|lexmark|xerox|samsung|\bhp\b|epson\s+(l\d{3,4}|wf-|et-|xp-\d{3,4})/i;
+export function franjaRolloPorNombre(nombre) {
+  const n = String(nombre || '');
+  if (NOMBRE_DE_HOJA.test(n)) return null;                           // impresora de hojas
+  if (/58/.test(n) && !/80/.test(n)) return ANCHO_UTIL['58'];        // POS-58, XP-58, GP-5890
+  if (/TM-?U\d|U2\d\d|(^|\D)76(\D|$)/i.test(n)) return ANCHO_UTIL['76']; // POS-76, TM-U220
+  return ANCHO_UTIL['80'];                                           // POS-80, TM-T20, LR2000…
+}
+
 // Lo que Windows dice de la impresora (papel del driver y franja imprimible).
 // Solo el EXE nuevo (main.cjs con 'info-impresora') lo trae; los EXE viejos → null
 // y se usa la franja típica del preset. Tope 4s: no frena la impresión.
@@ -307,31 +325,42 @@ export function construirComandaHTML(pedido, { ancho = '80', restauranteNombre =
 export async function imprimirComanda(pedido, opts = {}) {
   if (!hayImpresion()) return { ok: false, motivo: 'no-electron' };
   const cfg = getConfigImpresora();
-  const usarDefault = cfg.ancho === 'auto';
   // Si la impresora guardada ya no existe (Windows la renombra al reconectarla
   // por otro puerto: "POS80 (Copia 1)"), buscamos la pariente renombrada y si
   // no, caemos a la predeterminada — mejor que dejar que el auto-print falle
   // en silencio y la cocina se quede sin comanda. El listado puede tardar
   // (impresora de red offline): tope de 2.5s y seguimos con lo guardado.
+  // En 'auto' también hace falta para saber el NOMBRE de la predeterminada.
   let deviceName = cfg.deviceName;
-  if (deviceName) {
+  let nombreReal = deviceName;
+  if (deviceName || cfg.ancho === 'auto') {
     try {
       const lista = await Promise.race([
         listarImpresoras(),
         new Promise((r) => setTimeout(() => r(null), 2500)),
       ]);
-      if (Array.isArray(lista) && lista.length && !lista.some((p) => p.name === deviceName)) {
+      if (Array.isArray(lista) && lista.length && deviceName && !lista.some((p) => p.name === deviceName)) {
         const pariente = lista.find((p) => p.name.startsWith(deviceName));
         deviceName = pariente ? pariente.name : '';
       }
+      nombreReal = deviceName
+        || (Array.isArray(lista) && (lista.find((p) => p.isDefault) || {}).name) || '';
     } catch { /* si no se pudo listar, intentamos con el nombre guardado */ }
   }
   // Franja imprimible REAL de esa impresora (EXE nuevo); si no, la típica del preset.
   const info = (cfg.ancho === 'a4') ? null : await infoImpresora(deviceName);
-  const utilMm = info ? anchoUtilValido(info.utilAnchoMm) : null;
-  const html = construirComandaHTML(pedido, { ancho: cfg.ancho, restauranteNombre: opts.restauranteNombre, liviano: cfg.liviano, utilMm });
+  let utilMm = info ? anchoUtilValido(info.utilAnchoMm) : null;
+  let ancho = cfg.ancho;
+  if (ancho === 'auto') {
+    // Rollo → como rollo (ver franjaRolloPorNombre). Si Windows dice que es una
+    // hoja (EXE nuevo) o el nombre es de una impresora de hojas, sigue en hoja.
+    const franja = info ? utilMm : franjaRolloPorNombre(nombreReal);
+    if (franja) { ancho = '80'; utilMm = franja; }
+  }
+  const usarDefault = ancho === 'auto';
+  const html = construirComandaHTML(pedido, { ancho, restauranteNombre: opts.restauranteNombre, liviano: cfg.liviano, utilMm });
   // La PÁGINA que se le pide a Windows = la franja imprimible (no el rollo nominal).
-  const anchoMm = (cfg.ancho === 'a4' || usarDefault) ? null : (utilMm || ANCHO_UTIL[cfg.ancho] || 72);
+  const anchoMm = (ancho === 'a4' || usarDefault) ? null : (utilMm || ANCHO_UTIL[ancho] || 72);
   try {
     const r = await window.electronAPI.imprimirComanda({ html, deviceName, anchoMm, usarDefault, liviano: cfg.liviano });
     return { ok: !!(r && r.success), motivo: r && r.reason };

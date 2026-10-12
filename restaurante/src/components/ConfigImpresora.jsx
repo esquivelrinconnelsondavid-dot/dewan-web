@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   hayImpresion, getConfigImpresora, setConfigImpresora,
-  listarImpresoras, imprimirComanda, infoImpresora, anchoUtilValido,
+  listarImpresoras, imprimirComanda, infoImpresora, anchoUtilValido, franjaRolloPorNombre,
 } from '../lib/comanda';
 
 const ANCHOS = [
@@ -9,7 +9,7 @@ const ANCHOS = [
   { id: '76', label: 'Rollo 76mm — de impacto', desc: 'Epson de agujas/cinta tipo TM-U220 (la que hace "tac-tac"). Activa solo el texto liviano.' },
   { id: '58', label: 'Rollo 58mm', desc: 'Rollo angosto de recibos' },
   { id: 'a4', label: 'Hoja A4 / Carta', desc: 'Impresora de hojas (tinta o láser)' },
-  { id: 'auto', label: 'Como la configuró Windows', desc: 'Usa el papel del driver de Windows. OJO: si el driver está en Carta/A4 bota ~25cm de papel en blanco por ticket — primero poné el papel del driver en rollo/recibo.' },
+  { id: 'auto', label: 'Como la configuró Windows', desc: 'Se adapta a la impresora: el ticket sale del ancho del rollo que tiene (80 o 58mm). Si es una impresora de hojas, sale en hoja.' },
 ];
 
 export default function ConfigImpresora({ restaurante }) {
@@ -68,7 +68,7 @@ export default function ConfigImpresora({ restaurante }) {
       ? '✓ Enviado a la impresora'
       : (r.motivo === 'timeout-encolado' || r.motivo === 'timeout')
         ? '⏳ La impresora está tardando — revisá si salió el ticket antes de reimprimir'
-        : '✗ No se pudo imprimir: ' + (r.motivo || 'revisá la impresora') + '. Tip: probá el tamaño "Como la configuró Windows".');
+        : '✗ No se pudo imprimir: ' + (r.motivo || 'revise la impresora') + '. Revise que la impresora esté prendida, con papel y elegida arriba.');
   };
 
   return (
@@ -99,6 +99,18 @@ export default function ConfigImpresora({ restaurante }) {
               : <> · ⚠️ eso es una hoja, no un rollo: ponga el rollo en Preferencias de impresión de Windows.</>}
           </p>
         )}
+        {!info && cfg.ancho === 'auto' && (() => {
+          // EXE que no puede leer el papel de Windows: decimos qué ancho se usa.
+          const nombre = cfg.deviceName || (impresoras.find((p) => p.isDefault) || {}).name || '';
+          const franja = franjaRolloPorNombre(nombre);
+          return (
+            <p className="text-[11px] text-gray-400 mt-1">
+              {franja
+                ? <>El ticket sale como <b className="text-gray-200">rollo de {franja === 48 ? '58' : franja === 63 ? '76' : '80'} mm</b>. Si sale cortado, elija el rollo exacto abajo.</>
+                : <>Es una impresora de hojas: el ticket sale en hoja.</>}
+            </p>
+          );
+        })()}
       </div>
 
       {/* Tamaño */}
