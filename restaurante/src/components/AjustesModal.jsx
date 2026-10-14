@@ -4,13 +4,16 @@ import MiLocal from './MiLocal';
 import ConfigImpresora from './ConfigImpresora';
 import CrecerConDewan from './CrecerConDewan';
 import { hayImpresion } from '../lib/comanda';
-import { MODO_HP, MODO_SISTEMA, PEDIDOS_TABLE } from '../lib/config';
+import { MODO_HP, MODO_SISTEMA, MODO_US, PEDIDOS_TABLE } from '../lib/config';
 import { supabase } from '../lib/supabase';
 import { getSucursalPanel, setSucursalPanel } from '../lib/sucursal';
 
 const OPCIONES = [
-  { id: 'menu', label: 'Menú', icono: '🍔', descripcion: 'Editar productos, precios y disponibilidad' },
-  { id: 'local', label: 'Mi Local', icono: '🏪', descripcion: 'Logo, horario, teléfono' },
+  // EE.UU.: la carta y los datos del local viven en su página (tabla paginas), no en estas pantallas.
+  ...(MODO_US ? [] : [
+    { id: 'menu', label: 'Menú', icono: '🍔', descripcion: 'Editar productos, precios y disponibilidad' },
+    { id: 'local', label: 'Mi Local', icono: '🏪', descripcion: 'Logo, horario, teléfono' },
+  ]),
   ...(hayImpresion()
     ? [{ id: 'impresora', label: 'Impresora', icono: '🖨️', descripcion: 'Comanda automática: elegí impresora y tamaño' }]
     : []),

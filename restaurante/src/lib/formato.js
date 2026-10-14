@@ -1,4 +1,5 @@
-const TZ_EC = 'America/Guayaquil';
+// [14-oct-2026] VITE_TZ: zona del local (Panel de EE.UU. = America/New_York). Sin la variable, Ecuador.
+const TZ_EC = import.meta.env.VITE_TZ || 'America/Guayaquil';
 
 // Lazy init para no crashear el módulo si el WebView no soporta la zona.
 let _fmtHora, _fmtFecha, _fmtFechaCorta, _fmtIsoYmd;

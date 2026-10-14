@@ -25,7 +25,7 @@ import {
 import { registrarPushRestaurante, olvidarRestaurantePush } from './lib/push';
 import { tiempoSinDatos } from './lib/conexion';
 import { resucitarSocket } from './lib/supabase';
-import { MARCA, MODO_HP, MODO_SISTEMA } from './lib/config';
+import { MARCA, MODO_HP, MODO_SISTEMA, MODO_US } from './lib/config';
 import { aplicarTemaLocal } from './lib/tema';
 
 function buildTabs(nuevosCount, enProcesoCount, opinionesSinLeer) {
@@ -34,8 +34,8 @@ function buildTabs(nuevosCount, enProcesoCount, opinionesSinLeer) {
     // Happy Pollo usa delivery propio (sin motos DEWAN) → no hay pestaña "Entregando".
     ...(MODO_HP && !MODO_SISTEMA ? [] : [{ id: 'entregando', label: 'Entregando', badge: enProcesoCount }]),
     { id: 'ventas', label: 'Ventas' },
-    // Lo que el cliente dijo de la comida y de cada plato (DEWAN y locales del SISTEMA).
-    { id: 'opiniones', label: 'Opiniones', badge: opinionesSinLeer },
+    // Lo que el cliente dijo de la comida y de cada plato (DEWAN y locales del SISTEMA; EE.UU. todavía no).
+    ...(MODO_US ? [] : [{ id: 'opiniones', label: 'Opiniones', badge: opinionesSinLeer }]),
   ];
 }
 
@@ -162,7 +162,7 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
 
   const enProceso = [...listos, ...entregando];
   const nuevosVisibles = entrantes.filter((p) => !minimizados.has(p.id));
-  const conEstadoLocal = !(MODO_HP && !MODO_SISTEMA);
+  const conEstadoLocal = !(MODO_HP && !MODO_SISTEMA) && !MODO_US;
   const resumenHoy = 'Cuando un pedido salga con el motorizado aparecerá aquí.';
 
   return (
@@ -184,7 +184,7 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
         <TabBar tabs={buildTabs(entrantes.length, enProceso.length, opiniones.sinLeer)} active={tab} onChange={setTab} />
       </div>
       <div className="hidden lg:block">
-        <TabBar tabs={[{ id: 'pedidos', label: 'Pedidos', badge: entrantes.length }, { id: 'ventas', label: 'Ventas' }, { id: 'opiniones', label: 'Opiniones', badge: opiniones.sinLeer }]} active={tab === 'entregando' ? 'pedidos' : tab} onChange={setTab} />
+        <TabBar tabs={[{ id: 'pedidos', label: 'Pedidos', badge: entrantes.length }, { id: 'ventas', label: 'Ventas' }, ...(MODO_US ? [] : [{ id: 'opiniones', label: 'Opiniones', badge: opiniones.sinLeer }])]} active={tab === 'entregando' ? 'pedidos' : tab} onChange={setTab} />
       </div>
       <NuevoPedidoModal pedidos={nuevosVisibles} ocupadoMin={estadoLocal.ocupadoMin}
         onMinimizar={() => setMinimizados((prev) => { const n = new Set(prev); nuevosVisibles.forEach((p) => n.add(p.id)); return n; })} />

@@ -1,4 +1,5 @@
 import { supabase, consultarConTimeout } from './supabase';
+import { TABLA_LOCALES, RPC_LOGIN, RPC_SESION } from './config';
 
 export const STORAGE_TOKEN = 'dewan_rest_token';
 export const STORAGE_REST = 'dewan_rest_data';
@@ -12,7 +13,7 @@ async function enriquecerConPerfil(restaurante) {
     // columnas, se reintenta sin ellas: el login nunca depende de eso.
     let { data, error } = await consultarConTimeout(
       supabase
-        .from('restaurantes')
+        .from(TABLA_LOCALES)
         .select(BASE_COLS + ', panel_tema, panel_color')
         .eq('id', restaurante.restaurante_id)
         .maybeSingle()
@@ -20,7 +21,7 @@ async function enriquecerConPerfil(restaurante) {
     if (error) {
       ({ data, error } = await consultarConTimeout(
         supabase
-          .from('restaurantes')
+          .from(TABLA_LOCALES)
           .select(BASE_COLS)
           .eq('id', restaurante.restaurante_id)
           .maybeSingle()
@@ -42,7 +43,7 @@ async function enriquecerConPerfil(restaurante) {
 export async function loginConCodigo(codigo, nombreDispositivo) {
   try {
     const { data, error } = await consultarConTimeout(
-      supabase.rpc('verificar_codigo_restaurante', {
+      supabase.rpc(RPC_LOGIN, {
         codigo,
         dispositivo_nombre: nombreDispositivo,
       })
@@ -81,7 +82,7 @@ export async function obtenerSesion() {
 
   try {
     const { data, error } = await consultarConTimeout(
-      supabase.rpc('restaurante_por_token', {
+      supabase.rpc(RPC_SESION, {
         p_token: token,
       })
     );
