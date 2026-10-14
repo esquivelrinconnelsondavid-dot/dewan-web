@@ -129,7 +129,7 @@ window.TEMPLATES["premium"] = {
 
     const featHtml = destacados.map(({ it }) => `
       <div class="pr-feat">
-        <div class="ph"><img src="${it.foto}" alt="">${"<span class=\"tag\">⭐ Popular</span>"}</div>
+        <div class="ph"><img src="${it.foto}" alt="">${"<span class=\"tag\">" + ((window.TEXTOS || {}).popular || "⭐ Popular") + "</span>"}</div>
         <div class="fb"><div class="fn">${it.nombre}</div>
           <div class="ff"><span class="fp">$${Number(it.precio).toFixed(2)}</span>${ctrl(it.id)}</div></div>
       </div>`).join("");
@@ -177,12 +177,12 @@ window.TEMPLATES["premium"] = {
       </header>
       <div class="pr-search"><div class="box">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0a8" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-        <input id="pr-q" type="text" placeholder="Buscar en ${R.nombre}…">
+        <input id="pr-q" type="text" placeholder="${(window.TEXTOS || {}).buscarEn || "Buscar en"} ${R.nombre}…">
       </div></div>
       <nav class="pr-chips">${navHtml}</nav>
-      ${destacados.length >= 3 ? `<div class="pr-feat-tt">${R.vozDestacado || "🔥 Lo más pedido"}</div><div class="pr-rail">${featHtml}</div>` : ``}
+      ${destacados.length >= 3 ? `<div class="pr-feat-tt">${R.vozDestacado || (window.TEXTOS || {}).loMasPedido || "🔥 Lo más pedido"}</div><div class="pr-rail">${featHtml}</div>` : ``}
       ${menuHtml}
-      <p class="pr-none" id="pr-none">Sin resultados 🔍</p>
+      <p class="pr-none" id="pr-none">${(window.TEXTOS || {}).sinResultados || "Sin resultados 🔍"}</p>
       <div class="pr-end">— ${R.nombre} —</div>
       </div>`;
 

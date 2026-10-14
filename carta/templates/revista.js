@@ -91,7 +91,7 @@ window.TEMPLATES["revista"] = {
     root.innerHTML = `
       <div class="rv-wrap">
         <header class="rv-mast">
-          <div class="l"><div class="rv-kick">La Carta</div><h1 class="rv-name">${R.nombre}</h1>${R.slogan ? `<p class="rv-slo">${R.slogan}</p>` : ``}</div>
+          <div class="l"><div class="rv-kick">${(window.TEXTOS || {}).laCarta || "La Carta"}</div><h1 class="rv-name">${R.nombre}</h1>${R.slogan ? `<p class="rv-slo">${R.slogan}</p>` : ``}</div>
           ${R.logo ? `<div class="rv-seal"><img src="${R.logo}" alt=""></div>` : ``}
         </header>
         ${meta.length ? `<div class="rv-meta">${meta.map((m) => `<span>${m}</span>`).join("")}</div>` : ``}

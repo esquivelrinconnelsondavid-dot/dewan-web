@@ -140,7 +140,7 @@ window.TEMPLATES["ticket"] = {
           ${secs}
           <div class="tk-foot">
             <hr class="tk-rule thin">
-            <p class="gracias">*** GRACIAS POR SU PEDIDO ***</p>
+            <p class="gracias">${(window.TEXTOS || {}).gracias || "*** GRACIAS POR SU PEDIDO ***"}</p>
             <div class="tk-bars"></div>
             <p class="code">${(R.nombre || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)} · #00472</p>
           </div>

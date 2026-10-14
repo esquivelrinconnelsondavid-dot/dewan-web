@@ -125,7 +125,7 @@ window.TEMPLATES["inmersivo"] = {
         <section class="nc-chap" id="cat-${cid}">
           <header class="nc-cover">
             ${R.logo ? `<img class="wm" src="${R.logo}" alt="">` : ``}
-            <span class="num">CAP. ${num}</span>
+            <span class="num">${(window.TEXTOS || {}).cap || "CAP."} ${num}</span>
             <h2>${cat.categoria}</h2>
           </header>
           <ul class="nc-lineas">${lineas}</ul>
@@ -137,7 +137,7 @@ window.TEMPLATES["inmersivo"] = {
     ).join("");
 
     root.innerHTML = `
-      <div class="nc-bar"><span class="now" id="nc-now">${R.nombre}</span><button class="idx-btn" id="nc-idx-open">☰ Índice</button></div>
+      <div class="nc-bar"><span class="now" id="nc-now">${R.nombre}</span><button class="idx-btn" id="nc-idx-open">${(window.TEXTOS || {}).indice || "☰ Índice"}</button></div>
       <section class="nc-hero">
         ${R.logo ? `<img class="wm" src="${R.logo}" alt="">` : ``}
         <h1>${(R.nombre || "").replace(/\s+/, "<br>")}</h1>

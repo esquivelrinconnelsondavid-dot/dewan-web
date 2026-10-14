@@ -24,8 +24,12 @@ const SUPA_URL  = "https://wfpdtjmmrhhfuxayvpzu.supabase.co";
 const SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s";
 const WEBHOOK_FOTO = "https://n8n.dewansas.com/webhook/subir-foto-vitrina";
 
+/* ---- Textos: español por defecto; carta/pagina.js pone window.TEXTOS (inglés) ---- */
+const TX = window.TEXTOS || {};
+const tx = (k, d) => (TX[k] != null ? TX[k] : d);
+
 const params = new URLSearchParams(location.search);
-const id = params.get("r") || "papazota";
+const id = params.get("r") || params.get("p") || "papazota";   // ?p= = página desde datos (pagina.js)
 // Plantilla por defecto = la primera declarada para ese local en su config
 const cfg = (window.RESTAURANTES && window.RESTAURANTES[id]) || null;
 const tpl = params.get("tpl") || (cfg && cfg.plantillas && cfg.plantillas[0]);
@@ -57,7 +61,7 @@ rootStyle.setProperty("--marca", R.marca);
 rootStyle.setProperty("--tinta", R.tinta);
 rootStyle.setProperty("--crema", R.crema || "#ffffff");
 rootStyle.setProperty("--acento", R.acento || R.marca);
-document.title = `${R.nombre} · menú`;
+document.title = `${R.nombre} · ${tx("menu", "menú")}`;
 
 /* ---- Inyectar el CSS de la plantilla ---- */
 const styleTag = document.createElement("style");
@@ -67,10 +71,10 @@ document.head.appendChild(styleTag);
 /* ---- Helper de stepper estándar para las plantillas ---- */
 function ctrl(pid) {
   return `<span class="stepper" data-qtywrap="${pid}">
-      <button class="st-btn st-min" data-sub="${pid}" aria-label="quitar">−</button>
+      <button class="st-btn st-min" data-sub="${pid}" aria-label="${tx("quitar", "quitar")}">−</button>
       <b class="st-q" data-cant="${pid}">0</b>
     </span>
-    <button class="st-btn st-add" data-add="${pid}" aria-label="agregar">＋</button>`;
+    <button class="st-btn st-add" data-add="${pid}" aria-label="${tx("agregar", "agregar")}">＋</button>`;
 }
 
 /* ---- slug para ids de categoría (disponible para las plantillas) ---- */
@@ -156,7 +160,7 @@ function pintarCarrito() {
     return `<div class="cart-row">
         <div class="cart-row-info">
           <div class="cart-row-nom">${it.nombre}</div>
-          <div class="cart-row-pre">$${it.precio.toFixed(2)} c/u</div>
+          <div class="cart-row-pre">$${it.precio.toFixed(2)} ${tx("cu", "c/u")}</div>
         </div>
         <div class="stepper compact" data-qtywrap="${pid}">
           <button class="st-btn st-min" data-sub="${pid}">−</button>
@@ -213,21 +217,22 @@ $("#enviar").addEventListener("click", () => {
   const entrega = $("#cli-entrega").value;
   const dir = $("#cli-dir").value.trim();
   const nota = $("#cli-nota").value.trim();
-  if (!nombre) return alert("Por favor escribí tu nombre 🙂");
-  if (entrega === "Delivery" && !dir && !ubicacion) return alert("Falta tu dirección o tu ubicación 🛵");
+  if (!nombre) return alert(tx("faltaNombre", "Por favor escribí tu nombre 🙂"));
+  if (entrega === "Delivery" && !dir && !ubicacion) return alert(tx("faltaDir", "Falta tu dirección o tu ubicación 🛵"));
 
-  let m = `*Nuevo pedido — ${R.nombre}*\n\n*Cliente:* ${nombre}\n*Entrega:* ${entrega}\n`;
+  const entTxt = entrega === "Delivery" ? tx("waDelivery", entrega) : tx("waRetiro", entrega);
+  let m = `*${tx("waNuevo", "Nuevo pedido")} — ${R.nombre}*\n\n*${tx("waCliente", "Cliente")}:* ${nombre}\n*${tx("waEntrega", "Entrega")}:* ${entTxt}\n`;
   if (entrega === "Delivery") {
-    if (dir) m += `*Dirección:* ${dir}\n`;
-    if (ubicacion) m += `*Ubicación:* https://maps.google.com/?q=${ubicacion.lat},${ubicacion.lng}\n`;
+    if (dir) m += `*${tx("waDir", "Dirección")}:* ${dir}\n`;
+    if (ubicacion) m += `*${tx("waUbic", "Ubicación")}:* https://maps.google.com/?q=${ubicacion.lat},${ubicacion.lng}\n`;
   }
-  m += `\n*Pedido:*\n`;
+  m += `\n*${tx("waPedido", "Pedido")}:*\n`;
   Object.entries(carrito).forEach(([pid, c]) => {
     const it = buscar(pid);
     m += `• ${c}x ${it.nombre} — $${(it.precio * c).toFixed(2)}\n`;
   });
   m += `\n*Total: $${totalDinero().toFixed(2)}*`;
-  if (nota) m += `\n\n*Nota:* ${nota}`;
+  if (nota) m += `\n\n*${tx("waNota", "Nota")}:* ${nota}`;
 
   if (_factChk && _factChk.checked) {
     const fn = $("#cli-fact-nom").value.trim();
@@ -284,7 +289,7 @@ function limpiarDesc(txt) {
     const lista = (o.opciones || o.salsas || o.items || [])
       .map((x) => (typeof x === "string" ? x : (x && x.nombre) || ""))
       .filter(Boolean);
-    if (lista.length) return "A su elección: " + lista.join(" · ");
+    if (lista.length) return tx("aSuEleccion", "A su elección: ") + lista.join(" · ");
   } catch (e) {}
   return "";
 }
