@@ -16,6 +16,16 @@ export const TIMER_PATH = import.meta.env.VITE_N8N_TIMER_PATH || 'timer-restaura
 export const SALIO_PATH = import.meta.env.VITE_N8N_SALIO_PATH || '';
 export const RECHAZO_PATH = import.meta.env.VITE_N8N_RECHAZO_PATH || '';
 
+// [14-oct-2026] VITE_US=true → Panel de los locales de EE.UU. (va junto con VITE_MODO_SISTEMA=true y
+// VITE_PEDIDOS_TABLE=pedidos_us). Los locales de EE.UU. viven en `locales_us` con su propio ingreso
+// (us_login / us_sesion, SQL 036) para NO aparecer en la app DEWAN de Riobamba. Sin estado de la tienda,
+// opiniones, menú ni "Mi local": la carta de EE.UU. vive en su página (tabla `paginas`).
+// Sin la variable, todo queda como siempre (restaurantes + verificar_codigo_restaurante).
+export const MODO_US = String(import.meta.env.VITE_US) === 'true';
+export const TABLA_LOCALES = MODO_US ? 'locales_us' : 'restaurantes';
+export const RPC_LOGIN = MODO_US ? 'us_login' : 'verificar_codigo_restaurante';
+export const RPC_SESION = MODO_US ? 'us_sesion' : 'restaurante_por_token';
+
 // Número visible del pedido. Sale de la columna `codigo_pedido`, que la BD llena
 // sola al crear el pedido con el formato PREFIJO-NÚMERO (ej. RYO-1042) y que el
 // pedido gemelo de DEWAN COPIA tal cual → el motorizado ve el MISMO número que el local.

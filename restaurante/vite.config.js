@@ -14,6 +14,9 @@ const isHpWeb = process.env.HP_WEB_BUILD === 'true';
 // marca neutra, colores del local desde la BD). Sale a `../restaurante-sistema/web/` y se
 // sirve en https://dewansas.com/restaurante-sistema/web/ (sin tocar nginx).
 const isSistemaWeb = process.env.SISTEMA_WEB_BUILD === 'true';
+// [14-oct-2026] Build EE.UU.: mismo panel del SISTEMA en modo EE.UU. (locales_us + pedidos_us).
+// Sale a `../restaurante-us/web/` y se sirve en https://dewansas.com/restaurante-us/web/.
+const isUsWeb = process.env.US_WEB_BUILD === 'true';
 
 export default defineConfig({
   plugins: [react()],
@@ -23,7 +26,9 @@ export default defineConfig({
   // apertura (pasó con los AAB del 5-ago y 8-ago-2026: un `npm run build` a
   // secas antes de `cap sync`). Las webs hosteadas usan sus flags (build:web /
   // HP) con su base absoluta propia.
-  base: isSistemaWeb
+  base: isUsWeb
+    ? '/restaurante-us/web/'
+    : isSistemaWeb
     ? '/restaurante-sistema/web/'
     : isHpWeb
     ? '/restaurante-hp/web/'
@@ -31,7 +36,7 @@ export default defineConfig({
     ? '/restaurante/web/'
     : './',
   build: {
-    outDir: isSistemaWeb ? '../restaurante-sistema/web' : isHpWeb ? '../restaurante-hp/web' : isWebHost ? 'web' : 'dist',
+    outDir: isUsWeb ? '../restaurante-us/web' : isSistemaWeb ? '../restaurante-sistema/web' : isHpWeb ? '../restaurante-hp/web' : isWebHost ? 'web' : 'dist',
     emptyOutDir: true,
   },
   server: { host: true, port: 5174 },

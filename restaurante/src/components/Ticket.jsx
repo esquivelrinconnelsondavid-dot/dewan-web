@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { calcularPagoAlRestaurante, formatDinero, formatHoraEC } from '../lib/formato';
 import { hayImpresion, imprimirComanda } from '../lib/comanda';
-import { MODO_HP, MODO_SISTEMA, codigoPedido, esDomicilio } from '../lib/config';
+import { MODO_HP, MODO_SISTEMA, MODO_US, codigoPedido, esDomicilio } from '../lib/config';
 import { aceptarPedido, rechazarPedido, marcarEntregado, marcarSalio, sumarMinutos, marcarListoDewan, marcarListoSistema, cancelarPedidoAceptado } from '../lib/pedidos';
 import { parsearDetalle, porConfirmar, limpiarDireccion, telefonoLocal, canalPedido, inicial, colorInicial, haceCuanto } from '../lib/detalle';
 import { IcoCheck, IcoImpresora, IcoTelefono, IcoPin, IcoNota, IcoMoto, IcoReloj, IcoAlerta } from './Iconos';
@@ -177,6 +177,12 @@ function FaltaConfirmar({ pedido, grande }) {
 function Dinero({ pedido, grande }) {
   const { total: base, comision, laPagaRestaurante, recibe } = calcularPagoAlRestaurante(pedido);
   if (!(base > 0)) return null;
+  // EE.UU.: el total lleva impuesto (y propina/envío); si paga al retirar, es lo que el local cobra.
+  if (MODO_US) {
+    const total = Number(pedido.monto_total) || base;
+    const pago = pedido.pago_estado === 'pagado' ? ' · ✓ pagado con tarjeta' : pedido.pago_estado === 'en_local' ? ' · cobrar al retirar' : '';
+    return <div className={`text-gray-400 ${grande ? 'text-sm' : 'text-xs'}`}>Total <span className="font-mono font-bold text-white">{formatDinero(total)}</span>{pago}</div>;
+  }
   if (MODO_HP) {
     return <div className={`text-gray-400 ${grande ? 'text-sm' : 'text-xs'}`}>Total <span className="font-mono font-bold text-white">{formatDinero(base)}</span></div>;
   }

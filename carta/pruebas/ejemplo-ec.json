@@ -1,0 +1,32 @@
+{
+  "slug": "ejemplo-ec",
+  "restaurante_id": null,
+  "estado": "demo",
+  "pais": "EC",
+  "idioma": "es",
+  "config": {
+    "nombre": "Sabor Andino",
+    "slogan": "Comida casera ecuatoriana",
+    "bajada": "Made from scratch every day",
+    "direccion": "Av. Daniel León Borja · Riobamba",
+    "marca": "#C8102E", "tinta": "#1B1B1B", "crema": "#FFF8EE", "acento": "#F2B705",
+    "logo": "", "emojiDefault": "🍽️", "cocina": "latina",
+    "promo": "🛵 A domicilio o para retirar",
+    "vozDestacado": "🔥 Lo más pedido",
+    "meta": ["🛵 A domicilio", "🏪 Retiro", "📍 Riobamba"],
+    "plantillas": ["swift", "street", "ticket"],
+    "whatsapp": "593939647069",
+    "menu": [
+      { "categoria": "Platos fuertes", "items": [
+        { "id": "a1", "nombre": "Bandera", "precio": 18.5, "desc": "Ceviche, guatita and seco de chivo with rice." },
+        { "id": "a2", "nombre": "Seco de Chivo", "precio": 16.0, "desc": "Goat stew with rice, maduros and avocado." },
+        { "id": "a3", "nombre": "Churrasco", "precio": 17.0, "desc": "Steak, fried eggs, rice, fries and salad." } ] },
+      { "categoria": "Seafood", "items": [
+        { "id": "b1", "nombre": "Ceviche de Camarón", "precio": 15.0, "desc": "Shrimp ceviche with chifles and popcorn." },
+        { "id": "b2", "nombre": "Encebollado", "precio": 13.5, "desc": "Tuna and yuca soup. Weekends only." } ] },
+      { "categoria": "Drinks", "items": [
+        { "id": "c1", "nombre": "Horchata", "precio": 3.5, "desc": "" },
+        { "id": "c2", "nombre": "Jugo de Maracuyá", "precio": 4.0, "desc": "Passion fruit juice." } ] }
+    ]
+  }
+}

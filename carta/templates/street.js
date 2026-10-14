@@ -202,7 +202,7 @@ window.TEMPLATES["street"] = {
       <nav class="stz-nav">${navHtml}</nav>
       <div class="st-wrap">
         ${menuHtml}
-        <div class="stz-end">¿Listo para <span>${R.nombre}</span>?</div>
+        <div class="stz-end">${(window.TEXTOS || {}).listoPara ? (window.TEXTOS || {}).listoPara + " <span>" + R.nombre + "</span>?" : "¿Listo para <span>" + R.nombre + "</span>?"}</div>
       </div>`;
   },
 };

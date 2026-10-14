@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Menú</title>
+  <link rel="stylesheet" href="base.css" />
+  <!--
+    PÁGINA DESDE DATOS (14-oct-2026) — p.html?p=<slug>
+    La config del local NO vive en un archivo .js: pagina.js la lee de Supabase
+    (vista paginas_publicas, SQL 035) y recién ahí carga engine.js.
+    Solo plantillas genéricas (las exclusivas x-*, pz-*, sm-* son de cada local).
+    Idioma: si la página es en inglés, pagina.js traduce lo marcado con data-t / data-tp.
+  -->
+</head>
+<body>
+  <!-- Helpers compartidos -->
+  <script src="templates/_helpers.js?v=5"></script>
+
+  <!-- Sistema PRO de looks (reusables por marca) -->
+  <script src="templates/brasa-noir.js?v=5"></script>
+  <script src="templates/street.js?v=6"></script>
+  <script src="templates/swift.js?v=6"></script>
+  <script src="templates/trattoria.js?v=5"></script>
+  <script src="templates/editorial.js?v=5"></script>
+  <script src="templates/tostado.js?v=5"></script>
+  <script src="templates/marea.js?v=5"></script>
+  <script src="templates/dulce.js?v=5"></script>
+  <!-- Arquetipos estructurales (esqueletos distintos) -->
+  <script src="templates/grid-foto.js?v=5"></script>
+  <script src="templates/inmersivo.js?v=6"></script>
+  <script src="templates/ticket.js?v=6"></script>
+  <script src="templates/premium.js?v=6"></script>
+  <script src="templates/poster.js?v=5"></script>
+  <script src="templates/estantes.js?v=6"></script>
+  <script src="templates/portada.js?v=5"></script>
+  <script src="templates/revista.js?v=6"></script>
+
+  <!-- Aquí pinta la plantilla (header + menú) -->
+  <main id="app"><p id="pg-cargando" style="padding:40px 20px;text-align:center;font-family:system-ui;color:#888" data-t="cargando">Cargando el menú…</p></main>
+
+  <!-- Botón flotante (compartido) -->
+  <button id="cart-fab" class="oculto">
+    <span class="fab-l">🛒 <span id="fab-cant">0</span> · <span data-t="verPedido">ver pedido</span></span>
+    <span id="fab-total">$0.00</span>
+  </button>
+
+  <!-- Panel del carrito (compartido) -->
+  <div id="overlay" class="oculto"></div>
+  <aside id="cart" class="oculto">
+    <div class="cart-head"><h2 data-t="tuPedido">Tu pedido</h2><button id="cart-cerrar">✕</button></div>
+    <div id="cart-items"></div>
+    <div id="cart-vacio" data-t="carritoVacio">Tu carrito está vacío 🍽️</div>
+    <div class="cart-foot">
+      <label class="campo"><span data-t="tuNombre">Tu nombre</span>
+        <input id="cli-nombre" type="text" placeholder="Ej: Juan Pérez" data-tp="phNombre" /></label>
+      <label class="campo"><span data-t="tipoEntrega">Tipo de entrega</span>
+        <select id="cli-entrega">
+          <option value="Delivery" data-t="optDelivery">Delivery a domicilio</option>
+          <option value="Retiro en local" data-t="optRetiro">Retiro en el local</option>
+        </select></label>
+      <div id="campo-dir">
+        <label class="campo"><span data-t="direccion">Dirección</span>
+          <input id="cli-dir" type="text" placeholder="Calle, número, referencia" data-tp="phDir" /></label>
+        <button type="button" id="cli-ubic" class="ubic-btn" data-t="usarUbic">📍 Usar mi ubicación actual</button>
+        <div id="ubic-ok" class="ubic-ok oculto" data-t="ubicOk">✓ Ubicación adjuntada al pedido</div>
+      </div>
+      <label class="campo"><span data-t="notaOpc">Nota (opcional)</span>
+        <input id="cli-nota" type="text" placeholder="Ej: sin cebolla, tocar timbre..." data-tp="phNota" /></label>
+
+      <!-- Factura (solo Ecuador: pagina.js la quita en EE.UU.) -->
+      <label class="fact-toggle" id="fact-wrap"><input type="checkbox" id="cli-fact-chk" /> <span>🧾 ¿Necesitas factura?</span></label>
+      <div id="campo-fact" class="oculto">
+        <label class="campo">Nombre / Razón social
+          <input id="cli-fact-nom" type="text" placeholder="Nombre para la factura" /></label>
+        <label class="campo">Cédula / RUC
+          <input id="cli-fact-id" type="text" inputmode="numeric" placeholder="Ej: 0601234567" /></label>
+        <label class="campo">Correo electrónico
+          <input id="cli-fact-mail" type="email" placeholder="correo@ejemplo.com" /></label>
+      </div>
+
+      <div class="cart-total"><span>Total</span><strong id="cart-total">$0.00</strong></div>
+      <button id="enviar" disabled data-t="enviarWA">Enviar pedido por WhatsApp</button>
+    </div>
+  </aside>
+
+  <script src="pagina.js?v=1"></script>
+</body>
+</html>

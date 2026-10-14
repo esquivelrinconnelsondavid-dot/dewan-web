@@ -81,7 +81,7 @@ export function telefonoLocal(tel) {
 export function canalPedido(pedido) {
   const c = String(pedido?.conversation_id || '');
   if (/^app(man)?:/.test(c)) return 'App';
-  if (/^sistema:/.test(c) || /^web:/.test(c)) return 'Link';
+  if (/^sistema:/.test(c) || /^web(-us)?:/.test(c)) return 'Link';
   if (c) return 'WhatsApp';
   return '';
 }

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arme su página de pedidos · DEWAN</title>
+  <meta name="description" content="Suba la foto de su carta y vea su página de pedidos armada en 2 minutos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!--
+    AUTOSERVICIO (14-oct-2026): el restaurante sube la foto/PDF de su carta
+    → webhook n8n `pagina-crear` (Claude lee la carta y guarda la fila en `paginas`)
+    → lo mandamos a p.html?p=<slug> a ver SU página (estado demo).
+    ?lang=en abre en inglés · ?pais=US preselecciona Estados Unidos.
+  -->
+  <style>
+    :root {
+      --brasa: #E8431A; --brasa-osc: #C2360F; --tinta: #1A1714; --gris: #6B645E;
+      --linea: #E7E1DA; --fondo: #FAF7F3; --blanco: #FFFFFF; --ok: #15803D; --err: #B91C1C;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--fondo); color: var(--tinta); line-height: 1.45; }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 28px 16px 64px; }
+    .marca { display: flex; align-items: center; gap: 8px; font-weight: 800; letter-spacing: .02em; font-size: 15px; }
+    .marca i { width: 26px; height: 26px; border-radius: 7px; background: var(--brasa); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-style: normal; font-size: 15px; }
+    .idioma { margin-left: auto; font-weight: 600; font-size: 13px; color: var(--gris); text-decoration: none; border: 1px solid var(--linea); border-radius: 999px; padding: 5px 11px; background: var(--blanco); }
+    h1 { font-size: clamp(28px, 7vw, 38px); line-height: 1.08; letter-spacing: -.02em; margin: 26px 0 10px; }
+    h1 em { font-style: normal; color: var(--brasa); }
+    .bajada { color: var(--gris); font-size: 16px; margin-bottom: 22px; }
+    .pasos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
+    .paso { background: var(--blanco); border: 1px solid var(--linea); border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 600; }
+    .paso b { display: block; color: var(--brasa); font-size: 12px; margin-bottom: 2px; }
+    form { background: var(--blanco); border: 1px solid var(--linea); border-radius: 18px; padding: 18px; box-shadow: 0 8px 28px rgba(26,23,20,.06); }
+    fieldset { border: 0; margin-bottom: 14px; }
+    label, legend { display: block; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+    .opc { font-weight: 500; color: var(--gris); }
+    input[type=text], input[type=email], input[type=tel], select, textarea {
+      width: 100%; font: inherit; font-size: 16px; padding: 12px 13px; border: 1.5px solid var(--linea); border-radius: 11px; background: #fff; color: var(--tinta);
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brasa); }
+    textarea { min-height: 96px; resize: vertical; }
+    .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ayuda { font-size: 12.5px; color: var(--gris); margin-top: 5px; }
+    .subir { display: block; border: 2px dashed #D8CFC5; border-radius: 14px; padding: 18px; text-align: center; cursor: pointer; background: #FFFCF8; }
+    .subir:hover { border-color: var(--brasa); }
+    .subir strong { display: block; font-size: 15px; }
+    .subir span { font-size: 13px; color: var(--gris); }
+    .subir input { display: none; }
+    .miniaturas { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .mini { position: relative; width: 72px; height: 72px; border-radius: 10px; overflow: hidden; border: 1px solid var(--linea); background: #f3efe9; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gris); text-align: center; }
+    .mini img { width: 100%; height: 100%; object-fit: cover; }
+    .mini button { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 13px; cursor: pointer; }
+    .alt { font-size: 13px; color: var(--gris); margin: 10px 0 0; }
+    .alt button { background: none; border: 0; color: var(--brasa); font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; }
+    .check { display: flex; gap: 9px; align-items: flex-start; font-weight: 500; font-size: 13.5px; color: var(--gris); }
+    .check input { margin-top: 3px; width: 17px; height: 17px; accent-color: var(--brasa); flex: none; }
+    .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .boton { width: 100%; border: 0; border-radius: 13px; padding: 16px; font: inherit; font-size: 17px; font-weight: 800; background: var(--brasa); color: #fff; cursor: pointer; margin-top: 6px; }
+    .boton:hover { background: var(--brasa-osc); }
+    .boton:disabled { opacity: .55; cursor: wait; }
+    .estado { margin-top: 14px; border-radius: 12px; padding: 12px 14px; font-size: 14.5px; font-weight: 600; display: none; }
+    .estado.ver { display: block; }
+    .estado.carga { background: #FFF4EE; color: var(--brasa-osc); }
+    .estado.error { background: #FEF2F2; color: var(--err); }
+    .estado a { color: inherit; font-weight: 800; }
+    .barra { height: 6px; border-radius: 99px; background: #F6DCCF; overflow: hidden; margin-top: 9px; }
+    .barra i { display: block; height: 100%; width: 8%; background: var(--brasa); border-radius: inherit; transition: width .8s ease; }
+    .pie { text-align: center; font-size: 12.5px; color: var(--gris); margin-top: 18px; }
+    .pie a { color: inherit; }
+    noscript p { background: #FEF2F2; color: var(--err); padding: 12px; border-radius: 12px; margin-bottom: 14px; font-weight: 600; }
+    @media (max-width: 380px) { .fila, .pasos { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="marca"><i>D</i> DEWAN <a class="idioma" id="cambiar-idioma" href="?lang=en">English</a></div>
+
+    <h1 data-t="titulo">Su carta, convertida en <em>página de pedidos</em> en 2 minutos</h1>
+    <p class="bajada" data-t="bajada">Suba la foto de su carta. La leemos, armamos su página con su nombre y sus colores, y se la mostramos al instante. Sin costo para verla.</p>
+
+    <div class="pasos">
+      <div class="paso"><b>1</b><span data-t="paso1">Sube la foto de la carta</span></div>
+      <div class="paso"><b>2</b><span data-t="paso2">La leemos por usted</span></div>
+      <div class="paso"><b>3</b><span data-t="paso3">Ve su página lista</span></div>
+    </div>
+
+    <noscript><p>Para armar su página hace falta JavaScript. Escríbanos por WhatsApp: <a href="https://wa.me/593939647069">+593 93 964 7069</a></p></noscript>
+
+    <form id="form" novalidate>
+      <fieldset>
+        <label for="nombre" data-t="lNombre">Nombre del restaurante</label>
+        <input id="nombre" type="text" maxlength="80" autocomplete="organization" required />
+      </fieldset>
+
+      <div class="fila">
+        <fieldset>
+          <label for="pais" data-t="lPais">País</label>
+          <select id="pais">
+            <option value="EC">Ecuador</option>
+            <option value="US" data-t="oUS">Estados Unidos</option>
+          </select>
+        </fieldset>
+        <fieldset>
+          <label for="ciudad" data-t="lCiudad">Ciudad</label>
+          <input id="ciudad" type="text" maxlength="80" autocomplete="address-level2" />
+        </fieldset>
+      </div>
+
+      <fieldset id="campo-idioma" hidden>
+        <label for="idioma" data-t="lIdioma">Idioma de la página</label>
+        <select id="idioma">
+          <option value="en" data-t="oEn">Inglés</option>
+          <option value="es" data-t="oEs">Español</option>
+        </select>
+      </fieldset>
+
+      <fieldset>
+        <label data-t="lCarta">Fotos de su carta</label>
+        <label class="subir" for="archivos">
+          <strong data-t="subirTit">📷 Tocar para subir fotos o PDF</strong>
+          <span data-t="subirSub">Hasta 4 fotos o 1 PDF · que se lean bien los precios</span>
+          <input id="archivos" type="file" accept="image/*,application/pdf" multiple />
+        </label>
+        <div class="miniaturas" id="miniaturas"></div>
+        <p class="alt"><span data-t="altTxt">¿No tiene foto a mano?</span> <button type="button" id="mostrar-texto" data-t="altBtn">Pegue el texto de su carta</button></p>
+        <textarea id="texto" maxlength="12000" hidden data-tp="phTexto" placeholder="Ej: Hamburguesa clásica 4.50 · Papas fritas 2.00 …"></textarea>
+      </fieldset>
+
+      <fieldset>
+        <label data-t="lLogo">Logo <span class="opc">(opcional)</span></label>
+        <label class="subir" for="logo" style="padding:12px">
+          <span data-t="logoSub">Si lo sube, usamos sus colores</span>
+          <input id="logo" type="file" accept="image/*" />
+        </label>
+        <div class="miniaturas" id="mini-logo"></div>
+      </fieldset>
+
+      <div class="fila">
+        <fieldset>
+          <label for="whatsapp" data-t="lWa">WhatsApp</label>
+          <input id="whatsapp" type="tel" maxlength="20" autocomplete="tel" data-tp="phWa" placeholder="099 123 4567" />
+        </fieldset>
+        <fieldset>
+          <label for="email" data-t="lEmail">Correo <span class="opc">(opcional)</span></label>
+          <input id="email" type="email" maxlength="120" autocomplete="email" />
+        </fieldset>
+      </div>
+
+      <div class="trampa" aria-hidden="true"><label>Sitio web <input id="sitio_web" type="text" tabindex="-1" autocomplete="off" /></label></div>
+
+      <fieldset>
+        <label class="check"><input id="acepta" type="checkbox" /> <span data-t="acepta">Acepto que DEWAN use estos datos para armar mi página y contactarme por ella.</span></label>
+      </fieldset>
+
+      <button class="boton" id="enviar" type="submit" data-t="boton">Ver mi página</button>
+      <div class="estado" id="estado" role="status" aria-live="polite"></div>
+    </form>
+
+    <p class="pie"><span data-t="pie">¿Dudas? Escríbanos por</span> <a href="https://wa.me/593939647069" target="_blank" rel="noopener">WhatsApp</a></p>
+  </div>
+
+  <script>
+  (function () {
+    var WEBHOOK = "https://n8n.dewansas.com/webhook/pagina-crear";
+    var VENTAS = "593939647069";
+    var MAX_FOTOS = 4, MAX_PDF = 4.5 * 1024 * 1024, LADO = 1568;
+    var q = new URLSearchParams(location.search);
+    var EN = q.get("lang") === "en";
+    var $ = function (s) { return document.querySelector(s); };
+
+    var TXT_EN = {
+      titulo: "Your menu, turned into an <em>online ordering page</em> in 2 minutes",
+      bajada: "Upload a photo of your menu. We read it, build your page with your name and colors, and show it to you right away. Free to see.",
+      paso1: "Upload your menu", paso2: "We read it for you", paso3: "See your page",
+      lNombre: "Restaurant name", lPais: "Country", oUS: "United States", lCiudad: "City",
+      lIdioma: "Page language", oEn: "English", oEs: "Spanish",
+      lCarta: "Photos of your menu", subirTit: "📷 Tap to upload photos or a PDF", subirSub: "Up to 4 photos or 1 PDF · prices must be readable",
+      altTxt: "No photo at hand?", altBtn: "Paste your menu as text", phTexto: "e.g. Classic burger 9.50 · Fries 3.00 …",
+      lLogo: "Logo <span class=\"opc\">(optional)</span>", logoSub: "If you add it, we use your colors",
+      lWa: "Phone / WhatsApp", phWa: "(555) 123-4567", lEmail: "Email",
+      acepta: "I agree that DEWAN may use this information to build my page and contact me about it.",
+      boton: "See my page", pie: "Questions? Message us on",
+    };
+    var MSG = {
+      es: {
+        leyendo: "Leyendo su carta… esto toma entre 30 y 90 segundos. No cierre esta página.",
+        armando: "Armando su página con sus platos y precios…",
+        listo: "¡Listo! Abriendo su página…",
+        falta_nombre: "Escriba el nombre del restaurante.",
+        falta_contacto: "Déjenos su WhatsApp o su correo para poder activarla.",
+        falta_acepta: "Marque la casilla para continuar.",
+        falta_menu: "Suba al menos una foto de la carta (o pegue el texto).",
+        archivo_invalido: "No pudimos leer uno de los archivos. Use fotos JPG/PNG o un PDF.",
+        muy_grande: "El PDF pesa demasiado (máx. 4,5 MB). Suba fotos en su lugar.",
+        no_es_menu: "No encontramos una carta de comida en lo que subió. Pruebe con otra foto donde se lean los platos y precios.",
+        cupo_dia: "Hoy ya armamos muchas páginas. Escríbanos por WhatsApp y se la armamos a mano.",
+        cupo_ip: "Ya armó varias páginas hoy. Escríbanos por WhatsApp si necesita otra.",
+        ia: "No pudimos leer su carta en este momento. Intente de nuevo en unos minutos.",
+        ia_formato: "No pudimos leer bien su carta. Pruebe con una foto más clara.",
+        ia_largo: "Su carta es muy larga para armarla sola. Escríbanos y se la armamos.",
+        ia_rechazo: "No pudimos procesar esos archivos. Pruebe con otra foto de la carta.",
+        guardar: "Leímos su carta, pero no pudimos guardar su página. Escríbanos y se la activamos.",
+        red: "Se cortó la conexión. Revise su internet e intente de nuevo.",
+        otro: "Algo salió mal al armar su página.",
+        ayuda: "Escríbanos por WhatsApp",
+      },
+      en: {
+        leyendo: "Reading your menu… this takes 30 to 90 seconds. Please keep this page open.",
+        armando: "Building your page with your dishes and prices…",
+        listo: "Done! Opening your page…",
+        falta_nombre: "Please enter the restaurant name.",
+        falta_contacto: "Leave a phone number or email so we can activate it.",
+        falta_acepta: "Please check the box to continue.",
+        falta_menu: "Upload at least one photo of your menu (or paste the text).",
+        archivo_invalido: "We couldn't read one of the files. Use JPG/PNG photos or a PDF.",
+        muy_grande: "The PDF is too large (max 4.5 MB). Upload photos instead.",
+        no_es_menu: "We couldn't find a food menu in what you uploaded. Try another photo where dishes and prices are readable.",
+        cupo_dia: "We've built a lot of pages today. Message us and we'll build yours by hand.",
+        cupo_ip: "You've already built several pages today. Message us if you need another one.",
+        ia: "We couldn't read your menu right now. Please try again in a few minutes.",
+        ia_formato: "We couldn't read your menu clearly. Try a sharper photo.",
+        ia_largo: "Your menu is too long to build automatically. Message us and we'll build it.",
+        ia_rechazo: "We couldn't process those files. Try another photo of your menu.",
+        guardar: "We read your menu but couldn't save your page. Message us and we'll activate it.",
+        red: "The connection dropped. Check your internet and try again.",
+        otro: "Something went wrong while building your page.",
+        ayuda: "Message us on WhatsApp",
+      },
+    };
+    var M = EN ? MSG.en : MSG.es;
+
+    /* ---------- idioma ---------- */
+    if (EN) {
+      document.documentElement.lang = "en";
+      document.title = "Build your online ordering page · DEWAN";
+      document.querySelectorAll("[data-t]").forEach(function (el) { var t = TXT_EN[el.dataset.t]; if (t) el.innerHTML = t; });
+      document.querySelectorAll("[data-tp]").forEach(function (el) { var t = TXT_EN[el.dataset.tp]; if (t) el.placeholder = t; });
+      var ci = $("#cambiar-idioma"); ci.textContent = "Español"; ci.href = "?lang=es";
+    }
+    if (q.get("pais") === "US" || (EN && q.get("pais") !== "EC")) $("#pais").value = "US";
+    function porPais() {
+      var us = $("#pais").value === "US";
+      $("#campo-idioma").hidden = !us;
+      if (us && !EN) $("#idioma").value = "es";
+      $("#whatsapp").placeholder = us ? "(555) 123-4567" : "099 123 4567";
+    }
+    $("#pais").addEventListener("change", porPais);
+    porPais();
+    $("#mostrar-texto").addEventListener("click", function () { $("#texto").hidden = false; $("#texto").focus(); });
+
+    /* ---------- archivos ---------- */
+    var archivos = [];   // { tipo, data (base64 sin prefijo), vista }
+    var logo = "";       // data URI chico
+
+    function leerDataURL(file) {
+      return new Promise(function (ok, mal) { var fr = new FileReader(); fr.onload = function () { ok(String(fr.result)); }; fr.onerror = mal; fr.readAsDataURL(file); });
+    }
+    function achicar(file, lado, tipo, calidad) {
+      return createImageBitmap(file).then(function (img) {
+        var esc = Math.min(1, lado / Math.max(img.width, img.height));
+        var c = document.createElement("canvas");
+        c.width = Math.round(img.width * esc); c.height = Math.round(img.height * esc);
+        var ctx = c.getContext("2d");
+        if (tipo === "image/jpeg") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height); }
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        return c.toDataURL(tipo, calidad);
+      });
+    }
+    function pintarMiniaturas() {
+      var cont = $("#miniaturas"); cont.innerHTML = "";
+      archivos.forEach(function (a, i) {
+        var d = document.createElement("div"); d.className = "mini";
+        if (a.vista) { var im = document.createElement("img"); im.src = a.vista; im.alt = ""; d.appendChild(im); } else d.appendChild(document.createTextNode("PDF"));
+        var b = document.createElement("button"); b.type = "button"; b.textContent = "×"; b.setAttribute("aria-label", "quitar");
+        b.addEventListener("click", function () { archivos.splice(i, 1); pintarMiniaturas(); });
+        d.appendChild(b); cont.appendChild(d);
+      });
+    }
+    $("#archivos").addEventListener("change", async function (e) {
+      var files = Array.from(e.target.files || []);
+      e.target.value = "";
+      ocultarEstado();
+      for (var f of files) {
+        try {
+          if (f.type === "application/pdf") {
+            if (f.size > MAX_PDF) { mostrarError(M.muy_grande); continue; }
+            archivos = archivos.filter(function (a) { return a.tipo !== "application/pdf"; });
+            var d = await leerDataURL(f);
+            archivos.unshift({ tipo: "application/pdf", data: d.split(",")[1], vista: "" });
+          } else if (/^image\//.test(f.type)) {
+            if (archivos.length >= MAX_FOTOS) break;
+            var u = await achicar(f, LADO, "image/jpeg", 0.85);
+            archivos.push({ tipo: "image/jpeg", data: u.split(",")[1], vista: u });
+          }
+        } catch (err) { console.warn(err); mostrarError(M.archivo_invalido); }
+      }
+      archivos = archivos.slice(0, MAX_FOTOS);
+      pintarMiniaturas();
+    });
+    $("#logo").addEventListener("change", async function (e) {
+      var f = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (!f) return;
+      try {
+        logo = await achicar(f, 256, "image/png", 0.92);
+        $("#mini-logo").innerHTML = '<div class="mini"><img alt="" src="' + logo + '"></div>';
+      } catch (err) { logo = ""; mostrarError(M.archivo_invalido); }
+    });
+
+    /* ---------- estado ---------- */
+    var avance = null;
+    function ocultarEstado() { var s = $("#estado"); s.className = "estado"; s.innerHTML = ""; }
+    function mostrarCarga(msg, pct) {
+      var s = $("#estado"); s.className = "estado ver carga";
+      s.innerHTML = "<div></div><div class=\"barra\"><i></i></div>";
+      s.firstChild.textContent = msg;
+      if (pct) s.querySelector(".barra i").style.width = pct + "%";
+    }
+    function mostrarError(msg) {
+      clearInterval(avance);
+      var s = $("#estado"); s.className = "estado ver error";
+      var txt = (EN ? "Hi! I tried to build my ordering page" : "Hola, intenté armar mi página de pedidos") + ($("#nombre").value ? " (" + $("#nombre").value + ")" : "");
+      s.innerHTML = "<span></span> <a target=\"_blank\" rel=\"noopener\"></a>";
+      s.firstChild.textContent = msg;
+      s.querySelector("a").href = "https://wa.me/" + VENTAS + "?text=" + encodeURIComponent(txt);
+      s.querySelector("a").textContent = M.ayuda + " →";
+    }
+
+    /* ---------- enviar ---------- */
+    $("#form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var nombre = $("#nombre").value.trim();
+      var wa = $("#whatsapp").value.trim(), email = $("#email").value.trim();
+      var texto = $("#texto").value.trim();
+      if (nombre.length < 2) return mostrarError(M.falta_nombre);
+      if (!archivos.length && texto.length < 20) return mostrarError(M.falta_menu);
+      if (!wa && !email) return mostrarError(M.falta_contacto);
+      if (!$("#acepta").checked) return mostrarError(M.falta_acepta);
+
+      var pais = $("#pais").value;
+      var cuerpo = {
+        nombre: nombre, ciudad: $("#ciudad").value.trim(), pais: pais,
+        idioma: pais === "US" ? $("#idioma").value : "es",
+        whatsapp: wa, email: email, texto_menu: texto, logo: logo,
+        archivos: archivos.map(function (a) { return { tipo: a.tipo, data: a.data }; }),
+        acepta: true, sitio_web: $("#sitio_web").value, origen_pagina: location.href.slice(0, 200),
+      };
+      var btn = $("#enviar"); btn.disabled = true;
+      var pct = 8; mostrarCarga(M.leyendo, pct);
+      avance = setInterval(function () {
+        pct = Math.min(92, pct + (pct < 60 ? 4 : 1.5));
+        mostrarCarga(pct < 60 ? M.leyendo : M.armando, pct);
+      }, 2500);
+      try {
+        var r = await fetch(WEBHOOK, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo) });
+        var j = {}; try { j = await r.json(); } catch (x) {}
+        clearInterval(avance);
+        if (!j || !j.ok || !j.slug) { btn.disabled = false; return mostrarError(M[j && j.error] || M.otro); }
+        mostrarCarga(M.listo, 100);
+        location.href = "p.html?p=" + encodeURIComponent(j.slug) + "&nuevo=1";
+      } catch (err) {
+        console.warn(err); btn.disabled = false; mostrarError(M.red);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

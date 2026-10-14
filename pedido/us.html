@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Your order</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!--
+    SEGUIMIENTO EE.UU. (14-oct-2026) — pedido/us.html?t=<token>&lang=en|es[&pago=ok]
+    Lee pedidos_us por token (SQL 036). Al volver de Stripe (pago=ok) avisa a n8n
+    `us-evento` para confirmar el pago al instante (el cron lo hace igual cada minuto).
+    Muestra el link de seguimiento de DoorDash cuando el repartidor ya está asignado.
+  -->
+  <style>
+    :root { --tinta: #1A1714; --gris: #6B645E; --linea: #E7E1DA; --fondo: #FAF7F3; --blanco: #fff; --ok: #15803D; --aviso: #B45309; --err: #B91C1C; --acento: #E8431A; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--fondo); color: var(--tinta); line-height: 1.45; }
+    .wrap { max-width: 520px; margin: 0 auto; padding: 22px 16px 48px; }
+    .local { font-weight: 800; font-size: 15px; color: var(--gris); }
+    h1 { font-size: 30px; line-height: 1.1; letter-spacing: -.02em; margin: 6px 0 4px; }
+    .sub { color: var(--gris); font-size: 15px; }
+    .caja { background: var(--blanco); border: 1px solid var(--linea); border-radius: 16px; padding: 16px; margin-top: 14px; }
+    .pasos { list-style: none; }
+    .pasos li { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; color: #A39A92; font-weight: 600; }
+    .pasos li .pt { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D9D1C8; flex: none; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; }
+    .pasos li.hecho { color: var(--tinta); }
+    .pasos li.hecho .pt { background: var(--ok); border-color: var(--ok); }
+    .pasos li.ahora { color: var(--tinta); font-weight: 800; }
+    .pasos li.ahora .pt { border-color: var(--acento); box-shadow: 0 0 0 4px rgba(232,67,26,.15); }
+    .pasos li small { display: block; font-weight: 500; color: var(--gris); font-size: 13px; }
+    .pago { border-radius: 12px; padding: 10px 12px; font-weight: 700; font-size: 14px; margin-top: 12px; }
+    .pago.ok { background: #ECFDF3; color: var(--ok); }
+    .pago.espera { background: #FFF7ED; color: var(--aviso); }
+    .pago.err { background: #FEF2F2; color: var(--err); }
+    .boton { display: block; text-align: center; background: var(--tinta); color: #fff; text-decoration: none; font-weight: 800; border-radius: 13px; padding: 15px; margin-top: 12px; }
+    .fila { display: flex; justify-content: space-between; gap: 10px; font-size: 14.5px; padding: 4px 0; }
+    .fila.total { border-top: 1px dashed var(--linea); margin-top: 6px; padding-top: 10px; font-weight: 800; font-size: 17px; }
+    .gris { color: var(--gris); }
+    .titulo { font-weight: 800; font-size: 14px; margin-bottom: 8px; }
+    .pie { text-align: center; font-size: 12px; color: var(--gris); margin-top: 18px; }
+    .cargando { text-align: center; color: var(--gris); padding: 60px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app"><p class="cargando" id="cargando">Loading your order…</p></div>
+  <noscript><p style="padding:20px;text-align:center">Please enable JavaScript to see your order.</p></noscript>
+  <script>
+  (function () {
+    var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1';
+    var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+    var AVISO = 'https://n8n.dewansas.com/webhook/us-evento';
+    var q = new URLSearchParams(location.search);
+    var token = (q.get('t') || '').replace(/[^a-z0-9]/gi, '');
+    var EN = q.get('lang') !== 'es';
+    var volvioDePagar = q.get('pago') === 'ok';
+    var T = EN ? {
+      cargando: 'Loading your order…', noEncontrado: "We couldn't find this order.", pedido: 'Order',
+      recibido: 'Order received', recibidoS: 'The restaurant will confirm it in a moment',
+      preparando: 'Preparing your food', preparandoS: function (h) { return h ? 'Ready around ' + h : 'The kitchen is on it'; },
+      enCamino: 'On the way', enCaminoS: 'Your DoorDash driver has your food', listo: 'Ready for pickup', listoS: function (d) { return d ? 'At ' + d : 'Come on in'; },
+      entregado: 'Delivered', entregadoS: 'Enjoy your meal!', retirado: 'Picked up', retiradoS: 'Enjoy your meal!',
+      cancelado: 'Order cancelled', canceladoS: function (m) { return m || 'The restaurant could not take this order.'; },
+      pagado: '✓ Paid by card', porPagar: 'Confirming your payment…', fallido: "Your payment didn't go through — this order was not placed.",
+      enLocal: '🏪 You pay at pickup', reembolsado: '↩︎ Refunded to your card', seguir: 'Track your driver on DoorDash',
+      resumen: 'Your order', subtotal: 'Subtotal', impuesto: 'Tax', envio: 'Delivery', propina: 'Tip', total: 'Total',
+      repartidor: 'Your DoorDash driver will pick it up', retiroEn: 'Pickup at', llamar: 'Call the restaurant', actualizado: 'Updates automatically',
+    } : {
+      cargando: 'Cargando su pedido…', noEncontrado: 'No encontramos este pedido.', pedido: 'Pedido',
+      recibido: 'Pedido recibido', recibidoS: 'El restaurante lo confirma en un momento',
+      preparando: 'Preparando su comida', preparandoS: function (h) { return h ? 'Listo cerca de las ' + h : 'La cocina ya está en eso'; },
+      enCamino: 'En camino', enCaminoS: 'El repartidor de DoorDash lleva su comida', listo: 'Listo para retirar', listoS: function (d) { return d ? 'En ' + d : 'Ya puede pasar'; },
+      entregado: 'Entregado', entregadoS: '¡Buen provecho!', retirado: 'Retirado', retiradoS: '¡Buen provecho!',
+      cancelado: 'Pedido cancelado', canceladoS: function (m) { return m || 'El restaurante no pudo tomar este pedido.'; },
+      pagado: '✓ Pagado con tarjeta', porPagar: 'Confirmando su pago…', fallido: 'El pago no se completó: este pedido no se hizo.',
+      enLocal: '🏪 Paga al retirar', reembolsado: '↩︎ Devuelto a su tarjeta', seguir: 'Seguir al repartidor en DoorDash',
+      resumen: 'Su pedido', subtotal: 'Subtotal', impuesto: 'Impuesto', envio: 'Envío', propina: 'Propina', total: 'Total',
+      repartidor: 'Lo recoge un repartidor de DoorDash', retiroEn: 'Retiro en', llamar: 'Llamar al restaurante', actualizado: 'Se actualiza solo',
+    };
+    document.documentElement.lang = EN ? 'en' : 'es';
+    document.getElementById('cargando').textContent = T.cargando;
+    document.title = EN ? 'Your order' : 'Su pedido';
+
+    var local = null, pedido = null, avisado = false, cuenta = 0, timer = null;
+    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+    function dinero(v) { return '$' + (Math.round(Number(v || 0) * 100) / 100).toFixed(2); }
+    function hora(d) {
+      try { return new Date(d).toLocaleTimeString(EN ? 'en-US' : 'es-US', { timeZone: (local && local.zona_horaria) || 'America/New_York', hour: 'numeric', minute: '2-digit' }); }
+      catch (e) { return ''; }
+    }
+    function sb(ruta) {
+      return fetch(SB + ruta, { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY }, cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+    }
+    function avisar() {
+      if (avisado) return; avisado = true;
+      try { fetch(AVISO, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: token, evento: 'volvio_de_pagar' }), keepalive: true }); } catch (e) {}
+    }
+
+    function pintar() {
+      var p = pedido, app = document.getElementById('app');
+      if (!p) { app.innerHTML = '<p class="cargando">' + esc(T.noEncontrado) + '</p>'; return; }
+      var envio = p.tipo_entrega === 'domicilio';
+      var est = p.estado_pedido;
+      var cancelado = est === 'cancelado' || p.pago_estado === 'fallido';
+      var paso = est === 'entregado' ? 3 : (est === 'en_camino' || est === 'llegado' || est === 'listo') ? 2 : (est === 'preparando' || p.restaurante_aceptado) ? 1 : 0;
+      var pasos = envio
+        ? [[T.recibido, T.recibidoS], [T.preparando, T.preparandoS(p.timer_lanzamiento ? hora(p.timer_lanzamiento) : '')], [T.enCamino, T.enCaminoS], [T.entregado, T.entregadoS]]
+        : [[T.recibido, T.recibidoS], [T.preparando, T.preparandoS(p.timer_lanzamiento ? hora(p.timer_lanzamiento) : '')], [T.listo, T.listoS(p.direccion_retiro || '')], [T.retirado, T.retiradoS]];
+      var h = '<div class="local">' + esc(p.restaurante || '') + ' · ' + esc(T.pedido) + ' #' + esc(p.id) + '</div>';
+      if (cancelado) {
+        h += '<h1>' + esc(T.cancelado) + '</h1><p class="sub">' + esc(p.pago_estado === 'fallido' ? T.fallido : T.canceladoS(p.restaurante_motivo_rechazo)) + '</p>';
+      } else {
+        h += '<h1>' + esc(pasos[paso][0]) + '</h1><p class="sub">' + esc(pasos[paso][1]) + '</p>';
+      }
+      // pago
+      var pg = p.pago_estado;
+      if (pg === 'pagado') h += '<div class="pago ok">' + esc(T.pagado) + '</div>';
+      else if (pg === 'por_pagar') h += '<div class="pago espera">' + esc(T.porPagar) + '</div>';
+      else if (pg === 'en_local') h += '<div class="pago espera">' + esc(T.enLocal) + '</div>';
+      else if (pg === 'reembolsado') h += '<div class="pago ok">' + esc(T.reembolsado) + '</div>';
+      else if (pg === 'fallido' && !cancelado) h += '<div class="pago err">' + esc(T.fallido) + '</div>';
+      if (envio && p.envio_seguimiento_url && !cancelado && est !== 'entregado') {
+        h += '<a class="boton" target="_blank" rel="noopener" href="' + esc(p.envio_seguimiento_url) + '">🛵 ' + esc(T.seguir) + '</a>';
+      }
+      // pasos
+      if (!cancelado) {
+        h += '<div class="caja"><ul class="pasos">' + pasos.map(function (s, i) {
+          var cl = i < paso || (i === paso && paso === 3) ? 'hecho' : (i === paso ? 'ahora' : '');
+          return '<li class="' + cl + '"><span class="pt">' + (cl === 'hecho' ? '✓' : '') + '</span><span>' + esc(s[0]) + (i === paso ? '<small>' + esc(s[1]) + '</small>' : '') + '</span></li>';
+        }).join('') + '</ul></div>';
+      }
+      // resumen
+      var items = Array.isArray(p.items_json) ? p.items_json : [];
+      h += '<div class="caja"><div class="titulo">' + esc(T.resumen) + '</div>' +
+        items.map(function (l) { return '<div class="fila"><span>' + esc(l.cant) + '× ' + esc(l.nombre) + '</span><span>' + dinero(l.total) + '</span></div>'; }).join('') +
+        '<div class="fila gris" style="margin-top:6px"><span>' + esc(T.subtotal) + '</span><span>' + dinero(p.precio_base_productos) + '</span></div>' +
+        (Number(p.impuesto) ? '<div class="fila gris"><span>' + esc(T.impuesto) + '</span><span>' + dinero(p.impuesto) + '</span></div>' : '') +
+        (envio ? '<div class="fila gris"><span>' + esc(T.envio) + '</span><span>' + dinero(p.precio_calculado) + '</span></div>' : '') +
+        (Number(p.propina) ? '<div class="fila gris"><span>' + esc(T.propina) + '</span><span>' + dinero(p.propina) + '</span></div>' : '') +
+        '<div class="fila total"><span>' + esc(T.total) + '</span><span>' + dinero(p.monto_total) + '</span></div>' +
+        '<p class="gris" style="font-size:13px;margin-top:10px">' + esc(envio ? T.repartidor : (T.retiroEn + ' ' + (p.direccion_retiro || ''))) + '</p>' +
+        (local && local.telefono ? '<a class="boton" style="background:#fff;color:var(--tinta);border:1px solid var(--linea)" href="tel:' + esc(local.telefono) + '">📞 ' + esc(T.llamar) + '</a>' : '') +
+        '</div>';
+      h += '<p class="pie">' + esc(T.actualizado) + ' · DEWAN</p>';
+      app.innerHTML = h;
+    }
+
+    function cargar() {
+      // prueba local sin base: us.html?json=<archivo>.json (solo localhost)
+      if (q.get('json') && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+        fetch(q.get('json'), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { pedido = d.pedido; local = d.local; pintar(); });
+        return;
+      }
+      if (!token) { pedido = null; pintar(); return; }
+      var cols = 'id,token_seguimiento,restaurante,restaurante_id,estado_pedido,restaurante_aceptado,restaurante_motivo_rechazo,tipo_entrega,direccion_retiro,timer_lanzamiento,items_json,precio_base_productos,impuesto,precio_calculado,propina,monto_total,pago_estado,envio_estado,envio_seguimiento_url';
+      sb('/pedidos_us?token_seguimiento=eq.' + token + '&select=' + cols + '&limit=1').then(function (rows) {
+        pedido = rows && rows[0] ? rows[0] : null;
+        if (pedido && !local) {
+          return sb('/locales_us?id=eq.' + pedido.restaurante_id + '&select=nombre,telefono,zona_horaria&limit=1').then(function (l) { local = (l && l[0]) || {}; });
+        }
+      }).then(function () {
+        if (pedido && volvioDePagar && pedido.pago_estado === 'por_pagar') avisar();
+        pintar();
+        var fin = !pedido || pedido.estado_pedido === 'entregado' || pedido.estado_pedido === 'cancelado' || pedido.pago_estado === 'fallido';
+        cuenta++;
+        if (!fin) timer = setTimeout(cargar, cuenta < 12 ? 5000 : 15000);
+      });
+    }
+    cargar();
+  })();
+  </script>
+</body>
+</html>

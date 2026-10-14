@@ -169,14 +169,14 @@ window.TEMPLATES["swift"] = {
         </div>
         <div class="sw-search">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0a8" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
-          <input id="sw-search" type="text" placeholder="Buscar en ${R.nombre}…" />
+          <input id="sw-search" type="text" placeholder="${(window.TEXTOS || {}).buscarEn || "Buscar en"} ${R.nombre}…" />
         </div>
-        <div class="sw-banner">${R.promo || "🛵 A domicilio o para retirar · pide en 3 toques"}</div>
+        <div class="sw-banner">${R.promo || (window.TEXTOS || {}).bannerDef || "🛵 A domicilio o para retirar · pide en 3 toques"}</div>
       </header>
       <nav class="sw-chips">${navHtml}</nav>
       <div class="sw-wrap">
         ${menuHtml}
-        <p class="sw-none" id="sw-none">Sin resultados 🔍</p>
+        <p class="sw-none" id="sw-none">${(window.TEXTOS || {}).sinResultados || "Sin resultados 🔍"}</p>
         <div class="sw-end">${R.direccion ? "📍 " + R.direccion : R.nombre}</div>
       </div>`;
 

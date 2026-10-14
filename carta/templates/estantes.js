@@ -84,7 +84,7 @@ window.TEMPLATES["estantes"] = {
         ${R.promo ? `<span class="es-promo">${R.promo}</span>` : ``}
         <div class="es-cv">${R.logo ? `<div class="es-mono"><img src="${R.logo}" alt=""></div>` : ``}<h1 class="es-name">${R.nombre}</h1>${R.slogan ? `<p class="es-slo">${R.slogan}</p>` : ``}</div>
       </header>
-      <div class="es-search"><div class="box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0a8" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input id="es-q" type="text" placeholder="Buscar…"></div></div>
+      <div class="es-search"><div class="box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0a8" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg><input id="es-q" type="text" placeholder="${(window.TEXTOS || {}).buscar || "Buscar…"}"></div></div>
       <nav class="es-chips">${navHtml}</nav>
       ${shelves}
       <div class="es-end">— ${R.nombre} —</div>`;
