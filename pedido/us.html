@@ -60,7 +60,9 @@
       cargando: 'Loading your order…', noEncontrado: "We couldn't find this order.", pedido: 'Order',
       recibido: 'Order received', recibidoS: 'The restaurant will confirm it in a moment',
       preparando: 'Preparing your food', preparandoS: function (h) { return h ? 'Ready around ' + h : 'The kitchen is on it'; },
-      enCamino: 'On the way', enCaminoS: 'Your DoorDash driver has your food', listo: 'Ready for pickup', listoS: function (d) { return d ? 'At ' + d : 'Come on in'; },
+      enCamino: 'On the way', enCaminoS: 'Your driver has your food', enCaminoPropio: "The restaurant's driver is on the way",
+      listoEnvio: 'Ready', listoEnvioS: 'Waiting for the driver to pick it up', efectivo: '💵 You pay cash on delivery',
+      repartidorPropio: "Delivered by the restaurant's own driver", listo: 'Ready for pickup', listoS: function (d) { return d ? 'At ' + d : 'Come on in'; },
       entregado: 'Delivered', entregadoS: 'Enjoy your meal!', retirado: 'Picked up', retiradoS: 'Enjoy your meal!',
       cancelado: 'Order cancelled', canceladoS: function (m) { return m || 'The restaurant could not take this order.'; },
       pagado: '✓ Paid by card', porPagar: 'Confirming your payment…', fallido: "Your payment didn't go through — this order was not placed.",
@@ -71,7 +73,9 @@
       cargando: 'Cargando su pedido…', noEncontrado: 'No encontramos este pedido.', pedido: 'Pedido',
       recibido: 'Pedido recibido', recibidoS: 'El restaurante lo confirma en un momento',
       preparando: 'Preparando su comida', preparandoS: function (h) { return h ? 'Listo cerca de las ' + h : 'La cocina ya está en eso'; },
-      enCamino: 'En camino', enCaminoS: 'El repartidor de DoorDash lleva su comida', listo: 'Listo para retirar', listoS: function (d) { return d ? 'En ' + d : 'Ya puede pasar'; },
+      enCamino: 'En camino', enCaminoS: 'El repartidor ya lleva su comida', enCaminoPropio: 'El repartidor del restaurante va en camino',
+      listoEnvio: 'Listo', listoEnvioS: 'Esperando que el repartidor lo recoja', efectivo: '💵 Paga en efectivo al recibir',
+      repartidorPropio: 'Lo lleva el repartidor del restaurante', listo: 'Listo para retirar', listoS: function (d) { return d ? 'En ' + d : 'Ya puede pasar'; },
       entregado: 'Entregado', entregadoS: '¡Buen provecho!', retirado: 'Retirado', retiradoS: '¡Buen provecho!',
       cancelado: 'Pedido cancelado', canceladoS: function (m) { return m || 'El restaurante no pudo tomar este pedido.'; },
       pagado: '✓ Pagado con tarjeta', porPagar: 'Confirmando su pago…', fallido: 'El pago no se completó: este pedido no se hizo.',
@@ -105,9 +109,12 @@
       var envio = p.tipo_entrega === 'domicilio';
       var est = p.estado_pedido;
       var cancelado = est === 'cancelado' || p.pago_estado === 'fallido';
-      var paso = est === 'entregado' ? 3 : (est === 'en_camino' || est === 'llegado' || est === 'listo') ? 2 : (est === 'preparando' || p.restaurante_aceptado) ? 1 : 0;
+      var propio = p.envio_proveedor === 'propio';
+      var paso = est === 'entregado' ? 3 : (est === 'en_camino' || est === 'llegado' || (!envio && est === 'listo')) ? 2 : (est === 'preparando' || est === 'listo' || p.restaurante_aceptado) ? 1 : 0;
+      var listoEnvio = envio && paso === 1 && (est === 'listo' || p.fecha_listo);
+      var chofer = p.nombre_moto ? ' · ' + p.nombre_moto : '';
       var pasos = envio
-        ? [[T.recibido, T.recibidoS], [T.preparando, T.preparandoS(p.timer_lanzamiento ? hora(p.timer_lanzamiento) : '')], [T.enCamino, T.enCaminoS], [T.entregado, T.entregadoS]]
+        ? [[T.recibido, T.recibidoS], listoEnvio ? [T.listoEnvio, T.listoEnvioS] : [T.preparando, T.preparandoS(p.timer_lanzamiento ? hora(p.timer_lanzamiento) : '')], [T.enCamino, (propio ? T.enCaminoPropio : T.enCaminoS) + chofer], [T.entregado, T.entregadoS]]
         : [[T.recibido, T.recibidoS], [T.preparando, T.preparandoS(p.timer_lanzamiento ? hora(p.timer_lanzamiento) : '')], [T.listo, T.listoS(p.direccion_retiro || '')], [T.retirado, T.retiradoS]];
       var h = '<div class="local">' + esc(p.restaurante || '') + ' · ' + esc(T.pedido) + ' #' + esc(p.id) + '</div>';
       if (cancelado) {
@@ -119,7 +126,7 @@
       var pg = p.pago_estado;
       if (pg === 'pagado') h += '<div class="pago ok">' + esc(T.pagado) + '</div>';
       else if (pg === 'por_pagar') h += '<div class="pago espera">' + esc(T.porPagar) + '</div>';
-      else if (pg === 'en_local') h += '<div class="pago espera">' + esc(T.enLocal) + '</div>';
+      else if (pg === 'en_local') h += '<div class="pago espera">' + esc(envio ? T.efectivo : T.enLocal) + '</div>';
       else if (pg === 'reembolsado') h += '<div class="pago ok">' + esc(T.reembolsado) + '</div>';
       else if (pg === 'fallido' && !cancelado) h += '<div class="pago err">' + esc(T.fallido) + '</div>';
       if (envio && p.envio_seguimiento_url && !cancelado && est !== 'entregado') {
@@ -141,7 +148,7 @@
         (envio ? '<div class="fila gris"><span>' + esc(T.envio) + '</span><span>' + dinero(p.precio_calculado) + '</span></div>' : '') +
         (Number(p.propina) ? '<div class="fila gris"><span>' + esc(T.propina) + '</span><span>' + dinero(p.propina) + '</span></div>' : '') +
         '<div class="fila total"><span>' + esc(T.total) + '</span><span>' + dinero(p.monto_total) + '</span></div>' +
-        '<p class="gris" style="font-size:13px;margin-top:10px">' + esc(envio ? T.repartidor : (T.retiroEn + ' ' + (p.direccion_retiro || ''))) + '</p>' +
+        '<p class="gris" style="font-size:13px;margin-top:10px">' + esc(envio ? (propio ? T.repartidorPropio : T.repartidor) : (T.retiroEn + ' ' + (p.direccion_retiro || ''))) + '</p>' +
         (local && local.telefono ? '<a class="boton" style="background:#fff;color:var(--tinta);border:1px solid var(--linea)" href="tel:' + esc(local.telefono) + '">📞 ' + esc(T.llamar) + '</a>' : '') +
         '</div>';
       h += '<p class="pie">' + esc(T.actualizado) + ' · DEWAN</p>';
@@ -155,7 +162,7 @@
         return;
       }
       if (!token) { pedido = null; pintar(); return; }
-      var cols = 'id,token_seguimiento,restaurante,restaurante_id,estado_pedido,restaurante_aceptado,restaurante_motivo_rechazo,tipo_entrega,direccion_retiro,timer_lanzamiento,items_json,precio_base_productos,impuesto,precio_calculado,propina,monto_total,pago_estado,envio_estado,envio_seguimiento_url';
+      var cols = 'id,token_seguimiento,restaurante,restaurante_id,estado_pedido,restaurante_aceptado,restaurante_motivo_rechazo,tipo_entrega,direccion_retiro,timer_lanzamiento,fecha_listo,items_json,precio_base_productos,impuesto,precio_calculado,propina,monto_total,pago_estado,envio_proveedor,envio_estado,envio_seguimiento_url,nombre_moto';
       sb('/pedidos_us?token_seguimiento=eq.' + token + '&select=' + cols + '&limit=1').then(function (rows) {
         pedido = rows && rows[0] ? rows[0] : null;
         if (pedido && !local) {

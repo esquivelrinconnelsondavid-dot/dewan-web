@@ -163,7 +163,7 @@ function Panel({ restaurante, onLogout, onActualizarRestaurante }) {
   const enProceso = [...listos, ...entregando];
   const nuevosVisibles = entrantes.filter((p) => !minimizados.has(p.id));
   const conEstadoLocal = !(MODO_HP && !MODO_SISTEMA) && !MODO_US;
-  const resumenHoy = 'Cuando un pedido salga con el motorizado aparecerá aquí.';
+  const resumenHoy = MODO_US ? 'Cuando un pedido salga con el repartidor aparecerá aquí.' : 'Cuando un pedido salga con el motorizado aparecerá aquí.';
 
   return (
     <div className="h-full flex flex-col">

@@ -36,7 +36,8 @@
     propina: "Tip", sinPropina: "No tip", propinaEnvio: "100% goes to your driver", propinaRetiro: "Thank the kitchen",
     subtotal: "Subtotal", impuesto: "Tax", envio: "Delivery", total: "Total",
     pagarTarjeta: "Continue to payment", pagarLocal: "Place order · pay at pickup", comoPagas: "How do you want to pay?",
-    tarjeta: "💳 Card, now", enLocal: "🏪 At pickup",
+    tarjeta: "💳 Card, now", enLocal: "🏪 At pickup", enEntrega: "💵 Cash on delivery", pagarEfectivo: "Place order · pay cash on delivery",
+    porPropio: "our own driver", porApp: "DoorDash / Uber driver",
     cotizando: "Checking delivery to your address…", llenaDir: "Enter your address to see the delivery fee.",
     fuera: "Sorry, we can't deliver to this address right now. You can still order for pickup.",
     minimo: (m) => "Delivery minimum is " + money(m) + ".", eta: (min) => "Delivery " + (min ? "· about " + min + " min" : ""),
@@ -52,7 +53,8 @@
     propina: "Propina", sinPropina: "Sin propina", propinaEnvio: "El 100 % es para su repartidor", propinaRetiro: "Para la cocina",
     subtotal: "Subtotal", impuesto: "Impuesto", envio: "Envío", total: "Total",
     pagarTarjeta: "Continuar al pago", pagarLocal: "Hacer pedido · pago al retirar", comoPagas: "¿Cómo quiere pagar?",
-    tarjeta: "💳 Tarjeta, ahora", enLocal: "🏪 Al retirar",
+    tarjeta: "💳 Tarjeta, ahora", enLocal: "🏪 Al retirar", enEntrega: "💵 Efectivo al recibir", pagarEfectivo: "Hacer pedido · pago en efectivo al recibir",
+    porPropio: "nuestro repartidor", porApp: "repartidor de DoorDash / Uber",
     cotizando: "Revisando el envío a su dirección…", llenaDir: "Escriba su dirección para ver el costo del envío.",
     fuera: "Por ahora no llegamos a esa dirección. Puede pedir para retirar.",
     minimo: (m) => "El pedido mínimo para envío es " + money(m) + ".", eta: (min) => "Envío " + (min ? "· unos " + min + " min" : ""),
@@ -113,7 +115,7 @@
   let tipo = CK.envio && !CK.retiro ? "envio" : "retiro";
   let pago = "tarjeta";
   let propPct = null;           // null = sin elegir todavía (default según tipo)
-  let cot = { estado: "na", envio: 0, eta: 0, firma: "" };   // na | cargando | ok | fuera | error
+  let cot = { estado: "na", envio: 0, eta: 0, firma: "", proveedor: "", efectivo: false };   // na | cargando | ok | fuera | error
   let cotTimer = null, cotSeq = 0;
 
   const telDigitos = () => { let d = (q("#us-tel").value || "").replace(/[^0-9]/g, ""); if (d.length === 11 && d[0] === "1") d = d.slice(1); return d; };
@@ -136,9 +138,11 @@
     q("#us-dir").style.display = tipo === "envio" ? "" : "none";
     const segT = q("#us-tipo");
     if (segT) segT.querySelectorAll("button").forEach((b) => b.classList.toggle("sel", b.dataset.t === tipo));
-    const verPago = tipo === "retiro" && CK.pago_en_local;
+    const efectivoEnvio = tipo === "envio" && cot.estado === "ok" && cot.efectivo;
+    const verPago = (tipo === "retiro" && CK.pago_en_local) || efectivoEnvio;
     q("#us-pago-wrap").style.display = verPago ? "" : "none";
     if (!verPago) pago = "tarjeta";
+    q('#us-pago [data-p="en_local"]').textContent = tipo === "envio" ? T.enEntrega : T.enLocal;
     q("#us-pago").querySelectorAll("button").forEach((b) => b.classList.toggle("sel", b.dataset.p === pago));
     // propinas
     const pct = pctPropina();
@@ -152,7 +156,7 @@
     if (tipo === "envio") {
       if (CK.envio_minimo && m.sub < CK.envio_minimo) { nota.className = "us-nota err"; nota.textContent = T.minimo(CK.envio_minimo); bloquea = true; }
       else if (cot.estado === "cargando") { nota.className = "us-nota"; nota.textContent = T.cotizando; bloquea = true; }
-      else if (cot.estado === "ok") { nota.className = "us-nota ok"; nota.textContent = "🛵 " + T.eta(cot.eta) + " · " + money(cot.envio); }
+      else if (cot.estado === "ok") { nota.className = "us-nota ok"; nota.textContent = "🛵 " + T.eta(cot.eta) + " · " + money(cot.envio) + (cot.proveedor ? " · " + (cot.proveedor === "propio" ? T.porPropio : T.porApp) : ""); }
       else if (cot.estado === "fuera") { nota.className = "us-nota err"; nota.textContent = T.fuera; bloquea = true; }
       else if (cot.estado === "error") { nota.className = "us-nota err"; nota.textContent = T.errorCot; bloquea = true; }
       else { nota.className = "us-nota"; nota.textContent = T.llenaDir; bloquea = true; }
@@ -166,7 +170,7 @@
     q("#cart-total").textContent = money(m.total);
     const fab = q("#fab-total"); if (fab) fab.textContent = money(m.total);
     const btn = q("#enviar");
-    btn.textContent = pago === "en_local" && tipo === "retiro" ? T.pagarLocal : T.pagarTarjeta + " · " + money(m.total);
+    btn.textContent = pago === "en_local" ? (tipo === "retiro" ? T.pagarLocal : T.pagarEfectivo) : T.pagarTarjeta + " · " + money(m.total);
     btn.disabled = !Object.keys(carrito).length || bloquea;
     q("#us-legal").style.display = pago === "tarjeta" ? "" : "none";
   }
@@ -188,7 +192,7 @@
       });
       const j = await r.json();
       if (yo !== cotSeq) return;
-      if (j && j.ok) cot = { estado: "ok", envio: Number(j.envio) || 0, eta: Number(j.eta_min) || 0, firma };
+      if (j && j.ok) cot = { estado: "ok", envio: Number(j.envio) || 0, eta: Number(j.eta_min) || 0, firma, proveedor: j.proveedor || "", efectivo: !!j.efectivo };
       else cot = { estado: j && j.error === "fuera_de_zona" ? "fuera" : "error", envio: 0, eta: 0, firma };
     } catch (e) {
       if (yo !== cotSeq) return;

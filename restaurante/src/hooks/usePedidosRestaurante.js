@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
-import { PEDIDOS_TABLE, MODO_SISTEMA, codigoPedido } from '../lib/config';
+import { PEDIDOS_TABLE, MODO_SISTEMA, MODO_US, codigoPedido } from '../lib/config';
 import { marcarDatosOk, tiempoSinDatos } from '../lib/conexion';
 import { startAlertLoop, stopAlertLoop, showPushNotification } from '../lib/notifications';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
@@ -315,7 +315,10 @@ export function usePedidosRestaurante(restaurante) {
     return false;
   };
   const esEntregando = (p) => {
-    if (MODO_SISTEMA) return conMoto(p) && p.estado_pedido !== 'pendiente_restaurante' && p.estado_pedido !== 'preparando';
+    // EE.UU. (14-oct-2026): con repartidor propio no hay moto con nombre; "salió" (en_camino / llegado) ya es Entregando.
+    // Antes ese pedido no caía en ninguna columna y el local no podía marcarlo entregado.
+    const enCaminoUS = MODO_US && (p.estado_pedido === 'en_camino' || p.estado_pedido === 'llegado');
+    if (MODO_SISTEMA) return (conMoto(p) || enCaminoUS) && p.estado_pedido !== 'pendiente_restaurante' && p.estado_pedido !== 'preparando';
     return ESTADOS_EN_PROCESO.includes(p.estado_pedido) && !esListo(p);
   };
   const cocina = pedidos.filter((p) => p.estado_pedido === 'preparando' && !esListo(p));

@@ -180,7 +180,8 @@ function Dinero({ pedido, grande }) {
   // EE.UU.: el total lleva impuesto (y propina/envío); si paga al retirar, es lo que el local cobra.
   if (MODO_US) {
     const total = Number(pedido.monto_total) || base;
-    const pago = pedido.pago_estado === 'pagado' ? ' · ✓ pagado con tarjeta' : pedido.pago_estado === 'en_local' ? ' · cobrar al retirar' : '';
+    const pago = pedido.pago_estado === 'pagado' ? ' · ✓ pagado con tarjeta'
+      : pedido.pago_estado === 'en_local' ? (esDomicilio(pedido) ? ' · cobrar en efectivo al entregar' : ' · cobrar al retirar') : '';
     return <div className={`text-gray-400 ${grande ? 'text-sm' : 'text-xs'}`}>Total <span className="font-mono font-bold text-white">{formatDinero(total)}</span>{pago}</div>;
   }
   if (MODO_HP) {
@@ -231,7 +232,10 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
   }, [columna]);
 
   const domicilio = esDomicilio(pedido);
-  const motoDewan = MODO_SISTEMA && domicilio;
+  // EE.UU. (14-oct-2026): a domicilio con el repartidor DEL LOCAL → el local marca "salió" y "entregado".
+  // Con DoorDash / Shipday el repartidor llega solo (como la moto DEWAN) y la app marca la entrega.
+  const propio = MODO_US && domicilio && pedido.envio_proveedor === 'propio';
+  const motoDewan = MODO_SISTEMA && domicilio && !propio;
   // ¿La entrega al cliente la hace una moto DEWAN? Entonces el local NUNCA marca
   // "entregado": él se lo entrega AL MOTORIZADO. (Happy Pollo reparte con su gente.)
   const conMoto = !MODO_HP ? domicilio : motoDewan;
@@ -371,7 +375,7 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
         <div className="flex items-center gap-2.5 rounded-lg bg-bg3 border border-borde px-2.5 py-2">
           <div className="w-8 h-8 rounded-full bg-bg4 text-gray-300 flex items-center justify-center shrink-0"><IcoMoto /></div>
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-bold text-white truncate">{moto || 'Buscando motorizado…'}</div>
+            <div className="text-[13px] font-bold text-white truncate">{moto || (propio ? 'Nuestro repartidor' : MODO_US ? 'Buscando repartidor…' : 'Buscando motorizado…')}</div>
             <div className="text-[11px] text-gray-400 flex items-center gap-1">
               {pedido.fecha_en_camino ? <><IcoReloj size={12} />Salió {formatHoraEC(pedido.fecha_en_camino)}</> : (LABEL_MOTO[pedido.estado_pedido] || '')}
             </div>
@@ -436,12 +440,12 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
           {hayImpresion() && <BotonSecundario onClick={reimprimir} title="Reimprimir comanda"><IcoImpresora /></BotonSecundario>}
           <BotonPrimario onClick={listo} disabled={cargando}>
             <IcoCheck />
-            {conMoto ? 'Listo · que venga la moto' : (MODO_SISTEMA && !domicilio ? 'Listo · avisar al cliente' : MODO_HP ? 'Entregado al cliente' : 'Listo')}
+            {propio ? 'Salió con nuestro repartidor' : conMoto ? (MODO_US ? 'Listo · que venga el repartidor' : 'Listo · que venga la moto') : (MODO_SISTEMA && !domicilio ? 'Listo · avisar al cliente' : MODO_HP ? 'Entregado al cliente' : 'Listo')}
           </BotonPrimario>
         </div>
       )}
       {columna === 'preparando' && conMoto && (
-        <div className="text-[11px] text-gray-400">La entrega al cliente la marca el motorizado desde su app.</div>
+        <div className="text-[11px] text-gray-400">{MODO_US ? 'La entrega al cliente la marca la app del repartidor (DoorDash / Uber).' : 'La entrega al cliente la marca el motorizado desde su app.'}</div>
       )}
       {columna === 'listo' && conMoto && (
         <div className="flex items-center gap-2">
@@ -454,7 +458,12 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
           <BotonPrimario onClick={entregado} disabled={cargando} alto="h-10"><IcoCheck />El cliente ya lo retiró</BotonPrimario>
         </div>
       )}
-      {columna === 'entregando' && MODO_SISTEMA && (
+      {columna === 'entregando' && MODO_SISTEMA && propio && (
+        <div className="flex gap-2">
+          <BotonPrimario onClick={entregado} disabled={cargando} alto="h-10"><IcoCheck />Entregado al cliente</BotonPrimario>
+        </div>
+      )}
+      {columna === 'entregando' && MODO_SISTEMA && !propio && (
         <div className="flex gap-2">
           <BotonSecundario onClick={entregado} disabled={cargando} alto="h-10" extra="flex-1" title="Solo si el motorizado no lo marcó">Marcar entregado (si la moto no lo hizo)</BotonSecundario>
         </div>
