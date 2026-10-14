@@ -149,15 +149,17 @@
     const clave = fila.slug || slug;
     window.RESTAURANTES = { [clave]: cfg };
     if (params.get("p") && params.get("p") !== clave) window.RESTAURANTES[params.get("p")] = cfg;   // engine.js busca por ?p= tal cual
-    window.PAGINA = { slug: clave, estado: fila.estado, pais: fila.pais, idioma: fila.idioma };
+    window.PAGINA = { slug: clave, estado: fila.estado, pais: fila.pais, idioma: fila.idioma, local_us_id: fila.local_us_id || null };
     if (!params.get("p")) history.replaceState(null, "", "?p=" + clave + (params.get("json") ? "&json=" + params.get("json") : ""));
 
     const cargando = $("#pg-cargando");
     if (cargando) cargando.remove();
     try {
       await cargarScript("engine.js" + V);
-      const conectado = cfg.sistema && fila.estado === "activa";
-      if (conectado) await cargarScript("sistema.js?v=8");
+      // EE.UU. activa con local → cierre con tarjeta / retiro / DoorDash (checkout-us.js, pedidos_us).
+      // Ecuador conectado → sistema.js (pedidos_sistema). Si no, el pedido sale por WhatsApp (engine.js).
+      if (fila.pais === "US" && fila.estado === "activa" && fila.local_us_id) await cargarScript("checkout-us.js?v=1");
+      else if (cfg.sistema && fila.estado === "activa") await cargarScript("sistema.js?v=8");
     } catch (e) { console.warn(e); aviso(T.errorCarga); return; }
 
     if (fila.estado === "demo") {
