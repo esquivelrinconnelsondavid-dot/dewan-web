@@ -1,1373 +1,474 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Dewan — Turn WhatsApp Into Your Restaurant's Complete Ordering System</title>
-<meta name="description" content="Dewan turns your restaurant's WhatsApp into a complete ordering system: guided menu, structured orders, kitchen printing, delivery management and live tracking. No commission on your sales. Built by a real delivery company.">
-<meta property="og:title" content="Dewan — WhatsApp Ordering, Restaurant Operations & Delivery">
-<meta property="og:description" content="Stop losing orders on WhatsApp. Menu, orders, kitchen, delivery and live tracking — one system, no commission on your sales.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://dewansas.com/us/">
-<meta property="og:site_name" content="Dewan">
-<link rel="canonical" href="https://dewansas.com/us/">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23000'/><g transform='translate(14,22) scale(0.115)'><path fill='%23AAFF00' d='M 307.00,1.00 C 307.00,1.00 317.58,0.75 322.50,2.00 C 327.42,3.25 332.42,5.58 336.50,8.50 C 340.58,11.42 344.42,15.75 347.00,19.50 C 349.58,23.25 351.00,26.25 352.00,31.00 C 353.00,35.75 353.42,43.25 353.00,48.00 C 352.58,52.75 351.08,56.00 349.50,59.50 C 347.92,63.00 346.58,65.75 343.50,69.00 C 340.42,72.25 331.00,79.00 331.00,79.00 C 331.00,79.00 342.50,109.00 342.50,109.00 C 342.50,109.00 361.17,111.58 370.00,113.50 C 378.83,115.42 387.50,117.92 395.50,120.50 C 403.50,123.08 409.17,125.00 418.00,129.00 C 426.83,133.00 439.25,139.17 448.50,144.50 C 457.75,149.83 465.25,154.83 473.50,161.00 C 481.75,167.17 488.50,172.00 498.00,181.50 C 507.50,191.00 521.33,206.00 530.50,218.00 C 539.67,230.00 546.42,241.08 553.00,253.50 C 559.58,265.92 565.50,280.08 570.00,292.50 C 574.50,304.92 577.42,315.08 580.00,328.00 C 582.58,340.92 584.67,358.00 585.50,370.00 C 586.33,382.00 585.00,400.00 585.00,400.00 C 585.00,400.00 554.67,393.92 527.50,390.00 C 500.33,386.08 451.50,379.58 422.00,376.50 C 392.50,373.42 375.33,372.33 350.50,371.50 C 325.67,370.67 295.75,370.92 273.00,371.50 C 250.25,372.08 253.08,370.42 214.00,375.00 C 174.92,379.58 38.50,399.00 38.50,399.00 C 38.50,399.00 38.58,365.17 40.50,349.50 C 42.42,333.83 45.83,319.08 50.00,305.00 C 54.17,290.92 58.92,278.50 65.50,265.00 C 72.08,251.50 81.83,235.42 89.50,224.00 C 97.17,212.58 104.83,204.08 111.50,196.50 C 118.17,188.92 123.50,184.00 129.50,178.50 C 135.50,173.00 139.83,169.17 147.50,163.50 C 155.17,157.83 166.67,149.83 175.50,144.50 C 184.33,139.17 192.42,135.25 200.50,131.50 C 208.58,127.75 215.50,124.92 224.00,122.00 C 232.50,119.08 241.92,116.25 251.50,114.00 C 261.08,111.75 281.50,108.50 281.50,108.50 C 281.50,108.50 292.50,78.50 292.50,78.50 C 292.50,78.50 283.67,72.83 280.50,69.50 C 277.33,66.17 275.17,62.33 273.50,58.50 C 271.83,54.67 270.92,50.58 270.50,46.50 C 270.08,42.42 270.25,38.00 271.00,34.00 C 271.75,30.00 272.83,26.33 275.00,22.50 C 277.17,18.67 280.42,14.17 284.00,11.00 C 287.58,7.83 292.67,5.08 296.50,3.50 C 300.33,1.92 307.00,1.50 307.00,1.50 C 307.00,1.50 307.00,1.00 307.00,1.00 Z M 264.50,408.00 C 264.50,408.00 354.00,407.25 396.00,409.00 C 438.00,410.75 489.50,415.92 516.50,418.50 C 543.50,421.08 542.75,421.75 558.00,424.50 C 573.25,427.25 597.08,429.75 608.00,435.00 C 618.92,440.25 620.92,452.25 623.50,456.00 C 626.08,459.75 623.50,457.50 623.50,457.50 C 623.50,457.50 635.75,459.08 618.50,457.50 C 601.25,455.92 547.67,450.17 520.00,448.00 C 492.33,445.83 479.33,445.50 452.50,444.50 C 425.67,443.50 390.92,442.42 359.00,442.00 C 327.08,441.58 301.17,441.17 261.00,442.00 C 220.83,442.83 161.33,444.42 118.00,447.00 C 74.67,449.58 1.00,457.50 1.00,457.50 C 1.00,457.50 6.17,440.75 15.50,435.50 C 24.83,430.25 34.92,429.58 57.00,426.00 C 79.08,422.42 123.50,416.67 148.00,414.00 C 172.50,411.33 184.58,410.92 204.00,410.00 C 223.42,409.08 264.50,408.50 264.50,408.50 C 264.50,408.50 264.50,408.00 264.50,408.00 Z'/></g></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEWAN · Su propia página de pedidos, sin comisión</title>
+<meta name="description" content="Le armamos su propia página de pedidos con su marca y le traemos clientes con contenido y anuncios. Sin comisión. Para restaurantes en EE.UU.">
+<meta property="og:title" content="DEWAN · Su propia página de pedidos, sin comisión">
+<meta property="og:description" content="Pedidos directos con su marca, contenido y anuncios que los llenan. Para restaurantes en EE.UU.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23E8431A'/><g transform='translate(14,22) scale(0.115)'><path fill='%23fff' d='M 307.00,1.00 C 307.00,1.00 317.58,0.75 322.50,2.00 C 327.42,3.25 332.42,5.58 336.50,8.50 C 340.58,11.42 344.42,15.75 347.00,19.50 C 349.58,23.25 351.00,26.25 352.00,31.00 C 353.00,35.75 353.42,43.25 353.00,48.00 C 352.58,52.75 351.08,56.00 349.50,59.50 C 347.92,63.00 346.58,65.75 343.50,69.00 C 340.42,72.25 331.00,79.00 331.00,79.00 C 331.00,79.00 342.50,109.00 342.50,109.00 C 342.50,109.00 361.17,111.58 370.00,113.50 C 378.83,115.42 387.50,117.92 395.50,120.50 C 403.50,123.08 409.17,125.00 418.00,129.00 C 426.83,133.00 439.25,139.17 448.50,144.50 C 457.75,149.83 465.25,154.83 473.50,161.00 C 481.75,167.17 488.50,172.00 498.00,181.50 C 507.50,191.00 521.33,206.00 530.50,218.00 C 539.67,230.00 546.42,241.08 553.00,253.50 C 559.58,265.92 565.50,280.08 570.00,292.50 C 574.50,304.92 577.42,315.08 580.00,328.00 C 582.58,340.92 584.67,358.00 585.50,370.00 C 586.33,382.00 585.00,400.00 585.00,400.00 C 585.00,400.00 554.67,393.92 527.50,390.00 C 500.33,386.08 451.50,379.58 422.00,376.50 C 392.50,373.42 375.33,372.33 350.50,371.50 C 325.67,370.67 295.75,370.92 273.00,371.50 C 250.25,372.08 253.08,370.42 214.00,375.00 C 174.92,379.58 38.50,399.00 38.50,399.00 C 38.50,399.00 38.58,365.17 40.50,349.50 C 42.42,333.83 45.83,319.08 50.00,305.00 C 54.17,290.92 58.92,278.50 65.50,265.00 C 72.08,251.50 81.83,235.42 89.50,224.00 C 97.17,212.58 104.83,204.08 111.50,196.50 C 118.17,188.92 123.50,184.00 129.50,178.50 C 135.50,173.00 139.83,169.17 147.50,163.50 C 155.17,157.83 166.67,149.83 175.50,144.50 C 184.33,139.17 192.42,135.25 200.50,131.50 C 208.58,127.75 215.50,124.92 224.00,122.00 C 232.50,119.08 241.92,116.25 251.50,114.00 C 261.08,111.75 281.50,108.50 281.50,108.50 C 281.50,108.50 292.50,78.50 292.50,78.50 C 292.50,78.50 283.67,72.83 280.50,69.50 C 277.33,66.17 275.17,62.33 273.50,58.50 C 271.83,54.67 270.92,50.58 270.50,46.50 C 270.08,42.42 270.25,38.00 271.00,34.00 C 271.75,30.00 272.83,26.33 275.00,22.50 C 277.17,18.67 280.42,14.17 284.00,11.00 C 287.58,7.83 292.67,5.08 296.50,3.50 C 300.33,1.92 307.00,1.50 307.00,1.50 C 307.00,1.50 307.00,1.00 307.00,1.00 Z M 264.50,408.00 C 264.50,408.00 354.00,407.25 396.00,409.00 C 438.00,410.75 489.50,415.92 516.50,418.50 C 543.50,421.08 542.75,421.75 558.00,424.50 C 573.25,427.25 597.08,429.75 608.00,435.00 C 618.92,440.25 620.92,452.25 623.50,456.00 C 626.08,459.75 623.50,457.50 623.50,457.50 C 623.50,457.50 635.75,459.08 618.50,457.50 C 601.25,455.92 547.67,450.17 520.00,448.00 C 492.33,445.83 479.33,445.50 452.50,444.50 C 425.67,443.50 390.92,442.42 359.00,442.00 C 327.08,441.58 301.17,441.17 261.00,442.00 C 220.83,442.83 161.33,444.42 118.00,447.00 C 74.67,449.58 1.00,457.50 1.00,457.50 C 1.00,457.50 6.17,440.75 15.50,435.50 C 24.83,430.25 34.92,429.58 57.00,426.00 C 79.08,422.42 123.50,416.67 148.00,414.00 C 172.50,411.33 184.58,410.92 204.00,410.00 C 223.42,409.08 264.50,408.50 264.50,408.50 C 264.50,408.50 264.50,408.00 264.50,408.00 Z'/></g></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"></noscript>
-<!-- Numero de ventas WhatsApp: +593 93 964 7069 (wa.me/593939647069) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 <style>
-  :root{
-    --bg:#050505;
-    --black:#000;
-    --lime:#AAFF00;
-    --lime-soft:rgba(170,255,0,.13);
-    --lime-line:rgba(170,255,0,.34);
-    --white:#fff;
-    --ink:#0B0C09;
-    --ink-2:#101208;
-    --paper:#F5F7EE;
-    --soft:#D9DCD2;
-    --muted:#94988C;
-    --dim:#5E6157;
-    --line:rgba(255,255,255,.085);
-    --line-2:rgba(255,255,255,.16);
-    --wa-bg:#0B141A;
-    --wa-in:#1F2C34;
-    --wa-out:#005C4B;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
-  html,body{background:var(--bg);color:var(--white);font-family:"Inter Tight","Segoe UI",Helvetica,Arial,sans-serif;overflow-x:hidden}
-  body{letter-spacing:-.01em;font-feature-settings:"ss01","cv11"}
-  ::selection{background:var(--lime);color:#000}
-  a{color:inherit;text-decoration:none}
-  button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
-  :focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:4px}
-  .mono{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;letter-spacing:0}
-  .container{max-width:1180px;margin:0 auto;padding:0 28px}
-  @media(max-width:640px){.container{padding:0 20px}}
-  section{position:relative;padding:120px 0}
-  @media(max-width:760px){section{padding:80px 0}}
-  .hairline{height:1px;background:linear-gradient(90deg,transparent,var(--line-2) 18%,var(--line-2) 82%,transparent)}
+:root{
+  --brasa:#E8431A; --brasa-ink:#B8320F; --brasa-soft:#FFF1EB; --brasa-line:#F6C9B8;
+  --ink:#16181D; --muted:#5A6070; --line:#E4E6EB; --bg:#FFFFFF; --bg2:#F7F7F5;
+  --ok:#1C7D46; --ok-soft:#E6F4EC;
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.6}
+html[lang=es] .en, html[lang=en] .es{display:none!important}
+a{color:var(--brasa-ink)}
+img,svg{display:block}
+h1,h2,h3{line-height:1.12;margin:0;letter-spacing:-.015em}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-weight:700;font-size:16px;text-decoration:none;border-radius:12px;padding:14px 20px;border:2px solid transparent;line-height:1.2}
+.btn-p{background:var(--brasa);color:#fff}
+.btn-p:hover{background:var(--brasa-ink)}
+.btn-s{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn-s:hover{border-color:var(--ink)}
+.btn svg{width:20px;height:20px;flex:none}
+a:focus-visible,.btn:focus-visible,summary:focus-visible{outline:3px solid var(--brasa);outline-offset:3px}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brasa-ink)}
+.lead{font-size:19px;color:var(--muted)}
+.ico{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
-  .bell{display:inline-block;vertical-align:middle}
-  .bell path{fill:currentColor}
+/* barra */
+.top{border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:10}
+.top .wrap{display:flex;align-items:center;gap:20px;height:66px}
+.marca{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;font-size:20px;letter-spacing:.02em}
+.marca .logo{width:36px;height:36px;border-radius:9px;background:var(--brasa);display:grid;place-items:center}
+.marca .logo svg{width:24px;height:auto;fill:#fff}
+.nav{display:flex;gap:22px;margin-left:12px}
+.nav a{color:var(--muted);text-decoration:none;font-size:15px;font-weight:600}
+.nav a:hover{color:var(--ink)}
+.der{margin-left:auto;display:flex;align-items:center;gap:12px}
+.idioma{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:13px;font-weight:700}
+.idioma a{padding:6px 10px;text-decoration:none;color:var(--muted)}
+html[lang=es] .idioma a[hreflang=es], html[lang=en] .idioma a[hreflang=en]{background:var(--ink);color:#fff}
+.top .btn{padding:10px 16px;font-size:15px}
 
-  /* ---------- type ---------- */
-  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.18em;color:var(--lime);text-transform:uppercase;margin-bottom:26px}
-  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 14px var(--lime)}
-  h1,h2,h3{font-weight:800;letter-spacing:-.035em;line-height:.95;text-wrap:balance}
-  .h-hero{font-size:clamp(52px,8.2vw,110px);font-weight:900;letter-spacing:-.048em;line-height:.9;text-transform:uppercase}
-  .h-hero .outline{color:transparent;-webkit-text-stroke:2px var(--lime);text-stroke:2px var(--lime)}
-  @media(max-width:500px){.h-hero .outline{-webkit-text-stroke-width:1.4px}}
-  .h-big{font-size:clamp(34px,4.8vw,62px);font-weight:900;letter-spacing:-.04em;line-height:.95}
-  .lime{color:var(--lime)}
-  .muted{color:var(--muted)}
-  .sub{font-size:clamp(16px,1.6vw,19px);line-height:1.55;color:var(--soft);font-weight:500;max-width:620px}
-  .section-head{max-width:780px;margin-bottom:64px}
-  .section-head .sub{margin-top:20px}
+/* aviso personalizado (solo con ?p=) */
+.aviso{display:none;background:var(--ink);color:#fff;font-size:15px}
+.aviso.si{display:block}
+.aviso .wrap{display:flex;gap:12px;align-items:center;justify-content:center;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+.aviso a{color:#fff;font-weight:800}
 
-  /* ---------- icons ---------- */
-  .ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+/* hero */
+.hero{padding:64px 0 56px;background:linear-gradient(180deg,var(--brasa-soft),#fff 70%)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:center}
+.hero h1{font-size:clamp(36px,5.4vw,58px);font-weight:800;margin:14px 0 18px}
+.hero h1 em{font-style:normal;color:var(--brasa)}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0 22px}
+.sellos{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14.5px;color:var(--muted);font-weight:600}
+.sellos span{display:inline-flex;align-items:center;gap:6px}
+.sellos svg{width:18px;height:18px;stroke:var(--ok)}
 
-  /* ---------- buttons ---------- */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:17px 28px;border-radius:13px;background:var(--lime);color:#000;font-weight:800;font-size:15.5px;letter-spacing:-.01em;transition:transform .15s ease,box-shadow .25s ease;box-shadow:0 0 0 1px rgba(170,255,0,.4),0 12px 44px rgba(170,255,0,.22)}
-  .btn:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(170,255,0,.5),0 18px 60px rgba(170,255,0,.32)}
-  .btn:active{transform:translateY(0)}
-  .btn .arrow{transition:transform .2s ease}
-  .btn:hover .arrow{transform:translateX(4px)}
-  .btn.ghost{background:rgba(255,255,255,.035);border:1px solid var(--line-2);color:#fff;box-shadow:none;backdrop-filter:blur(6px)}
-  .btn.ghost:hover{background:rgba(255,255,255,.07)}
-  .btn.mega{padding:22px 38px;font-size:17px;border-radius:16px}
+/* maqueta */
+.maqueta{position:relative;min-height:480px;max-width:500px;margin-left:auto;width:100%}
+.tel{width:270px;margin-left:0;margin-right:auto;border:10px solid #16181D;border-radius:36px;background:#fff;box-shadow:0 24px 48px -24px rgba(22,24,29,.45);overflow:hidden}
+.tel .cab{background:#B5371A;color:#fff;padding:22px 16px 16px}
+.tel .cab b{display:block;font-size:18px}
+.tel .cab small{opacity:.85;font-size:12px}
+.tel .item{display:flex;justify-content:space-between;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
+.tel .item b{font-weight:700}
+.tel .item small{display:block;color:var(--muted);font-size:11.5px}
+.tel .item .q{flex:none;align-self:center;width:26px;height:26px;border-radius:50%;background:var(--brasa);color:#fff;font-weight:800;display:grid;place-items:center;font-size:15px}
+.tel .pie{padding:12px 14px 16px}
+.tel .pagar{background:#25A55F;color:#fff;border-radius:10px;text-align:center;font-weight:800;padding:11px;font-size:14px}
+.ticket{position:absolute;right:0;top:150px;width:226px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--brasa);border-radius:12px;padding:14px 16px;box-shadow:0 16px 32px -20px rgba(22,24,29,.5);font-size:13.5px}
+.ticket .t1{display:flex;justify-content:space-between;font-weight:800;font-size:15px}
+.ticket .nuevo{font-size:11px;font-weight:800;color:#fff;background:var(--brasa);border-radius:999px;padding:2px 8px;align-self:center}
+.ticket ul{margin:8px 0;padding:0;list-style:none;color:var(--muted)}
+.ticket .tot{display:flex;justify-content:space-between;border-top:1px dashed var(--line);padding-top:8px;font-weight:700}
+.ticket .lbl{font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.ticket .lbl svg{width:14px;height:14px}
 
-  /* ---------- reveal ---------- */
-  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-  @supports (animation-timeline: view()){
-    .reveal{animation:rise .6s ease both;animation-timeline:view();animation-range:entry 5% entry 45%}
-  }
-  @media(prefers-reduced-motion:reduce){
-    .reveal{animation:none}
-    .tick-row{animation:none!important}
-    *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-  }
+section{padding:76px 0}
+section.gris{background:var(--bg2)}
+.titulo{max-width:720px;margin-bottom:40px}
+.titulo h2{font-size:clamp(28px,3.6vw,40px);font-weight:800;margin:10px 0 14px}
 
-  /* ---------- announce + nav ---------- */
-  .announce{display:block;background:var(--lime);color:#000;text-align:center;font-family:"JetBrains Mono",monospace;font-weight:500;font-size:11.5px;letter-spacing:.06em;padding:10px 16px;text-transform:uppercase}
-  .announce b{font-weight:700}
-  .nav{position:sticky;top:0;z-index:80;background:rgba(4,4,4,.96);border-bottom:1px solid var(--line)}
-  .nav-in{display:flex;align-items:center;justify-content:space-between;height:72px;gap:18px}
-  .brand{display:flex;align-items:center;gap:11px;font-weight:900;font-size:20px;letter-spacing:.02em}
-  .brand .bell{width:34px;height:25px;color:var(--lime)}
-  .nav-links{display:flex;align-items:center;gap:32px;font-size:14.5px;font-weight:600;color:var(--soft)}
-  .nav-links>a:hover{color:#fff}
-  .nav-right{display:flex;align-items:center;gap:16px}
-  .lang{display:flex;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;letter-spacing:.06em}
-  .lang button{padding:8px 11px;color:var(--muted);transition:background .2s,color .2s}
-  .lang button.on{background:var(--lime);color:#000}
-  .nav-cta{background:var(--lime);color:#000;font-weight:800;padding:11px 20px;border-radius:11px;font-size:14px;white-space:nowrap;transition:transform .15s}
-  .nav-cta:hover{transform:translateY(-1px)}
-  @media(max-width:920px){.nav-links>a{display:none}}
-  @media(max-width:560px){.nav-cta{padding:10px 14px;font-size:13px}}
+/* cuentas */
+.cuentas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:880px}
+.cuenta{border:1px solid var(--line);border-radius:16px;padding:24px;background:#fff}
+.cuenta.buena{border:2px solid var(--brasa)}
+.cuenta h3{font-size:18px;margin-bottom:14px}
+.fila{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15.5px}
+.fila:last-child{border-bottom:0}
+.fila b{font-variant-numeric:tabular-nums}
+.grande{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:12px}
+.cuenta.mala .grande{color:var(--muted)}
+.cuenta.buena .grande{color:var(--brasa)}
+.nota{font-size:13.5px;color:var(--muted);margin-top:16px;max-width:880px}
 
-  /* ---------- hero ---------- */
-  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
-  .hero-bg{position:absolute;inset:0;pointer-events:none}
-  .hero-bg::before{content:"";position:absolute;inset:0;background:
-    radial-gradient(1100px 560px at 82% -8%,rgba(170,255,0,.09),transparent 62%),
-    radial-gradient(800px 500px at -10% 70%,rgba(170,255,0,.045),transparent 60%)}
-  .hero-bg::after{content:"";position:absolute;top:0;right:0;width:62%;height:78%;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:72px 72px;opacity:.28}
-  .hero-bell{position:absolute;right:-140px;bottom:-90px;width:560px;height:411px;color:rgba(170,255,0,.05);transform:rotate(-8deg)}
-  .hero-grid{position:relative;display:grid;grid-template-columns:1.08fr .92fr;gap:48px;align-items:center;padding:96px 0 110px}
-  @media(max-width:980px){.hero-grid{grid-template-columns:1fr;padding:60px 0 72px;gap:76px}}
-  .hero-copy .sub{margin-top:30px}
-  .hero-ctas{display:flex;gap:14px;margin-top:40px;flex-wrap:wrap}
-  .hero-chips{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
-  .chip{display:inline-flex;align-items:center;gap:8px;font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:30px;padding:8px 14px;background:rgba(255,255,255,.02)}
-  .chip svg{width:13px;height:13px;stroke:var(--lime);stroke-width:2.4}
+/* pasos */
+.pasos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;counter-reset:p}
+.paso{border:1px solid var(--line);border-radius:16px;padding:26px;background:#fff;position:relative}
+.paso::before{counter-increment:p;content:counter(p);display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--brasa);color:#fff;font-weight:800;margin-bottom:16px}
+.paso h3{font-size:19px;margin-bottom:8px}
+.paso p{color:var(--muted);font-size:15.5px}
+.paso .cuando{display:inline-block;margin-top:14px;font-size:13px;font-weight:700;color:var(--brasa-ink);background:var(--brasa-soft);border-radius:999px;padding:4px 10px}
 
-  /* phone + stage */
-  .stage{position:relative;display:flex;justify-content:center;min-height:640px}
-  @media(max-width:400px){.stage{min-height:600px}}
-  .phone{position:relative;width:100%;max-width:330px;aspect-ratio:9/18.8;background:#0B0B0B;border-radius:46px;padding:10px;box-shadow:0 0 0 1.5px #2E2E2E,0 0 0 9px #0B0B0B,0 0 0 10.5px #222,0 24px 60px rgba(0,0,0,.8);z-index:2}
-  .phone::before{content:"";position:absolute;top:16px;left:50%;transform:translateX(-50%);width:86px;height:24px;background:#000;border-radius:20px;z-index:6}
-  .screen{position:absolute;inset:10px;border-radius:37px;background:var(--wa-bg);overflow:hidden;display:flex;flex-direction:column}
-  .wa-head{display:flex;align-items:center;gap:10px;padding:46px 14px 12px;background:var(--wa-in);flex:none;z-index:2}
-  .wa-ava{width:33px;height:33px;border-radius:50%;background:var(--lime);color:#000;display:grid;place-items:center;font-weight:900;font-size:12.5px;flex:none}
-  .wa-name{font-size:13px;font-weight:700;line-height:1.15}
-  .wa-name em{display:flex;align-items:center;gap:5px;font-style:normal;font-size:10.5px;color:#8696A0;font-weight:500}
-  .wa-name em i{width:5px;height:5px;border-radius:50%;background:#25D366}
-  .wa-chat{flex:1;padding:12px 10px 16px;display:flex;flex-direction:column;gap:7px;overflow:hidden;justify-content:flex-end}
-  .bub{max-width:86%;padding:7px 9px;border-radius:9px;font-size:11.4px;line-height:1.38;position:relative;transition:opacity .35s ease,transform .35s cubic-bezier(.2,.8,.25,1)}
-  html.anim #chat .bub{opacity:0;transform:translateY(10px) scale(.97)}
-  html.anim #chat .bub.show{opacity:1;transform:none}
-  #typing{display:none}
-  .bub time{display:inline-block;float:right;margin:6px 0 0 8px;font-size:8.5px;color:rgba(255,255,255,.45)}
-  .bub.in{align-self:flex-start;background:var(--wa-in);border-top-left-radius:2px}
-  .bub.out{align-self:flex-end;background:var(--wa-out);border-top-right-radius:2px}
-  .bub .wa-btn{margin-top:7px;border-top:1px solid rgba(255,255,255,.14);padding-top:7px;text-align:center;color:#53BDEB;font-weight:600;font-size:11.4px;clear:both}
-  .bub .rows{margin-top:5px;display:flex;flex-direction:column;gap:2px;font-size:10.7px}
-  .bub .total{border-top:1px solid rgba(255,255,255,.18);margin-top:5px;padding-top:5px;font-weight:800;font-size:11.4px}
-  .bub.typing{padding:10px 13px}
-  .bub.typing i{display:inline-block;width:5.5px;height:5.5px;border-radius:50%;background:#8696A0;margin-right:3.5px;animation:tdot 1.1s infinite}
-  .bub.typing i:nth-child(2){animation-delay:.18s}
-  .bub.typing i:nth-child(3){animation-delay:.36s;margin-right:0}
-  @keyframes tdot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-2.5px)}}
+/* incluye */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.tarj{border:1px solid var(--line);border-radius:16px;padding:24px;background:#fff}
+.tarj .icono{width:46px;height:46px;border-radius:12px;background:var(--brasa-soft);color:var(--brasa-ink);display:grid;place-items:center;margin-bottom:16px}
+.tarj h3{font-size:18px;margin-bottom:8px}
+.tarj p{color:var(--muted);font-size:15.5px}
 
-  .float-card{position:absolute;background:#0D0E0A;border:1px solid var(--line-2);border-radius:16px;padding:14px 16px;box-shadow:0 18px 44px rgba(0,0,0,.65);z-index:4}
-  .float-track{top:6%;left:-4%;width:200px;transition:opacity .5s,transform .5s}
-  html.anim .float-track:not(.show){opacity:0;transform:translateY(-8px)}
-  .float-track .t-head{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700}
-  .float-track .live{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime);animation:pulse 1.7s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-  .float-track .t-sub{color:var(--muted);font-size:10.8px;margin-top:3px}
-  .t-steps{display:flex;gap:5px;margin-top:11px}
-  .t-steps i{height:4px;flex:1;border-radius:3px;background:var(--lime)}
-  .t-steps i.off{background:#2A2C24}
-  .float-ticket{bottom:4%;right:-4%;width:206px;background:var(--paper);color:#141511;border:none;border-radius:6px 6px 0 0;transform:rotate(3.2deg);font-family:"JetBrains Mono",monospace;padding:13px 14px 8px;box-shadow:0 18px 44px rgba(0,0,0,.65);max-height:240px;overflow:hidden;transition:max-height 1.1s cubic-bezier(.3,.6,.2,1),padding .9s}
-  html.anim .float-ticket:not(.show){max-height:0;padding:0 14px}
-  .float-ticket::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:8px;background-image:linear-gradient(-45deg,var(--paper) 5.5px,transparent 0),linear-gradient(45deg,var(--paper) 5.5px,transparent 0);background-size:11px 11px;background-repeat:repeat-x}
-  .tk-h{font-size:10px;font-weight:700;text-align:center;letter-spacing:.06em}
-  .tk-s{text-align:center;font-size:8.6px;color:#666;margin-top:2px}
-  .tk-l{border-top:1px dashed #A9AB9F;margin:7px 0}
-  .tk-r{display:flex;justify-content:space-between;font-size:9.3px;line-height:1.8;gap:8px}
-  .tk-r.b{font-weight:700}
-  @media(max-width:1120px){.float-track{left:0}.float-ticket{right:0}}
-  @media(max-width:400px){.float-track{width:172px}.float-ticket{width:180px}}
+/* envío */
+.envio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.op{border:1px solid var(--line);border-radius:16px;padding:24px;background:#fff}
+.op h3{font-size:18px;margin:12px 0 8px}
+.op p{color:var(--muted);font-size:15.5px}
+.op ul{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:14.5px}
+.op .icono{color:var(--brasa-ink)}
 
-  /* ---------- ticker ---------- */
-  .ticker{border-bottom:1px solid var(--line);background:var(--black);overflow:hidden;padding:15px 0}
-  .tick-row{display:flex;gap:0;width:max-content;animation:tick 36s linear infinite}
-  .ticker:hover .tick-row{animation-play-state:paused}
-  @keyframes tick{to{transform:translateX(-50%)}}
-  .tick-item{display:inline-flex;align-items:center;gap:12px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 30px;white-space:nowrap}
-  .tick-item i{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime);flex:none}
+/* garantía y fundadores */
+.dos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.garantia{background:var(--ink);color:#fff;border-radius:20px;padding:34px}
+.garantia .eyebrow{color:#FFB59C}
+.garantia h3{font-size:clamp(24px,3vw,32px);margin:12px 0 14px}
+.garantia p{color:#C9CDD6}
+.garantia small{display:block;margin-top:16px;color:#9EA5B3;font-size:13.5px}
+.fundadores{border:2px solid var(--brasa);border-radius:20px;padding:34px;background:#fff}
+.fundadores h3{font-size:clamp(24px,3vw,32px);margin:12px 0 14px}
+.fundadores p{color:var(--muted)}
+.cupos{display:flex;gap:8px;margin:20px 0 22px}
+.cupos span{width:42px;height:42px;border-radius:10px;border:2px solid var(--brasa);display:grid;place-items:center;color:var(--brasa);font-weight:800}
 
-  /* ---------- numbers band ---------- */
-  .ops{padding:0;border-bottom:1px solid var(--line)}
-  .ops-in{display:grid;grid-template-columns:repeat(4,1fr)}
-  .op{padding:52px 30px;border-left:1px solid var(--line)}
-  .op:first-child{border-left:0}
-  .op b{display:block;font-size:clamp(40px,4.6vw,64px);font-weight:900;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
-  .op b em{font-style:normal;color:var(--lime)}
-  .op span{display:block;margin-top:10px;font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);line-height:1.6}
-  .ops-note{padding:16px 28px;text-align:center;font-size:13px;color:var(--dim);border-top:1px solid var(--line)}
-  @media(max-width:860px){.ops-in{grid-template-columns:1fr 1fr}.op:nth-child(3){border-left:0}.op:nth-child(n+3){border-top:1px solid var(--line)}.op{padding:36px 24px}}
+/* quiénes */
+.quien{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center}
+.cifras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cifra{border:1px solid var(--line);border-radius:16px;padding:22px;background:#fff}
+.cifra b{display:block;font-size:30px;font-weight:800;color:var(--brasa)}
+.cifra > span{color:var(--muted);font-size:14.5px}
 
-  /* ---------- problem ---------- */
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  @media(max-width:960px){.grid-3{grid-template-columns:1fr 1fr}}
-  @media(max-width:640px){.grid-3{grid-template-columns:1fr}}
-  .p-card{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:20px;padding:30px 28px;transition:border-color .25s,transform .25s}
-  .p-card:hover{border-color:var(--line-2);transform:translateY(-3px)}
-  .p-card .ico{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid var(--line);display:grid;place-items:center;margin-bottom:20px;color:var(--lime)}
-  .p-card h3{font-size:19px;letter-spacing:-.02em;line-height:1.12;margin-bottom:10px}
-  .p-card p{font-size:14.5px;line-height:1.55;color:var(--muted)}
-  .closer{margin-top:52px;font-size:clamp(24px,3vw,36px);font-weight:900;letter-spacing:-.035em;line-height:1.1;text-wrap:balance}
+/* preguntas */
+.faq{max-width:820px;display:grid;gap:12px}
+.faq details{border:1px solid var(--line);border-radius:14px;background:#fff}
+.faq summary{cursor:pointer;list-style:none;padding:18px 22px;font-weight:700;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:22px;line-height:1;color:var(--brasa)}
+.faq details[open] summary::after{content:"–"}
+.faq .r{padding:0 22px 20px;color:var(--muted)}
 
-  /* ---------- pipeline ---------- */
-  .pipe{display:grid;grid-template-columns:repeat(5,1fr);margin-top:8px}
-  .pipe-node{position:relative;padding:30px 24px 0 0}
-  .pipe-node::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:var(--line-2)}
-  .pipe-node:last-child::before{right:24px}
-  .pipe-node::after{content:"";position:absolute;top:-4px;left:0;width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime)}
-  .pipe-node .n{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--lime);letter-spacing:.16em;text-transform:uppercase}
-  .pipe-node h3{font-size:19px;margin:12px 0 10px;letter-spacing:-.02em;line-height:1.1}
-  .pipe-node p{font-size:13.8px;line-height:1.55;color:var(--muted)}
-  @media(max-width:960px){
-    .pipe{grid-template-columns:1fr;border-left:1px solid var(--line-2)}
-    .pipe-node{padding:0 0 38px 28px}
-    .pipe-node::before{display:none}
-    .pipe-node::after{top:4px;left:-5px}
-  }
+/* cierre */
+.cierre{background:var(--brasa);color:#fff;text-align:center}
+.cierre h2{font-size:clamp(28px,4vw,44px);font-weight:800;margin-bottom:14px}
+.cierre p{color:#FFE3D8;font-size:18px;max-width:640px;margin:0 auto}
+.cierre .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.cierre .btn-p{background:#fff;color:var(--brasa-ink)}
+.cierre .btn-p:hover{background:#FFF1EB}
+.cierre .btn-s{background:transparent;color:#fff;border-color:rgba(255,255,255,.6)}
 
-  /* ---------- how it works ---------- */
-  .steps{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:760px){.steps{grid-template-columns:1fr}}
-  .step{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:20px;padding:28px;display:flex;gap:22px;transition:border-color .25s}
-  .step:hover{border-color:var(--line-2)}
-  .step .num{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:13px;color:#000;background:var(--lime);width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;box-shadow:0 0 24px rgba(170,255,0,.25)}
-  .step h3{font-size:18.5px;letter-spacing:-.02em;margin-bottom:8px;line-height:1.12}
-  .step p{font-size:14.5px;line-height:1.55;color:var(--muted)}
+footer{padding:36px 0;font-size:14px;color:var(--muted);border-top:1px solid var(--line)}
+footer .wrap{display:flex;gap:16px 28px;flex-wrap:wrap;justify-content:space-between}
+footer a{color:var(--muted)}
 
-  .band{margin-top:60px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  @media(max-width:1020px){.band{grid-template-columns:1fr 1fr}}
-  @media(max-width:640px){.band{grid-template-columns:1fr}}
-  .art{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:14px;transition:transform .25s,border-color .25s}
-  .art:hover{transform:translateY(-4px);border-color:var(--line-2)}
-  .art .cap{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:0 4px 4px}
-  .mock{border-radius:13px;overflow:hidden;flex:1}
-  .m-dark{background:#0D0E0B;border:1px solid var(--line)}
-
-  .m-dash{padding:14px}
-  .m-dash .d-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  .m-dash .d-top b{font-size:12.5px}
-  .m-dash .d-top span{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--lime)}
-  .d-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:11.3px}
-  .d-row .who{color:var(--soft)}
-  .d-row .who b{display:block;color:#fff;font-size:11.5px}
-  .pill{font-family:"JetBrains Mono",monospace;font-size:8.6px;letter-spacing:.06em;padding:3px 8px;border-radius:20px;text-transform:uppercase;white-space:nowrap}
-  .pill.k{background:rgba(255,193,7,.13);color:#FFC107}
-  .pill.w{background:var(--lime-soft);color:var(--lime)}
-  .pill.d{background:rgba(255,255,255,.07);color:#AAA}
-
-  .m-ticket{background:var(--paper);color:#141511;font-family:"JetBrains Mono",monospace;padding:16px 16px 10px;position:relative;border-radius:6px 6px 0 0}
-  .m-ticket::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;background-image:linear-gradient(-45deg,#0D0E0B 5.5px,transparent 0),linear-gradient(45deg,#0D0E0B 5.5px,transparent 0);background-size:11px 11px;background-repeat:repeat-x;transform:rotate(180deg)}
-  .m-ticket .tk-r{font-size:10px;line-height:1.95}
-  .m-ticket .big{font-size:11.3px;font-weight:700}
-  .m-ticket .ind{padding-left:14px;color:#666}
-
-  .m-driver{padding:14px;display:flex;flex-direction:column;gap:10px}
-  .m-driver .d-new{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.14em;color:var(--lime);text-transform:uppercase;display:flex;align-items:center;gap:7px}
-  .m-driver .d-new i{width:6px;height:6px;border-radius:50%;background:var(--lime);animation:pulse 1.4s infinite}
-  .m-driver .d-ord{font-size:14px;font-weight:800}
-  .m-driver .d-route{font-size:11px;color:var(--muted);line-height:1.65}
-  .m-driver .d-route b{color:var(--soft);font-weight:600}
-  .m-driver .d-meta{display:flex;gap:7px;flex-wrap:wrap}
-  .m-driver .d-meta span{font-family:"JetBrains Mono",monospace;font-size:9.3px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;padding:4px 8px;color:var(--soft)}
-  .m-driver .d-accept{background:var(--lime);color:#000;text-align:center;font-weight:800;font-size:12.5px;border-radius:10px;padding:10px;margin-top:2px}
-
-  .m-track .map{position:relative;height:120px;background:linear-gradient(#0F130E,#0B0E0A);overflow:hidden}
-  .m-track .map::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:22px 22px}
-  .m-track svg{position:absolute;inset:0;width:100%;height:100%}
-  .m-track .tr-body{padding:12px 14px}
-  .m-track .tr-body b{font-size:12.5px;display:flex;align-items:center;gap:8px}
-  .m-track .tr-body b i{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 9px var(--lime);animation:pulse 1.6s infinite}
-  .m-track .tr-steps{display:flex;gap:5px;margin-top:10px}
-  .m-track .tr-steps i{height:4px;flex:1;border-radius:3px;background:var(--lime)}
-  .m-track .tr-steps i.off{background:#272921}
-  .m-track .tr-lbl{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:8.2px;color:var(--muted);margin-top:6px;letter-spacing:.03em;text-transform:uppercase}
-
-  /* ---------- comparison ---------- */
-  .vs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:24px;overflow:hidden}
-  @media(max-width:760px){.vs{grid-template-columns:1fr}}
-  .vs-col{padding:38px 36px}
-  .vs-col.lose{background:rgba(255,255,255,.014)}
-  .vs-col.win{background:linear-gradient(180deg,rgba(170,255,0,.07),rgba(170,255,0,.015));border-left:1px solid var(--lime-line)}
-  @media(max-width:760px){.vs-col.win{border-left:0;border-top:1px solid var(--lime-line)}}
-  .vs-col h3{font-size:17px;letter-spacing:-.015em;margin-bottom:24px;display:flex;align-items:center;gap:12px}
-  .vs-col .tag{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,.05);color:var(--muted)}
-  .vs-col.win .tag{background:var(--lime);color:#000;font-weight:700}
-  .vs-col ul{list-style:none}
-  .vs-col li{display:flex;gap:13px;padding:13px 0;border-top:1px solid var(--line);font-size:14.8px;line-height:1.45;color:var(--soft)}
-  .vs-col .x,.vs-col .c{flex:none;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:800;margin-top:1px}
-  .vs-col .x{background:rgba(255,255,255,.05);color:#777}
-  .vs-col .c{background:var(--lime);color:#000}
-  .vs-note{margin-top:28px;font-size:15px;color:var(--muted);line-height:1.6;max-width:740px}
-  .vs-note b{color:#fff}
-
-  /* ---------- delivery ---------- */
-  .d-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  @media(max-width:900px){.d-cards{grid-template-columns:1fr}}
-  .d-card{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:22px;padding:32px;display:flex;flex-direction:column;gap:14px;transition:border-color .25s,transform .25s}
-  .d-card:hover{border-color:var(--line-2);transform:translateY(-3px)}
-  .d-card .ico{width:46px;height:46px;border-radius:14px;background:var(--lime-soft);display:grid;place-items:center;color:var(--lime)}
-  .d-card h3{font-size:21px;letter-spacing:-.02em;line-height:1.1}
-  .d-card p{font-size:14.5px;color:var(--muted);line-height:1.6;flex:1}
-  .badge{align-self:flex-start;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;padding:6px 11px;border-radius:20px}
-  .badge.now{background:var(--lime-soft);color:var(--lime)}
-  .badge.soon{background:rgba(255,255,255,.04);color:#999;border:1px solid var(--line)}
-
-  /* ---------- bento ---------- */
-  .bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;gap:16px}
-  @media(max-width:1020px){.bento{grid-template-columns:1fr 1fr;grid-auto-rows:150px}}
-  @media(max-width:600px){.bento{grid-template-columns:1fr;grid-auto-rows:auto}}
-  .b-cell{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:22px;padding:26px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;transition:border-color .25s,transform .25s}
-  .b-cell:hover{border-color:var(--line-2);transform:translateY(-3px)}
-  .b-cell h3{font-size:18px;letter-spacing:-.02em;line-height:1.12;position:relative;z-index:2}
-  .b-cell p{font-size:13.5px;color:var(--muted);line-height:1.5;position:relative;z-index:2}
-  .b-2x2{grid-column:span 2;grid-row:span 2}
-  .b-2x1{grid-column:span 2}
-  @media(max-width:600px){.b-2x2,.b-2x1{grid-column:span 1}.b-cell{min-height:170px}.b-chat{display:none}.b-2x2{min-height:190px}}
-  .b-viz{position:absolute;inset:0;z-index:1;pointer-events:none}
-  .b-chat{position:absolute;top:22px;left:26px;right:26px;bottom:96px;display:flex;flex-direction:column;gap:7px;mask-image:linear-gradient(#000 62%,transparent);-webkit-mask-image:linear-gradient(#000 62%,transparent)}
-  .b-chat .bub{opacity:1;transform:none;font-size:11px;max-width:78%}
-  .b-zero{position:absolute;top:-14px;right:6px;font-size:120px;font-weight:900;letter-spacing:-.06em;color:transparent;-webkit-text-stroke:2px rgba(170,255,0,.5)}
-  .b-flag{position:absolute;top:20px;left:26px;display:flex;gap:8px;font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.1em}
-  .b-flag span{border:1px solid var(--line-2);border-radius:8px;padding:6px 10px;color:var(--soft)}
-  .b-flag span.on{background:var(--lime);color:#000;border-color:var(--lime);font-weight:700}
-  .b-print{position:absolute;top:-6px;left:26px;right:26px;height:96px;background:var(--paper);border-radius:0 0 6px 6px;color:#141511;font-family:"JetBrains Mono",monospace;font-size:9.3px;line-height:1.8;padding:12px 14px;mask-image:linear-gradient(#000 55%,transparent);-webkit-mask-image:linear-gradient(#000 55%,transparent)}
-  .b-route{position:absolute;inset:0}
-  .b-shield{position:absolute;top:18px;right:20px;color:var(--lime);opacity:.85}
-  .b-hist{position:absolute;top:20px;left:26px;right:26px;display:flex;flex-direction:column;gap:6px;mask-image:linear-gradient(#000 50%,transparent);-webkit-mask-image:linear-gradient(#000 50%,transparent)}
-  .b-hist i{display:block;height:9px;border-radius:4px;background:rgba(255,255,255,.06);font-style:normal}
-  .b-hist i:nth-child(1){width:88%}.b-hist i:nth-child(2){width:70%}.b-hist i:nth-child(3){width:79%}
-  .also{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-  .also .lbl{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-right:6px}
-  .soon-strip{margin-top:34px;border:1px dashed var(--line-2);border-radius:20px;padding:24px 28px;display:flex;gap:26px;align-items:center;flex-wrap:wrap}
-  .soon-strip .lbl{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#999;white-space:nowrap}
-  .soon-strip .item{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted)}
-  .soon-strip .item svg{width:15px;height:15px;stroke:#777}
-  .soon-note{margin-top:14px;font-size:12.5px;color:var(--dim);line-height:1.6;max-width:760px}
-
-  /* ---------- whatsapp official ---------- */
-  .wa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
-  @media(max-width:900px){.wa-grid{grid-template-columns:1fr}}
-  .wa-card{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:22px;padding:30px}
-  .wa-card .ico{width:44px;height:44px;border-radius:13px;background:var(--lime-soft);display:grid;place-items:center;margin-bottom:20px;color:var(--lime)}
-  .wa-card h3{font-size:18.5px;letter-spacing:-.02em;margin-bottom:10px;line-height:1.15}
-  .wa-card p{font-size:14.5px;color:var(--muted);line-height:1.6}
-  .usage{border:1px solid var(--lime-line);background:linear-gradient(180deg,rgba(170,255,0,.06),transparent);border-radius:22px;padding:34px 36px}
-  .usage h3{font-size:20px;margin-bottom:14px;display:flex;gap:12px;align-items:center}
-  .usage h3 svg{color:var(--lime)}
-  .usage p{font-size:15px;color:var(--soft);line-height:1.65;max-width:940px}
-  .usage p+p{margin-top:10px}
-  .usage b{color:#fff}
-
-  /* ---------- story ---------- */
-  .story{background:var(--black);overflow:hidden}
-  .story .container{position:relative}
-  .story-bell{position:absolute;right:-60px;top:-40px;width:420px;height:308px;color:rgba(170,255,0,.045);transform:rotate(6deg);pointer-events:none}
-  .story-quote{font-size:clamp(34px,5.4vw,72px);font-weight:900;letter-spacing:-.045em;line-height:.98;max-width:900px;text-transform:uppercase}
-  .story-body{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:36px;max-width:980px}
-  @media(max-width:800px){.story-body{grid-template-columns:1fr}}
-  .story-body p{font-size:15.5px;line-height:1.7;color:var(--soft)}
-  .story-body p b{color:#fff}
-  .story-origin{margin-top:34px;font-size:clamp(20px,2.4vw,27px);font-weight:800;letter-spacing:-.03em;line-height:1.2;text-wrap:balance}
-  .story-stats{margin-top:44px;display:flex;gap:12px;flex-wrap:wrap}
-  .s-chip{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line-2);border-radius:30px;padding:10px 17px;color:var(--soft)}
-  .s-chip b{color:var(--lime)}
-
-  /* ---------- pricing ---------- */
-  .bill-toggle{display:flex;align-items:center;gap:14px;margin:0 0 34px;flex-wrap:wrap}
-  .bill-switch{display:flex;background:rgba(255,255,255,.035);border:1px solid var(--line-2);border-radius:13px;padding:4px;font-size:13.5px;font-weight:700}
-  .bill-switch button{padding:10px 20px;border-radius:9px;color:var(--muted);transition:background .2s,color .2s}
-  .bill-switch button.on{background:var(--lime);color:#000}
-  .save-badge{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--lime);border:1px dashed var(--lime-line);border-radius:20px;padding:7px 13px}
-  .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:stretch}
-  @media(max-width:1020px){.plans{grid-template-columns:1fr 1fr}}
-  @media(max-width:620px){.plans{grid-template-columns:1fr}}
-  .plan{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:22px;padding:30px 26px;display:flex;flex-direction:column;position:relative;transition:transform .25s,border-color .25s}
-  .plan:hover{transform:translateY(-4px);border-color:var(--line-2)}
-  .plan.hot{border-color:var(--lime-line);background:linear-gradient(180deg,rgba(170,255,0,.075),rgba(170,255,0,.015) 40%,rgba(255,255,255,.008))}
-  .plan .flag{position:absolute;top:-12px;left:24px;background:var(--lime);color:#000;font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:20px;padding:6px 12px}
-  .plan .p-name{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-  .plan .p-price{margin-top:16px;font-size:44px;font-weight:900;letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1}
-  .plan .p-price span{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:-.01em}
-  .plan .p-price span.pr{font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit}
-  .plan .p-bill{margin-top:7px;font-family:"JetBrains Mono",monospace;font-size:9.8px;letter-spacing:.06em;color:var(--dim);text-transform:uppercase;min-height:14px}
-  .plan .p-vol{margin-top:14px;font-size:14.5px;font-weight:700}
-  .plan .p-vol-sub{font-family:"JetBrains Mono",monospace;font-size:9.8px;color:var(--muted);margin-top:4px;letter-spacing:.05em;text-transform:uppercase}
-  .plan ul{list-style:none;margin-top:20px;padding-top:4px;flex:1}
-  .plan li{display:flex;gap:10px;padding:8.5px 0;font-size:13.6px;color:var(--soft);line-height:1.4;border-top:1px solid var(--line)}
-  .plan li .c{flex:none;width:17px;height:17px;border-radius:50%;background:var(--lime);color:#000;display:grid;place-items:center;font-size:9px;font-weight:900;margin-top:2px}
-  .plan .p-cta{margin-top:20px;text-align:center;font-weight:800;font-size:14px;border-radius:12px;padding:14px;background:rgba(255,255,255,.05);border:1px solid var(--line-2);transition:background .2s}
-  .plan .p-cta:hover{background:rgba(255,255,255,.09)}
-  .plan.hot .p-cta{background:var(--lime);color:#000;border-color:var(--lime)}
-  .no-comm{margin-top:15px;text-align:center;font-family:"JetBrains Mono",monospace;font-size:9.4px;letter-spacing:.1em;color:var(--lime);text-transform:uppercase}
-
-  .setup{margin-top:18px;display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
-  @media(max-width:900px){.setup{grid-template-columns:1fr}}
-  .setup-card{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:22px;padding:34px}
-  .setup-card h3{font-size:24px;letter-spacing:-.025em}
-  .setup-card h3 span{color:var(--lime)}
-  .setup-card>p{margin-top:10px;color:var(--muted);font-size:14.5px;line-height:1.6}
-  .setup-list{margin-top:22px;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:1px 22px}
-  @media(max-width:560px){.setup-list{grid-template-columns:1fr}}
-  .setup-list li{display:flex;gap:10px;font-size:13.8px;color:var(--soft);padding:8px 0;border-top:1px solid var(--line)}
-  .setup-list .c{flex:none;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.06);color:var(--lime);display:grid;place-items:center;font-size:9px;font-weight:900;margin-top:2px}
-  .founding{background:var(--lime);color:#000;border-radius:22px;padding:34px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
-  .founding .f-bell{position:absolute;right:-34px;bottom:-30px;width:190px;height:139px;color:rgba(0,0,0,.08)}
-  .founding .f-tag{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
-  .founding .f-tag i{width:7px;height:7px;border-radius:50%;background:#000;animation:pulse 1.6s infinite}
-  .founding h3{font-size:clamp(24px,2.6vw,33px);font-weight:900;letter-spacing:-.035em;line-height:1;margin-top:16px;position:relative}
-  .founding p{margin-top:12px;font-size:14.5px;font-weight:600;line-height:1.55;color:rgba(0,0,0,.72);position:relative}
-  .founding a{margin-top:22px;background:#000;color:#fff;text-align:center;font-weight:800;font-size:14.5px;border-radius:12px;padding:15px;transition:transform .15s;position:relative}
-  .founding a:hover{transform:translateY(-2px)}
-  .usage-mini{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:24px 28px;font-size:13.8px;color:var(--muted);line-height:1.65}
-  .usage-mini b{color:var(--soft)}
-
-  /* ---------- how pricing works + plan calculator ---------- */
-  .scale{margin:-28px 0 34px;border:1px solid var(--line);border-radius:22px;padding:32px;background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008))}
-  @media(max-width:560px){.scale{padding:26px 22px}}
-  .scale h3{font-size:clamp(21px,2.5vw,28px);letter-spacing:-.03em;line-height:1.08}
-  .scale>p{margin-top:11px;font-size:14.5px;color:var(--muted);line-height:1.6;max-width:660px}
-  .calc{margin-top:28px;display:grid;grid-template-columns:1fr minmax(240px,300px);gap:24px 32px;align-items:end}
-  @media(max-width:820px){.calc{grid-template-columns:1fr}}
-  .calc-q{font-size:14.5px;font-weight:600;color:var(--soft)}
-  .calc-val{margin-top:12px;display:flex;align-items:baseline;gap:9px;font-family:"JetBrains Mono",monospace}
-  .calc-val b{font-size:clamp(30px,3.4vw,40px);font-weight:800;color:var(--lime);letter-spacing:-.035em}
-  .calc-val span{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-  .calc input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;background:rgba(255,255,255,.11);margin-top:16px;outline:none}
-  .calc input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--lime);border:3px solid #0A0A0A;box-shadow:0 0 0 1px var(--lime),0 5px 16px rgba(170,255,0,.35);cursor:pointer}
-  .calc input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--lime);border:3px solid #0A0A0A;box-shadow:0 0 0 1px var(--lime);cursor:pointer}
-  .calc-side{border:1px solid var(--lime-line);border-radius:18px;padding:20px 22px;background:linear-gradient(180deg,rgba(170,255,0,.07),rgba(170,255,0,.012))}
-  .calc-lbl{font-family:"JetBrains Mono",monospace;font-size:9.8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-  .calc-plan{margin-top:8px;font-size:26px;font-weight:900;letter-spacing:-.035em;line-height:1}
-  .calc-price{margin-top:6px;font-size:14.5px;font-weight:600;color:var(--lime)}
-  .calc-side .p-cta{display:block;margin-top:16px;text-align:center;font-weight:800;font-size:14px;border-radius:12px;padding:13px;background:var(--lime);color:#000;transition:transform .15s}
-  .calc-side .p-cta:hover{transform:translateY(-2px)}
-  .ladder{margin-top:26px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  @media(max-width:820px){.ladder{grid-template-columns:1fr 1fr}}
-  @media(max-width:440px){.ladder{grid-template-columns:1fr}}
-  .rung{border:1px solid var(--line);border-radius:15px;padding:16px 18px;transition:border-color .3s,background .3s}
-  .rung.on{border-color:var(--lime-line);background:var(--lime-soft)}
-  .rung .r-vol{font-family:"JetBrains Mono",monospace;font-size:9.8px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
-  .rung.on .r-vol{color:var(--lime)}
-  .rung .r-plan{margin-top:7px;font-size:16.5px;font-weight:800;letter-spacing:-.02em}
-  .rung .r-price{margin-top:3px;font-size:12.8px;color:var(--muted)}
-  .scale-foot{margin-top:20px;font-size:13.8px;color:var(--muted);line-height:1.65;max-width:760px}
-  .scale-foot b{color:var(--soft)}
-
-  /* ---------- direct vs third-party ---------- */
-  .econ{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-  @media(max-width:900px){.econ{grid-template-columns:1fr}}
-  .e-card{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));border:1px solid var(--line);border-radius:22px;padding:32px;display:flex;flex-direction:column;gap:9px}
-  .e-card .e-lbl{font-family:"JetBrains Mono",monospace;font-size:9.8px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-  .e-card .e-num{font-size:clamp(34px,4.2vw,50px);font-weight:900;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums}
-  .e-card .e-sub{font-size:13.8px;color:var(--muted);line-height:1.6}
-  .e-card.lose .e-num{color:#8A8D82}
-  .e-card.win{border-color:var(--lime-line);background:linear-gradient(180deg,rgba(170,255,0,.08),rgba(170,255,0,.015) 55%)}
-  .e-card.win .e-num{color:var(--lime)}
-  .e-card.win .e-lbl{color:var(--lime)}
-  .econ-note{margin-top:22px;font-size:13px;color:var(--dim);line-height:1.65;max-width:820px}
-
-  /* ---------- why restaurants choose dewan ---------- */
-  .why{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  @media(max-width:900px){.why{grid-template-columns:1fr 1fr}}
-  @media(max-width:520px){.why{grid-template-columns:1fr}}
-  .why-item{display:flex;gap:13px;align-items:flex-start;border:1px solid var(--line);border-radius:18px;padding:24px;background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));transition:border-color .25s}
-  .why-item:hover{border-color:var(--line-2)}
-  .why-item .c{flex:none;width:22px;height:22px;border-radius:50%;background:var(--lime);color:#000;display:grid;place-items:center;font-size:11px;font-weight:900;margin-top:1px}
-  .why-item b{font-size:15.2px;font-weight:700;line-height:1.4;letter-spacing:-.015em}
-
-  /* ---------- fit CTA after pricing ---------- */
-  .fit{margin-top:34px;padding-top:36px;border-top:1px solid var(--line);text-align:center}
-  .fit h3{font-size:clamp(22px,2.8vw,32px);letter-spacing:-.032em;line-height:1.08}
-  .fit .btn{margin-top:22px}
-
-  /* ---------- guarantee ---------- */
-  .g-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:760px){.g-cards{grid-template-columns:1fr}}
-  .g-card{border:1px solid var(--lime-line);border-radius:22px;padding:34px;background:linear-gradient(180deg,rgba(170,255,0,.05),transparent 55%)}
-  .g-card .ico{width:46px;height:46px;border-radius:14px;background:var(--lime-soft);display:grid;place-items:center;color:var(--lime);margin-bottom:18px}
-  .g-card h3{font-size:22px;letter-spacing:-.025em;margin-bottom:10px}
-  .g-card p{font-size:14.8px;color:var(--soft);line-height:1.65}
-  .g-card p b{color:#fff}
-  .g-fine{margin-top:22px;font-size:13px;color:var(--dim);line-height:1.65;max-width:860px}
-
-  /* ---------- faq ---------- */
-  .faq-list{max-width:860px}
-  .faq-list details{border-top:1px solid var(--line)}
-  .faq-list details:last-child{border-bottom:1px solid var(--line)}
-  .faq-list summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:22px;padding:22px 4px;font-size:17px;font-weight:700;letter-spacing:-.015em;transition:color .2s}
-  .faq-list summary::-webkit-details-marker{display:none}
-  .faq-list summary:hover{color:var(--lime)}
-  .faq-list summary .pl{flex:none;width:27px;height:27px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid var(--line-2);display:grid;place-items:center;font-size:15px;font-weight:500;color:var(--muted);transition:transform .25s,background .2s,color .2s}
-  .faq-list details[open] summary .pl{transform:rotate(45deg);background:var(--lime);color:#000;border-color:var(--lime)}
-  .faq-list .a{padding:0 4px 26px;font-size:15px;line-height:1.7;color:var(--muted);max-width:730px}
-  .faq-list .a b{color:var(--soft)}
-
-  /* ---------- final ---------- */
-  .final{background:radial-gradient(800px 440px at 50% 30%,rgba(170,255,0,.1),transparent 65%),var(--black);text-align:center;overflow:hidden}
-  .final .bell{width:64px;height:47px;color:var(--lime);margin-bottom:30px}
-  .final .h-big{max-width:820px;margin:0 auto}
-  .final .sub{margin:24px auto 0}
-  .final-ctas{margin-top:42px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-  .final-note{margin-top:28px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-  .final-note b{color:var(--lime)}
-
-  /* ---------- footer ---------- */
-  footer{border-top:1px solid var(--line);padding:56px 0 46px;background:var(--black)}
-  .foot{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:44px}
-  @media(max-width:800px){.foot{grid-template-columns:1fr;gap:34px}}
-  .foot .brand{font-size:18px}
-  .foot .f-desc{margin-top:16px;max-width:380px;font-size:13.5px;color:var(--muted);line-height:1.65}
-  .foot h4{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
-  .foot-col a{display:block;font-size:14px;color:var(--muted);padding:5px 0;transition:color .2s}
-  .foot-col a:hover{color:#fff}
-  .foot-base{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--dim)}
-  .foot-base .lang{flex:none}
+@media (max-width:920px){
+  .nav{display:none}
+  .hero .wrap,.quien{grid-template-columns:minmax(0,1fr)}
+  .maqueta{min-height:0;max-width:440px;margin:0 auto}
+  .pasos,.grid3,.envio{grid-template-columns:minmax(0,1fr)}
+  .dos,.cuentas{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  body{font-size:16px}
+  .wrap{padding:0 16px}
+  .top .btn{display:none}
+  .hero{padding:40px 0}
+  section{padding:56px 0}
+  .tel{width:250px;margin:0 auto}
+  .ticket{position:relative;right:auto;top:auto;width:auto;max-width:300px;margin:-28px auto 0}
+  .hero .cta .btn{width:100%}
+  .cifras{grid-template-columns:minmax(0,1fr)}
+}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><path id="campana" d="M 307.00,1.00 C 307.00,1.00 317.58,0.75 322.50,2.00 C 327.42,3.25 332.42,5.58 336.50,8.50 C 340.58,11.42 344.42,15.75 347.00,19.50 C 349.58,23.25 351.00,26.25 352.00,31.00 C 353.00,35.75 353.42,43.25 353.00,48.00 C 352.58,52.75 351.08,56.00 349.50,59.50 C 347.92,63.00 346.58,65.75 343.50,69.00 C 340.42,72.25 331.00,79.00 331.00,79.00 C 331.00,79.00 342.50,109.00 342.50,109.00 C 342.50,109.00 361.17,111.58 370.00,113.50 C 378.83,115.42 387.50,117.92 395.50,120.50 C 403.50,123.08 409.17,125.00 418.00,129.00 C 426.83,133.00 439.25,139.17 448.50,144.50 C 457.75,149.83 465.25,154.83 473.50,161.00 C 481.75,167.17 488.50,172.00 498.00,181.50 C 507.50,191.00 521.33,206.00 530.50,218.00 C 539.67,230.00 546.42,241.08 553.00,253.50 C 559.58,265.92 565.50,280.08 570.00,292.50 C 574.50,304.92 577.42,315.08 580.00,328.00 C 582.58,340.92 584.67,358.00 585.50,370.00 C 586.33,382.00 585.00,400.00 585.00,400.00 C 585.00,400.00 554.67,393.92 527.50,390.00 C 500.33,386.08 451.50,379.58 422.00,376.50 C 392.50,373.42 375.33,372.33 350.50,371.50 C 325.67,370.67 295.75,370.92 273.00,371.50 C 250.25,372.08 253.08,370.42 214.00,375.00 C 174.92,379.58 38.50,399.00 38.50,399.00 C 38.50,399.00 38.58,365.17 40.50,349.50 C 42.42,333.83 45.83,319.08 50.00,305.00 C 54.17,290.92 58.92,278.50 65.50,265.00 C 72.08,251.50 81.83,235.42 89.50,224.00 C 97.17,212.58 104.83,204.08 111.50,196.50 C 118.17,188.92 123.50,184.00 129.50,178.50 C 135.50,173.00 139.83,169.17 147.50,163.50 C 155.17,157.83 166.67,149.83 175.50,144.50 C 184.33,139.17 192.42,135.25 200.50,131.50 C 208.58,127.75 215.50,124.92 224.00,122.00 C 232.50,119.08 241.92,116.25 251.50,114.00 C 261.08,111.75 281.50,108.50 281.50,108.50 C 281.50,108.50 292.50,78.50 292.50,78.50 C 292.50,78.50 283.67,72.83 280.50,69.50 C 277.33,66.17 275.17,62.33 273.50,58.50 C 271.83,54.67 270.92,50.58 270.50,46.50 C 270.08,42.42 270.25,38.00 271.00,34.00 C 271.75,30.00 272.83,26.33 275.00,22.50 C 277.17,18.67 280.42,14.17 284.00,11.00 C 287.58,7.83 292.67,5.08 296.50,3.50 C 300.33,1.92 307.00,1.50 307.00,1.50 C 307.00,1.50 307.00,1.00 307.00,1.00 Z M 264.50,408.00 C 264.50,408.00 354.00,407.25 396.00,409.00 C 438.00,410.75 489.50,415.92 516.50,418.50 C 543.50,421.08 542.75,421.75 558.00,424.50 C 573.25,427.25 597.08,429.75 608.00,435.00 C 618.92,440.25 620.92,452.25 623.50,456.00 C 626.08,459.75 623.50,457.50 623.50,457.50 C 623.50,457.50 635.75,459.08 618.50,457.50 C 601.25,455.92 547.67,450.17 520.00,448.00 C 492.33,445.83 479.33,445.50 452.50,444.50 C 425.67,443.50 390.92,442.42 359.00,442.00 C 327.08,441.58 301.17,441.17 261.00,442.00 C 220.83,442.83 161.33,444.42 118.00,447.00 C 74.67,449.58 1.00,457.50 1.00,457.50 C 1.00,457.50 6.17,440.75 15.50,435.50 C 24.83,430.25 34.92,429.58 57.00,426.00 C 79.08,422.42 123.50,416.67 148.00,414.00 C 172.50,411.33 184.58,410.92 204.00,410.00 C 223.42,409.08 264.50,408.50 264.50,408.50 C 264.50,408.50 264.50,408.00 264.50,408.00 Z"/></defs>
+</svg>
 
-<a class="announce" href="#pricing"><span data-es="🇺🇸 <b>Oferta socio fundador EEUU</b> — setup $199 (normal $299) para los primeros 5 restaurantes →">🇺🇸 <b>Founding U.S. Partner Offer</b> — $199 setup (reg. $299) for the first 5 U.S. restaurants →</span></a>
-
-<nav class="nav">
-  <div class="container nav-in">
-    <a class="brand" href="#" aria-label="Dewan">
-      <svg class="bell" viewBox="0 0 626 459" aria-hidden="true"><path d="M 307.00,1.00 C 307.00,1.00 317.58,0.75 322.50,2.00 C 327.42,3.25 332.42,5.58 336.50,8.50 C 340.58,11.42 344.42,15.75 347.00,19.50 C 349.58,23.25 351.00,26.25 352.00,31.00 C 353.00,35.75 353.42,43.25 353.00,48.00 C 352.58,52.75 351.08,56.00 349.50,59.50 C 347.92,63.00 346.58,65.75 343.50,69.00 C 340.42,72.25 331.00,79.00 331.00,79.00 C 331.00,79.00 342.50,109.00 342.50,109.00 C 342.50,109.00 361.17,111.58 370.00,113.50 C 378.83,115.42 387.50,117.92 395.50,120.50 C 403.50,123.08 409.17,125.00 418.00,129.00 C 426.83,133.00 439.25,139.17 448.50,144.50 C 457.75,149.83 465.25,154.83 473.50,161.00 C 481.75,167.17 488.50,172.00 498.00,181.50 C 507.50,191.00 521.33,206.00 530.50,218.00 C 539.67,230.00 546.42,241.08 553.00,253.50 C 559.58,265.92 565.50,280.08 570.00,292.50 C 574.50,304.92 577.42,315.08 580.00,328.00 C 582.58,340.92 584.67,358.00 585.50,370.00 C 586.33,382.00 585.00,400.00 585.00,400.00 C 585.00,400.00 554.67,393.92 527.50,390.00 C 500.33,386.08 451.50,379.58 422.00,376.50 C 392.50,373.42 375.33,372.33 350.50,371.50 C 325.67,370.67 295.75,370.92 273.00,371.50 C 250.25,372.08 253.08,370.42 214.00,375.00 C 174.92,379.58 38.50,399.00 38.50,399.00 C 38.50,399.00 38.58,365.17 40.50,349.50 C 42.42,333.83 45.83,319.08 50.00,305.00 C 54.17,290.92 58.92,278.50 65.50,265.00 C 72.08,251.50 81.83,235.42 89.50,224.00 C 97.17,212.58 104.83,204.08 111.50,196.50 C 118.17,188.92 123.50,184.00 129.50,178.50 C 135.50,173.00 139.83,169.17 147.50,163.50 C 155.17,157.83 166.67,149.83 175.50,144.50 C 184.33,139.17 192.42,135.25 200.50,131.50 C 208.58,127.75 215.50,124.92 224.00,122.00 C 232.50,119.08 241.92,116.25 251.50,114.00 C 261.08,111.75 281.50,108.50 281.50,108.50 C 281.50,108.50 292.50,78.50 292.50,78.50 C 292.50,78.50 283.67,72.83 280.50,69.50 C 277.33,66.17 275.17,62.33 273.50,58.50 C 271.83,54.67 270.92,50.58 270.50,46.50 C 270.08,42.42 270.25,38.00 271.00,34.00 C 271.75,30.00 272.83,26.33 275.00,22.50 C 277.17,18.67 280.42,14.17 284.00,11.00 C 287.58,7.83 292.67,5.08 296.50,3.50 C 300.33,1.92 307.00,1.50 307.00,1.50 C 307.00,1.50 307.00,1.00 307.00,1.00 Z M 264.50,408.00 C 264.50,408.00 354.00,407.25 396.00,409.00 C 438.00,410.75 489.50,415.92 516.50,418.50 C 543.50,421.08 542.75,421.75 558.00,424.50 C 573.25,427.25 597.08,429.75 608.00,435.00 C 618.92,440.25 620.92,452.25 623.50,456.00 C 626.08,459.75 623.50,457.50 623.50,457.50 C 623.50,457.50 635.75,459.08 618.50,457.50 C 601.25,455.92 547.67,450.17 520.00,448.00 C 492.33,445.83 479.33,445.50 452.50,444.50 C 425.67,443.50 390.92,442.42 359.00,442.00 C 327.08,441.58 301.17,441.17 261.00,442.00 C 220.83,442.83 161.33,444.42 118.00,447.00 C 74.67,449.58 1.00,457.50 1.00,457.50 C 1.00,457.50 6.17,440.75 15.50,435.50 C 24.83,430.25 34.92,429.58 57.00,426.00 C 79.08,422.42 123.50,416.67 148.00,414.00 C 172.50,411.33 184.58,410.92 204.00,410.00 C 223.42,409.08 264.50,408.50 264.50,408.50 C 264.50,408.50 264.50,408.00 264.50,408.00 Z"/></svg>
-      DEWAN
+<header class="top">
+  <div class="wrap">
+    <a class="marca" href="./" aria-label="DEWAN">
+      <span class="logo"><svg viewBox="0 0 626 459" aria-hidden="true"><use href="#campana"/></svg></span>DEWAN
     </a>
-    <div class="nav-links">
-      <a href="#how" data-es="Cómo funciona">How it works</a>
-      <a href="#delivery" data-es="Delivery">Delivery</a>
-      <a href="#pricing" data-es="Precios">Pricing</a>
-      <a href="#faq">FAQ</a>
-    </div>
-    <div class="nav-right">
-      <div class="lang" role="group" aria-label="Language">
-        <button id="lang-en" class="on" onclick="setLang('en')">EN</button>
-        <button id="lang-es" onclick="setLang('es')">ES</button>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#como"><span class="es">Cómo funciona</span><span class="en">How it works</span></a>
+      <a href="#incluye"><span class="es">Qué incluye</span><span class="en">What's included</span></a>
+      <a href="#garantia"><span class="es">Garantía</span><span class="en">Guarantee</span></a>
+      <a href="#preguntas"><span class="es">Preguntas</span><span class="en">FAQ</span></a>
+    </nav>
+    <div class="der">
+      <div class="idioma" role="group" aria-label="Idioma / Language">
+        <a href="?lang=es" hreflang="es">ES</a><a href="?lang=en" hreflang="en">EN</a>
       </div>
-      <a class="nav-cta" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant" data-es="Reservar demo" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20para%20mi%20restaurante">Book a Demo</a>
-    </div>
-  </div>
-</nav>
-
-<!-- ============ HERO ============ -->
-<header class="hero">
-  <div class="hero-bg"></div>
-  <svg class="hero-bell" viewBox="0 0 626 459" aria-hidden="true"><use href="#bellpath"/></svg>
-  <div class="container hero-grid">
-    <div class="hero-copy">
-      <div class="eyebrow reveal"><span class="dot"></span><span data-es="Pedidos por WhatsApp · Cocina · Delivery">WhatsApp ordering · Kitchen ops · Delivery</span></div>
-      <h1 class="h-hero reveal">
-        <span data-es="Deje de">Stop</span><br>
-        <span class="outline" data-es="perder pedidos">losing orders</span><br>
-        <span data-es="en WhatsApp.">on WhatsApp.</span>
-      </h1>
-      <p class="sub reveal" data-es="Dewan convierte el WhatsApp de su restaurante en un sistema completo de pedidos: menú, pedidos estructurados, comandas en cocina, gestión de delivery y seguimiento en vivo. <b style='color:#fff'>Sin comisión sobre sus ventas.</b>">Dewan turns your restaurant's WhatsApp into a complete ordering system — menu, structured orders, kitchen tickets, delivery management and live tracking. <b style="color:#fff">No commission on your sales.</b></p>
-      <div class="hero-ctas reveal">
-        <a class="btn" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20para%20mi%20restaurante"><span data-es="Reservar demo gratis">Book a Free Demo</span> <span class="arrow">→</span></a>
-        <a class="btn ghost" href="#how" data-es="Ver cómo funciona">See how it works</a>
-      </div>
-      <div class="hero-chips reveal">
-        <span class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg><span data-es="API oficial de WhatsApp">Official WhatsApp Platform</span></span>
-        <span class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg><span data-es="0% comisión">0% commission</span></span>
-        <span class="chip"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5"/></svg><span data-es="Nosotros lo instalamos">We set everything up</span></span>
-      </div>
-    </div>
-
-    <div class="stage reveal" id="stage">
-      <div class="float-card float-track" id="fl-track">
-        <div class="t-head"><span class="live"></span><span data-es="Luis va en camino">Luis is on the way</span></div>
-        <div class="t-sub" data-es="Pedido #214 · a 6 min">Order #214 · 6 min away</div>
-        <div class="t-steps"><i></i><i></i><i></i><i class="off"></i></div>
-      </div>
-
-      <div class="phone">
-        <div class="screen">
-          <div class="wa-head">
-            <div class="wa-ava">LB</div>
-            <div class="wa-name">La Bandeja · Colombian Grill<em><i></i>online</em></div>
-          </div>
-          <div class="wa-chat" id="chat">
-            <div class="bub in" data-step="0" data-es="¡Hola! ¿Hacen delivery? Quiero pedir 🙌<time>7:38 PM</time>">Hi! Do you deliver? I'd like to order 🙌<time>7:38 PM</time></div>
-            <div class="bub out" data-step="1" data-es="¡Bienvenido a La Bandeja! 👋 Claro que sí — toque abajo para ver el menú y armar su pedido.<div class='wa-btn'>📋 Ver menú y pedir</div><time>7:38 PM</time>">Welcome to La Bandeja! 👋 Yes we do — tap below to see our menu and build your order.<div class="wa-btn">📋 View Menu &amp; Order</div><time>7:38 PM</time></div>
-            <div class="bub in" data-step="2" data-es="🧾 Mi pedido: 2× Bandeja Paisa · 3× Empanada · 2× Jugo de lulo<time>7:40 PM</time>">🧾 My order: 2× Bandeja Paisa · 3× Empanada · 2× Lulo Juice<time>7:40 PM</time></div>
-            <div class="bub out" data-step="3" data-es="Su pedido:<div class='rows'><span>2× Bandeja Paisa — $31.98</span><span>3× Empanada — $5.25</span><span>2× Jugo de lulo — $7.00</span><span>Envío (Roosevelt Ave) — $2.99</span><b class='total'>Total: $47.22</b></div><div class='wa-btn'>✅ Confirmar pedido</div><time>7:41 PM</time>">Here's your order:<div class="rows"><span>2× Bandeja Paisa — $31.98</span><span>3× Empanada — $5.25</span><span>2× Lulo Juice — $7.00</span><span>Delivery (Roosevelt Ave) — $2.99</span><b class="total">Total: $47.22</b></div><div class="wa-btn">✅ Confirm order</div><time>7:41 PM</time></div>
-            <div class="bub out" data-step="4" data-es="Pedido <b>#214</b> confirmado 🎉 La cocina ya lo tiene — le avisamos cuando salga su repartidor.<time>7:41 PM</time>">Order <b>#214</b> confirmed 🎉 The kitchen is already on it — we'll message you when your driver heads out.<time>7:41 PM</time></div>
-            <div class="bub out" data-step="5" data-es="🛵 ¡Luis va en camino con su pedido! Sígalo en vivo: <span style='color:#53BDEB'>dewan.link/t/214</span><time>7:52 PM</time>">🛵 Luis is on the way with your order! Track it live: <span style="color:#53BDEB">dewan.link/t/214</span><time>7:52 PM</time></div>
-            <div class="bub in typing" id="typing"><i></i><i></i><i></i></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="float-card float-ticket" id="fl-ticket">
-        <div class="tk-h">★ LA BANDEJA ★</div>
-        <div class="tk-s" data-es="PEDIDO #214 — DELIVERY">ORDER #214 — DELIVERY</div>
-        <div class="tk-l"></div>
-        <div class="tk-r"><span>2× BANDEJA PAISA</span><span>31.98</span></div>
-        <div class="tk-r"><span>3× EMPANADA</span><span>5.25</span></div>
-        <div class="tk-r"><span data-es="2× JUGO DE LULO">2× LULO JUICE</span><span>7.00</span></div>
-        <div class="tk-l"></div>
-        <div class="tk-r b"><span>TOTAL</span><span>$47.22</span></div>
-        <div class="tk-r"><span>MARIA G.</span><span>7:41P</span></div>
-      </div>
+      <a class="btn btn-p wa" href="https://wa.me/593939647069?text=Hola%2C%20quiero%20ver%20c%C3%B3mo%20quedar%C3%ADa%20la%20p%C3%A1gina%20de%20pedidos%20de%20mi%20restaurante" data-en="https://wa.me/593939647069?text=Hi%2C%20I%27d%20like%20to%20see%20what%20my%20restaurant%27s%20ordering%20page%20would%20look%20like"><span class="es">Agendar demo</span><span class="en">Book a demo</span></a>
     </div>
   </div>
 </header>
 
-<!-- ============ TICKER ============ -->
-<div class="ticker" aria-hidden="true">
-  <div class="tick-row" id="tickrow">
-    <span class="tick-item"><i></i><span data-es="Nuevo pedido por WhatsApp">New order via WhatsApp</span></span>
-    <span class="tick-item"><i></i><span data-es="Pedido #214 confirmado">Order #214 confirmed</span></span>
-    <span class="tick-item"><i></i><span data-es="Comanda impresa en cocina">Ticket printed in kitchen</span></span>
-    <span class="tick-item"><i></i><span data-es="Repartidor Luis asignado">Driver Luis assigned</span></span>
-    <span class="tick-item"><i></i><span data-es="Cliente siguiendo en vivo">Customer tracking live</span></span>
-    <span class="tick-item"><i></i><span data-es="Pedido #213 entregado">Order #213 delivered</span></span>
-    <span class="tick-item"><i></i><span data-es="0% de comisión cobrada">0% commission charged</span></span>
+<div class="aviso" id="aviso">
+  <div class="wrap">
+    <span class="es">Armamos un ejemplo con el menú de su restaurante.</span><span class="en">We built a sample using your restaurant's menu.</span>
+    <a id="aviso-link" href="#"><span class="es">Ver cómo se vería su página →</span><span class="en">See what your page would look like →</span></a>
   </div>
 </div>
 
-<!-- ============ NUMBERS ============ -->
-<div class="ops">
-  <div class="container" style="padding:0">
-    <div class="ops-in">
-      <div class="op reveal"><b>~<em class="count" data-to="180">180</em></b><span data-es="Pedidos gestionados por día en pico">Orders managed per day at peak</span></div>
-      <div class="op reveal"><b><em class="count" data-to="14">14</em></b><span data-es="Repartidores en nuestra flota propia">Drivers in our own fleet</span></div>
-      <div class="op reveal"><b><em class="count" data-to="40">40</em>+</b><span data-es="Restaurantes en nuestra plataforma">Restaurants on our platform</span></div>
-      <div class="op reveal"><b><em>$0</em></b><span data-es="Comisión que cobramos sobre ventas">Commission we take on sales</span></div>
-    </div>
-    <div class="ops-note" data-es="Números de la operación de delivery propia de Dewan en Ecuador — donde este sistema nació y corre todos los días.">Numbers from Dewan's own delivery operation in Ecuador — where this system was built and runs every day.</div>
-  </div>
-</div>
-
-<!-- ============ PROBLEM ============ -->
-<section id="problem">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="El problema">The problem</span></div>
-      <h2 class="h-big" data-es="Sus clientes ya piden por WhatsApp. Su “sistema” es un empleado ocupado con un teléfono.">Your customers already order on WhatsApp. Your "system" is a busy employee with a phone.</h2>
-    </div>
-    <div class="grid-3">
-      <div class="p-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 21l1.9-5.6A8.5 8.5 0 1 1 21 11.5z"/><path d="M4 4l16 16"/></svg></div><h3 data-es="Mensajes sin responder">Messages go unanswered</h3><p data-es="Un cliente escribe en hora pico. Todos están ocupados. Cuando alguien contesta, ya pidió en otro lado.">A customer writes at rush hour. Everyone's busy. By the time someone replies, they've ordered somewhere else.</p></div>
-      <div class="p-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l9 4.5-9 4.5-9-4.5L12 3z"/><path d="M3 12l9 4.5 9-4.5"/><path d="M3 16.5L12 21l9-4.5"/></svg></div><h3 data-es="Pedidos enterrados en el chat">Orders get buried in the chat</h3><p data-es="Cuarenta conversaciones después, un pedido se pierde. Eso es una venta que no salió y un cliente molesto.">Forty conversations deep, one order slips through. That's a no-show meal and an angry customer.</p></div>
-      <div class="p-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></div><h3 data-es="Direcciones mal tomadas">Addresses come out wrong</h3><p data-es="Escritas a mano, dictadas por teléfono, entregadas en la cuadra equivocada. El repartidor llama, la comida se enfría.">Typed by hand, heard over the phone, delivered to the wrong block. The driver calls, the food gets cold.</p></div>
-      <div class="p-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div><h3 data-es="Alguien re-escribe cada pedido">Someone re-types every order</h3><p data-es="Del chat a un papel y del papel a la cocina — copiado a mano, con errores incluidos.">From the chat to a paper ticket to the kitchen — copied by hand, mistakes included.</p></div>
-      <div class="p-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><h3 data-es="“¿Dónde está mi pedido?”">"Where is my order?"</h3><p data-es="La misma pregunta, treinta veces por noche, respondida una por una mientras entran pedidos nuevos.">The same question, thirty times a night, answered one by one while new orders wait.</p></div>
-      <div class="p-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div><h3 data-es="Las apps se llevan 15–30%">Third-party apps take 15–30%</h3><p data-es="Las plataformas de delivery son dueñas de su cliente, de sus datos y de una buena parte de su margen — en cada pedido.">Delivery platforms own your customer, your data and a big slice of your margin — on every single order.</p></div>
-    </div>
-    <p class="closer reveal" data-es="Nada de esto es un problema de personal. <span class='lime'>Es un problema de sistema.</span>">None of this is a staff problem. <span class="lime">It's a system problem.</span></p>
-  </div>
-</section>
-
-<div class="hairline"></div>
-
-<!-- ============ PIPELINE ============ -->
-<section id="system">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="El sistema">The system</span></div>
-      <h2 class="h-big" data-es="De “hola” a entregado. <span class='lime'>Un solo sistema.</span>">From "hi" to delivered. <span class="lime">One system.</span></h2>
-      <p class="sub" data-es="Dewan no es una herramienta de chat que contesta mensajes. Es la tubería completa sobre la que corre su restaurante — conectada de punta a punta.">Dewan isn't a chat tool that answers messages. It's the full pipeline your restaurant runs on — connected end to end.</p>
-    </div>
-    <div class="pipe">
-      <div class="pipe-node reveal"><div class="n">01 · WhatsApp</div><h3 data-es="El cliente pide en el chat que ya usa">The customer orders in the chat they already use</h3><p data-es="Sin apps que descargar ni cuentas que crear. Escribe a su número — o toca su enlace o su anuncio.">No app to download, no account to create. They message your number — or tap your link or ad.</p></div>
-      <div class="pipe-node reveal"><div class="n" data-es="02 · Pedido">02 · Order</div><h3 data-es="La conversación se vuelve un pedido estructurado">The conversation becomes a structured order</h3><p data-es="Dewan lo guía por su menú y captura platos, cantidades, dirección y total — completo, siempre.">Dewan guides them through your menu and captures items, quantities, address and total — complete, every time.</p></div>
-      <div class="pipe-node reveal"><div class="n" data-es="03 · Cocina">03 · Kitchen</div><h3 data-es="La cocina lo recibe al instante">The kitchen gets it instantly</h3><p data-es="La comanda se imprime sola en su impresora térmica. Sin re-escribir, sin gritar por encima del mostrador.">The ticket prints automatically on your thermal printer. No re-typing, no shouting across the counter.</p></div>
-      <div class="pipe-node reveal"><div class="n" data-es="04 · Delivery">04 · Delivery</div><h3 data-es="La entrega se asigna y se gestiona">The delivery is assigned and managed</h3><p data-es="Su repartidor recibe el pedido, la dirección y la tarifa de envío en su app. Un toque para asignar.">Your driver gets the order, the address and the delivery fee on their app. One tap to assign.</p></div>
-      <div class="pipe-node reveal"><div class="n" data-es="05 · Seguimiento">05 · Tracking</div><h3 data-es="El cliente se mantiene informado">The customer stays informed</h3><p data-es="Confirmaciones, estados y un enlace de seguimiento en vivo — para que nadie tenga que preguntar “¿dónde está mi pedido?”">Confirmations, status updates and a live tracking link — so nobody has to ask "where's my order?"</p></div>
-    </div>
-  </div>
-</section>
-
-<div class="hairline"></div>
-
-<!-- ============ HOW IT WORKS ============ -->
-<section id="how">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="Cómo funciona">How it works</span></div>
-      <h2 class="h-big" data-es="Seis pasos. Cero caos.">Six steps. Zero chaos.</h2>
-    </div>
-    <div class="steps">
-      <div class="step reveal"><div class="num">1</div><div><h3 data-es="El cliente manda un mensaje">Customer sends a message</h3><p data-es="A su número de WhatsApp — directo, desde su bio de Instagram o desde un anuncio. Cualquier mensaje arranca el flujo.">To your WhatsApp number — directly, from your Instagram bio, or from an ad. Any message starts the flow.</p></div></div>
-      <div class="step reveal"><div class="num">2</div><div><h3 data-es="Dewan guía el pedido">Dewan guides the order</h3><p data-es="Menú con fotos, tamaños, cantidades y extras — paso a paso dentro del chat, en inglés o español.">Menu with photos, sizes, quantities and extras — step by step inside the chat, in English or Spanish.</p></div></div>
-      <div class="step reveal"><div class="num">3</div><div><h3 data-es="Usted recibe un pedido estructurado">You receive a structured order</h3><p data-es="Platos, totales, datos del cliente y dirección de entrega — confirmado por el cliente antes de llegarle a usted.">Items, totals, customer info and delivery address — confirmed by the customer before it ever reaches you.</p></div></div>
-      <div class="step reveal"><div class="num">4</div><div><h3 data-es="La cocina lo recibe">The kitchen receives it</h3><p data-es="Impreso automáticamente en su impresora térmica, tal como se pidió. Incluye vista en pantalla.">Printed automatically on your thermal printer, exactly as ordered. On-screen view included.</p></div></div>
-      <div class="step reveal"><div class="num">5</div><div><h3 data-es="El delivery se asigna y gestiona">Delivery is assigned &amp; managed</h3><p data-es="Sus repartidores ven el pedido, la dirección y la ruta en su app. Las tarifas se calculan solas.">Your drivers see the order, the address and the route on their app. Fees are calculated automatically.</p></div></div>
-      <div class="step reveal"><div class="num">6</div><div><h3 data-es="El cliente recibe actualizaciones">The customer gets updates</h3><p data-es="Confirmado → en cocina → en camino → entregado. Con enlace de seguimiento en vivo. Todo automático.">Confirmed → in the kitchen → on the way → delivered. With a live tracking link. All automatic.</p></div></div>
-    </div>
-
-    <div class="band">
-      <div class="art reveal">
-        <div class="mock m-dark m-dash">
-          <div class="d-top"><b data-es="Pedidos — Hoy">Orders — Today</b><span data-es="43 PEDIDOS">43 ORDERS</span></div>
-          <div class="d-row"><div class="who"><b>#215 · Carlos M.</b><span data-es="Retiro · 7:55 PM">Pickup · 7:55 PM</span></div><span class="pill k" data-es="Cocina">Kitchen</span></div>
-          <div class="d-row"><div class="who"><b>#214 · Maria G.</b>Delivery · $47.22</div><span class="pill w" data-es="En camino">On the way</span></div>
-          <div class="d-row"><div class="who"><b>#213 · Ana R.</b>Delivery · $23.80</div><span class="pill d" data-es="Entregado">Delivered</span></div>
-          <div class="d-row"><div class="who"><b>#212 · Jason T.</b>Delivery · $31.15</div><span class="pill d" data-es="Entregado">Delivered</span></div>
-        </div>
-        <div class="cap" data-es="Panel del restaurante">Restaurant dashboard</div>
+<main>
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow"><span class="es">Para restaurantes en Estados Unidos</span><span class="en">For restaurants in the United States</span></p>
+      <h1><span class="es">Sus clientes le piden directo a usted. <em>Sin comisión.</em></span><span class="en">Your customers order straight from you. <em>No commission.</em></span></h1>
+      <p class="lead"><span class="es">Le armamos su propia página de pedidos con su marca y le traemos clientes con contenido y anuncios cada semana. El pago entra a su cuenta y el envío lo hace su repartidor o uno que se pide solo.</span><span class="en">We build your own ordering page with your brand, and we bring you customers with fresh content and ads every week. Payments go straight to your account, and delivery is done by your own driver or one that's booked for you automatically.</span></p>
+      <div class="cta">
+        <a class="btn btn-p wa" href="https://wa.me/593939647069?text=Hola%2C%20quiero%20ver%20c%C3%B3mo%20quedar%C3%ADa%20la%20p%C3%A1gina%20de%20pedidos%20de%20mi%20restaurante" data-en="https://wa.me/593939647069?text=Hi%2C%20I%27d%20like%20to%20see%20what%20my%20restaurant%27s%20ordering%20page%20would%20look%20like">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"/></svg>
+          <span class="es">Agendar videollamada de 20 min</span><span class="en">Book a 20-min video call</span>
+        </a>
+        <a class="btn btn-s" href="/carta/p.html?p=demo-us" target="_blank" rel="noopener">
+          <span class="es">Ver una página de ejemplo</span><span class="en">See a sample page</span>
+        </a>
       </div>
-      <div class="art reveal">
-        <div class="mock m-ticket">
-          <div class="tk-h">LA BANDEJA</div>
-          <div class="tk-s" data-es="PEDIDO #214 · 7:41 PM · DELIVERY">ORDER #214 · 7:41 PM · DELIVERY</div>
-          <div class="tk-l"></div>
-          <div class="tk-r big"><span>2× BANDEJA PAISA</span><span>31.98</span></div>
-          <div class="tk-r"><span class="ind">+ extra chicharrón</span><span></span></div>
-          <div class="tk-r big"><span>3× EMPANADA</span><span>5.25</span></div>
-          <div class="tk-r big"><span data-es="2× JUGO DE LULO">2× LULO JUICE</span><span>7.00</span></div>
-          <div class="tk-l"></div>
-          <div class="tk-r b"><span>TOTAL</span><span>$47.22</span></div>
-          <div class="tk-l"></div>
-          <div class="tk-r"><span>MARIA G. · +1 347 ··· ··21</span></div>
-          <div class="tk-r"><span>94-20 ROOSEVELT AVE, QUEENS</span></div>
-        </div>
-        <div class="cap" data-es="Comanda — impresión automática">Kitchen ticket — auto-printed</div>
+      <div class="sellos">
+        <span><svg class="ico" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="es">0 % de comisión</span><span class="en">0% commission</span></span>
+        <span><svg class="ico" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Inglés y español</span><span class="en">English &amp; Spanish</span></span>
+        <span><svg class="ico" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Mes a mes, sin contrato largo</span><span class="en">Month to month, no long contract</span></span>
       </div>
-      <div class="art reveal">
-        <div class="mock m-dark m-driver">
-          <div class="d-new"><i></i><span data-es="Nueva entrega">New delivery</span></div>
-          <div class="d-ord" data-es="Pedido #214 · $47.22">Order #214 · $47.22</div>
-          <div class="d-route" data-es="<b>Retiro:</b> La Bandeja — 37th Ave<br><b>Entrega:</b> 94-20 Roosevelt Ave, Queens"><b>Pickup:</b> La Bandeja — 37th Ave<br><b>Drop-off:</b> 94-20 Roosevelt Ave, Queens</div>
-          <div class="d-meta"><span>1.2 MI</span><span data-es="ENVÍO $2.99">FEE $2.99</span><span data-es="PAGO: EFECTIVO">PAID: CASH</span></div>
-          <div class="d-accept" data-es="Aceptar entrega">Accept delivery</div>
-        </div>
-        <div class="cap" data-es="App del repartidor">Driver app</div>
+    </div>
+    <div class="maqueta" aria-hidden="true">
+      <div class="tel">
+        <div class="cab"><b>Sabor Latino</b><small><span class="es">Retiro o envío · pida en 3 toques</span><span class="en">Pickup or delivery · order in 3 taps</span></small></div>
+        <div class="item"><div><b>Bandeja Paisa</b><small><span class="es">Frijoles, chicharrón, arepa</span><span class="en">Beans, chicharrón, arepa</span></small></div><span>$18.50</span><span class="q">+</span></div>
+        <div class="item"><div><b>Seco de Chivo</b><small><span class="es">Con arroz y maduros</span><span class="en">With rice and plantains</span></small></div><span>$16.00</span><span class="q">+</span></div>
+        <div class="item"><div><b>Ceviche de Camarón</b><small><span class="es">Con chifles</span><span class="en">With plantain chips</span></small></div><span>$15.00</span><span class="q">+</span></div>
+        <div class="item"><div><b>Horchata</b><small>16 oz</small></div><span>$3.50</span><span class="q">+</span></div>
+        <div class="pie"><div class="pagar"><span class="es">Pedir · $36.52</span><span class="en">Place order · $36.52</span></div></div>
       </div>
-      <div class="art reveal">
-        <div class="mock m-dark m-track">
-          <div class="map">
-            <svg viewBox="0 0 200 118" preserveAspectRatio="none">
-              <path d="M18 96 C 55 88, 60 44, 104 40 S 172 30, 184 22" fill="none" stroke="#AAFF00" stroke-width="2.2" stroke-dasharray="6 5" stroke-linecap="round" opacity=".9"/>
-              <circle cx="18" cy="96" r="5" fill="#111" stroke="#AAFF00" stroke-width="2"/>
-              <circle cx="104" cy="40" r="6.5" fill="#AAFF00"/>
-              <circle cx="104" cy="40" r="11" fill="none" stroke="#AAFF00" stroke-width="1.4" opacity=".45"/>
-              <path d="M184 22 l0 -10 m-5 5 h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="tr-body">
-            <b><i></i><span data-es="Luis · a 6 min">Luis · 6 min away</span></b>
-            <div class="tr-steps"><i></i><i></i><i></i><i class="off"></i></div>
-            <div class="tr-lbl"><span data-es="Confirmado">Confirmed</span><span data-es="Cocina">Kitchen</span><span data-es="En camino">On way</span><span data-es="Listo">Done</span></div>
-          </div>
-        </div>
-        <div class="cap" data-es="Seguimiento en vivo del cliente">Customer live tracking</div>
+      <div class="ticket">
+        <div class="lbl"><svg class="ico" viewBox="0 0 24 24"><path d="M3 5h18v11H3zM8 20h8M12 16v4"/></svg><span class="es">Pantalla de su cocina</span><span class="en">Your kitchen screen</span></div>
+        <div class="t1"><span>#1005</span><span class="nuevo"><span class="es">NUEVO</span><span class="en">NEW</span></span></div>
+        <ul><li>1× Bandeja Paisa</li><li>2× Horchata</li></ul>
+        <div class="tot"><span><span class="es">Pagado con tarjeta</span><span class="en">Paid by card</span></span><span>$36.52</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="hairline"></div>
-
-<!-- ============ COMPARISON ============ -->
-<section id="vs">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="La diferencia">The difference</span></div>
-      <h2 class="h-big" data-es="El mismo número de WhatsApp. Una operación completamente distinta.">Same WhatsApp number. A completely different operation.</h2>
+<section>
+  <div class="wrap">
+    <div class="titulo">
+      <p class="eyebrow"><span class="es">La cuenta de un pedido</span><span class="en">The math on one order</span></p>
+      <h2><span class="es">En un pedido de $35, ¿cuánto se le va?</span><span class="en">On a $35 order, how much do you lose?</span></h2>
+      <p class="lead"><span class="es">Las apps de delivery le cobran un porcentaje de cada pedido. En su propia página, esa plata se queda en su caja.</span><span class="en">Delivery apps take a cut of every order. On your own page, that money stays in your register.</span></p>
     </div>
-    <div class="vs reveal">
-      <div class="vs-col lose">
-        <h3><span class="tag" data-es="Antes">Before</span><span data-es="WhatsApp a mano">WhatsApp by hand</span></h3>
-        <ul>
-          <li><span class="x">✕</span><span data-es="Cada respuesta escrita a mano, pedido por pedido">Every reply typed manually, order by order</span></li>
-          <li><span class="x">✕</span><span data-es="Pedidos enterrados entre stickers y preguntas">Orders buried between stickers and questions</span></li>
-          <li><span class="x">✕</span><span data-es="Confirmaciones y totales calculados a mano">Confirmations and totals calculated by hand</span></li>
-          <li><span class="x">✕</span><span data-es="La cocina se entera a gritos o con papelitos">Kitchen finds out by shouting or paper notes</span></li>
-          <li><span class="x">✕</span><span data-es="Delivery coordinado por llamadas y notas de voz">Delivery coordinated over calls and voice notes</span></li>
-          <li><span class="x">✕</span><span data-es="Clientes pidiendo novedades una y otra vez">Customers ask for updates again and again</span></li>
-          <li><span class="x">✕</span><span data-es="Sin registro de quién pidió qué, ni cuándo">No record of who ordered what, or when</span></li>
-        </ul>
+    <div class="cuentas">
+      <div class="cuenta mala">
+        <h3><span class="es">Pedido por una app de delivery</span><span class="en">Order through a delivery app</span></h3>
+        <div class="fila"><span><span class="es">Comisión de la app</span><span class="en">App commission</span></span><b>15 – 30 %</b></div>
+        <div class="fila"><span><span class="es">El cliente es de</span><span class="en">The customer belongs to</span></span><b><span class="es">la app</span><span class="en">the app</span></b></div>
+        <p class="grande">$5.25 – $10.50</p>
+        <p style="color:var(--muted);font-size:14.5px"><span class="es">se le van en cada pedido de $35</span><span class="en">gone on every $35 order</span></p>
       </div>
-      <div class="vs-col win">
-        <h3><span class="tag" data-es="Con Dewan">With Dewan</span><span data-es="WhatsApp como sistema">WhatsApp as a system</span></h3>
-        <ul>
-          <li><span class="c">✓</span><span data-es="Pedido estructurado, guiado paso a paso">Structured ordering, guided step by step</span></li>
-          <li><span class="c">✓</span><span data-es="Cada pedido capturado, confirmado y numerado">Every order captured, confirmed and numbered</span></li>
-          <li><span class="c">✓</span><span data-es="Totales y tarifas de envío calculados solos">Totals and delivery fees calculated automatically</span></li>
-          <li><span class="c">✓</span><span data-es="La comanda se imprime al confirmarse">Kitchen ticket prints the moment it's confirmed</span></li>
-          <li><span class="c">✓</span><span data-es="Entregas asignadas y gestionadas en un solo lugar">Deliveries assigned and managed in one place</span></li>
-          <li><span class="c">✓</span><span data-es="Estados y seguimiento en vivo, automáticos">Status updates and live tracking, automatic</span></li>
-          <li><span class="c">✓</span><span data-es="Historial completo de pedidos y clientes, centralizado">Full order and customer history, centralized</span></li>
-        </ul>
+      <div class="cuenta buena">
+        <h3><span class="es">Pedido por su propia página</span><span class="en">Order through your own page</span></h3>
+        <div class="fila"><span><span class="es">Comisión</span><span class="en">Commission</span></span><b>0 %</b></div>
+        <div class="fila"><span><span class="es">El cliente es de</span><span class="en">The customer belongs to</span></span><b><span class="es">usted</span><span class="en">you</span></b></div>
+        <p class="grande">≈ $1.32</p>
+        <p style="color:var(--muted);font-size:14.5px"><span class="es">solo lo que cobra la tarjeta (2.9 % + 30¢)</span><span class="en">just the card processing fee (2.9% + 30¢)</span></p>
       </div>
     </div>
-    <p class="vs-note reveal" data-es="<b>Dewan no reemplaza a su personal.</b> Le quita la parte repetitiva — contestar, re-escribir, coordinar — para que su gente se concentre en la comida y en los clientes que tiene enfrente."><b>Dewan doesn't replace your staff.</b> It removes the repetitive part — replying, re-typing, coordinating — so your people can focus on the food and the customers in front of them.</p>
+    <p class="nota"><span class="es">Comisiones de entrega de las apps grandes en 2026: entre 15 % y 30 % según el plan. El costo del envío lo paga el cliente; con su propio repartidor, usted pone la tarifa. No tiene que dejar las apps: su página es su canal propio, sin comisión.</span><span class="en">Delivery commissions on the big apps in 2026: 15% to 30% depending on the plan. The customer pays the delivery fee; with your own driver, you set the fee. You don't have to leave the apps: your page is your own channel, commission-free.</span></p>
   </div>
 </section>
 
-<div class="hairline"></div>
-
-<!-- ============ DELIVERY ============ -->
-<section id="delivery">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span>Delivery</div>
-      <h2 class="h-big" data-es="Su delivery, a su manera.">Your delivery, your way.</h2>
-      <p class="sub" data-es="Dewan gestiona el lado de la entrega de cada pedido — sea cual sea su forma de entregar hoy.">Dewan manages the delivery side of every order — however you deliver today.</p>
+<section class="gris" id="como">
+  <div class="wrap">
+    <div class="titulo">
+      <p class="eyebrow"><span class="es">Cómo funciona</span><span class="en">How it works</span></p>
+      <h2><span class="es">Usted no tiene que aprender nada. Lo hacemos nosotros.</span><span class="en">You don't have to learn anything. We do it for you.</span></h2>
     </div>
-    <div class="d-cards">
-      <div class="d-card reveal"><span class="badge now" data-es="Disponible ya">Available now</span><div class="ico"><svg class="ic" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M5.5 17.5h6l2-6h3l1.5 6"/><path d="M13 6h3l1.5 5.5"/><path d="M8 11.5h5.5"/></svg></div><h3 data-es="Sus propios repartidores">Your own drivers</h3><p data-es="La configuración más popular. Sus repartidores reciben una app simple con el pedido, la dirección, la ruta y la tarifa. Usted asigna entregas con un toque y ve todo en tiempo real.">The most popular setup. Your drivers get a simple app with the order, address, route and delivery fee. You assign deliveries in one tap and see everything in real time.</p></div>
-      <div class="d-card reveal"><span class="badge now" data-es="Disponible ya">Available now</span><div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></div><h3 data-es="Su esquema actual">Your current setup</h3><p data-es="¿Solo retiro en local? ¿Courier local o delivery de terceros? Dewan igual estructura cada pedido, lo imprime en cocina y mantiene informado al cliente. El delivery se conecta cuando usted quiera.">Pickup only? Using a local courier or third-party delivery? Dewan still structures every order, prints it in the kitchen and keeps the customer informed. Delivery plugs in when you're ready.</p></div>
-      <div class="d-card reveal"><span class="badge soon" data-es="Próximamente">Coming soon</span><div class="ico"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 4 5.6 4 9s-1.5 6.4-4 9c-2.5-2.6-4-5.6-4-9s1.5-6.4 4-9z"/></svg></div><h3 data-es="Red de repartidores Dewan">Dewan delivery network</h3><p data-es="En Ecuador, Dewan opera su propia flota de 14 repartidores sobre este mismo sistema. Una red de repartidores para ciudades seleccionadas de EEUU está en nuestro roadmap — los socios fundadores tendrán acceso primero.">In Ecuador, Dewan runs its own 14-driver fleet on this exact system. A driver network for select U.S. cities is on our roadmap — founding partners get first access.</p></div>
+    <div class="pasos">
+      <div class="paso">
+        <h3><span class="es">Nos manda su menú</span><span class="en">Send us your menu</span></h3>
+        <p><span class="es">Una foto del menú, el link de su página actual o su Instagram. Nosotros cargamos platos, precios y fotos.</span><span class="en">A photo of your menu, your current website link or your Instagram. We load the dishes, prices and photos.</span></p>
+        <span class="cuando"><span class="es">Día 1</span><span class="en">Day 1</span></span>
+      </div>
+      <div class="paso">
+        <h3><span class="es">Su página sale al aire</span><span class="en">Your page goes live</span></h3>
+        <p><span class="es">Con su marca y en inglés y español. Conectamos el cobro con tarjeta a su cuenta, la pantalla de pedidos de su cocina y el botón «Pedir» en su ficha de Google.</span><span class="en">With your brand, in English and Spanish. We connect card payments to your account, the order screen in your kitchen, and the "Order" button on your Google profile.</span></p>
+        <span class="cuando"><span class="es">En 7 días</span><span class="en">Within 7 days</span></span>
+      </div>
+      <div class="paso">
+        <h3><span class="es">Le traemos los clientes</span><span class="en">We bring you customers</span></h3>
+        <p><span class="es">Publicaciones, reels y anuncios en Facebook e Instagram que llevan directo a su página. Usted solo cocina y despacha.</span><span class="en">Posts, reels and Facebook &amp; Instagram ads that send people straight to your page. You just cook and send the orders out.</span></p>
+        <span class="cuando"><span class="es">Cada semana</span><span class="en">Every week</span></span>
+      </div>
     </div>
   </div>
 </section>
 
-<div class="hairline"></div>
-
-<!-- ============ FEATURES / BENTO ============ -->
-<section id="features">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="Qué incluye">What's included</span></div>
-      <h2 class="h-big" data-es="Todo lo que un pedido necesita. Nada que nunca vaya a usar.">Everything an order needs. Nothing you'll never use.</h2>
+<section id="incluye">
+  <div class="wrap">
+    <div class="titulo">
+      <p class="eyebrow"><span class="es">Qué incluye</span><span class="en">What's included</span></p>
+      <h2><span class="es">Los pedidos y los clientes, en un solo lugar</span><span class="en">The orders and the customers, in one place</span></h2>
+      <p class="lead"><span class="es">El que le hace las redes no ve sus ventas, y el que le vende la página no le trae clientes. Nosotros hacemos las dos cosas.</span><span class="en">Whoever runs your social media never sees your sales, and whoever sells you an ordering page doesn't bring you customers. We do both.</span></p>
     </div>
-    <div class="bento">
-      <div class="b-cell b-2x2 reveal">
-        <div class="b-viz b-chat">
-          <div class="bub in" data-es="Hola, ¿tienen bandeja paisa? 😋">Hi, do you have bandeja paisa? 😋</div>
-          <div class="bub out" data-es="¡Claro que sí! Toque aquí para ver el menú 👇">We do! Tap here to see the menu 👇</div>
-          <div class="bub in" data-es="🧾 Mi pedido: 2× Bandeja Paisa…">🧾 My order: 2× Bandeja Paisa…</div>
-          <div class="bub out">Total: $47.22 ✅</div>
-        </div>
-        <h3 data-es="Pedidos guiados por WhatsApp">Guided WhatsApp ordering</h3>
-        <p data-es="Menú con fotos, cantidades, extras y confirmación — dentro del chat. El cliente nunca sale de WhatsApp; usted nunca persigue un pedido.">Menu with photos, quantities, extras and confirmation — inside the chat. The customer never leaves WhatsApp; you never chase an order.</p>
-      </div>
-      <div class="b-cell b-2x1 reveal">
-        <div class="b-viz"><div class="b-print">ORDER #214 · DELIVERY<br>2× BANDEJA PAISA&nbsp;&nbsp;&nbsp;31.98<br>3× EMPANADA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5.25</div></div>
-        <h3 data-es="Impresión automática en cocina">Automatic kitchen printing</h3>
-        <p data-es="Comandas térmicas al instante de confirmar. Sin re-escribir nada.">Thermal tickets the moment an order confirms. Nothing re-typed.</p>
-      </div>
-      <div class="b-cell reveal">
-        <div class="b-viz"><div class="b-zero">0%</div></div>
-        <h3 data-es="Comisión sobre ventas">Commission on sales</h3>
-        <p data-es="Tarifa plana mensual. Sus ventas son suyas.">Flat monthly price. Your sales are yours.</p>
-      </div>
-      <div class="b-cell reveal">
-        <div class="b-viz"><div class="b-flag"><span class="on">EN</span><span>ES</span></div></div>
-        <h3 data-es="Bilingüe EN / ES">English &amp; Spanish</h3>
-        <p data-es="Sus clientes piden en su idioma.">Your customers order in their language.</p>
-      </div>
-      <div class="b-cell b-2x1 reveal">
-        <div class="b-viz b-route"><svg viewBox="0 0 400 150" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;opacity:.6"><path d="M-10 130 C 80 120, 120 50, 210 44 S 360 30, 410 18" fill="none" stroke="#AAFF00" stroke-width="2" stroke-dasharray="7 6" opacity=".65"/><circle cx="210" cy="44" r="6" fill="#AAFF00"/><circle cx="210" cy="44" r="12" fill="none" stroke="#AAFF00" opacity=".4"/></svg></div>
-        <h3 data-es="Seguimiento en vivo + estados">Live tracking + status updates</h3>
-        <p data-es="El cliente ve su pedido moverse. Su personal deja de contestar “¿ya viene?”.">Customers watch their order move. Your staff stops answering "is it coming?"</p>
-      </div>
-      <div class="b-cell reveal">
-        <div class="b-viz b-shield"><svg class="ic" style="width:34px;height:34px" viewBox="0 0 24 24"><path d="M12 2l8 3.5V11c0 5-3.4 8.8-8 11-4.6-2.2-8-6-8-11V5.5L12 2z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
-        <h3 data-es="API oficial de WhatsApp">Official WhatsApp API</h3>
-        <p data-es="Con su número actual. Sin herramientas grises que terminan bloqueadas.">Keep your number. No gray-market tools that get banned.</p>
-      </div>
-      <div class="b-cell reveal">
-        <div class="b-viz b-hist"><i></i><i></i><i></i></div>
-        <h3 data-es="Historial de pedidos y clientes">Order &amp; customer history</h3>
-        <p data-es="Quién pide, qué pide y cada cuánto — centralizado.">Who orders, what and how often — centralized.</p>
-      </div>
-    </div>
-    <div class="also reveal">
-      <span class="lbl" data-es="También incluido">Also included</span>
-      <span class="chip" data-es="Cálculo de tarifa de envío">Delivery fee calculation</span>
-      <span class="chip" data-es="Captura de dirección">Address capture</span>
-      <span class="chip" data-es="App del repartidor">Driver app</span>
-      <span class="chip" data-es="Menú web para clientes">Web menu for customers</span>
-      <span class="chip" data-es="Cuentas para su equipo">Staff accounts</span>
-    </div>
-    <div class="soon-strip reveal">
-      <span class="lbl" data-es="Próximamente">Coming soon</span>
-      <span class="item"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><span data-es="Pagos con tarjeta en el chat">In-chat card payments</span></span>
-      <span class="item"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 4 5.6 4 9s-1.5 6.4-4 9c-2.5-2.6-4-5.6-4-9s1.5-6.4 4-9z"/></svg><span data-es="Red de repartidores Dewan en EEUU">Dewan driver network in select U.S. cities</span></span>
-      <span class="item"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span data-es="Panel multi-local consolidado">Consolidated multi-location dashboard</span></span>
-    </div>
-    <p class="soon-note reveal" data-es="Solo listamos lo real. Todo lo de arriba corre hoy en producción, en nuestra propia operación. Lo de “próximamente” es roadmap — marcado claramente, nunca vendido como actual.">We only list what's real. Everything above runs in production today, in our own operation. "Coming soon" is roadmap — clearly marked, never sold as current.</p>
-  </div>
-</section>
-
-<div class="hairline"></div>
-
-<!-- ============ WHATSAPP OFFICIAL ============ -->
-<section id="whatsapp">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="La plataforma">The platform</span></div>
-      <h2 class="h-big" data-es="Construido sobre la plataforma oficial de WhatsApp Business.">Built on the official WhatsApp Business Platform.</h2>
-      <p class="sub" data-es="Dewan corre sobre la infraestructura oficial de Meta para empresas — la misma que usan aerolíneas y bancos. No un teléfono en la trastienda, no una herramienta gris.">Dewan runs on Meta's official infrastructure for businesses — the same platform used by airlines and banks. Not a phone in the back office, not a gray-market tool.</p>
-    </div>
-    <div class="wa-grid">
-      <div class="wa-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18.5h4"/></svg></div><h3 data-es="Su número, mejorado">Your number, upgraded</h3><p data-es="Conserve el número de WhatsApp que sus clientes ya conocen. Su nombre de negocio aparece en cada mensaje — y en la mayoría de los casos puede seguir usando su app de WhatsApp Business junto a Dewan.">Keep the WhatsApp number your customers already know. Your business name shows on every message — and in most cases you can keep using your WhatsApp Business app alongside Dewan.</p></div>
-      <div class="wa-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2l8 3.5V11c0 5-3.4 8.8-8 11-4.6-2.2-8-6-8-11V5.5L12 2z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div><h3 data-es="Confiable y en regla">Reliable &amp; compliant</h3><p data-es="El acceso oficial a la API significa que su línea no se bloquea por automatizar, no depende de un teléfono cargado, y sigue funcionando cuando llega su viernes más fuerte.">Official API access means your line doesn't get banned for automation, doesn't depend on one phone being charged, and keeps working when your busiest Friday hits.</p></div>
-      <div class="wa-card reveal"><div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19a8 8 0 1 1 16 0"/><path d="M12 13l4-4"/></svg></div><h3 data-es="A la medida de su volumen">Sized to your volume</h3><p data-es="Cada plan incluye el uso operativo de WhatsApp que un restaurante de ese tamaño necesita — menús, confirmaciones, estados y seguimiento. ¿Más volumen? Hay un plan para eso.">Each plan includes the operational WhatsApp usage a restaurant of that size needs — menus, confirmations, status updates and tracking. Higher volume? There's a plan for that.</p></div>
-    </div>
-    <div class="usage reveal">
-      <h3><svg class="ic" viewBox="0 0 24 24"><path d="M13 2L4.5 14H11l-1 8L18.5 10H12l1-8z"/></svg><span data-es="Una nota honesta sobre lo “ilimitado”">An honest note about "unlimited"</span></h3>
-      <p data-es="En la plataforma oficial de WhatsApp, cada mensaje que un negocio envía tiene un costo real — así que quien le venda <b>“WhatsApp ilimitado”</b> está recortando esquinas o planeando sorprenderlo después. Nosotros no hacemos ninguna de las dos.">On the official WhatsApp platform, every message a business sends has a real cost — so anyone selling you <b>"unlimited WhatsApp"</b> is either cutting corners or planning to surprise you later. We do neither.</p>
-      <p data-es="Su plan incluye el uso operativo de WhatsApp que su volumen de pedidos necesita. Los restaurantes de alto volumen pueden requerir un plan superior que soporte más mensajería — y si su negocio crece, simplemente lo pasamos al plan que corresponde a su operación. Las campañas de marketing son opcionales y se facturan aparte por volumen, y usted aprueba el presupuesto antes de que salga un solo mensaje. <b>Lo que prometemos en vez de “ilimitado”: un plan a la medida de su operación y ninguna sorpresa en su factura.</b>">Your plan includes the operational WhatsApp usage needed for your order volume. High-volume restaurants may require a higher plan to support additional messaging volume — and if your business grows, we simply move you to the plan that fits your operation. Marketing campaigns are optional and billed separately by volume, and you approve any budget before a single message goes out. <b>What we promise instead of "unlimited": a plan sized to your operation, and no surprises on your bill.</b></p>
+    <div class="grid3">
+      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></svg></div>
+        <h3><span class="es">Su página de pedidos</span><span class="en">Your ordering page</span></h3>
+        <p><span class="es">Con su marca y su menú, en inglés y español. El cliente paga con tarjeta y la plata entra directo a su cuenta.</span><span class="en">Your brand and your menu, in English and Spanish. Customers pay by card and the money goes straight to your account.</span></p></div>
+      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><path d="M3 5h18v11H3zM8 20h8M12 16v4"/></svg></div>
+        <h3><span class="es">Pantalla en su cocina</span><span class="en">Kitchen order screen</span></h3>
+        <p><span class="es">Cada pedido suena y aparece completo: platos, dirección y si ya está pagado. Imprime la comanda y le muestra las ventas del día.</span><span class="en">Every order rings in complete: items, address and whether it's paid. It prints the ticket and shows you the day's sales.</span></p></div>
+      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6l-3-7H8M15 6h3l2 6"/></svg></div>
+        <h3><span class="es">Envío a su manera</span><span class="en">Delivery your way</span></h3>
+        <p><span class="es">Retiro en el local, su propio repartidor o uno que se pide solo cuando la comida está lista. El cliente sigue su pedido en vivo.</span><span class="en">Pickup, your own driver, or a driver booked automatically when the food is ready. Customers track their order live.</span></p></div>
+      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="4"/></svg></div>
+        <h3><span class="es">Contenido cada mes</span><span class="en">Content every month</span></h3>
+        <p><span class="es">12 publicaciones y 4 reels al mes con sus platos, listos y publicados en su Facebook e Instagram.</span><span class="en">12 posts and 4 reels a month featuring your dishes, created and published on your Facebook and Instagram.</span></p></div>
+      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg></div>
+        <h3><span class="es">Anuncios que llevan a su página</span><span class="en">Ads that drive to your page</span></h3>
+        <p><span class="es">Armamos y manejamos sus anuncios en Facebook e Instagram. La publicidad la paga usted directo a Meta con su tarjeta, desde $10 al día.</span><span class="en">We create and run your Facebook &amp; Instagram ads. You pay Meta directly with your own card, from $10 a day.</span></p></div>
+      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+        <h3><span class="es">Botón «Pedir» en Google</span><span class="en">"Order" button on Google</span></h3>
+        <p><span class="es">Su ficha de Google y su Instagram llevan a su página, para que el que lo busca le compre a usted.</span><span class="en">Your Google profile and Instagram link to your page, so people who look you up order from you.</span></p></div>
     </div>
   </div>
 </section>
 
-<!-- ============ STORY ============ -->
-<section class="story" id="story">
-  <div class="container">
-    <svg class="story-bell" viewBox="0 0 626 459" aria-hidden="true"><use href="#bellpath"/></svg>
-    <div class="eyebrow reveal"><span class="dot"></span><span data-es="Por qué Dewan es distinto">Why Dewan is different</span></div>
-    <h2 class="story-quote reveal" data-es="No empezamos con software.<br><span class='lime'>Empezamos con delivery.</span>">We didn't start with software.<br><span class="lime">We started with delivery.</span></h2>
-    <div class="story-body reveal">
-      <p data-es="Dewan empezó como una empresa real de delivery y logística en Ecuador. Durante años tomamos pedidos exactamente como usted lo hace hoy — un teléfono lleno de chats de WhatsApp, comandas escritas a mano, repartidores coordinados por notas de voz y clientes preguntando “¿dónde está mi pedido?” toda la noche.">Dewan started as a real delivery and logistics company in Ecuador. For years we took orders exactly the way you do today — a phone full of WhatsApp chats, hand-written tickets, drivers coordinated over voice notes, and customers asking "where's my order?" all night long.</p>
-      <p data-es="Construimos el software porque <b>vivimos los problemas que un restaurante enfrenta todos los días:</b> pedidos perdidos, conversaciones de WhatsApp escritas a mano, la cocina que no se entera, el delivery sin coordinar y el cliente sin novedades. Cada función existe porque un pedido perdido, una dirección errada o un repartidor extraviado nos enseñó que tenía que existir. Después, los restaurantes a los que les entregamos empezaron a pedirlo — y ahora lo traemos a EEUU.">We built our software because <b>we experienced the problems restaurants face every day:</b> missed orders, manual WhatsApp conversations, kitchen communication, delivery coordination and customer updates. Every feature exists because a missed order, a wrong address or a lost driver taught us it had to. Then the restaurants we deliver for started asking to use it — and now we're bringing it to the U.S.</p>
+<section class="gris">
+  <div class="wrap">
+    <div class="titulo">
+      <p class="eyebrow"><span class="es">El envío</span><span class="en">Delivery</span></p>
+      <h2><span class="es">No necesita una flota. Elija cómo entrega.</span><span class="en">You don't need a fleet. Choose how you deliver.</span></h2>
     </div>
-    <p class="story-origin reveal" data-es="Construido en Ecuador. <span class='lime'>Ahora disponible para restaurantes de EEUU.</span>">Built in Ecuador. <span class="lime">Now available for U.S. restaurants.</span></p>
-    <div class="story-stats reveal">
-      <span class="s-chip"><b>~180</b>&nbsp;<span data-es="pedidos/día en pico">orders/day at peak</span></span>
-      <span class="s-chip"><b>14</b>&nbsp;<span data-es="repartidores propios">drivers in our fleet</span></span>
-      <span class="s-chip"><b>40+</b>&nbsp;<span data-es="restaurantes atendidos">restaurants served</span></span>
-      <span class="s-chip"><b data-es="Miles">Thousands</b>&nbsp;<span data-es="de entregas completadas">of deliveries completed</span></span>
-    </div>
-    <p class="vs-note reveal" style="margin-top:36px" data-es="Esto no es un demo armado para inversionistas. <b>Es el sistema sobre el que corre nuestro propio negocio, todos los días.</b>">This isn't a demo built to raise money. <b>It's the system we run our own business on, every single day.</b></p>
-  </div>
-</section>
-
-<div class="hairline"></div>
-
-<!-- ============ DIRECT VS THIRD-PARTY ============ -->
-<section id="economics">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="Sus pedidos directos">Your direct orders</span></div>
-      <h2 class="h-big" data-es="Quédese con sus clientes. Y con más de cada venta.">Keep your customers. Keep more of every sale.</h2>
-      <p class="sub" data-es="Use DoorDash, Uber Eats y Grubhub para que lo descubran. Use Dewan para sus clientes directos.">Use DoorDash, Uber Eats and Grubhub for discovery. Use Dewan for your direct customers.</p>
-    </div>
-    <div class="econ">
-      <div class="e-card reveal">
-        <div class="e-lbl" data-es="Ventas directas al mes">Monthly direct sales</div>
-        <div class="e-num">$30,000</div>
-        <div class="e-sub" data-es="Los pedidos que sus propios clientes ya le hacen — por WhatsApp, por teléfono o en la puerta.">The orders your own customers already place with you — on WhatsApp, by phone or at the door.</div>
-      </div>
-      <div class="e-card lose reveal">
-        <div class="e-lbl" data-es="En una app de terceros al 15%">On a third-party platform at 15%</div>
-        <div class="e-num">≈ $4,500</div>
-        <div class="e-sub" data-es="Cobrado como comisión sobre esas mismas ventas, cada mes. Y el cliente es de la app, no suyo.">Taken as commission on those same sales, every month. And the customer belongs to the app, not to you.</div>
-      </div>
-      <div class="e-card win reveal">
-        <div class="e-lbl">Dewan Growth</div>
-        <div class="e-num">$179<span style="font-size:.4em;font-weight:600;letter-spacing:-.01em;color:var(--muted)" data-es="/mes">/mo</span></div>
-        <div class="e-sub" data-es="Tarifa plana. Sin comisión sobre sus ventas, sin importar cuánto venda ese mes.">A flat price. No commission on your sales, no matter how much you sell that month.</div>
-      </div>
-    </div>
-    <p class="econ-note reveal" data-es="<b style='color:var(--soft)'>Ejemplo ilustrativo.</b> Las tarifas reales de terceros varían según la plataforma, la ciudad y el plan que usted tenga con ellos. El punto no es el porcentaje exacto: es que su costo con Dewan es fijo y no crece con sus ventas."><b style="color:var(--soft)">Example only.</b> Actual third-party fees vary by platform, market and the plan you're on with them. The point isn't the exact percentage — it's that your cost with Dewan is fixed and doesn't grow with your sales.</p>
-  </div>
-</section>
-
-<div class="hairline"></div>
-
-<!-- ============ PRICING ============ -->
-<section id="pricing">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="Precios">Pricing</span></div>
-      <h2 class="h-big" data-es="Tarifa plana mensual. <span class='lime'>Sin comisión. Nunca.</span>">Flat monthly price. <span class="lime">No commission. Ever.</span></h2>
-      <p class="sub" data-es="Cada plan incluye el sistema completo — pedidos, cocina, delivery, seguimiento. Usted solo elige su volumen de pedidos.">Every plan includes the complete system — ordering, kitchen, delivery, tracking. You only choose your order volume.</p>
-    </div>
-
-    <div class="scale reveal">
-      <h3 data-es="Un precio simple que crece con su restaurante.">Simple pricing that scales with your restaurant.</h3>
-      <p data-es="Sin comisión sobre sus ventas. Su plan mensual se define por su volumen de pedidos y el uso operativo de WhatsApp que ese volumen necesita.">No commission on your sales. Your monthly plan is based on your order volume and the operational WhatsApp usage that volume needs.</p>
-
-      <div class="calc">
-        <div>
-          <label class="calc-q" for="ordr" data-es="¿Cuántos pedidos recibe al día?">How many orders do you receive per day?</label>
-          <div class="calc-val"><b id="ordr-v">30</b><span data-es="pedidos / día">orders / day</span></div>
-          <input id="ordr" type="range" min="5" max="150" step="5" value="30" aria-label="Orders per day" oninput="calcPlan(this.value)">
-        </div>
-        <div class="calc-side">
-          <div class="calc-lbl" data-es="Plan recomendado">Recommended plan</div>
-          <div class="calc-plan" id="calc-plan">Growth</div>
-          <div class="calc-price" id="calc-price">$179/month</div>
-          <a class="p-cta" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant" data-es="Reservar demo gratis" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20para%20mi%20restaurante">Book a Demo</a>
-        </div>
-      </div>
-
-      <div class="ladder">
-        <div class="rung" id="rung-starter"><div class="r-vol" data-es="20 pedidos/día">20 orders/day</div><div class="r-plan">Starter</div><div class="r-price">$99<span data-es="/mes">/mo</span></div></div>
-        <div class="rung on" id="rung-growth"><div class="r-vol" data-es="50 pedidos/día">50 orders/day</div><div class="r-plan">Growth</div><div class="r-price">$179<span data-es="/mes">/mo</span></div></div>
-        <div class="rung" id="rung-scale"><div class="r-vol" data-es="100 pedidos/día">100 orders/day</div><div class="r-plan">Scale</div><div class="r-price">$299<span data-es="/mes">/mo</span></div></div>
-        <div class="rung" id="rung-enterprise"><div class="r-vol" data-es="100+ pedidos/día">100+ orders/day</div><div class="r-plan">Enterprise</div><div class="r-price" data-es="A medida">Custom</div></div>
-      </div>
-
-      <p class="scale-foot" data-es="Mientras más crece su restaurante, más capacidad operativa puede necesitar. Simplemente lo pasamos al plan que corresponde a su volumen. <b>Nunca cobramos por pedido ni un porcentaje de sus ventas.</b>">The more your restaurant grows, the more operational capacity you may need. We simply move you to the plan that fits your volume. <b>We never charge per order or a percentage of your sales.</b></p>
-    </div>
-
-    <div class="bill-toggle reveal">
-      <div class="bill-switch" role="group" aria-label="Billing period">
-        <button id="bill-m" class="on" onclick="setBilling('m')" data-es="Mensual">Monthly</button>
-        <button id="bill-y" onclick="setBilling('y')" data-es="Anual">Annual</button>
-      </div>
-      <span class="save-badge" data-es="Anual = 2 meses gratis">Annual = 2 months free</span>
-    </div>
-
-    <div class="plans">
-      <div class="plan reveal">
-        <div class="p-name">Starter</div>
-        <div class="p-price">$<span class="pr" data-m="99" data-y="82">99</span><span>/mo</span></div>
-        <div class="p-bill bill-note"></div>
-        <div class="p-vol" data-es="Hasta ~20 pedidos al día">Up to ~20 orders a day</div>
-        <div class="p-vol-sub" data-es="600 pedidos / mes incluidos">600 orders / month included</div>
-        <ul>
-          <li><span class="c">✓</span><span data-es="El sistema completo — sin recortes">The complete system — nothing held back</span></li>
-          <li><span class="c">✓</span><span data-es="Uso operativo de WhatsApp incluido">Operational WhatsApp usage included</span></li>
-          <li><span class="c">✓</span><span data-es="Instalación hecha por nosotros">Setup done for you</span></li>
-          <li><span class="c">✓</span><span data-es="Soporte estándar">Standard support</span></li>
-        </ul>
-        <a class="p-cta" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant%20(Starter)" data-es="Reservar demo gratis" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20(plan%20Starter)">Book a Free Demo</a>
-        <div class="no-comm" data-es="Sin comisión sobre ventas">No commission on sales</div>
-      </div>
-
-      <div class="plan hot reveal">
-        <div class="flag" data-es="Más popular">Most popular</div>
-        <div class="p-name">Growth</div>
-        <div class="p-price">$<span class="pr" data-m="179" data-y="149">179</span><span>/mo</span></div>
-        <div class="p-bill bill-note"></div>
-        <div class="p-vol" data-es="Hasta ~50 pedidos al día">Up to ~50 orders a day</div>
-        <div class="p-vol-sub" data-es="1,500 pedidos / mes incluidos">1,500 orders / month included</div>
-        <ul>
-          <li><span class="c">✓</span><span data-es="El sistema completo — sin recortes">The complete system — nothing held back</span></li>
-          <li><span class="c">✓</span><span data-es="Uso operativo de WhatsApp incluido">Operational WhatsApp usage included</span></li>
-          <li><span class="c">✓</span><span data-es="Instalación hecha por nosotros">Setup done for you</span></li>
-          <li><span class="c">✓</span><span data-es="Soporte prioritario">Priority support</span></li>
-        </ul>
-        <a class="p-cta" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant%20(Growth)" data-es="Reservar demo gratis" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20(plan%20Growth)">Book a Free Demo</a>
-        <div class="no-comm" data-es="Sin comisión sobre ventas">No commission on sales</div>
-      </div>
-
-      <div class="plan reveal">
-        <div class="p-name">Scale</div>
-        <div class="p-price">$<span class="pr" data-m="299" data-y="249">299</span><span>/mo</span></div>
-        <div class="p-bill bill-note"></div>
-        <div class="p-vol" data-es="Hasta ~100 pedidos al día">Up to ~100 orders a day</div>
-        <div class="p-vol-sub" data-es="3,000 pedidos / mes incluidos">3,000 orders / month included</div>
-        <ul>
-          <li><span class="c">✓</span><span data-es="El sistema completo — sin recortes">The complete system — nothing held back</span></li>
-          <li><span class="c">✓</span><span data-es="Uso operativo de WhatsApp incluido">Operational WhatsApp usage included</span></li>
-          <li><span class="c">✓</span><span data-es="Instalación hecha por nosotros">Setup done for you</span></li>
-          <li><span class="c">✓</span><span data-es="Soporte prioritario + onboarding dedicado">Priority support + dedicated onboarding</span></li>
-        </ul>
-        <a class="p-cta" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant%20(Scale)" data-es="Reservar demo gratis" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20(plan%20Scale)">Book a Free Demo</a>
-        <div class="no-comm" data-es="Sin comisión sobre ventas">No commission on sales</div>
-      </div>
-
-      <div class="plan reveal">
-        <div class="p-name">Enterprise</div>
-        <div class="p-price" style="font-size:31px;line-height:1.25;padding-top:9px" data-es="A medida">Custom</div>
-        <div class="p-bill"></div>
-        <div class="p-vol" data-es="Más de 100 pedidos al día">100+ orders a day</div>
-        <div class="p-vol-sub" data-es="Multi-local · Alto volumen">Multi-location · High volume</div>
-        <ul>
-          <li><span class="c">✓</span><span data-es="Todo lo de Scale">Everything in Scale</span></li>
-          <li><span class="c">✓</span><span data-es="Múltiples locales">Multiple locations</span></li>
-          <li><span class="c">✓</span><span data-es="Uso de WhatsApp de alto volumen">High-volume WhatsApp usage</span></li>
-          <li><span class="c">✓</span><span data-es="Onboarding y acuerdos a medida">Custom onboarding &amp; SLAs</span></li>
-        </ul>
-        <a class="p-cta" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20to%20talk%20about%20Dewan%20Enterprise%20for%20my%20restaurants" data-es="Hablemos" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20hablar%20de%20Dewan%20Enterprise%20para%20mis%20restaurantes">Talk to us</a>
-        <div class="no-comm" data-es="Sin comisión sobre ventas">No commission on sales</div>
-      </div>
-    </div>
-
-    <div class="setup">
-      <div class="setup-card reveal">
-        <h3 data-es="Instalación única: <span>$299</span> — nosotros lo construimos todo">One-time setup: <span>$299</span> — we build everything for you</h3>
-        <p data-es="Usted no configura nada. Nuestro equipo implementa su sistema completo y se lo entrega funcionando — con su personal capacitado y pedidos de prueba reales completados.">You don't configure anything. Our team implements your entire system and hands it over working — with your staff trained and real test orders completed.</p>
-        <ul class="setup-list">
-          <li><span class="c">✓</span><span data-es="Conexión de WhatsApp y su número">WhatsApp connection &amp; number setup</span></li>
-          <li><span class="c">✓</span><span data-es="Su menú completo, cargado y organizado">Your full menu, loaded and organized</span></li>
-          <li><span class="c">✓</span><span data-es="Flujo de pedidos configurado a su medida">Order flow configured for your restaurant</span></li>
-          <li><span class="c">✓</span><span data-es="Impresión en cocina instalada y probada">Kitchen printing installed &amp; tested</span></li>
-          <li><span class="c">✓</span><span data-es="Zonas, tarifas y cuentas de repartidores">Delivery zones, fees &amp; driver accounts</span></li>
-          <li><span class="c">✓</span><span data-es="Capacitación de su personal">Staff training session</span></li>
-          <li><span class="c">✓</span><span data-es="Pedidos de prueba de punta a punta">End-to-end test orders</span></li>
-          <li><span class="c">✓</span><span data-es="Día de lanzamiento, supervisado en vivo">Launch day, supervised live</span></li>
-        </ul>
-      </div>
-      <div class="founding reveal">
-        <svg class="f-bell" viewBox="0 0 626 459" aria-hidden="true"><use href="#bellpath"/></svg>
-        <div class="f-tag"><i></i><span data-es="Oferta socio fundador EEUU">Founding U.S. Partner Offer</span></div>
-        <h3 data-es="Setup de $199 para los primeros 5 restaurantes de EEUU.">$199 setup for the first 5 U.S. restaurants.</h3>
-        <p data-es="Los socios fundadores además tienen línea directa con el equipo fundador — la gente que construyó el sistema y lo opera a diario.">Founding partners also get a direct line to the founding team — the people who built the system and run it daily.</p>
-        <a href="https://wa.me/593939647069?text=Hi!%20I%20want%20one%20of%20the%205%20founding%20partner%20spots%20for%20my%20restaurant" data-es="Reclamar un cupo fundador →" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20uno%20de%20los%205%20cupos%20de%20socio%20fundador%20para%20mi%20restaurante">Claim a founding spot →</a>
-      </div>
-    </div>
-
-    <div class="usage-mini reveal" data-es="<b>Sobre el uso de WhatsApp:</b> los planes incluyen el uso operativo de WhatsApp adecuado para el volumen de pedidos de cada plan — menús, confirmaciones, estados y seguimiento. Un volumen de mensajería muy alto o las campañas de marketing pueden requerir costos adicionales de mensajería o un plan superior. Su plan está diseñado alrededor del volumen de pedidos de su restaurante: si su negocio crece de forma significativa, simplemente lo pasamos al plan que corresponde a su operación, con aviso y prorrateado. Sin cobros por pedido. Sin comisión sobre sus ventas."><b>About WhatsApp usage:</b> plans include operational WhatsApp usage appropriate for the order volume of each plan — menus, confirmations, status updates and tracking. High-volume messaging or marketing campaigns may require additional messaging costs or a higher plan. Your plan is designed around your restaurant's order volume: if your business grows significantly, we simply move you to the plan that fits your operation — with notice, prorated. No per-order fees. No commission on your sales.</div>
-
-    <div class="fit reveal">
-      <h3 data-es="Veamos si Dewan encaja con su restaurante.">Let's see if Dewan fits your restaurant.</h3>
-      <a class="btn" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20para%20mi%20restaurante"><span data-es="Reservar demo gratis">Book a Free Demo</span> <span class="arrow">→</span></a>
+    <div class="envio">
+      <div class="op"><svg class="ico icono" viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5M4 9v11h16V9M9 20v-6h6v6M3 9h18"/></svg>
+        <h3><span class="es">Retiro en el local</span><span class="en">Pickup</span></h3>
+        <p><span class="es">El cliente paga en la página o al retirar. Funciona desde el primer día.</span><span class="en">Customers pay online or at pickup. Works from day one.</span></p></div>
+      <div class="op"><svg class="ico icono" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/></svg>
+        <h3><span class="es">Su propio repartidor</span><span class="en">Your own driver</span></h3>
+        <p><span class="es">Usted pone la tarifa por distancia y hasta dónde llega. Puede aceptar efectivo al entregar.</span><span class="en">You set the fee by distance and how far you go. You can accept cash on delivery.</span></p></div>
+      <div class="op"><svg class="ico icono" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6l-3-7H8M15 6h3l2 6"/></svg>
+        <h3><span class="es">Repartidor pedido automático</span><span class="en">Auto-booked driver</span></h3>
+        <p><span class="es">Cuando la comida está lista, se pide solo un repartidor de las apps grandes por una tarifa fija, sin porcentaje. El cliente ve el seguimiento.</span><span class="en">When the food is ready, a driver from the major apps is booked for a flat fee, no percentage. The customer gets live tracking.</span></p>
+        <ul><li><span class="es">En ciudades con cobertura: lo revisamos con su dirección antes de empezar.</span><span class="en">Where coverage exists: we check your address before you start.</span></li></ul></div>
     </div>
   </div>
 </section>
 
-<div class="hairline"></div>
-
-<!-- ============ GUARANTEE ============ -->
-<section id="guarantee">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span><span data-es="Garantía">Guarantee</span></div>
-      <h2 class="h-big" data-es="Dos promesas, por escrito.">Two promises, in writing.</h2>
+<section id="garantia">
+  <div class="wrap dos">
+    <div class="garantia">
+      <p class="eyebrow"><span class="es">Garantía</span><span class="en">Guarantee</span></p>
+      <h3><span class="es">50 pedidos directos en 60 días, o el tercer mes es gratis.</span><span class="en">50 direct orders in 60 days, or your third month is free.</span></h3>
+      <p><span class="es">Si en sus primeros 60 días no le entran al menos 50 pedidos por su propia página, el tercer mes no lo paga.</span><span class="en">If you don't get at least 50 orders through your own page in your first 60 days, you don't pay for month three.</span></p>
+      <small><span class="es">Condiciones: anuncios encendidos con al menos $10 al día, fotos nuevas de sus platos cada semana y el link de pedidos en su Google y en sus redes.</span><span class="en">Conditions: ads running at $10/day or more, fresh photos of your dishes every week, and your ordering link on Google and your social profiles.</span></small>
     </div>
-    <div class="g-cards">
-      <div class="g-card reveal">
-        <div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 15c-2 0-4.5-.5-6-2 0-6 3-9.5 6-11 3 1.5 6 5 6 11-1.5 1.5-4 2-6 2z"/><circle cx="12" cy="8" r="1.8"/><path d="M7.5 14.5L5 20l3.5-1.5L10 21"/><path d="M16.5 14.5L19 20l-3.5-1.5L14 21"/></svg></div>
-        <h3 data-es="Garantía de lanzamiento">The Launch Guarantee</h3>
-        <p data-es="Si no logramos dejar su restaurante operando y tomando pedidos reales por WhatsApp, <b>le devolvemos el costo de instalación. Completo.</b> Nosotros hacemos la implementación — así que nosotros asumimos el riesgo de la implementación.">If we can't get your restaurant live and taking real WhatsApp orders, <b>we refund your setup fee. All of it.</b> We do the implementation — so we take the implementation risk.</p>
-      </div>
-      <div class="g-card reveal">
-        <div class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M9 15.5l2 2 4-4"/></svg></div>
-        <h3 data-es="Garantía de 15 días">The 15-Day Guarantee</h3>
-        <p data-es="¿No le convence después del lanzamiento? Cancele en sus primeros 15 días y <b>le devolvemos su primer mes.</b> Sin contratos, sin multas por cancelar — y puede cancelar cuando quiera, también después.">Not convinced after launch? Cancel within your first 15 days and <b>we refund your first month.</b> No contracts, no cancellation fees, cancel anytime after that too.</p>
-      </div>
-    </div>
-    <p class="g-fine reveal" data-es="La letra pequeña, de frente: después de un lanzamiento exitoso el costo de instalación no es reembolsable — cubre trabajo ya entregado (configuración, carga del menú, impresoras, capacitación). Preferimos decírselo aquí y no en la página 9 de un contrato.">The fine print, upfront: after a successful launch the setup fee is non-refundable — it covers real work already delivered (configuration, menu build, printer setup, training). We'd rather tell you that here than in page 9 of a contract.</p>
-  </div>
-</section>
-
-<div class="hairline"></div>
-
-<!-- ============ FAQ ============ -->
-<section id="faq">
-  <div class="container">
-    <div class="section-head reveal">
-      <div class="eyebrow"><span class="dot"></span>FAQ</div>
-      <h2 class="h-big" data-es="Las preguntas que los dueños de restaurantes sí hacen.">Questions restaurant owners actually ask.</h2>
-    </div>
-    <div class="faq-list reveal">
-      <details><summary><span data-es="¿Tengo que cambiar mi número de WhatsApp?">Do I need to change my WhatsApp number?</span><span class="pl">+</span></summary><div class="a" data-es="No. Usted conserva el número que sus clientes ya conocen. Lo migramos a la plataforma oficial de WhatsApp Business — y en la mayoría de los casos puede seguir usando su app de WhatsApp Business junto a Dewan durante la transición.">No. You keep the number your customers already know. We upgrade it to the official WhatsApp Business Platform — and in most cases you can keep using your WhatsApp Business app alongside Dewan during the transition.</div></details>
-      <details><summary><span data-es="¿Funciona con WhatsApp Business?">Does it work with WhatsApp Business?</span><span class="pl">+</span></summary><div class="a" data-es="Sí. Dewan corre sobre la plataforma oficial de WhatsApp Business — la versión profesional de WhatsApp Business operada por Meta. El mismo número y los mismos chats que sus clientes conocen, con un sistema completo detrás.">Yes. Dewan runs on the official WhatsApp Business Platform — Meta's professional-grade version of WhatsApp Business. Same number, same chats your customers know, with a full system behind it.</div></details>
-      <details><summary><span data-es="¿WhatsApp está incluido en el precio?">Is WhatsApp included in the price?</span><span class="pl">+</span></summary><div class="a" data-es="Sí. El acceso a la plataforma y la mensajería operativa para el volumen de pedidos de su plan — menús, confirmaciones, estados, seguimiento — están incluidos en su precio mensual.">Yes. Platform access and the operational messaging for your plan's order volume — menus, confirmations, status updates, tracking — are included in your monthly price.</div></details>
-      <details><summary><span data-es="¿Los mensajes de WhatsApp son ilimitados?">Are WhatsApp messages unlimited?</span><span class="pl">+</span></summary><div class="a" data-es="Dewan usa la plataforma oficial de WhatsApp Business. Cada plan está diseñado alrededor del volumen de mensajería que requiere su volumen de pedidos. Los restaurantes con más necesidad de mensajería pueden pasar a un plan superior. Las campañas de marketing y los volúmenes de mensajería inusualmente altos pueden implicar costos adicionales de WhatsApp. No va a encontrar la palabra “ilimitado” en esta página: en la plataforma oficial cada mensaje tiene un costo real, y fingir lo contrario es como otros proveedores lo sorprenden después.">Dewan uses the official WhatsApp Business Platform. Each plan is designed around the messaging volume required for its order volume. Restaurants with higher messaging needs can move to a higher plan. Marketing campaigns and unusually high messaging volumes may involve additional WhatsApp costs. You won't find the word "unlimited" anywhere on this page: on the official platform every message has a real cost, and pretending otherwise is how other vendors surprise you later.</div></details>
-      <details><summary><span data-es="¿Cobran comisión sobre mis ventas?">Do you charge commission on my sales?</span><span class="pl">+</span></summary><div class="a" data-es="No. Nunca. Paga una tarifa plana mensual. Sea un pedido de $15 o de $500, su venta es 100% suya.">No. Never. You pay a flat monthly price. Whether an order is $15 or $500, your sale is 100% yours.</div></details>
-      <details><summary><span data-es="¿Puedo usar mis propios repartidores?">Can I use my own delivery drivers?</span><span class="pl">+</span></summary><div class="a" data-es="Sí — es la configuración por defecto. Sus repartidores reciben una app simple con el pedido, la dirección, la ruta y la tarifa, y usted asigna entregas con un toque.">Yes — that's the default setup. Your drivers get a simple app with the order, address, route and delivery fee, and you assign deliveries in one tap.</div></details>
-      <details><summary><span data-es="¿Puedo seguir usando DoorDash / Uber Eats / Grubhub?">Can I keep using DoorDash / Uber Eats / Grubhub?</span><span class="pl">+</span></summary><div class="a" data-es="Por supuesto. Dewan opera su <b>canal directo</b> — donde usted se queda con el 100% de la venta y es dueño de la relación con el cliente. La mayoría de los restaurantes mantiene las apps para que los descubran, mientras mueve a sus clientes frecuentes a WhatsApp.">Of course. Dewan runs your <b>direct channel</b> — the one where you keep 100% of the sale and own the customer relationship. Most restaurants keep third-party apps for discovery while moving their regulars to WhatsApp.</div></details>
-      <details><summary><span data-es="¿Los pedidos se imprimen solos en la cocina?">Can orders print automatically in the kitchen?</span><span class="pl">+</span></summary><div class="a" data-es="Sí. En el momento en que un pedido se confirma, se imprime en su impresora térmica — tal como el cliente lo pidió, sin re-escribir nada. Incluye también vista en pantalla.">Yes. The moment an order is confirmed, it prints on your thermal printer — exactly as the customer ordered it, no re-typing. An on-screen view is included too.</div></details>
-      <details><summary><span data-es="¿Los clientes pueden seguir su pedido?">Can customers track their orders?</span><span class="pl">+</span></summary><div class="a" data-es="Sí. Los pedidos de delivery reciben un enlace de seguimiento en vivo, y los clientes reciben estados automáticos — lo que significa muchas menos preguntas de “¿dónde está mi pedido?” para su personal.">Yes. Delivery orders get a live tracking link, and customers receive automatic status updates — which means far fewer "where's my order?" messages for your staff.</div></details>
-      <details><summary><span data-es="¿Ustedes configuran todo?">Do you set everything up?</span><span class="pl">+</span></summary><div class="a" data-es="Sí, todo: conexión de WhatsApp, menú, flujo de pedidos, impresión en cocina, configuración de delivery, cuentas de usuarios, capacitación del personal y pedidos de prueba supervisados. La instalación es un servicio, no una lista de tareas que le entregamos.">Yes, all of it: WhatsApp connection, menu, order flow, kitchen printing, delivery settings, user accounts, staff training and supervised test orders. Setup is a service, not a to-do list we hand you.</div></details>
-      <details><summary><span data-es="¿Cuánto tarda la implementación?">How long does implementation take?</span><span class="pl">+</span></summary><div class="a" data-es="Normalmente de 1 a 2 semanas desde el arranque hasta su primer pedido en vivo — depende sobre todo del tamaño del menú y de qué tan rápido recibamos su información.">Typically 1–2 weeks from kickoff to your first live order — depending mostly on menu size and how quickly we get your information.</div></details>
-      <details><summary><span data-es="¿Puedo tener varios locales?">Can I have multiple locations?</span><span class="pl">+</span></summary><div class="a" data-es="Sí. Cada local corre con su propia línea de WhatsApp, su menú y su configuración de delivery. Para múltiples locales, hablemos de precios Enterprise — y un panel consolidado multi-local está en nuestro roadmap.">Yes. Each location runs its own WhatsApp line, menu and delivery setup. For multiple locations, talk to us about Enterprise pricing — and a consolidated multi-location dashboard is on our roadmap.</div></details>
-      <details><summary><span data-es="¿Qué pasa si mi restaurante crece?">What happens if my restaurant grows?</span><span class="pl">+</span></summary><div class="a" data-es="Simplemente lo pasamos al plan que corresponde a su nuevo volumen de pedidos. Si supera su plan de forma consistente dos meses seguidos, se lo avisamos y hacemos el cambio prorrateado. <b>No hay cobros por pedido ni comisión sobre sus ventas</b>, así que crecer nunca se castiga: solo lo mueve un escalón en la tabla de planes.">We simply move you to the plan that fits your new order volume. If you're consistently above your plan for two months in a row, we let you know and make the change prorated. <b>There are no per-order charges and no commission on your sales</b>, so growing is never penalized — it just moves you one step up the plan ladder.</div></details>
-      <details><summary><span data-es="¿Qué pasa con los costos de WhatsApp?">What happens with WhatsApp costs?</span><span class="pl">+</span></summary><div class="a" data-es="Meta cobra a los negocios por mensaje en la plataforma oficial; su plan ya cubre el uso operativo normal para su volumen de pedidos. Si Meta cambia sus tarifas de forma significativa, o su uso está muy fuera de la operación típica de un restaurante, hablamos con usted <b>antes</b> de que algo cambie en su factura. Sin sorpresas — ese es el trato.">Meta charges businesses per message on the official platform; your plan already covers normal operational usage for your order volume. If Meta significantly changes its fees, or your usage is far outside typical restaurant operation, we'll talk with you <b>before</b> anything changes on your bill. No surprises — that's the deal.</div></details>
-      <details><summary><span data-es="¿Puedo subir o bajar de plan?">Can I upgrade or downgrade my plan?</span><span class="pl">+</span></summary><div class="a" data-es="Cuando quiera, prorrateado, sin multas. La mayoría de los restaurantes arranca en Starter o Growth y sube a medida que crecen sus pedidos directos.">Anytime, prorated, no penalties. Most restaurants start on Starter or Growth and move up as their direct orders grow.</div></details>
+    <div class="fundadores">
+      <p class="eyebrow"><span class="es">Restaurantes fundadores</span><span class="en">Founding restaurants</span></p>
+      <h3><span class="es">5 cupos para empezar</span><span class="en">5 spots to start</span></h3>
+      <p><span class="es">La instalación la hacemos nosotros con usted, por videollamada, y por eso tomamos pocos restaurantes a la vez. Los fundadores no pagan instalación y mantienen su precio mientras sigan con nosotros, a cambio de dejarnos mostrar sus resultados.</span><span class="en">We set everything up with you over video call, so we only take a few restaurants at a time. Founding restaurants pay no setup fee and keep their price for as long as they stay, in exchange for letting us share their results.</span></p>
+      <div class="cupos" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+      <a class="btn btn-p wa" href="https://wa.me/593939647069?text=Hola%2C%20quiero%20uno%20de%20los%205%20cupos%20de%20restaurante%20fundador" data-en="https://wa.me/593939647069?text=Hi%2C%20I%27d%20like%20one%20of%20the%205%20founding%20restaurant%20spots"><span class="es">Quiero un cupo</span><span class="en">I want a spot</span></a>
     </div>
   </div>
 </section>
 
-<div class="hairline"></div>
-
-<!-- ============ WHY DEWAN ============ -->
-<section id="why" style="padding:88px 0">
-  <div class="container">
-    <div class="section-head reveal" style="margin-bottom:38px">
-      <h2 class="h-big" style="font-size:clamp(28px,3.6vw,44px)" data-es="Por qué los restaurantes eligen Dewan">Why restaurants choose Dewan</h2>
+<section class="gris">
+  <div class="wrap quien">
+    <div>
+      <p class="eyebrow"><span class="es">Quiénes somos</span><span class="en">Who we are</span></p>
+      <h2 style="font-size:clamp(28px,3.6vw,40px);font-weight:800;margin:10px 0 16px"><span class="es">Una empresa de delivery que hace software, no al revés</span><span class="en">A delivery company that builds software, not the other way around</span></h2>
+      <p class="lead"><span class="es">DEWAN nació en Ecuador repartiendo pedidos de restaurantes todos los días. Lo que construimos para nuestros locales es lo que le instalamos a usted. Trabajamos 100 % en línea y usted habla directo con David, el fundador.</span><span class="en">DEWAN started in Ecuador delivering restaurant orders every day. What we built for our own restaurants is what we set up for you. We work 100% online, and you deal directly with David, the founder.</span></p>
     </div>
-    <div class="why">
-      <div class="why-item reveal"><span class="c">✓</span><b data-es="Sin comisión sobre sus ventas">No commission on sales</b></div>
-      <div class="why-item reveal"><span class="c">✓</span><b data-es="Nosotros configuramos todo por usted">We configure everything for you</b></div>
-      <div class="why-item reveal"><span class="c">✓</span><b data-es="Construido desde una operación real de delivery">Built from real delivery experience</b></div>
-      <div class="why-item reveal"><span class="c">✓</span><b data-es="Diseñado para crecer con su volumen de pedidos">Designed to scale with your order volume</b></div>
+    <div class="cifras">
+      <div class="cifra"><b>3,000+</b><span class="es">pedidos directos de un solo restaurante con el que trabajamos</span><span class="en">direct orders for a single restaurant we work with</span></div>
+      <div class="cifra"><b>0 %</b><span class="es">de comisión sobre sus ventas, siempre</span><span class="en">commission on your sales, ever</span></div>
+      <div class="cifra"><b><span class="es">7 días</span><span class="en">7 days</span></b><span class="es">de su menú a su página funcionando</span><span class="en">from your menu to a live page</span></div>
+      <div class="cifra"><b>ES / EN</b><span class="es">su página y la atención en los dos idiomas</span><span class="en">your page and our support in both languages</span></div>
     </div>
   </div>
 </section>
 
-<!-- ============ FINAL CTA ============ -->
-<section class="final" id="demo">
-  <div class="container">
-    <svg class="bell reveal" viewBox="0 0 626 459" aria-hidden="true"><use href="#bellpath"/></svg>
-    <h2 class="h-big reveal" data-es="Véalo funcionando con <span class='lime'>su propio menú.</span>">See it working with <span class="lime">your own menu.</span></h2>
-    <p class="sub reveal" style="text-align:center" data-es="Reserve una demo gratis de 20 minutos. Le mostramos el flujo completo — del mensaje de WhatsApp a la comanda en cocina al seguimiento en vivo — y respondemos todo. Sin presión, sin compromiso.">Book a free 20-minute demo. We'll walk you through the whole flow — from WhatsApp message to kitchen ticket to live tracking — and answer everything. No pressure, no commitment.</p>
-    <div class="final-ctas reveal">
-      <a class="btn mega" href="https://wa.me/593939647069?text=Hi!%20I%27d%20like%20a%20free%20demo%20of%20Dewan%20for%20my%20restaurant" data-es-href="https://wa.me/593939647069?text=Hola!%20Quiero%20una%20demo%20gratis%20de%20Dewan%20para%20mi%20restaurante"><span data-es="Reservar demo gratis">Book a Free Demo</span> <span class="arrow">→</span></a>
-      <a class="btn ghost mega" href="#how" data-es="Ver cómo funciona">See how it works</a>
+<section id="preguntas">
+  <div class="wrap">
+    <div class="titulo">
+      <p class="eyebrow"><span class="es">Preguntas frecuentes</span><span class="en">FAQ</span></p>
+      <h2><span class="es">Lo que más nos preguntan</span><span class="en">What owners ask us most</span></h2>
     </div>
-    <div class="final-note reveal" data-es="🇺🇸 Setup de socio fundador (<b>$199</b>) — disponible para los primeros 5 restaurantes de EEUU">🇺🇸 Founding partner setup (<b>$199</b>) — available for the first 5 U.S. restaurants</div>
+    <div class="faq">
+      <details><summary><span class="es">¿Tengo que dejar las apps de delivery?</span><span class="en">Do I have to leave the delivery apps?</span></summary>
+        <div class="r"><span class="es">No. Puede seguir en ellas. Su página es su canal propio: los clientes que ya lo conocen le piden ahí, sin comisión, y los anuncios llevan clientes nuevos directo a usted.</span><span class="en">No. You can stay on them. Your page is your own channel: customers who already know you order there with no commission, and the ads send new customers straight to you.</span></div></details>
+      <details><summary><span class="es">¿Cuánto cuesta?</span><span class="en">How much does it cost?</span></summary>
+        <div class="r"><span class="es">Una mensualidad fija, sin porcentaje sobre sus ventas. El precio depende de su volumen y de lo que necesite. En la videollamada de 20 minutos le mostramos su página ya armada con su menú y le damos el precio exacto por escrito.</span><span class="en">A flat monthly fee, never a percentage of your sales. The price depends on your volume and what you need. On the 20-minute video call we show you your page already built with your menu and give you the exact price in writing.</span></div></details>
+      <details><summary><span class="es">¿Quién recibe la plata de los pedidos?</span><span class="en">Who receives the money from orders?</span></summary>
+        <div class="r"><span class="es">Usted. Los pagos con tarjeta entran directo a su propia cuenta de cobro (Stripe), a su nombre. Nosotros nunca tocamos la plata de sus pedidos.</span><span class="en">You do. Card payments go straight into your own payment account (Stripe), in your name. We never touch the money from your orders.</span></div></details>
+      <details><summary><span class="es">¿Hay contrato?</span><span class="en">Is there a contract?</span></summary>
+        <div class="r"><span class="es">Es mes a mes. Si quiere cancelar, nos avisa con 30 días.</span><span class="en">It's month to month. If you want to cancel, just give us 30 days' notice.</span></div></details>
+      <details><summary><span class="es">No sé de tecnología. ¿Igual puedo?</span><span class="en">I'm not a tech person. Can I still do this?</span></summary>
+        <div class="r"><span class="es">Sí. Nosotros cargamos todo y lo dejamos funcionando. A usted y a su personal les enseñamos a usar la pantalla de pedidos en 15 minutos.</span><span class="en">Yes. We load everything and hand it over working. We show you and your staff how to use the order screen in 15 minutes.</span></div></details>
+      <details><summary><span class="es">¿Funciona en mi ciudad?</span><span class="en">Does it work in my city?</span></summary>
+        <div class="r"><span class="es">El retiro en el local y su propio repartidor funcionan en cualquier ciudad. El repartidor pedido automático depende de la cobertura en su zona: lo revisamos con su dirección antes de empezar.</span><span class="en">Pickup and your own driver work in any city. Auto-booked drivers depend on coverage in your area: we check it with your address before you start.</span></div></details>
+      <details><summary><span class="es">¿En qué idioma me atienden?</span><span class="en">What language do you support me in?</span></summary>
+        <div class="r"><span class="es">En español o en inglés, como prefiera. Su página también sale en los dos idiomas.</span><span class="en">Spanish or English, whichever you prefer. Your page also works in both languages.</span></div></details>
+    </div>
   </div>
 </section>
+
+<section class="cierre">
+  <div class="wrap">
+    <h2><span class="es">¿Vemos cómo quedaría la suya?</span><span class="en">Want to see what yours would look like?</span></h2>
+    <p><span class="es">En 20 minutos le mostramos su página armada con su menú, hace un pedido de prueba y lo ve llegar a la pantalla de su cocina.</span><span class="en">In 20 minutes we show you your page built with your menu, you place a test order, and you watch it arrive on your kitchen screen.</span></p>
+    <div class="cta">
+      <a class="btn btn-p wa" href="https://wa.me/593939647069?text=Hola%2C%20quiero%20ver%20c%C3%B3mo%20quedar%C3%ADa%20la%20p%C3%A1gina%20de%20pedidos%20de%20mi%20restaurante" data-en="https://wa.me/593939647069?text=Hi%2C%20I%27d%20like%20to%20see%20what%20my%20restaurant%27s%20ordering%20page%20would%20look%20like"><span class="es">Agendar videollamada</span><span class="en">Book a video call</span></a>
+      <a class="btn btn-s" href="/carta/p.html?p=demo-us" target="_blank" rel="noopener"><span class="es">Ver una página de ejemplo</span><span class="en">See a sample page</span></a>
+    </div>
+  </div>
+</section>
+</main>
 
 <footer>
-  <div class="container">
-    <div class="foot">
-      <div>
-        <a class="brand" href="#" aria-label="Dewan"><svg class="bell" style="width:32px;height:24px;color:var(--lime)" viewBox="0 0 626 459"><use href="#bellpath"/></svg>DEWAN</a>
-        <p class="f-desc" data-es="Pedidos por WhatsApp, operación de restaurante y gestión de delivery — construido por una empresa real de delivery, para restaurantes que viven en WhatsApp.">WhatsApp ordering, restaurant operations and delivery management — built by a real delivery company, for restaurants that live on WhatsApp.</p>
-      </div>
-      <div class="foot-col">
-        <h4 data-es="Producto">Product</h4>
-        <a href="#how" data-es="Cómo funciona">How it works</a>
-        <a href="#features" data-es="Qué incluye">What's included</a>
-        <a href="#pricing" data-es="Precios">Pricing</a>
-        <a href="#faq">FAQ</a>
-      </div>
-      <div class="foot-col">
-        <h4 data-es="Empresa">Company</h4>
-        <a href="#story" data-es="Nuestra historia">Our story</a>
-        <a href="https://dewansas.com" target="_blank" rel="noopener">dewansas.com</a>
-        <a href="https://dewansas.com/terms.html" data-es="Términos">Terms</a>
-        <a href="https://dewansas.com/privacy.html" data-es="Privacidad">Privacy</a>
-      </div>
-    </div>
-    <div class="foot-base">
-      <span>© <span id="yr">2026</span> Dewan · dewansas.com</span>
-      <div class="lang" role="group" aria-label="Language">
-        <button class="lf-en" onclick="setLang('en')">EN</button>
-        <button class="lf-es" onclick="setLang('es')">ES</button>
-      </div>
-      <span data-es="Hecho en Ecuador 🇪🇨 · Sirviendo a restaurantes de EEUU 🇺🇸">Built in Ecuador 🇪🇨 · Serving U.S. restaurants 🇺🇸</span>
-    </div>
+  <div class="wrap">
+    <span>© 2026 DEWAN S.A.S. · Riobamba, Ecuador</span>
+    <span><a href="/terms.html"><span class="es">Términos</span><span class="en">Terms</span></a> · <a href="/privacy.html"><span class="es">Privacidad</span><span class="en">Privacy</span></a> · <a href="https://wa.me/593939647069">WhatsApp +593 93 964 7069</a></span>
   </div>
 </footer>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><path id="bellpath" fill="currentColor" d="M 307.00,1.00 C 307.00,1.00 317.58,0.75 322.50,2.00 C 327.42,3.25 332.42,5.58 336.50,8.50 C 340.58,11.42 344.42,15.75 347.00,19.50 C 349.58,23.25 351.00,26.25 352.00,31.00 C 353.00,35.75 353.42,43.25 353.00,48.00 C 352.58,52.75 351.08,56.00 349.50,59.50 C 347.92,63.00 346.58,65.75 343.50,69.00 C 340.42,72.25 331.00,79.00 331.00,79.00 C 331.00,79.00 342.50,109.00 342.50,109.00 C 342.50,109.00 361.17,111.58 370.00,113.50 C 378.83,115.42 387.50,117.92 395.50,120.50 C 403.50,123.08 409.17,125.00 418.00,129.00 C 426.83,133.00 439.25,139.17 448.50,144.50 C 457.75,149.83 465.25,154.83 473.50,161.00 C 481.75,167.17 488.50,172.00 498.00,181.50 C 507.50,191.00 521.33,206.00 530.50,218.00 C 539.67,230.00 546.42,241.08 553.00,253.50 C 559.58,265.92 565.50,280.08 570.00,292.50 C 574.50,304.92 577.42,315.08 580.00,328.00 C 582.58,340.92 584.67,358.00 585.50,370.00 C 586.33,382.00 585.00,400.00 585.00,400.00 C 585.00,400.00 554.67,393.92 527.50,390.00 C 500.33,386.08 451.50,379.58 422.00,376.50 C 392.50,373.42 375.33,372.33 350.50,371.50 C 325.67,370.67 295.75,370.92 273.00,371.50 C 250.25,372.08 253.08,370.42 214.00,375.00 C 174.92,379.58 38.50,399.00 38.50,399.00 C 38.50,399.00 38.58,365.17 40.50,349.50 C 42.42,333.83 45.83,319.08 50.00,305.00 C 54.17,290.92 58.92,278.50 65.50,265.00 C 72.08,251.50 81.83,235.42 89.50,224.00 C 97.17,212.58 104.83,204.08 111.50,196.50 C 118.17,188.92 123.50,184.00 129.50,178.50 C 135.50,173.00 139.83,169.17 147.50,163.50 C 155.17,157.83 166.67,149.83 175.50,144.50 C 184.33,139.17 192.42,135.25 200.50,131.50 C 208.58,127.75 215.50,124.92 224.00,122.00 C 232.50,119.08 241.92,116.25 251.50,114.00 C 261.08,111.75 281.50,108.50 281.50,108.50 C 281.50,108.50 292.50,78.50 292.50,78.50 C 292.50,78.50 283.67,72.83 280.50,69.50 C 277.33,66.17 275.17,62.33 273.50,58.50 C 271.83,54.67 270.92,50.58 270.50,46.50 C 270.08,42.42 270.25,38.00 271.00,34.00 C 271.75,30.00 272.83,26.33 275.00,22.50 C 277.17,18.67 280.42,14.17 284.00,11.00 C 287.58,7.83 292.67,5.08 296.50,3.50 C 300.33,1.92 307.00,1.50 307.00,1.50 C 307.00,1.50 307.00,1.00 307.00,1.00 Z M 264.50,408.00 C 264.50,408.00 354.00,407.25 396.00,409.00 C 438.00,410.75 489.50,415.92 516.50,418.50 C 543.50,421.08 542.75,421.75 558.00,424.50 C 573.25,427.25 597.08,429.75 608.00,435.00 C 618.92,440.25 620.92,452.25 623.50,456.00 C 626.08,459.75 623.50,457.50 623.50,457.50 C 623.50,457.50 635.75,459.08 618.50,457.50 C 601.25,455.92 547.67,450.17 520.00,448.00 C 492.33,445.83 479.33,445.50 452.50,444.50 C 425.67,443.50 390.92,442.42 359.00,442.00 C 327.08,441.58 301.17,441.17 261.00,442.00 C 220.83,442.83 161.33,444.42 118.00,447.00 C 74.67,449.58 1.00,457.50 1.00,457.50 C 1.00,457.50 6.17,440.75 15.50,435.50 C 24.83,430.25 34.92,429.58 57.00,426.00 C 79.08,422.42 123.50,416.67 148.00,414.00 C 172.50,411.33 184.58,410.92 204.00,410.00 C 223.42,409.08 264.50,408.50 264.50,408.50 C 264.50,408.50 264.50,408.00 264.50,408.00 Z"/></defs></svg>
-
 <script>
-  /* Content never depends on JS to be visible: reveals are CSS scroll-driven
-     (animation-timeline) and everything below is enhancement only. */
-  document.getElementById('yr').textContent = new Date().getFullYear();
-  const _tr = document.getElementById('tickrow'); _tr.innerHTML += _tr.innerHTML;
-
-  /* ---------- plan calculator (recommends a plan; never computes WhatsApp costs) ---------- */
-  const PLAN_TIERS = [
-    { max: 20,       key: 'starter',    name: 'Starter',    m: 99,   y: 82  },
-    { max: 50,       key: 'growth',     name: 'Growth',     m: 179,  y: 149 },
-    { max: 100,      key: 'scale',      name: 'Scale',      m: 299,  y: 249 },
-    { max: Infinity, key: 'enterprise', name: 'Enterprise', m: null, y: null }
-  ];
-  const CALC_TXT = {
-    en: { mo: '/month', yr: '/month, billed annually', custom: 'Custom pricing' },
-    es: { mo: '/mes',   yr: '/mes, facturado anual',   custom: 'Precio a medida' }
-  };
-  function calcPlan(v){
-    const out = document.getElementById('calc-plan');
-    if (!out) return;
-    const n = +v, t = PLAN_TIERS.find(p => n <= p.max), txt = CALC_TXT[lang] || CALC_TXT.en;
-    document.getElementById('ordr-v').textContent = n;
-    out.textContent = t.name;
-    document.getElementById('calc-price').textContent =
-      t.m === null ? txt.custom : '$' + (billing === 'y' ? t.y : t.m) + (billing === 'y' ? txt.yr : txt.mo);
-    PLAN_TIERS.forEach(p => {
-      const r = document.getElementById('rung-' + p.key);
-      if (r) r.classList.toggle('on', p.key === t.key);
-    });
-  }
-
-  /* ---------- i18n (EN default, ES via data-es attributes) ---------- */
-  const META_ES = {
-    title: 'Dewan — Convierta WhatsApp en el sistema de pedidos completo de su restaurante',
-    desc: 'Dewan convierte el WhatsApp de su restaurante en un sistema completo de pedidos: menú guiado, pedidos estructurados, impresión en cocina, gestión de delivery y seguimiento en vivo. Sin comisión sobre sus ventas.'
-  };
-  const metaDesc = document.querySelector('meta[name="description"]');
-  const META_EN = {
-    title: document.title,
-    desc: metaDesc ? metaDesc.content : ''
-  };
-  let lang = 'en';
-  document.querySelectorAll('[data-es]').forEach(el => { el.dataset.en = el.innerHTML; });
-  document.querySelectorAll('[data-es-href]').forEach(el => { el.dataset.enHref = el.getAttribute('href'); });
-
-  function setLang(l){
-    lang = l;
-    document.documentElement.lang = l;
-    document.querySelectorAll('[data-es]').forEach(el => { el.innerHTML = l === 'es' ? el.dataset.es : el.dataset.en; });
-    document.querySelectorAll('[data-es-href]').forEach(el => { el.setAttribute('href', l === 'es' ? el.dataset.esHref : el.dataset.enHref); });
-    const m = l === 'es' ? META_ES : META_EN;
-    document.title = m.title;
-    if (metaDesc) metaDesc.content = m.desc;
-    document.querySelectorAll('#lang-en,.lf-en').forEach(b => b.classList.toggle('on', l === 'en'));
-    document.querySelectorAll('#lang-es,.lf-es').forEach(b => b.classList.toggle('on', l === 'es'));
-    setBilling(billing);
-    try { localStorage.setItem('dewan-lang', l); } catch(e){}
-  }
-
-  /* ---------- billing toggle ---------- */
-  let billing = 'm';
-  const BILL_TXT = {
-    m: { en: 'billed monthly · cancel anytime', es: 'facturado mensual · cancele cuando quiera' },
-    y: { en: 'billed annually · 2 months free', es: 'facturado anual · 2 meses gratis' }
-  };
-  function setBilling(b){
-    billing = b;
-    document.getElementById('bill-m').classList.toggle('on', b === 'm');
-    document.getElementById('bill-y').classList.toggle('on', b === 'y');
-    document.querySelectorAll('.pr').forEach(p => { p.textContent = b === 'm' ? p.dataset.m : p.dataset.y; });
-    document.querySelectorAll('.bill-note').forEach(n => { n.textContent = BILL_TXT[b][lang]; });
-    const o = document.getElementById('ordr');
-    if (o) calcPlan(o.value);
-  }
-  setBilling('m');
-
-  /* auto-detect Spanish browsers (English stays the default otherwise) */
-  let initLang = 'en';
+(function () {
   try {
-    const saved = localStorage.getItem('dewan-lang');
-    if (saved === 'es' || (!saved && (navigator.language || '').toLowerCase().startsWith('es'))) initLang = 'es';
-  } catch(e){}
-  setLang(initLang);
-
-  /* ---------- count-up ---------- */
-  const co = new IntersectionObserver(es => {
-    es.forEach(e => {
-      if (!e.isIntersecting) return;
-      co.unobserve(e.target);
-      const to = +e.target.dataset.to, t0 = performance.now(), dur = 1400;
-      const tick = now => {
-        const k = Math.min(1, (now - t0) / dur), ease = 1 - Math.pow(1 - k, 3);
-        e.target.textContent = Math.round(to * ease);
-        if (k < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
+    var q = new URLSearchParams(location.search);
+    var l = q.get('lang');
+    if (l !== 'es' && l !== 'en') l = /^en/i.test(navigator.language || '') && !/^es/i.test(navigator.language || '') ? 'en' : 'es';
+    document.documentElement.lang = l;
+    // enlaces de idioma conservan el resto de parámetros (p.ej. ?p=)
+    document.querySelectorAll('.idioma a').forEach(function (a) {
+      var u = new URLSearchParams(location.search); u.set('lang', a.getAttribute('hreflang'));
+      a.href = '?' + u.toString();
     });
-  }, { threshold: .6 });
-  document.querySelectorAll('.count').forEach(el => co.observe(el));
-
-  /* ---------- hero conversation loop ---------- */
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const bubs = [...document.querySelectorAll('#chat .bub[data-step]')];
-  const typing = document.getElementById('typing');
-  const flTicket = document.getElementById('fl-ticket');
-  const flTrack = document.getElementById('fl-track');
-  if (!reduced) {
-    typing.classList.add('show');
-    let timers = [];
-    const later = (fn, ms) => timers.push(setTimeout(fn, ms));
-    function playChat(){
-      timers.forEach(clearTimeout); timers = [];
-      bubs.forEach(b => b.classList.remove('show'));
-      flTicket.classList.remove('show');
-      flTrack.classList.remove('show');
-      typing.style.display = 'none';
-      const SEQ = [
-        { t: 600,  i: 0 },
-        { t: 1500, i: 1, type: 700 },
-        { t: 3300, i: 2 },
-        { t: 4300, i: 3, type: 700 },
-        { t: 6300, i: 4, type: 500 },
-        { t: 7000, ticket: true },
-        { t: 8600, i: 5, type: 500 },
-        { t: 9300, track: true }
-      ];
-      SEQ.forEach(s => {
-        if (s.type) later(() => { typing.style.display = 'block'; }, s.t - s.type);
-        later(() => {
-          typing.style.display = 'none';
-          if (s.i !== undefined) bubs[s.i].classList.add('show');
-          if (s.ticket) flTicket.classList.add('show');
-          if (s.track) flTrack.classList.add('show');
-        }, s.t);
-      });
-      later(playChat, 15500);
+    if (l === 'en') document.querySelectorAll('a.wa[data-en]').forEach(function (a) { a.href = a.getAttribute('data-en'); });
+    // ?p=<página de ejemplo armada para este restaurante>
+    var p = (q.get('p') || '').replace(/[^a-z0-9-]/gi, '').slice(0, 60);
+    if (p) {
+      document.getElementById('aviso-link').href = '/carta/p.html?p=' + encodeURIComponent(p);
+      document.getElementById('aviso').className = 'aviso si';
     }
-    const so = new IntersectionObserver(es => {
-      es.forEach(e => { if (e.isIntersecting) { so.unobserve(e.target); document.documentElement.classList.add('anim'); playChat(); } });
-    }, { threshold: .35 });
-    so.observe(document.getElementById('stage'));
-  }
+  } catch (e) {}
+})();
 </script>
 </body>
 </html>
-
-
