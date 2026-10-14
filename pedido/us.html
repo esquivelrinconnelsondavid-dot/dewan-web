@@ -109,7 +109,7 @@
       var envio = p.tipo_entrega === 'domicilio';
       var est = p.estado_pedido;
       var cancelado = est === 'cancelado' || p.pago_estado === 'fallido';
-      var propio = p.envio_proveedor === 'propio';
+      var propio = /propio/.test(p.envio_proveedor || '');
       var paso = est === 'entregado' ? 3 : (est === 'en_camino' || est === 'llegado' || (!envio && est === 'listo')) ? 2 : (est === 'preparando' || est === 'listo' || p.restaurante_aceptado) ? 1 : 0;
       var listoEnvio = envio && paso === 1 && (est === 'listo' || p.fecha_listo);
       var chofer = p.nombre_moto ? ' · ' + p.nombre_moto : '';

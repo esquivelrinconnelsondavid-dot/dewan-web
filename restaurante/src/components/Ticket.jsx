@@ -445,7 +445,7 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
         </div>
       )}
       {columna === 'preparando' && conMoto && (
-        <div className="text-[11px] text-gray-400">{MODO_US ? 'La entrega al cliente la marca la app del repartidor (DoorDash / Uber).' : 'La entrega al cliente la marca el motorizado desde su app.'}</div>
+        <div className="text-[11px] text-gray-400">{MODO_US ? 'La entrega al cliente la marca el repartidor desde su app.' : 'La entrega al cliente la marca el motorizado desde su app.'}</div>
       )}
       {columna === 'listo' && conMoto && (
         <div className="flex items-center gap-2">

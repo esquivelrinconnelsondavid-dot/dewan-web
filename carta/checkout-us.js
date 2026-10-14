@@ -156,7 +156,7 @@
     if (tipo === "envio") {
       if (CK.envio_minimo && m.sub < CK.envio_minimo) { nota.className = "us-nota err"; nota.textContent = T.minimo(CK.envio_minimo); bloquea = true; }
       else if (cot.estado === "cargando") { nota.className = "us-nota"; nota.textContent = T.cotizando; bloquea = true; }
-      else if (cot.estado === "ok") { nota.className = "us-nota ok"; nota.textContent = "🛵 " + T.eta(cot.eta) + " · " + money(cot.envio) + (cot.proveedor ? " · " + (cot.proveedor === "propio" ? T.porPropio : T.porApp) : ""); }
+      else if (cot.estado === "ok") { nota.className = "us-nota ok"; nota.textContent = "🛵 " + T.eta(cot.eta) + " · " + money(cot.envio) + (cot.proveedor ? " · " + (/propio/.test(cot.proveedor) ? T.porPropio : T.porApp) : ""); }
       else if (cot.estado === "fuera") { nota.className = "us-nota err"; nota.textContent = T.fuera; bloquea = true; }
       else if (cot.estado === "error") { nota.className = "us-nota err"; nota.textContent = T.errorCot; bloquea = true; }
       else { nota.className = "us-nota"; nota.textContent = T.llenaDir; bloquea = true; }
