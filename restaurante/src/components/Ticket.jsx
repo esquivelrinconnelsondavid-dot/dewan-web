@@ -215,6 +215,7 @@ function BotonSecundario({ children, onClick, disabled, alto = 'h-11', extra = '
 export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0, onHecho }) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+  const [linkCopiado, setLinkCopiado] = useState(false);
   const [minutos, setMinutos] = useState(() => {
     const base = 15 + (Number(ocupadoMin) || 0);
     return TIEMPOS_PRESET.reduce((a, b) => (Math.abs(b - base) < Math.abs(a - base) ? b : a), 15);
@@ -284,6 +285,19 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
     }
   }, 'No se pudo marcar. Intenta de nuevo.');
   const entregado = () => correr(() => marcarEntregado(pedido.id), 'No se pudo marcar como entregado.');
+  // EE.UU. (14-oct-2026): link para el repartidor propio (pedido/repartidor.html, SQL 040). Desde el teléfono
+  // abre "Compartir"; desde la PC, WhatsApp Web para elegir el contacto del repartidor.
+  const linkRepartidor = propio && pedido.token_repartidor ? `https://dewansas.com/pedido/repartidor.html?t=${pedido.token_repartidor}` : '';
+  const mandarLink = async () => {
+    const texto = `Pedido #${pedido.id} para entregar / Delivery #${pedido.id}: ${linkRepartidor}`;
+    if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent || '')) {
+      try { await navigator.share({ title: `Pedido #${pedido.id}`, text: texto }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener');
+  };
+  const copiarLink = async () => {
+    try { await navigator.clipboard.writeText(linkRepartidor); setLinkCopiado(true); setTimeout(() => setLinkCopiado(false), 2000); } catch (e) { /* sin portapapeles */ }
+  };
   // Cancelar un pedido YA aceptado (el cliente se arrepintió). Mensaje de error propio si el pedido se
   // canceló pero la moto no: el local tiene que avisar al despacho.
   const cancelarAceptado = async () => {
@@ -459,8 +473,14 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
         </div>
       )}
       {columna === 'entregando' && MODO_SISTEMA && propio && (
-        <div className="flex gap-2">
-          <BotonPrimario onClick={entregado} disabled={cargando} alto="h-10"><IcoCheck />Entregado al cliente</BotonPrimario>
+        <div className="flex flex-col gap-2">
+          {linkRepartidor && (
+            <div className="flex gap-2">
+              <BotonPrimario onClick={mandarLink} alto="h-10">Link al repartidor</BotonPrimario>
+              <BotonSecundario onClick={copiarLink} alto="h-10" title="Copiar el link del repartidor">{linkCopiado ? 'Copiado' : 'Copiar'}</BotonSecundario>
+            </div>
+          )}
+          <BotonSecundario onClick={entregado} disabled={cargando} alto="h-10" extra="w-full" title="Si el repartidor no lo marcó desde su link"><IcoCheck />Entregado al cliente</BotonSecundario>
         </div>
       )}
       {columna === 'entregando' && MODO_SISTEMA && !propio && (

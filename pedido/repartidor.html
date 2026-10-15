@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#B5371A" />
+  <title>Entrega</title>
+  <!--
+    LINK DEL REPARTIDOR · EE.UU. (14-oct-2026) — pedido/repartidor.html?t=<token_repartidor>[&lang=es|en]
+    Para el repartidor PROPIO del local: ve el pedido, abre el mapa, llama al cliente, sabe cuánto cobrar
+    y desliza «Entregué». Mientras va en camino comparte su ubicación (el cliente la ve en pedido/us.html).
+    Todo por funciones de la base (SQL 040): us_repartidor, us_repartidor_salio, us_repartidor_ubicacion,
+    us_repartidor_entregado. No usa la tabla directo.
+  -->
+  <style>
+    :root { --marca: #B5371A; --tinta: #16181D; --gris: #5A6070; --linea: #E4E6EB; --fondo: #F4F4F1; --ok: #1C7D46; --ok-s: #E6F4EC; --av: #8A5A00; --av-s: #FBF0D9; --err: #B42323; --err-s: #FDECEC; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--fondo); color: var(--tinta); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.4; -webkit-text-size-adjust: 100%; }
+    .cab { background: var(--marca); color: #fff; padding: calc(18px + env(safe-area-inset-top)) 18px 16px; }
+    .cab .fila { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .cab small { display: block; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; opacity: .85; }
+    .cab b { display: block; font-size: 21px; margin-top: 2px; }
+    .cab .num { font-size: 14px; opacity: .92; margin-top: 2px; }
+    .idioma { color: #fff; font-size: 12px; font-weight: 800; background: rgba(255,255,255,.18); border-radius: 999px; padding: 5px 10px; text-decoration: none; white-space: nowrap; }
+    .cuerpo { max-width: 520px; margin: 0 auto; padding: 14px 14px 140px; display: grid; gap: 10px; }
+    .tarj { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 13px 14px; }
+    .etq { font-size: 11.5px; font-weight: 700; color: var(--gris); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .linea { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .nombre { font-size: 18px; font-weight: 700; }
+    .dir { font-size: 17px; font-weight: 700; line-height: 1.35; }
+    .sub { font-size: 14px; color: var(--gris); margin-top: 4px; }
+    .b { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; font-weight: 700; font-size: 15px; padding: 11px 14px; border: 1.5px solid var(--linea); background: #fff; color: var(--tinta); text-decoration: none; white-space: nowrap; cursor: pointer; font-family: inherit; }
+    .b svg { width: 17px; height: 17px; }
+    .mapas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .cobrar { background: var(--av-s); border: 1.5px solid #E9C46A; border-radius: 14px; padding: 13px 14px; color: var(--av); }
+    .cobrar .t { font-size: 13px; font-weight: 800; letter-spacing: .03em; }
+    .cobrar .m { font-size: 30px; font-weight: 800; margin: 2px 0; }
+    .cobrar .d { font-size: 13.5px; }
+    .pagado { background: var(--ok-s); border: 1.5px solid #9FD3B4; border-radius: 14px; padding: 13px 14px; color: var(--ok); font-weight: 700; font-size: 15px; }
+    .items { font-size: 15.5px; line-height: 1.65; }
+    .ubic { font-size: 14px; border-radius: 12px; padding: 11px 13px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+    .ubic.si { background: var(--ok-s); color: var(--ok); font-weight: 700; }
+    .ubic.no { background: #fff; border: 1px dashed var(--linea); color: var(--gris); }
+    .abajo { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 14px calc(14px + env(safe-area-inset-bottom)); background: linear-gradient(rgba(244,244,241,0), var(--fondo) 30%); }
+    .abajo .dentro { max-width: 520px; margin: 0 auto; }
+    .grande { width: 100%; border: 0; border-radius: 999px; background: var(--tinta); color: #fff; font: 800 17px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; padding: 18px; cursor: pointer; }
+    .grande[disabled] { opacity: .6; }
+    /* deslizar para confirmar: un input range, accesible y nativo en iPhone y Android */
+    .desliza { position: relative; height: 64px; border-radius: 999px; background: var(--ok); overflow: hidden; }
+    .desliza .txt { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 17px; pointer-events: none; padding-left: 40px; }
+    .desliza input { -webkit-appearance: none; appearance: none; position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; background: transparent; cursor: pointer; }
+    .desliza input::-webkit-slider-runnable-track { height: 64px; background: transparent; }
+    .desliza input::-moz-range-track { height: 64px; background: transparent; }
+    .desliza input::-webkit-slider-thumb { -webkit-appearance: none; width: 54px; height: 54px; margin-top: 5px; border-radius: 50%; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231C7D46' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center/26px no-repeat; border: 0; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+    .desliza input::-moz-range-thumb { width: 54px; height: 54px; border-radius: 50%; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231C7D46' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center/26px no-repeat; border: 0; }
+    .desliza input:focus-visible { outline: 3px solid #fff; outline-offset: -6px; border-radius: 999px; }
+    .estado { text-align: center; padding: 64px 22px 0; display: grid; gap: 12px; justify-items: center; max-width: 520px; margin: 0 auto; }
+    .estado .circ { width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; }
+    .estado .circ svg { width: 52px; height: 52px; }
+    .estado h1 { margin: 0; font-size: 25px; }
+    .estado p { margin: 0; color: var(--gris); font-size: 15.5px; }
+    .aviso-err { color: var(--err); font-weight: 700; font-size: 14px; text-align: center; margin-top: 8px; min-height: 1px; }
+    .cargando { text-align: center; color: var(--gris); padding: 80px 20px; }
+  </style>
+</head>
+<body>
+  <div id="app"><p class="cargando">Cargando… / Loading…</p></div>
+  <noscript><p style="padding:20px;text-align:center">Active JavaScript para ver la entrega. / Please enable JavaScript.</p></noscript>
+  <script>
+  (function () {
+    var SB = 'https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1/rpc/';
+    var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+    var q = new URLSearchParams(location.search);
+    var token = (q.get('t') || '').replace(/[^a-z0-9]/gi, '').slice(0, 40);
+    var lp = q.get('lang');
+    var L = lp === 'en' || lp === 'es' ? lp : (/^en/i.test(navigator.language || '') && !/^es/i.test(navigator.language || '') ? 'en' : 'es');
+
+    var TX = {
+      es: {
+        entrega: 'Entrega', pedido: 'Pedido', salio: 'salió', otro: 'English', cliente: 'Cliente', llamar: 'Llamar',
+        direccion: 'Dirección', millas: 'millas', cobre: 'COBRE EN EFECTIVO', comida: 'Comida', impuesto: 'impuesto', envio: 'envío', propina: 'propina',
+        pagado: '✓ Ya pagó con tarjeta. No cobre nada.', lleva: 'Lleva', local: 'Restaurante', llamarLocal: 'Llamar al local',
+        sali: 'Salí con el pedido', saliendo: 'Un momento…', desliza: 'Deslice: entregué', confirmando: 'Confirmando…',
+        ubicSi: '📍 El cliente ve en el mapa por dónde va', ubicNo: 'Comparta su ubicación para que el cliente lo vea en el mapa', ubicBoton: 'Compartir',
+        ubicNegada: 'La ubicación está bloqueada. Puede entregar igual.', ubicNoHay: 'Este teléfono no comparte ubicación. Puede entregar igual.',
+        entregado: '¡Entregado!', entregadoA: function (h) { return 'Entregado a las ' + h + (/\.$/.test(h) ? '' : '.'); }, avisados: 'Ya le avisamos al restaurante y al cliente.',
+        recuerde: function (m) { return 'Recuerde entregar los ' + m + ' en efectivo en el local.'; },
+        cancelado: 'Pedido cancelado', canceladoP: 'No lo entregue. Vuelva al local con el pedido.',
+        noValido: 'Este link no es válido', noValidoP: 'Puede que haya vencido o esté mal copiado. Pídale al local que se lo mande de nuevo.',
+        noListo: 'El pedido todavía no está listo', noListoP: 'Espere a que el local lo acepte.',
+        error: 'No se pudo guardar. Revise su señal e intente de nuevo.', errorCarga: 'No pudimos cargar la entrega. Revise su señal.', reintentar: 'Reintentar',
+        horaLoc: 'es-US'
+      },
+      en: {
+        entrega: 'Delivery', pedido: 'Order', salio: 'left at', otro: 'Español', cliente: 'Customer', llamar: 'Call',
+        direccion: 'Address', millas: 'miles', cobre: 'COLLECT IN CASH', comida: 'Food', impuesto: 'tax', envio: 'delivery', propina: 'tip',
+        pagado: '✓ Already paid by card. Do not collect anything.', lleva: 'Items', local: 'Restaurant', llamarLocal: 'Call the restaurant',
+        sali: "I'm on my way", saliendo: 'One moment…', desliza: 'Slide: delivered', confirmando: 'Confirming…',
+        ubicSi: '📍 The customer can see you on the map', ubicNo: 'Share your location so the customer can see you on the map', ubicBoton: 'Share',
+        ubicNegada: 'Location is blocked. You can still deliver.', ubicNoHay: "This phone can't share location. You can still deliver.",
+        entregado: 'Delivered!', entregadoA: function (h) { return 'Delivered at ' + h + (/\.$/.test(h) ? '' : '.'); }, avisados: 'The restaurant and the customer have been notified.',
+        recuerde: function (m) { return 'Remember to turn in the ' + m + ' in cash at the restaurant.'; },
+        cancelado: 'Order cancelled', canceladoP: 'Do not deliver it. Take the order back to the restaurant.',
+        noValido: 'This link is not valid', noValidoP: 'It may have expired or been copied wrong. Ask the restaurant to send it again.',
+        noListo: 'The order is not ready yet', noListoP: 'Wait for the restaurant to accept it.',
+        error: "Couldn't save. Check your signal and try again.", errorCarga: "We couldn't load the delivery. Check your signal.", reintentar: 'Try again',
+        horaLoc: 'en-US'
+      }
+    };
+    var T = TX[L];
+    var P = null, ocupado = false, errMsg = '';
+    var vigila = null, ubicEstado = 'no', ultimoEnvio = 0, ultimaPos = null, wake = null, sondeo = null;
+
+    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+    function dinero(v) { return '$' + (Math.round(Number(v || 0) * 100) / 100).toFixed(2); }
+    function hora(d) { try { return new Date(d).toLocaleTimeString(T.horaLoc, { timeZone: (P && P.zona) || 'America/New_York', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
+    function rpc(fn, body) {
+      return fetch(SB + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
+    }
+    var ICO_TEL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>';
+    var ICO_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="#1C7D46" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+    var ICO_X = '<svg viewBox="0 0 24 24" fill="none" stroke="#B42323" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+
+    function cabecera(conHora) {
+      var otro = L === 'es' ? 'en' : 'es';
+      return '<div class="cab"><div class="fila"><div><small>' + esc(T.entrega) + '</small><b>' + esc(P ? P.local : 'DEWAN') + '</b>' +
+        (P ? '<div class="num">' + esc(T.pedido) + ' #' + esc(P.id) + (conHora && P.salio_at ? ' · ' + esc(T.salio) + ' ' + esc(hora(P.salio_at)) : '') + '</div>' : '') +
+        '</div><a class="idioma" href="?t=' + encodeURIComponent(token) + '&lang=' + otro + '">' + esc(T.otro) + '</a></div></div>';
+    }
+    function pantallaEstado(icono, fondo, titulo, texto, extra) {
+      document.getElementById('app').innerHTML = cabecera(false) + '<div class="estado"><div class="circ" style="background:' + fondo + '">' + icono + '</div><h1>' + esc(titulo) + '</h1>' +
+        (texto ? '<p>' + esc(texto) + '</p>' : '') + (extra || '') + '</div>';
+    }
+
+    function pintar() {
+      var app = document.getElementById('app');
+      if (!P) { pantallaEstado(ICO_X, 'var(--err-s)', T.noValido, T.noValidoP); return; }
+      var est = P.estado, efectivo = P.pago === 'en_local';
+      if (est === 'cancelado') { pararTodo(); pantallaEstado(ICO_X, 'var(--err-s)', T.cancelado, T.canceladoP); return; }
+      if (est === 'entregado') {
+        pararTodo();
+        pantallaEstado(ICO_OK, 'var(--ok-s)', T.entregado, (P.entregado_at ? T.entregadoA(hora(P.entregado_at)) + ' ' : '') + T.avisados,
+          efectivo ? '<p style="font-weight:700;color:var(--av)">' + esc(T.recuerde(dinero(P.total))) + '</p>' : '');
+        return;
+      }
+      var enCamino = est === 'en_camino' || est === 'llegado';
+      var destino = P.entrega_lat != null && P.entrega_lng != null ? (P.entrega_lat + ',' + P.entrega_lng) : '';
+      var gmaps = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(destino || P.direccion || '');
+      var waze = destino ? 'https://waze.com/ul?ll=' + encodeURIComponent(destino) + '&navigate=yes' : 'https://waze.com/ul?q=' + encodeURIComponent(P.direccion || '') + '&navigate=yes';
+      var millas = Number(P.distancia_km) > 0 ? (Number(P.distancia_km) / 1.609344).toFixed(1) : '';
+      var items = Array.isArray(P.items) ? P.items : [];
+      var h = cabecera(true) + '<div class="cuerpo">';
+      h += '<div class="tarj"><div class="etq">' + esc(T.cliente) + '</div><div class="linea"><span class="nombre">' + esc(P.cliente || '') + '</span>' +
+        (P.cliente_telefono ? '<a class="b" href="tel:' + esc(P.cliente_telefono) + '">' + ICO_TEL + esc(T.llamar) + '</a>' : '') + '</div></div>';
+      h += '<div class="tarj"><div class="etq">' + esc(T.direccion) + (millas ? ' · ' + millas + ' ' + esc(T.millas) : '') + '</div><div class="dir">' + esc(P.direccion || '') + '</div>' +
+        (P.instrucciones ? '<div class="sub">«' + esc(P.instrucciones) + '»</div>' : '') +
+        '<div class="mapas"><a class="b" target="_blank" rel="noopener" href="' + esc(gmaps) + '">Google Maps</a><a class="b" target="_blank" rel="noopener" href="' + esc(waze) + '">Waze</a></div></div>';
+      if (efectivo) {
+        h += '<div class="cobrar"><div class="t">' + esc(T.cobre) + '</div><div class="m">' + dinero(P.total) + '</div><div class="d">' +
+          esc(T.comida) + ' ' + dinero(P.subtotal) + (Number(P.impuesto) ? ' · ' + esc(T.impuesto) + ' ' + dinero(P.impuesto) : '') +
+          (Number(P.envio) ? ' · ' + esc(T.envio) + ' ' + dinero(P.envio) : '') + (Number(P.propina) ? ' · ' + esc(T.propina) + ' ' + dinero(P.propina) : '') + '</div></div>';
+      } else {
+        h += '<div class="pagado">' + esc(T.pagado) + '</div>';
+      }
+      h += '<div class="tarj"><div class="etq">' + esc(T.lleva) + '</div><div class="items">' + items.map(function (i) { return esc(i.cant) + '× ' + esc(i.nombre); }).join('<br>') + '</div></div>';
+      if (enCamino) {
+        if (ubicEstado === 'si') h += '<div class="ubic si">' + esc(T.ubicSi) + '</div>';
+        else if (ubicEstado === 'negada') h += '<div class="ubic no">' + esc(T.ubicNegada) + '</div>';
+        else if (ubicEstado === 'nohay') h += '<div class="ubic no">' + esc(T.ubicNoHay) + '</div>';
+        else h += '<div class="ubic no"><span>' + esc(T.ubicNo) + '</span><button type="button" class="b" id="b-ubic">' + esc(T.ubicBoton) + '</button></div>';
+      }
+      h += '<div class="tarj"><div class="etq">' + esc(T.local) + '</div><div class="linea"><span>' + esc(P.local_direccion || '') + '</span>' +
+        (P.local_telefono ? '<a class="b" href="tel:' + esc(P.local_telefono) + '">' + ICO_TEL + esc(T.llamar) + '</a>' : '') + '</div></div>';
+      h += '</div><div class="abajo"><div class="dentro">';
+      if (enCamino) {
+        h += '<div class="desliza"><div class="txt">' + esc(ocupado ? T.confirmando : T.desliza) + '</div><input type="range" id="desliza" min="0" max="100" value="0" aria-label="' + esc(T.desliza) + '"' + (ocupado ? ' disabled' : '') + '></div>';
+      } else if (P.aceptado && (est === 'preparando' || est === 'listo')) {
+        h += '<button type="button" class="grande" id="b-sali"' + (ocupado ? ' disabled' : '') + '>' + esc(ocupado ? T.saliendo : T.sali) + '</button>';
+      } else {
+        h += '<p class="sub" style="text-align:center;font-weight:700">' + esc(T.noListo) + '. ' + esc(T.noListoP) + '</p>';
+      }
+      h += '<p class="aviso-err" role="alert">' + esc(errMsg) + '</p></div></div>';
+      app.innerHTML = h;
+      enlazar();
+    }
+
+    function enlazar() {
+      var bs = document.getElementById('b-sali');
+      if (bs) bs.addEventListener('click', function () {
+        ocupado = true; errMsg = ''; pintar();
+        empezarUbicacion(); // el toque del repartidor sirve para pedir el permiso
+        rpc('us_repartidor_salio', { p_token: token }).then(function (r) {
+          ocupado = false;
+          if (r && r.ok) { P.estado = r.estado; P.salio_at = P.salio_at || new Date().toISOString(); } else errMsg = T.error;
+          pintar();
+        }).catch(function () { ocupado = false; errMsg = T.error; pintar(); });
+      });
+      var bu = document.getElementById('b-ubic');
+      if (bu) bu.addEventListener('click', empezarUbicacion);
+      var r = document.getElementById('desliza');
+      if (r) {
+        var soltar = function () { if (!ocupado && Number(r.value) < 96) r.value = 0; };
+        r.addEventListener('input', function () { if (!ocupado && Number(r.value) >= 96) entregar(); });
+        r.addEventListener('change', soltar);
+        r.addEventListener('pointerup', soltar);
+        r.addEventListener('touchend', soltar);
+      }
+    }
+
+    function entregar() {
+      ocupado = true; errMsg = ''; pintar();
+      rpc('us_repartidor_entregado', { p_token: token }).then(function (r) {
+        ocupado = false;
+        if (r && r.ok) { P.estado = 'entregado'; P.entregado_at = r.entregado_at || new Date().toISOString(); }
+        else if (r && r.error === 'cancelado') P.estado = 'cancelado';
+        else errMsg = T.error;
+        pintar();
+      }).catch(function () { ocupado = false; errMsg = T.error; pintar(); });
+    }
+
+    // ---------- ubicación en vivo (solo mientras va en camino) ----------
+    function empezarUbicacion() {
+      if (vigila !== null) return;
+      if (!('geolocation' in navigator)) { ubicEstado = 'nohay'; pintar(); return; }
+      vigila = navigator.geolocation.watchPosition(function (pos) {
+        if (ubicEstado !== 'si') { ubicEstado = 'si'; pintar(); pedirPantallaPrendida(); }
+        ultimaPos = pos;
+        mandarPosicion(false);
+      }, function (e) {
+        ubicEstado = e && e.code === 1 ? 'negada' : ubicEstado; vigila = null; pintar();
+      }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
+    }
+    function mandarPosicion(forzar) {
+      if (!ultimaPos || !P || (P.estado !== 'en_camino' && P.estado !== 'llegado')) return;
+      var ahora = Date.now();
+      if (!forzar && ahora - ultimoEnvio < 10000) return;
+      ultimoEnvio = ahora;
+      var c = ultimaPos.coords;
+      rpc('us_repartidor_ubicacion', { p_token: token, p_lat: c.latitude, p_lng: c.longitude, p_precision: c.accuracy || null }).catch(function () {});
+    }
+    function pedirPantallaPrendida() {
+      try { if ('wakeLock' in navigator && !wake) navigator.wakeLock.request('screen').then(function (w) { wake = w; w.addEventListener('release', function () { wake = null; }); }).catch(function () {}); } catch (e) {}
+    }
+    function pararTodo() {
+      if (vigila !== null && navigator.geolocation) { navigator.geolocation.clearWatch(vigila); vigila = null; }
+      if (wake) { try { wake.release(); } catch (e) {} wake = null; }
+      if (sondeo) { clearInterval(sondeo); sondeo = null; }
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') { if (ubicEstado === 'si') { pedirPantallaPrendida(); mandarPosicion(true); } cargar(true); }
+    });
+
+    // ---------- carga ----------
+    function cargar(silencioso) {
+      if (!token) { P = null; pintar(); return; }
+      rpc('us_repartidor', { p_token: token }).then(function (d) {
+        var antes = P && P.estado;
+        P = d && d.id ? d : null;
+        document.title = P ? T.entrega + ' #' + P.id + ' · ' + P.local : T.entrega;
+        if (!silencioso || !P || P.estado !== antes) pintar();
+        // si ya va en camino y el permiso de ubicación ya estaba dado, compartir sin preguntar
+        if (P && (P.estado === 'en_camino' || P.estado === 'llegado') && vigila === null && navigator.permissions && navigator.permissions.query) {
+          navigator.permissions.query({ name: 'geolocation' }).then(function (s) { if (s.state === 'granted') empezarUbicacion(); }).catch(function () {});
+        }
+      }).catch(function () {
+        if (!silencioso) document.getElementById('app').innerHTML = cabecera(false) + '<div class="estado"><h1>' + esc(T.errorCarga) + '</h1><button type="button" class="grande" style="max-width:280px" onclick="location.reload()">' + esc(T.reintentar) + '</button></div>';
+      });
+    }
+    cargar(false);
+    sondeo = setInterval(function () { if (!ocupado) cargar(true); }, 20000);
+  })();
+  </script>
+</body>
+</html>

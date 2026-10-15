@@ -42,7 +42,14 @@
     .titulo { font-weight: 800; font-size: 14px; margin-bottom: 8px; }
     .pie { text-align: center; font-size: 12px; color: var(--gris); margin-top: 18px; }
     .cargando { text-align: center; color: var(--gris); padding: 60px 0; }
+    .mapa { height: 230px; border-radius: 12px; overflow: hidden; background: #EDE8E1; }
+    .mapa-txt { font-size: 14px; font-weight: 700; margin-top: 10px; }
+    .mapa-txt small { display: block; font-weight: 500; color: var(--gris); font-size: 12.5px; }
+    .pin-moto { width: 22px; height: 22px; border-radius: 50%; background: var(--acento); border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(232,67,26,.25), 0 2px 6px rgba(0,0,0,.3); }
+    .pin-casa { width: 16px; height: 16px; border-radius: 50%; background: var(--tinta); border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3); }
   </style>
+  <!-- MAPA DEL REPARTIDOR (14-oct-2026): con repartidor propio en camino, el cliente ve su posicion
+       (funcion us_seguimiento_mapa, SQL 040). Leaflet + OpenStreetMap se cargan solo si hace falta. -->
 </head>
 <body>
   <div class="wrap" id="app"><p class="cargando" id="cargando">Loading your order…</p></div>
@@ -69,6 +76,8 @@
       enLocal: '🏪 You pay at pickup', reembolsado: '↩︎ Refunded to your card', seguir: 'Track your driver on DoorDash',
       resumen: 'Your order', subtotal: 'Subtotal', impuesto: 'Tax', envio: 'Delivery', propina: 'Tip', total: 'Total',
       repartidor: 'Your DoorDash driver will pick it up', retiroEn: 'Pickup at', llamar: 'Call the restaurant', actualizado: 'Updates automatically',
+      mapaEspera: "Waiting for the driver's location…", mapaCerca: 'Your driver is almost there',
+      mapaDist: function (mi) { return 'Your driver is about ' + mi + ' miles away'; }, mapaHace: function (s) { return 'Updated ' + (s < 60 ? s + ' s' : Math.round(s / 60) + ' min') + ' ago'; },
     } : {
       cargando: 'Cargando su pedido…', noEncontrado: 'No encontramos este pedido.', pedido: 'Pedido',
       recibido: 'Pedido recibido', recibidoS: 'El restaurante lo confirma en un momento',
@@ -82,6 +91,8 @@
       enLocal: '🏪 Paga al retirar', reembolsado: '↩︎ Devuelto a su tarjeta', seguir: 'Seguir al repartidor en DoorDash',
       resumen: 'Su pedido', subtotal: 'Subtotal', impuesto: 'Impuesto', envio: 'Envío', propina: 'Propina', total: 'Total',
       repartidor: 'Lo recoge un repartidor de DoorDash', retiroEn: 'Retiro en', llamar: 'Llamar al restaurante', actualizado: 'Se actualiza solo',
+      mapaEspera: 'Esperando la ubicación del repartidor…', mapaCerca: 'Su repartidor ya está por llegar',
+      mapaDist: function (mi) { return 'Su repartidor está a unas ' + mi + ' millas'; }, mapaHace: function (s) { return 'Actualizado hace ' + (s < 60 ? s + ' s' : Math.round(s / 60) + ' min'); },
     };
     document.documentElement.lang = EN ? 'en' : 'es';
     document.getElementById('cargando').textContent = T.cargando;
@@ -129,6 +140,7 @@
       else if (pg === 'en_local') h += '<div class="pago espera">' + esc(envio ? T.efectivo : T.enLocal) + '</div>';
       else if (pg === 'reembolsado') h += '<div class="pago ok">' + esc(T.reembolsado) + '</div>';
       else if (pg === 'fallido' && !cancelado) h += '<div class="pago err">' + esc(T.fallido) + '</div>';
+      if (envio && propio && !cancelado && (est === 'en_camino' || est === 'llegado')) h += '<div id="mapa-lugar"></div>';
       if (envio && p.envio_seguimiento_url && !cancelado && est !== 'entregado') {
         h += '<a class="boton" target="_blank" rel="noopener" href="' + esc(p.envio_seguimiento_url) + '">🛵 ' + esc(T.seguir) + '</a>';
       }
@@ -153,6 +165,64 @@
         '</div>';
       h += '<p class="pie">' + esc(T.actualizado) + ' · DEWAN</p>';
       app.innerHTML = h;
+      ponerMapa();
+    }
+
+    // ---------- mapa del repartidor (caja que no se borra al repintar) ----------
+    var mapaCaja = null, mapa = null, pinMoto = null, pinCasa = null, ultimoMapa = null, leaflet = null;
+    function cargarLeaflet() {
+      if (leaflet) return leaflet;
+      leaflet = new Promise(function (ok, mal) {
+        var c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.appendChild(c);
+        var j = document.createElement('script'); j.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'; j.onload = function () { ok(window.L); }; j.onerror = mal; document.head.appendChild(j);
+      });
+      return leaflet;
+    }
+    function millas(a, b, c, d) {
+      var r = Math.PI / 180, x = Math.sin((c - a) * r / 2), y = Math.sin((d - b) * r / 2);
+      return 3958.8 * 2 * Math.asin(Math.sqrt(x * x + Math.cos(a * r) * Math.cos(c * r) * y * y));
+    }
+    function ponerMapa() {
+      var lugar = document.getElementById('mapa-lugar');
+      if (!lugar) return;
+      if (!mapaCaja) {
+        mapaCaja = document.createElement('div'); mapaCaja.className = 'caja';
+        mapaCaja.innerHTML = '<div class="mapa" id="mapa" style="display:none"></div><div class="mapa-txt" id="mapa-txt">' + esc(T.mapaEspera) + '</div>';
+      }
+      lugar.appendChild(mapaCaja);
+      if (mapa) mapa.invalidateSize();
+      dibujarMapa();
+    }
+    function dibujarMapa() {
+      var m = ultimoMapa, txt = document.getElementById('mapa-txt');
+      if (!m || !txt) return;
+      var hace = m.at ? Math.max(0, Math.round((Date.parse(m.ahora) - Date.parse(m.at)) / 1000)) : null;
+      var fresca = m.lat != null && hace !== null && hace < 180;
+      if (!fresca) { txt.innerHTML = esc(T.mapaEspera); return; }
+      var casa = m.entrega_lat != null && m.entrega_lng != null;
+      var mi = casa ? millas(Number(m.lat), Number(m.lng), Number(m.entrega_lat), Number(m.entrega_lng)) : null;
+      txt.innerHTML = (mi !== null ? esc(mi < 0.15 ? T.mapaCerca : T.mapaDist(mi.toFixed(1))) : '') + '<small>' + esc(T.mapaHace(hace)) + '</small>';
+      cargarLeaflet().then(function (Lf) {
+        var div = document.getElementById('mapa');
+        if (!div) return;
+        div.style.display = 'block';
+        if (!mapa) {
+          mapa = Lf.map(div, { zoomControl: false, attributionControl: true, scrollWheelZoom: false });
+          mapa.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
+          Lf.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(mapa);
+          pinMoto = Lf.marker([m.lat, m.lng], { icon: Lf.divIcon({ className: '', html: '<div class="pin-moto"></div>', iconSize: [22, 22], iconAnchor: [11, 11] }) }).addTo(mapa);
+          if (casa) pinCasa = Lf.marker([m.entrega_lat, m.entrega_lng], { icon: Lf.divIcon({ className: '', html: '<div class="pin-casa"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }) }).addTo(mapa);
+        } else {
+          pinMoto.setLatLng([m.lat, m.lng]);
+        }
+        if (casa) mapa.fitBounds([[m.lat, m.lng], [m.entrega_lat, m.entrega_lng]], { padding: [36, 36], maxZoom: 16 });
+        else mapa.setView([m.lat, m.lng], 15);
+        mapa.invalidateSize();
+      }).catch(function () {});
+    }
+    function pedirMapa() {
+      return fetch(SB + '/rpc/us_seguimiento_mapa', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_token: token }), cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; }).then(function (m) { ultimoMapa = m; }).catch(function () {});
     }
 
     function cargar() {
@@ -169,11 +239,15 @@
           return sb('/locales_us?id=eq.' + pedido.restaurante_id + '&select=nombre,telefono,zona_horaria&limit=1').then(function (l) { local = (l && l[0]) || {}; });
         }
       }).then(function () {
+        var conMapa = pedido && /propio/.test(pedido.envio_proveedor || '') && (pedido.estado_pedido === 'en_camino' || pedido.estado_pedido === 'llegado');
+        return conMapa ? pedirMapa() : null;
+      }).then(function () {
         if (pedido && volvioDePagar && pedido.pago_estado === 'por_pagar') avisar();
         pintar();
         var fin = !pedido || pedido.estado_pedido === 'entregado' || pedido.estado_pedido === 'cancelado' || pedido.pago_estado === 'fallido';
+        var enCaminoPropio = pedido && /propio/.test(pedido.envio_proveedor || '') && (pedido.estado_pedido === 'en_camino' || pedido.estado_pedido === 'llegado');
         cuenta++;
-        if (!fin) timer = setTimeout(cargar, cuenta < 12 ? 5000 : 15000);
+        if (!fin) timer = setTimeout(cargar, enCaminoPropio ? 10000 : (cuenta < 12 ? 5000 : 15000));
       });
     }
     cargar();
