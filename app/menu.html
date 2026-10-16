@@ -1745,9 +1745,20 @@
             if(window._destHome!==undefined||window._destHomeLoading) return;
             if(!(sessionData&&sessionData.resultados&&sessionData.resultados.length)) return; // catálogo aún no listo
             window._destHomeLoading=true;
-            var url=SB_URL+'/rest/v1/menu_items?select=id,nombre_item,precio,categoria_menu,descripcion,foto_url,cargo_envase,restaurante_id&disponible=eq.true&foto_url=not.is.null&limit=1000';
+            // [16-oct-2026] PAGINADO: Supabase corta en 1000 filas por pedido y ya hay más de 1000
+            // platos con foto → los locales más nuevos quedaban SIN portada en el inicio ni en
+            // el carril (La Sazón del Costeñito). Mismo patrón que fetchAllMatchingPlates.
+            var url=SB_URL+'/rest/v1/menu_items?select=id,nombre_item,precio,categoria_menu,descripcion,foto_url,cargo_envase,restaurante_id&disponible=eq.true&foto_url=not.is.null&order=id';
+            function paginaFotos(offset,acc){
+                return fetch(url+'&limit=1000&offset='+offset,{headers:supaHeaders()}).then(function(r){return r.json()}).then(function(items){
+                    if(!Array.isArray(items)) return offset?acc:items; // falla la 1ª = igual que antes (cae al catch)
+                    acc=acc.concat(items);
+                    if(items.length===1000&&offset<9000) return paginaFotos(offset+1000,acc);
+                    return acc;
+                });
+            }
             Promise.all([
-                fetch(url,{headers:supaHeaders()}).then(function(r){return r.json()}),
+                paginaFotos(0,[]),
                 loadPopularidad30d(), // en paralelo; nunca rechaza
                 loadPedidosHoy()      // HOME VIVA: badge "N pedidos hoy" listo cuando se pinte el feed
             ])
