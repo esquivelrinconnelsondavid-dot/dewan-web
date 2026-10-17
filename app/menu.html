@@ -1008,6 +1008,22 @@
         .nh-activa div{flex:1;min-width:0}
         .nh-activa b{display:block;font-size:.86rem;font-weight:900}
         .nh-activa small{display:block;font-size:.7rem;opacity:.92;font-weight:600}
+        /* pedido DIRECTO (17-oct): datos del cliente, respaldo por WhatsApp y seguimiento dentro de la web */
+        .pd-datos .pay-title{margin-bottom:10px}
+        .pd-hint{font-size:.74rem;color:var(--gris);font-weight:600;line-height:1.4;margin-top:8px}
+        .pd-datos .nh-err{margin-top:6px}
+        .pd-alt{display:block;width:100%;margin-top:6px;background:none;border:none;font-family:inherit;font-size:.74rem;font-weight:700;color:var(--gris);text-decoration:underline;cursor:pointer;padding:4px}
+        #pd-seg{position:fixed;inset:0;z-index:125;background:var(--bg);display:flex;flex-direction:column;max-width:560px;margin:0 auto;animation:nhFade .2s ease}
+        .pd-seg-top{display:flex;align-items:center;gap:10px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--border);flex:0 0 auto}
+        .pd-seg-ok{flex:1;min-width:0}
+        .pd-seg-ok b{display:block;font-size:.95rem;font-weight:900;color:var(--green-ink);line-height:1.3}
+        .pd-seg-ok span{display:block;font-size:.74rem;color:var(--gris);font-weight:700;margin-top:1px}
+        .pd-seg-frame{flex:1 1 auto;width:100%;border:0;display:block;background:var(--bg)}
+        .pd-sim{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+        .pd-sim-f{border:1px solid var(--border);border-radius:12px;padding:10px}
+        .pd-sim-f pre{white-space:pre-wrap;font-family:inherit;font-size:.8rem;margin:6px 0;line-height:1.4}
+        .pd-sim-f small{display:block;color:var(--gris);font-size:.72rem}
+        .pd-sim-log{font-size:.66rem;color:var(--gris);word-break:break-word}
         .nh-activa .nh-chev{color:#fff;font-size:1.25rem}
         /* seguimiento dentro de la web */
         .nh-seg-ok{background:var(--green-ink);color:#fff;font-weight:900;font-size:.86rem;border-radius:12px;padding:10px 12px;text-align:center;line-height:1.3}
@@ -1185,6 +1201,7 @@
         function closeAnyOverlay(){
             if(window.cerrarUbicacion&&cerrarUbicacion()) return true;
             if(window.cerrarPuerta&&cerrarPuerta()) return true;
+            if(window.pdCerrarSeg&&pdCerrarSeg()) return true;
             if(_cartSheetOpen()){ closeCart(); return true; }
             var fz=document.querySelector('.foto-zoom'); if(_isVisible(fz)){fz.parentNode.removeChild(fz);return true;}
             var sf=document.getElementById('service-fee-modal'); if(_isVisible(sf)){ if(window.closeServiceFeeInfo){closeServiceFeeInfo();}else{sf.style.display='none';} return true;}
@@ -1213,6 +1230,7 @@
         // `ts` = momento del FIX (window._gpsFixTs), no del último guardado: antes cada letra escrita en la
         // referencia renovaba las 2 h de un GPS viejo.
         function guardarUbic(){try{if(typeof cotizarEnvioReal==='function')setTimeout(cotizarEnvioReal,0)}catch(e){} if(OP_MODE)return;try{localStorage.setItem('dewan_ubic',JSON.stringify({addr:window._clientAddr||'',gps:window._clientGPS||null,ts:(window._clientGPS&&window._gpsFixTs)||Date.now()}))}catch(e){}}
+        window.guardarUbic=guardarUbic; // [17-oct] el campo "Referencia" la llama desde oninput: sin esto daba ReferenceError en cada tecla y la referencia no se guardaba
         function restaurarUbic(){try{var d=JSON.parse(localStorage.getItem('dewan_ubic')||'null');if(!d)return;if(d.addr)window._clientAddr=d.addr;if(d.gps&&d.ts&&(Date.now()-d.ts)<2*60*60*1000){window._clientGPS=d.gps;window._ubicRestauradaTs=d.ts;window._gpsFixTs=d.ts;}}catch(e){}}
         // ¿El punto en uso es uno RESTAURADO del disco (no un GPS ni un pin de esta visita)? Entonces el
         // cliente pudo haberse movido (caso DW-1310: pidió desde otro lugar y el moto fue a la casa).
@@ -2732,13 +2750,24 @@
         try{var _qsPr=new URLSearchParams(location.search).get('prueba');if(_qsPr==='1')localStorage.setItem('dewan_tester','1');if(_qsPr==='0')localStorage.removeItem('dewan_tester');}catch(e){}
         function nhTester(){try{return localStorage.getItem('dewan_tester')==='1';}catch(e){return false;}}
         function nhPuertasVisibles(){if(OP_MODE)return false;var m=window._webCarreras;if(nhTester())return m!=='off';return m==='on'&&window._webPuertas==='todos';}
+        // Pedido de comida DIRECTO desde la web, sin WhatsApp (17-oct-2026, David: "que los pedidos se queden allí
+        // mismo sin pasar por WhatsApp"). carrera_config.web_pedido_directo = off | probadores | todos; sin fila =
+        // probadores (solo quien abrió la web con ?prueba=1). WhatsApp queda de respaldo; la centralista (?op=1) sigue igual.
+        function pedidoDirectoActivo(){
+            if(OP_MODE) return false;
+            var m=window._webPedidoDirecto||'probadores';
+            if(m==='todos') return true;
+            return m==='probadores'&&nhTester();
+        }
         (function(){
-            fetch(SB_URL+'/rest/v1/carrera_config?select=clave,valor&clave=in.(web_carreras,web_puertas)',{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(j){
-                var antes=nhPuertasVisibles(),cfg={};
+            fetch(SB_URL+'/rest/v1/carrera_config?select=clave,valor&clave=in.(web_carreras,web_puertas,web_pedido_directo)',{headers:supaHeaders()}).then(function(r){return r.json();}).then(function(j){
+                var antes=nhPuertasVisibles(),antesPd=pedidoDirectoActivo(),cfg={};
                 (Array.isArray(j)?j:[]).forEach(function(x){cfg[String(x.clave)]=String(x.valor||'').toLowerCase();});
                 window._webCarreras=cfg.web_carreras||'prueba';
                 window._webPuertas=cfg.web_puertas==='todos'?'todos':'probadores';
+                window._webPedidoDirecto=cfg.web_pedido_directo||'probadores';
                 if(antes!==nhPuertasVisibles()&&currentView==='home'){try{renderHome();}catch(e){}}
+                if(antesPd!==pedidoDirectoActivo()&&currentView==='cart'&&window.showCart){try{showCart();}catch(e){}}
             }).catch(function(){window._webCarreras='prueba';});
         })();
         function nhPuertasHTML(){
@@ -3401,7 +3430,7 @@
             // luego el buscador, las puertas (Compras/Encomiendas) y las categorías; después la promo
             // que se desliza y los carriles de comida (la comida sigue en la primera pantalla).
             var h=(window._pwaModo&&!window._activeCat&&!OP_MODE&&window.pwaBarHTML?window.pwaBarHTML():'')+
-                nhHeaderHTML(hasGPS)+(window._activeCat?'':nhCarreraActivaHTML())+
+                nhHeaderHTML(hasGPS)+(window._activeCat?'':pdPedidoActivoHTML()+nhCarreraActivaHTML())+
                 '<button class="nh-busca" onclick="showSearch()">'+NH_SVG_BUSCA+'<span>'+(searchPrefill?esc(searchPrefill):'Buscar locales o platos')+'</span></button>'+
                 (window._activeCat?'':'<div class="nh-confia">🛵 Todo Riobamba · 💵 Pagas al recibir · ✓ Sin registro</div>'+nhPuertasHTML());
 
@@ -4898,6 +4927,9 @@
                 '</div>'+
             '</div>';
 
+            // Pedido directo: nombre y celular (el motorizado llama; ya no hay chat de WhatsApp de donde sacarlos)
+            if(pedidoDirectoActivo()) h+=pdDatosHTML();
+
             // V2.3: Detectar si falta ubicación (sin GPS y sin dirección escrita)
             // GPS obligatorio (2026-06-06): la dirección escrita causaba envíos mal calculados (sin coordenadas).
             var needsLoc=!window._clientGPS;
@@ -4917,6 +4949,13 @@
                     '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · $'+totalPagar.toFixed(2)+'</span></span>'+
                     '<span class="btn-wa-need-loc-hint">👆 Toca arriba para poner tu ubicación y confirmar</span>'+
                 '</button>';
+            } else if(pedidoDirectoActivo()){
+                foot+='<div class="cta-helper">Confirmas aquí · sin WhatsApp · pagas al recibir 🛵</div>';
+                foot+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
+                    '<span style="display:flex;align-items:center;gap:8px"><span>Confirmar pedido</span></span>'+
+                    '<span style="font-variant-numeric:tabular-nums">$'+totalPagar.toFixed(2)+'</span>'+
+                '</button>';
+                foot+='<button type="button" class="pd-alt" onclick="sendWA(\'wa\')">¿Prefieres WhatsApp? Envíalo por WhatsApp</button>';
             } else {
                 foot+='<div class="cta-helper">Confirmas por WhatsApp · sin registro · pagas al recibir 🛵</div>';
                 foot+='<button class="btn btn-wa" style="display:flex;justify-content:space-between;align-items:center;gap:12px" onclick="sendWA()">'+
@@ -4927,6 +4966,7 @@
             h+='</div>';
             _sheetBody.innerHTML=h;
             var _foot=document.getElementById('cart-sheet-foot'); if(_foot) _foot.innerHTML=foot;
+            if(window._pdEnviando) pdBoton(true); // se re-pintó mientras se confirma el pedido directo
             _openCartSheet();
             setTimeout(opInitMap,60); // recrear el mapa tras el re-render (cliente o centralista); restaura el marker desde _clientGPS
         };
@@ -5456,7 +5496,10 @@
         };
 
         // sendWA — CAMBIO 3: incluir dirección de texto si no hay GPS
-        window.sendWA=function(){
+        // [17-oct] Con el pedido directo activo, el MISMO botón crea el pedido aquí (pdEnviar) en vez de
+        // abrir WhatsApp. sendWA('wa') = por WhatsApp como siempre (respaldo o si el cliente lo prefiere).
+        window.sendWA=function(forzar){
+            var directo=forzar!=='wa'&&pedidoDirectoActivo();
             // [19-jun] Red de seguridad: no enviar si algun local del carrito está CERRADO ahora.
             // El carrito persiste en localStorage; el cliente pudo volver tras el cierre. null = permitir.
             var _cerr=[],_vis={};
@@ -5499,12 +5542,15 @@
                     return;
                 }
             }
+            // Pedido directo: nombre y celular antes de esperar la cotización (que no espere para nada).
+            if(directo&&!pdValidar()) return;
+            if(directo&&window._pdEnviando) return;
             // Anti doble-tap: evita dos window.open / pedido duplicado.
             if(window._enviando) return;
             window._enviando=true;
             setTimeout(function(){window._enviando=false},4000);
             // Píxel: tocó "Confirmar" → se abre WhatsApp. Mide el 2º hueco del embudo (el salto a WhatsApp).
-            try{if(typeof fbq==='function')fbq('trackCustom','AbreWhatsApp');}catch(e){}
+            try{if(!directo&&typeof fbq==='function')fbq('trackCustom','AbreWhatsApp');}catch(e){}
             // [8-jul] Envío EXACTO al confirmar: la cotización real (cotizarEnvioReal) es asíncrona; si el
             // cliente movía el pin y tocaba Enviar antes de que Google respondiera, el mensaje salía con el
             // envío ANTERIOR (dif ±$0.30 vs la carrera real, ej. #514/#515). Regla: lo que ve el cliente ES
@@ -5535,7 +5581,7 @@
                     if(_btn2&&_btn2.disabled&&_btnHTML!=null){_btn2.innerHTML=_btnHTML;_btn2.disabled=false;}
                     window._envioListo=true;
                     window._enviando=false;
-                    try{sendWA();}finally{window._envioListo=false;}
+                    try{sendWA(forzar);}finally{window._envioListo=false;}
                 })();
                 return;
             }
@@ -5549,6 +5595,7 @@
                 saveCart();
             }
             var t=cartTotals();
+            if(directo) return pdEnviar(byRest,t);
             var msg='Hola! Quiero pedir:\n\n';
             Object.keys(byRest).forEach(function(rest){
                 msg+='🏪 *'+rest+'*\n';
@@ -5659,6 +5706,212 @@
             closeModal();
             showSuccessScreen(resumen);
         };
+
+        // ── PEDIDO DIRECTO (17-oct-2026): el pedido se crea AQUÍ, sin WhatsApp ───────────────────────────────
+        // n8n "Pedidos web: comida sin WhatsApp" (/webhook/pedido-web) crea UN pedido por local en pedidos_delivery
+        // (canal appman:web-…: el mismo "Link web" de siempre para el panel del local, Admin Pro y los avisos) y
+        // devuelve los códigos DW y el link de seguimiento, que se abre DENTRO de la web. Si el servidor no responde
+        // se puede reintentar (mismo orden_uid = no duplica) o mandarlo por WhatsApp; si el servidor dice
+        // whatsapp:true (apagado, 1er pedido con esa regla, no pudo guardar) sale por WhatsApp como antes.
+        var PD_URL='https://n8n.dewansas.com/webhook/pedido-web';
+        // ?simular=1 (solo probadores): el servidor hace todo menos guardar y muestra cómo le llegaría al local.
+        try{var _qsSim=new URLSearchParams(location.search).get('simular');if(_qsSim==='1')localStorage.setItem('dewan_pd_simular','1');if(_qsSim==='0')localStorage.removeItem('dewan_pd_simular');}catch(e){}
+        function pdSimular(){try{return nhTester()&&localStorage.getItem('dewan_pd_simular')==='1';}catch(e){return false;}}
+        function pdTelNorm(t){var d=String(t||'').replace(/\D/g,'');if(d.length===12&&d.indexOf('593')===0)d='0'+d.slice(3);if(d.length===9&&d.charAt(0)==='9')d='0'+d;return /^09\d{8}$/.test(d)?d:'';}
+        // Nombre y celular: los de esta visita; si no, los de Compras/Encomiendas (dewan_cliente_web); si no, el de los sellos.
+        function pdDatos(){
+            var g=nhDatosCliente(),tel=window._pdTel;
+            if(tel==null){tel=g.telefono||'';if(!tel){try{tel=localStorage.getItem('dewan_sellos_tel')||'';}catch(e){}}}
+            return {nombre:String(window._pdNom!=null?window._pdNom:(g.nombre||'')),telefono:String(tel||'')};
+        }
+        function pdDatosHTML(){
+            var d=pdDatos(),g=window._clientGPS;
+            // La esquina ("Uruguay y Argentinos") viaja en el pedido para la moto: si el pin se puso aquí en el
+            // carrito todavía no está guardada → se busca una vez por posición (la misma búsqueda del inicio).
+            if(g&&g.lat!=null){var kc=Number(g.lat).toFixed(4)+','+Number(g.lng).toFixed(4);
+                if(window._pdCalleK!==kc&&!nhCalleGuardada(g.lat,g.lng)){window._pdCalleK=kc;setTimeout(function(){nhCalle(g.lat,g.lng,function(){});},0);}}
+            return '<div class="pay-section pd-datos" id="pd-datos">'+
+                '<div class="pay-title">🙋 ¿A nombre de quién va?</div>'+
+                '<div class="nh-dos">'+
+                    '<input class="nh-campo" id="pd-nom" maxlength="60" autocomplete="name" placeholder="Tu nombre" value="'+nhAttr(d.nombre)+'" oninput="pdGuardar()">'+
+                    '<input class="nh-campo" id="pd-tel" maxlength="14" inputmode="tel" autocomplete="tel" placeholder="Tu celular" value="'+nhAttr(d.telefono)+'" oninput="pdGuardar()" onblur="pdTelListo()">'+
+                '</div>'+
+                '<div class="pd-hint">📞 El motorizado te llama a este número si no encuentra tu casa.</div>'+
+                '<div class="nh-err" id="pd-err" hidden></div>'+
+            '</div>';
+        }
+        window.pdGuardar=function(){
+            var n=document.getElementById('pd-nom'),t=document.getElementById('pd-tel');
+            if(n) window._pdNom=n.value;
+            if(t) window._pdTel=t.value;
+            var e=document.getElementById('pd-err'); if(e) e.hidden=true;
+            if(n||t){try{localStorage.setItem('dewan_cliente_web',JSON.stringify({nombre:String(window._pdNom||'').trim(),telefono:String(window._pdTel||'').trim()}));}catch(x){}}
+        };
+        // Con el celular ya sabemos si tiene carrera GRATIS de sus sellos: se pinta antes de confirmar.
+        window.pdTelListo=function(){
+            pdGuardar();
+            var tel=pdTelNorm(window._pdTel); if(!tel) return;
+            var antes=''; try{antes=localStorage.getItem('dewan_sellos_tel')||'';}catch(e){}
+            if(antes!==tel){try{localStorage.setItem('dewan_sellos_tel',tel);}catch(e){} if(typeof refrescarPremioEnvio==='function') refrescarPremioEnvio();}
+        };
+        function pdValidar(){
+            if(!document.getElementById('pd-datos')&&currentView==='cart'&&window.showCart) showCart(); // la hoja se pintó antes de leer el interruptor
+            pdGuardar();
+            var d=pdDatos(),nom=String(d.nombre).trim(),tel=pdTelNorm(d.telefono),e=document.getElementById('pd-err');
+            function falta(m,id){
+                if(e){e.textContent=m;e.hidden=false;}
+                var el=document.getElementById(id);
+                if(el){try{el.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} pulseHint(el); setTimeout(function(){try{el.focus();}catch(x){}},260);}
+                else nhAviso(m);
+                return false;
+            }
+            if(nom.length<2) return falta('Escribe tu nombre para el pedido.','pd-nom');
+            if(!tel) return falta('Escribe tu celular de 10 dígitos (ej. 0991234567).','pd-tel');
+            window._pdNom=nom; window._pdTel=tel;
+            return true;
+        }
+        // Opciones del plato (almuerzo / alitas): las MISMAS líneas "▸ …" del mensaje de WhatsApp, así el
+        // detalle que ven el local, la moto y la comanda queda igual que en los pedidos de siempre.
+        function pdSublineas(c){
+            var out=[];
+            if(c.almuerzoChoices){
+                var catOrder=['entrada','sopa','segundo','guarnicion','jugo','bebida','postre'];
+                var catLabels={entrada:'Entrada',sopa:'Sopa',segundo:'Segundo',guarnicion:'Guarnición',jugo:'Jugo',bebida:'Bebida caliente',postre:'Postre'};
+                catOrder.forEach(function(cat){
+                    var valA=c.almuerzoChoices[cat]; if(!valA) return;
+                    var titA=(c.almuerzoTitulos||{})[cat];
+                    out.push('▸ '+(titA?(String(valA).indexOf(titA+':')===0?valA:titA+': '+valA):(catLabels[cat]||cat)+': '+valA));
+                });
+            }
+            if(c.wingsChoices){
+                if(c.wingsChoices[0]&&c.wingsChoices[0].items){
+                    c.wingsChoices.forEach(function(g){out.push('▸ '+(g.emoji||'🌶️')+' '+g.label+': '+g.items.map(function(it){return it.n+'× '+it.opcion}).join(' · '));});
+                } else out.push('▸ 🌶️ Salsas: '+wingsChoicesStr(c.wingsChoices));
+            }
+            return out;
+        }
+        function pdBoton(on){
+            var b=document.querySelector('#cart-sheet-foot .btn-wa'); if(!b) return;
+            if(on){
+                if(b.getAttribute('data-html')==null) b.setAttribute('data-html',b.innerHTML);
+                b.innerHTML='<span style="width:100%;text-align:center">⏳ Confirmando tu pedido…</span>'; b.disabled=true;
+            } else {
+                var hh=b.getAttribute('data-html'); if(hh!=null){b.innerHTML=hh;b.removeAttribute('data-html');}
+                b.disabled=false;
+            }
+        }
+        function pdError(msg){
+            pdBoton(false);
+            if(currentView==='cart'&&!document.getElementById('pd-err')&&window.showCart) showCart();
+            var e=document.getElementById('pd-err');
+            if(e){e.textContent=msg;e.hidden=false;try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){}}
+            else nhAviso(msg);
+        }
+        // Un intento + 1 reintento con el MISMO cuerpo (el servidor no duplica por orden_uid).
+        function pdPost(body){
+            function uno(){
+                var ctl=('AbortController' in window)?new AbortController():null; if(ctl) setTimeout(function(){ctl.abort();},25000);
+                return fetch(PD_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined})
+                    .then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();});
+            }
+            return uno().catch(function(){return new Promise(function(ok){setTimeout(ok,1200);}).then(uno);});
+        }
+        function pdEnviar(byRest,t){
+            if(window._pdEnviando) return;
+            var addrEl=document.getElementById('loc-addr'); if(addrEl) window._clientAddr=addrEl.value;
+            var g=window._clientGPS||{},ci=(g.lat!=null&&g.lng!=null)?nhCalleGuardada(g.lat,g.lng):null; // la esquina de "Entregar en"
+            var locales=Object.keys(byRest).map(function(nombre){
+                var r=getRestByName(nombre)||{};
+                return {restaurante_id:r.id||'',restaurante_nombre:nombre,
+                    envio:r2(deliveryConPromo(parsePrice(byRest[nombre][0].delivery),t.subtotal,nombre)), // lo que ve el cliente por local (ya con el servicio)
+                    items:byRest[nombre].map(function(c){
+                        var p=parsePrice(c.precio),pb=parsePrice(c.precio_base);
+                        return {nombre:c.nombre,qty:parsePrice(c.qty)||1,precio:p,precio_base:pb>0?pb:p,envase:parsePrice(c.cargo_envase),sublineas:pdSublineas(c),nota:String(c.nota||'')};
+                    })};
+            });
+            var datos={cliente:{nombre:String(window._pdNom||'').trim(),telefono:pdTelNorm(window._pdTel)},
+                gps:{lat:Number(g.lat),lng:Number(g.lng),acc:Math.round(Number(g.acc)||0),calle:ci&&ci.txt?String(ci.txt):''},
+                referencia:String(window._clientAddr||'').trim(),pago:window._payMethod==='transferencia'?'transferencia':'efectivo',locales:locales};
+            // Mismo pedido = mismo orden_uid (reintentar no duplica); si cambió algo, es otro pedido.
+            var firma=JSON.stringify(datos);
+            if(!window._pdUlt||window._pdUlt.firma!==firma) window._pdUlt={firma:firma,uid:Date.now().toString(36)+Math.random().toString(36).slice(2,8)};
+            var body={accion:'crear',orden_uid:window._pdUlt.uid,probador:nhTester(),simular:pdSimular(),
+                cliente:datos.cliente,gps:datos.gps,referencia:datos.referencia,pago:datos.pago,locales:locales,
+                web:{subtotal:r2(t.subtotal),envio:r2(t.delivery),premio:r2(t.premio||0),total:r2(t.total),items:t.items},
+                cliente_uuid:obtenerUuidCliente(),ref:getRefCode()};
+            window._pdEnviando=true; pdBoton(true);
+            pdPost(body).then(function(j){
+                window._pdEnviando=false;
+                if(j&&j.ok) return pdExito(j,t);
+                if(j&&j.whatsapp){ // el servidor pide WhatsApp: el pedido sale como siempre, el cliente no lo pierde
+                    pdBoton(false);
+                    if(j.mensaje) nhAviso(j.mensaje);
+                    window._enviando=false;
+                    return sendWA('wa');
+                }
+                pdError((j&&j.mensaje)||'No pudimos confirmar tu pedido. Intenta de nuevo.');
+            }).catch(function(){
+                window._pdEnviando=false;
+                pdError('No pudimos conectarnos. Revisa tu internet y vuelve a tocar Confirmar (no se duplica), o envíalo por WhatsApp.');
+            });
+        }
+        function pdExito(j,t){
+            var peds=Array.isArray(j.pedidos)?j.pedidos:[];
+            var cods=peds.map(function(p){return p.codigo;}).filter(Boolean);
+            var pago=window._payMethod==='transferencia'?'🏦 Transferencia al recibir':'💵 Efectivo al recibir';
+            var sub='Total $'+(Number(j.total)||0).toFixed(2)+' · '+pago+(j.premio&&j.premio.aplicado?' · 🎁 carrera gratis':'');
+            var exito='<div class="pd-seg-ok"><b>✓ ¡Pedido recibido! '+esc(cods.join(' · '))+'</b><span>'+esc(sub)+'</span></div>';
+            if(j.simulado){ pdSimulado(j,exito); return; } // prueba: el carrito se queda para pedir de verdad después
+            try{localStorage.setItem('dewan_pedido_web',JSON.stringify({codigos:cods,link:j.link||'',total:Number(j.total)||0,ts:Date.now()}));}catch(e){}
+            try{dewanTrackPurchase({uid:'pd-'+((peds[0]&&peds[0].id)||Date.now()),total:j.total,items:t.items});}catch(e){}
+            window._pdUlt=null;
+            markEtapa('confirmo');
+            resetAfterOrder(); // carrito vacío y de vuelta al inicio (queda la barra "Tu pedido …")
+            if(j.link) pdSeguir(j.link,exito);
+            else nhAviso('¡Pedido recibido! '+cods.join(' · '));
+        }
+        // Seguimiento DENTRO de la web: la misma página /pedido/ (tiempo del local, moto en el mapa, total) en un
+        // marco a pantalla completa. Mismo dominio (pedir.dewansas.com/pedido/index.html) y con ?en=web sus
+        // botones se abren arriba, no dentro del marco.
+        function pdSegUrl(link){var m=String(link||'').match(/\?(.*)$/);return '/pedido/index.html?'+(m?m[1]:'')+'&en=web';}
+        window.pdSeguir=function(link,exito){
+            if(!link) return;
+            pdCerrarSeg();
+            var w=document.createElement('div'); w.id='pd-seg'; w.setAttribute('role','dialog'); w.setAttribute('aria-label','Seguimiento de tu pedido');
+            w.innerHTML='<div class="pd-seg-top">'+(exito||'<div class="pd-seg-ok"><b>Tu pedido</b><span>El local, el tiempo y tu moto en vivo</span></div>')+
+                    '<button class="nh-x" onclick="pdCerrarSeg()" aria-label="Cerrar">✕</button></div>'+
+                '<iframe class="pd-seg-frame" src="'+nhAttr(pdSegUrl(link))+'" title="Seguimiento de tu pedido"></iframe>';
+            document.body.appendChild(w); document.body.classList.add('sheet-locked');
+            try{history.pushState({v:currentView,r:currentRestIdx,ov:'pdseg'},'');}catch(e){} // atrás = cerrar
+        };
+        window.pdCerrarSeg=function(){
+            var w=document.getElementById('pd-seg'); if(!w) return false;
+            w.parentNode.removeChild(w);
+            if(!_cartSheetOpen()&&!document.getElementById('nh-puerta')) document.body.classList.remove('sheet-locked');
+            return true;
+        };
+        function pdSimulado(j,exito){
+            pdBoton(false);
+            pdCerrarSeg();
+            var w=document.createElement('div'); w.id='pd-seg';
+            var filas=(j.filas||[]).map(function(f){
+                return '<div class="pd-sim-f"><b>'+esc(f.restaurante)+'</b><small>Comida $'+Number(f.monto_total||0).toFixed(2)+' · envío $'+Number(f.precio_calculado||0).toFixed(2)+' · carrera del moto $'+Number(f.carrera_moto||0).toFixed(2)+' · '+Number(f.distancia_km||0).toFixed(1)+' km</small>'+
+                    '<pre>'+esc(f.detalle_pedido)+'</pre><small>📍 '+esc(f.direccion_entrega)+'</small></div>';
+            }).join('');
+            w.innerHTML='<div class="pd-seg-top">'+exito+'<button class="nh-x" onclick="pdCerrarSeg()" aria-label="Cerrar">✕</button></div>'+
+                '<div class="pd-sim"><div class="nh-prueba">🧪 Simulación: NO se guardó ningún pedido. Así le llegaría al local y a la moto:</div>'+filas+
+                '<div class="pd-sim-log">'+esc(j.log||'')+'</div></div>';
+            document.body.appendChild(w); document.body.classList.add('sheet-locked');
+            try{history.pushState({v:currentView,r:currentRestIdx,ov:'pdseg'},'');}catch(e){}
+        }
+        // Barra en el inicio con el pedido de las últimas 3 h: abre el seguimiento AQUÍ (no otro link).
+        function pdPedidoActivoHTML(){
+            try{
+                var p=JSON.parse(localStorage.getItem('dewan_pedido_web')||'null');
+                if(!p||!p.link||Date.now()-p.ts>3*3600*1000) return '';
+                return '<a class="nh-activa" href="'+nhAttr(p.link)+'" onclick="event.preventDefault();pdSeguir(\''+nhAttr(jsEsc(p.link))+'\')"><span aria-hidden="true">🛵</span><div><b>Tu pedido '+esc((p.codigos||[]).join(' · '))+'</b><small>Toca para ver dónde va</small></div><span class="nh-chev">›</span></a>';
+            }catch(e){return '';}
+        }
 
         // FIX #4: pantalla de éxito con resumen + CTA para nuevo pedido
         function showSuccessScreen(resumen){

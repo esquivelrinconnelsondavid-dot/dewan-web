@@ -249,6 +249,11 @@
   var TZ = 'America/Guayaquil';
 
   var q = new URLSearchParams(location.search);
+  // ?en=web (17-oct): la web de pedidos abre esta página en un marco tras el pedido directo. Los enlaces
+  // (Pedir de nuevo, WhatsApp, llamar) se abren en la ventana de arriba, no dentro del marco.
+  if (q.get('en') === 'web') {
+    try { var baseTop = document.createElement('base'); baseTop.target = '_top'; document.head.appendChild(baseTop); } catch (e) {}
+  }
   var token = q.get('t') || '';
   // ?t=<principal>&mas=<token2,token3> → UN solo link para un carrito de varios locales
   // (5-sep). Cada local es su propio pedido/ticket; aquí se ven todos. Una versión vieja
