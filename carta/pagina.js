@@ -38,6 +38,10 @@
     optDelivery: "Delivery", optRetiro: "Pickup", direccion: "Address", phDir: "Street, number, apt",
     usarUbic: "📍 Use my current location", ubicOk: "✓ Location added to the order",
     notaOpc: "Note (optional)", phNota: "e.g. no onions, ring the bell…", enviarWA: "Send order on WhatsApp",
+    // plantilla sitio
+    abierto: "Open", cerrado: "Closed", cierraA: "closes at", abreHoy: "opens today at", abreManana: "opens tomorrow at",
+    abreEl: "opens", aLas: "at", horario: "Hours", cerradoDia: "Closed", comoLlegar: "Get directions",
+    factEnvio: "Delivery", factRetiro: "Pickup", firma: "Online ordering by DEWAN",
     // esta página
     noEncontrada: "We couldn't find this page.", errorCarga: "We couldn't load the menu. Please try again.",
     demoFranja: "👀 Preview of your ordering page · it doesn't take orders yet",
@@ -122,7 +126,10 @@
     const nuevo = b.cloneNode(false);           // sin los listeners de engine.js
     nuevo.textContent = texto;
     nuevo.disabled = false;
-    nuevo.addEventListener("click", () => { if (href) window.open(href, "_blank"); });
+    nuevo.addEventListener("click", () => {
+      if (typeof href === "function") href();
+      else if (href) window.open(href, "_blank");
+    });
     b.replaceWith(nuevo);
     // engine.js deshabilita #enviar con el carrito vacío: en la vista previa no hace falta
   }
@@ -132,7 +139,10 @@
     try { fila = await leerFila(); } catch (e) { console.warn(e); aviso(ES.errorCarga + "<br>" + EN.errorCarga); return; }
     if (!fila || !fila.config) { aviso(ES.noEncontrada + "<br>" + EN.noEncontrada); return; }
 
-    const ingles = fila.idioma === "en";
+    // ?lang=es|en (botón ES/EN de la plantilla) manda sobre el idioma guardado
+    const pedido = (params.get("lang") || "").toLowerCase();
+    const idioma = pedido === "en" || pedido === "es" ? pedido : fila.idioma === "en" ? "en" : "es";
+    const ingles = idioma === "en";
     T = ingles ? Object.assign({}, EN) : ES;
     if (ingles) { window.TEXTOS = EN; document.documentElement.lang = "en"; traducir(); }
     if (fila.pais !== "EC") { const fw = $("#fact-wrap"), fc = $("#campo-fact"); if (fw) fw.remove(); if (fc) fc.remove(); }
@@ -144,12 +154,12 @@
     if (fila.restaurante_id) cfg.restauranteId = fila.restaurante_id;
     if (cfg.restauranteId && cfg.live === undefined) cfg.live = true;   // local real → menú de vitrina_menu
     if (!Array.isArray(cfg.menu)) cfg.menu = [];
-    if (!cfg.plantillas || !cfg.plantillas.length) cfg.plantillas = ["swift"];
+    if (!cfg.plantillas || !cfg.plantillas.length) cfg.plantillas = [fila.pais === "US" ? "sitio" : "swift"];
     if (!cfg.logo) cfg.logo = logoIniciales(cfg.nombre, cfg.marca, cfg.crema);
     const clave = fila.slug || slug;
     window.RESTAURANTES = { [clave]: cfg };
     if (params.get("p") && params.get("p") !== clave) window.RESTAURANTES[params.get("p")] = cfg;   // engine.js busca por ?p= tal cual
-    window.PAGINA = { slug: clave, estado: fila.estado, pais: fila.pais, idioma: fila.idioma, local_us_id: fila.local_us_id || null };
+    window.PAGINA = { slug: clave, estado: fila.estado, pais: fila.pais, idioma: idioma, local_us_id: fila.local_us_id || null };
     if (!params.get("p")) history.replaceState(null, "", "?p=" + clave + (params.get("json") ? "&json=" + params.get("json") : ""));
 
     const cargando = $("#pg-cargando");
@@ -163,8 +173,15 @@
     } catch (e) { console.warn(e); aviso(T.errorCarga); return; }
 
     if (fila.estado === "demo") {
-      franjaDemo(fila);
-      botonSinPedidos(T.demoPedir, linkActivar(fila));
+      // Panel para el dueño (oferta). Si no carga, queda la franja simple de antes.
+      // Solo EE.UU.: la oferta (precios de referencia, Meta, garantía) es la de allá.
+      let oferta = null;
+      if (fila.pais === "US") {
+        try { await cargarScript("oferta-dueno.js?v=1"); oferta = window.OFERTA_DUENO && window.OFERTA_DUENO.montar(fila, cfg, linkActivar(fila)); }
+        catch (e) { console.warn(e); }
+      }
+      if (!oferta) franjaDemo(fila);
+      botonSinPedidos(T.demoPedir, oferta ? () => oferta.abrir() : linkActivar(fila));
     } else if (fila.estado === "pausada") {
       botonSinPedidos(T.pausada, null);
     }
