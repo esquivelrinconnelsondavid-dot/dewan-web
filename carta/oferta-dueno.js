@@ -10,7 +10,8 @@
    + valor apilado, bonos de fundador, garantía con condiciones y 5 cupos (escasez real).
    Sin precio: el precio va por escrito en la llamada de 20 min.
    Personalización opcional en config.venta:
-     { idioma: "es"|"en", apps: ["DoorDash","Uber Eats"], ticket: 30, comision: 25, contacto: "María" }
+     { idioma: "es"|"en", apps: ["DoorDash","Uber Eats"], ticket: 30, comision: 25, contacto: "María",
+       nota: "De dónde salieron los precios, si no son los de su carta" }
    ============================================================ */
 (function () {
   const VENTAS_WA = "593939647069";
@@ -191,6 +192,7 @@
         <span class="od-k">${esc(T.kicker)}</span>
         <h2 class="od-h">${V.contacto ? esc(T.hola + " " + V.contacto + ". ") : ""}${esc(T.titulo)}</h2>
         <p class="od-p">${esc(T.sub)}</p>
+        ${V.nota ? `<p class="od-nota">${esc(V.nota)}</p>` : ""}
 
         <section class="od-box">
           <h3>${esc(T.calcT)}</h3>

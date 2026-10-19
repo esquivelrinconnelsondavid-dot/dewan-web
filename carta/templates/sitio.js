@@ -7,7 +7,7 @@
    Campos opcionales de la config (si faltan, esa parte no sale):
      portada, logo, slogan|bajada, cocina_txt, ciudad, direccion, telefono,
      horario {lun..dom: [["11:00","22:00"], ...]}, zona ("America/New_York"),
-     rating {valor, n, fuente}, instagram, facebook, promo,
+     rating {valor, n, fuente}, instagram, facebook, promo, logo_fondo (si el logo es blanco),
      populares [ids] o item.popular, item.foto, item.nombre_en,
      item.desc_en, cat.categoria_en, bilingue (false = sin botón ES/EN)
    ============================================================ */
@@ -308,7 +308,7 @@ window.TEMPLATES["sitio"] = {
       <div class="st-page">
         <header>
           <div class="st-cover${portada}">${langHtml}</div>
-          <div class="st-id"><div class="st-logo">${R.logo ? `<img src="${esc(R.logo)}" alt="${esc(R.nombre)}">` : ""}</div></div>
+          <div class="st-id"><div class="st-logo"${R.logo_fondo ? ` style="background:${esc(R.logo_fondo)}"` : ""}>${R.logo ? `<img src="${esc(R.logo)}" alt="${esc(R.nombre)}">` : ""}</div></div>
           <div class="st-head">
             <h1 class="st-name">${esc(R.nombre)}</h1>
             ${(R.slogan || R.bajada) ? `<p class="st-tag">${esc((EN && R.slogan_en) || R.slogan || R.bajada)}</p>` : ""}
