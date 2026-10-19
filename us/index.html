@@ -73,15 +73,12 @@ html[lang=es] .idioma a[hreflang=es], html[lang=en] .idioma a[hreflang=en]{backg
 /* maqueta */
 .maqueta{position:relative;min-height:480px;max-width:500px;margin-left:auto;width:100%}
 .tel{width:270px;margin-left:0;margin-right:auto;border:10px solid #16181D;border-radius:36px;background:#fff;box-shadow:0 24px 48px -24px rgba(22,24,29,.45);overflow:hidden}
-.tel .cab{background:#B5371A;color:#fff;padding:22px 16px 16px}
-.tel .cab b{display:block;font-size:18px}
-.tel .cab small{opacity:.85;font-size:12px}
-.tel .item{display:flex;justify-content:space-between;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
-.tel .item b{font-weight:700}
-.tel .item small{display:block;color:var(--muted);font-size:11.5px}
-.tel .item .q{flex:none;align-self:center;width:26px;height:26px;border-radius:50%;background:var(--brasa);color:#fff;font-weight:800;display:grid;place-items:center;font-size:15px}
-.tel .pie{padding:12px 14px 16px}
-.tel .pagar{background:#25A55F;color:#fff;border-radius:10px;text-align:center;font-weight:800;padding:11px;font-size:14px}
+.tel.foto{width:290px;background:#F4F5F7}
+.tel.foto img{width:100%;height:auto}
+.moto{position:absolute;left:-6px;bottom:40px;display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 14px;box-shadow:0 16px 32px -20px rgba(22,24,29,.55);font-size:13.5px;line-height:1.3}
+.moto .ico{width:22px;height:22px;color:var(--ok);stroke:var(--ok)}
+.moto b{display:block;font-size:14px}
+.moto small{color:var(--muted);font-size:12.5px}
 .ticket{position:absolute;right:0;top:150px;width:226px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--brasa);border-radius:12px;padding:14px 16px;box-shadow:0 16px 32px -20px rgba(22,24,29,.5);font-size:13.5px}
 .ticket .t1{display:flex;justify-content:space-between;font-weight:800;font-size:15px}
 .ticket .nuevo{font-size:11px;font-weight:800;color:#fff;background:var(--brasa);border-radius:999px;padding:2px 8px;align-self:center}
@@ -95,17 +92,21 @@ section.gris{background:var(--bg2)}
 .titulo{max-width:720px;margin-bottom:40px}
 .titulo h2{font-size:clamp(28px,3.6vw,40px);font-weight:800;margin:10px 0 14px}
 
-/* cuentas */
-.cuentas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:880px}
-.cuenta{border:1px solid var(--line);border-radius:16px;padding:24px;background:#fff}
-.cuenta.buena{border:2px solid var(--brasa)}
-.cuenta h3{font-size:18px;margin-bottom:14px}
-.fila{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15.5px}
-.fila:last-child{border-bottom:0}
-.fila b{font-variant-numeric:tabular-nums}
-.grande{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:12px}
-.cuenta.mala .grande{color:var(--muted)}
-.cuenta.buena .grande{color:var(--brasa)}
+/* cuenta del mes */
+.mes{max-width:880px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+.mes-f{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px 22px;border-top:1px solid var(--line);align-items:center;font-variant-numeric:tabular-nums}
+.mes-f:first-child{border-top:0}
+.mes-cab{background:var(--bg2);font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.mes-f > span{font-weight:700;font-size:18px}
+.mes-cab > span{font-size:13px}
+.mes-f b{font-size:clamp(22px,3vw,30px);font-weight:800}
+.mes-f b.mal{color:#B42318}
+.mes-f b.bien{color:var(--ok)}
+.mes-f.destacada{background:#FFFBF9}
+.dueno{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:880px;margin-top:18px}
+.dueno > div{border-radius:14px;padding:16px 18px;font-size:15px;color:var(--muted);background:var(--bg2)}
+.dueno > div:last-child{background:var(--ok-soft);color:#21543A}
+.dueno b{display:block;color:var(--ink);margin-bottom:2px}
 .nota{font-size:13.5px;color:var(--muted);margin-top:16px;max-width:880px}
 
 /* pasos */
@@ -116,20 +117,52 @@ section.gris{background:var(--bg2)}
 .paso p{color:var(--muted);font-size:15.5px}
 .paso .cuando{display:inline-block;margin-top:14px;font-size:13px;font-weight:700;color:var(--brasa-ink);background:var(--brasa-soft);border-radius:999px;padding:4px 10px}
 
-/* incluye */
-.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-.tarj{border:1px solid var(--line);border-radius:16px;padding:24px;background:#fff}
-.tarj .icono{width:46px;height:46px;border-radius:12px;background:var(--brasa-soft);color:var(--brasa-ink);display:grid;place-items:center;margin-bottom:16px}
-.tarj h3{font-size:18px;margin-bottom:8px}
-.tarj p{color:var(--muted);font-size:15.5px}
+/* incluye: valor apilado */
+.stack{max-width:880px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:8px 24px 22px}
+.st-f{display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--line)}
+.st-f i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ok-soft);color:var(--ok);font-style:normal;font-weight:900;font-size:14px;display:grid;place-items:center;margin-top:2px}
+.st-f > div{flex:1;min-width:0}
+.st-f b{display:block;font-size:17px;margin-bottom:2px}
+.st-f > div > span{color:var(--muted);font-size:15px}
+.st-f em{flex:none;max-width:34%;text-align:right;font-style:normal;font-size:13.5px;font-weight:700;color:var(--brasa-ink);background:var(--brasa-soft);border-radius:999px;padding:5px 11px}
+.st-total{margin-top:18px;font-size:16px;color:var(--muted)}
+.st-total b{color:var(--ink)}
+.feed{max-width:880px;margin-top:28px}
+.feed-t{font-weight:700;margin-bottom:12px}
+.feed-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.feed-g img{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:14px;background:var(--bg2)}
 
 /* envío */
+.linea{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 28px;margin-bottom:24px}
+.linea h3{font-size:19px;margin-bottom:16px}
+.linea ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;counter-reset:l}
+.linea li{position:relative;padding-top:42px;font-size:15px;color:var(--muted)}
+.linea li::before{counter-increment:l;content:counter(l);position:absolute;top:0;left:0;width:30px;height:30px;border-radius:50%;background:var(--brasa);color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center}
+.linea li::after{content:"";position:absolute;top:15px;left:38px;right:-8px;height:2px;background:var(--brasa-line)}
+.linea li:last-child::after{display:none}
+.linea li b{display:block;color:var(--ink);font-size:14px;margin-bottom:4px;font-variant-numeric:tabular-nums}
 .envio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-.op{border:1px solid var(--line);border-radius:16px;padding:24px;background:#fff}
-.op h3{font-size:18px;margin:12px 0 8px}
+.op{border:1px solid var(--line);border-radius:16px;padding:24px;background:#fff;display:flex;flex-direction:column}
+.op.destacada{border:2px solid var(--brasa)}
+.op-n{width:34px;height:34px;border-radius:10px;background:var(--brasa-soft);color:var(--brasa-ink);font-weight:800;display:grid;place-items:center}
+.op h3{font-size:19px;margin:14px 0 6px}
+.op .op-costo{font-weight:800;color:var(--ok);font-size:15px;margin-bottom:10px}
 .op p{color:var(--muted);font-size:15.5px}
-.op ul{margin:12px 0 0;padding-left:18px;color:var(--muted);font-size:14.5px}
-.op .icono{color:var(--brasa-ink)}
+.op .op-ideal{margin-top:auto;padding-top:14px;font-size:14px;font-weight:600;color:var(--ink)}
+.compara{margin-top:24px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 28px}
+.compara h3{font-size:19px;margin-bottom:16px}
+.compara-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cmp{border-radius:14px;padding:18px 20px;font-size:15px;color:var(--muted)}
+.cmp.mala{background:#FEF3F2}
+.cmp.buena{background:var(--ok-soft)}
+.cmp-t{font-weight:700;color:var(--ink)}
+.cmp-n{font-size:30px;font-weight:800;margin:6px 0;font-variant-numeric:tabular-nums}
+.cmp.mala .cmp-n{color:#B42318}
+.cmp.buena .cmp-n{color:var(--ok)}
+.bonos{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.bonos li{position:relative;padding-left:26px;color:var(--muted);font-size:15.5px}
+.bonos li::before{content:"+";position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;background:var(--brasa);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;line-height:1}
+.bonos b{color:var(--ink)}
 
 /* garantía y fundadores */
 .dos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
@@ -177,8 +210,11 @@ footer a{color:var(--muted)}
   .nav{display:none}
   .hero .wrap,.quien{grid-template-columns:minmax(0,1fr)}
   .maqueta{min-height:0;max-width:440px;margin:0 auto}
-  .pasos,.grid3,.envio{grid-template-columns:minmax(0,1fr)}
-  .dos,.cuentas{grid-template-columns:minmax(0,1fr)}
+  .pasos,.envio{grid-template-columns:minmax(0,1fr)}
+  .dos,.dueno,.compara-g{grid-template-columns:minmax(0,1fr)}
+  .linea ol{grid-template-columns:minmax(0,1fr);gap:14px}
+  .linea li{padding:0 0 0 44px;min-height:30px}
+  .linea li::after{top:34px;bottom:-12px;left:14px;right:auto;width:2px;height:auto}
 }
 @media (max-width:520px){
   body{font-size:16px}
@@ -187,7 +223,13 @@ footer a{color:var(--muted)}
   .hero{padding:40px 0}
   section{padding:56px 0}
   .tel{width:250px;margin:0 auto}
-  .ticket{position:relative;right:auto;top:auto;width:auto;max-width:300px;margin:-28px auto 0}
+  .moto{position:relative;left:auto;bottom:auto;max-width:300px;margin:12px auto 0}
+  .mes-f{padding:14px 14px;gap:8px}
+  .mes-f > span{font-size:16px}
+  .st-f{flex-wrap:wrap}
+  .st-f em{max-width:none;margin-left:40px}
+  .linea,.compara{padding:22px 18px}
+  .ticket{position:relative;right:auto;top:auto;width:auto;max-width:300px;margin:10px auto 0}
   .hero .cta .btn{width:100%}
   .cifras{grid-template-columns:minmax(0,1fr)}
 }
@@ -204,6 +246,7 @@ footer a{color:var(--muted)}
       <span class="logo"><svg viewBox="0 0 626 459" aria-hidden="true"><use href="#campana"/></svg></span>DEWAN
     </a>
     <nav class="nav" aria-label="Secciones">
+      <a href="#envio"><span class="es">Delivery</span><span class="en">Delivery</span></a>
       <a href="#como"><span class="es">Cómo funciona</span><span class="en">How it works</span></a>
       <a href="#incluye"><span class="es">Qué incluye</span><span class="en">What's included</span></a>
       <a href="#garantia"><span class="es">Garantía</span><span class="en">Guarantee</span></a>
@@ -231,13 +274,13 @@ footer a{color:var(--muted)}
     <div>
       <p class="eyebrow"><span class="es">Para restaurantes en Estados Unidos</span><span class="en">For restaurants in the United States</span></p>
       <h1><span class="es">Sus clientes le piden directo a usted. <em>Sin comisión.</em></span><span class="en">Your customers order straight from you. <em>No commission.</em></span></h1>
-      <p class="lead"><span class="es">Le armamos su propia página de pedidos con su marca y le traemos clientes con contenido y anuncios cada semana. El pago entra a su cuenta y el envío lo hace su repartidor o uno que se pide solo.</span><span class="en">We build your own ordering page with your brand, and we bring you customers with fresh content and ads every week. Payments go straight to your account, and delivery is done by your own driver or one that's booked for you automatically.</span></p>
+      <p class="lead"><span class="es">Le armamos su propia página de pedidos con su marca y le traemos clientes con contenido y anuncios cada semana. La plata entra a su cuenta, y el delivery lo hace su repartidor o uno de DoorDash que se pide solo.</span><span class="en">We build your own ordering page with your brand, and we bring you customers with fresh content and ads every week. The money goes to your account, and delivery is done by your own driver or a DoorDash driver booked for you.</span></p>
       <div class="cta">
         <a class="btn btn-p wa" href="https://wa.me/593939647069?text=Hola%2C%20quiero%20ver%20c%C3%B3mo%20quedar%C3%ADa%20la%20p%C3%A1gina%20de%20pedidos%20de%20mi%20restaurante" data-en="https://wa.me/593939647069?text=Hi%2C%20I%27d%20like%20to%20see%20what%20my%20restaurant%27s%20ordering%20page%20would%20look%20like">
           <svg class="ico" viewBox="0 0 24 24"><path d="M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"/></svg>
           <span class="es">Agendar videollamada de 20 min</span><span class="en">Book a 20-min video call</span>
         </a>
-        <a class="btn btn-s" href="/carta/p.html?p=demo-us" target="_blank" rel="noopener">
+        <a class="btn btn-s ej" href="/carta/p.html?p=demo-us&amp;lang=es" data-en="/carta/p.html?p=demo-us&amp;lang=en" target="_blank" rel="noopener">
           <span class="es">Ver una página de ejemplo</span><span class="en">See a sample page</span>
         </a>
       </div>
@@ -248,14 +291,11 @@ footer a{color:var(--muted)}
       </div>
     </div>
     <div class="maqueta" aria-hidden="true">
-      <div class="tel">
-        <div class="cab"><b>Sabor Latino</b><small><span class="es">Retiro o envío · pida en 3 toques</span><span class="en">Pickup or delivery · order in 3 taps</span></small></div>
-        <div class="item"><div><b>Bandeja Paisa</b><small><span class="es">Frijoles, chicharrón, arepa</span><span class="en">Beans, chicharrón, arepa</span></small></div><span>$18.50</span><span class="q">+</span></div>
-        <div class="item"><div><b>Seco de Chivo</b><small><span class="es">Con arroz y maduros</span><span class="en">With rice and plantains</span></small></div><span>$16.00</span><span class="q">+</span></div>
-        <div class="item"><div><b>Ceviche de Camarón</b><small><span class="es">Con chifles</span><span class="en">With plantain chips</span></small></div><span>$15.00</span><span class="q">+</span></div>
-        <div class="item"><div><b>Horchata</b><small>16 oz</small></div><span>$3.50</span><span class="q">+</span></div>
-        <div class="pie"><div class="pagar"><span class="es">Pedir · $36.52</span><span class="en">Place order · $36.52</span></div></div>
+      <div class="tel foto">
+        <img class="es" src="img/ejemplo-celular-es.jpg" alt="" width="390" height="760">
+        <img class="en" src="img/ejemplo-celular-en.jpg" alt="" width="390" height="760">
       </div>
+      <div class="moto"><svg class="ico" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span><b><span class="es">Repartidor en camino</span><span class="en">Driver on the way</span></b><small><span class="es">llega en 6 min · véalo en el mapa</span><span class="en">arriving in 6 min · track on map</span></small></span></div>
       <div class="ticket">
         <div class="lbl"><svg class="ico" viewBox="0 0 24 24"><path d="M3 5h18v11H3zM8 20h8M12 16v4"/></svg><span class="es">Pantalla de su cocina</span><span class="en">Your kitchen screen</span></div>
         <div class="t1"><span>#1005</span><span class="nuevo"><span class="es">NUEVO</span><span class="en">NEW</span></span></div>
@@ -269,31 +309,93 @@ footer a{color:var(--muted)}
 <section>
   <div class="wrap">
     <div class="titulo">
-      <p class="eyebrow"><span class="es">La cuenta de un pedido</span><span class="en">The math on one order</span></p>
-      <h2><span class="es">En un pedido de $35, ¿cuánto se le va?</span><span class="en">On a $35 order, how much do you lose?</span></h2>
-      <p class="lead"><span class="es">Las apps de delivery le cobran un porcentaje de cada pedido. En su propia página, esa plata se queda en su caja.</span><span class="en">Delivery apps take a cut of every order. On your own page, that money stays in your register.</span></p>
+      <p class="eyebrow"><span class="es">La cuenta que nadie le hace</span><span class="en">The math nobody shows you</span></p>
+      <h2><span class="es">¿Cuánto se quedó la app el mes pasado?</span><span class="en">How much did the app keep last month?</span></h2>
+      <p class="lead"><span class="es">Las apps de delivery cobran entre 15 % y 30 % de cada pedido. Parece poco hasta que lo suma al final del mes.</span><span class="en">Delivery apps take 15% to 30% of every order. It looks small until you add it up at the end of the month.</span></p>
     </div>
-    <div class="cuentas">
-      <div class="cuenta mala">
-        <h3><span class="es">Pedido por una app de delivery</span><span class="en">Order through a delivery app</span></h3>
-        <div class="fila"><span><span class="es">Comisión de la app</span><span class="en">App commission</span></span><b>15 – 30 %</b></div>
-        <div class="fila"><span><span class="es">El cliente es de</span><span class="en">The customer belongs to</span></span><b><span class="es">la app</span><span class="en">the app</span></b></div>
-        <p class="grande">$5.25 – $10.50</p>
-        <p style="color:var(--muted);font-size:14.5px"><span class="es">se le van en cada pedido de $35</span><span class="en">gone on every $35 order</span></p>
+    <div class="mes" role="table" aria-label="Comisión al mes">
+      <div class="mes-f mes-cab" role="row">
+        <span role="columnheader"><span class="es">Pedidos al mes</span><span class="en">Orders a month</span></span>
+        <span role="columnheader"><span class="es">Se queda la app</span><span class="en">The app keeps</span></span>
+        <span role="columnheader"><span class="es">En su página</span><span class="en">On your page</span></span>
       </div>
-      <div class="cuenta buena">
-        <h3><span class="es">Pedido por su propia página</span><span class="en">Order through your own page</span></h3>
-        <div class="fila"><span><span class="es">Comisión</span><span class="en">Commission</span></span><b>0 %</b></div>
-        <div class="fila"><span><span class="es">El cliente es de</span><span class="en">The customer belongs to</span></span><b><span class="es">usted</span><span class="en">you</span></b></div>
-        <p class="grande">≈ $1.32</p>
-        <p style="color:var(--muted);font-size:14.5px"><span class="es">solo lo que cobra la tarjeta (2.9 % + 30¢)</span><span class="en">just the card processing fee (2.9% + 30¢)</span></p>
-      </div>
+      <div class="mes-f" role="row"><span role="cell">100</span><b class="mal" role="cell">$875</b><b class="bien" role="cell">$132</b></div>
+      <div class="mes-f destacada" role="row"><span role="cell">300</span><b class="mal" role="cell">$2,625</b><b class="bien" role="cell">$395</b></div>
+      <div class="mes-f" role="row"><span role="cell">600</span><b class="mal" role="cell">$5,250</b><b class="bien" role="cell">$789</b></div>
     </div>
-    <p class="nota"><span class="es">Comisiones de entrega de las apps grandes en 2026: entre 15 % y 30 % según el plan. El costo del envío lo paga el cliente; con su propio repartidor, usted pone la tarifa. No tiene que dejar las apps: su página es su canal propio, sin comisión.</span><span class="en">Delivery commissions on the big apps in 2026: 15% to 30% depending on the plan. The customer pays the delivery fee; with your own driver, you set the fee. You don't have to leave the apps: your page is your own channel, commission-free.</span></p>
+    <div class="dueno">
+      <div><b><span class="es">En la app, el cliente es de la app.</span><span class="en">On the app, the customer belongs to the app.</span></b>
+        <span class="es">No sabe quién le compró ni cómo volver a venderle.</span><span class="en">You don't know who bought from you or how to sell to them again.</span></div>
+      <div><b><span class="es">En su página, el cliente es suyo.</span><span class="en">On your page, the customer is yours.</span></b>
+        <span class="es">Su nombre y su teléfono quedan con usted, para la próxima promoción.</span><span class="en">Their name and phone stay with you, for your next promotion.</span></div>
+    </div>
+    <p class="nota"><span class="es">Ejemplo con un pedido promedio de $35 y una comisión de 25 %. En su página solo paga lo que cobra la tarjeta: 2.9 % + 30¢, unos $1.32 por pedido. No tiene que dejar las apps: su página es su canal propio, sin comisión.</span><span class="en">Example with a $35 average order and a 25% commission. On your page you only pay the card fee: 2.9% + 30¢, about $1.32 per order. You don't have to leave the apps: your page is your own channel, commission-free.</span></p>
   </div>
 </section>
 
-<section class="gris" id="como">
+<section class="gris" id="envio">
+  <div class="wrap">
+    <div class="titulo">
+      <p class="eyebrow"><span class="es">El delivery</span><span class="en">Delivery</span></p>
+      <h2><span class="es">«¿Y quién me lleva los pedidos?» Ya está resuelto.</span><span class="en">"Who's going to deliver my orders?" Already solved.</span></h2>
+      <p class="lead"><span class="es">No tiene que contratar repartidores ni comprar motos. Su página trabaja con las tres formas de entregar que ya existen, y usted elige la que le convenga.</span><span class="en">You don't need to hire drivers or buy vehicles. Your page works with the three ways to deliver that already exist, and you pick what suits you.</span></p>
+    </div>
+
+    <div class="linea">
+      <h3><span class="es">Así llega un pedido a domicilio</span><span class="en">How a delivery order flows</span></h3>
+      <ol>
+        <li><b>7:02 pm</b><span><span class="es">El cliente pide en su página y paga con tarjeta. La plata entra a su cuenta.</span><span class="en">The customer orders on your page and pays by card. The money goes to your account.</span></span></li>
+        <li><b>7:02 pm</b><span><span class="es">Suena en su cocina y sale la comanda con todo: platos, dirección y «pagado».</span><span class="en">It rings in your kitchen and the ticket prints with everything: items, address and "paid".</span></span></li>
+        <li><b>7:03 pm</b><span><span class="es">Usted acepta y marca en cuánto está listo. Nada más.</span><span class="en">You accept it and set when it'll be ready. That's it.</span></span></li>
+        <li><b>7:17 pm</b><span><span class="es">Llega el repartidor a recoger: el suyo, o uno de DoorDash o Uber que se pidió solo. Nadie tuvo que llamar a nadie.</span><span class="en">The driver arrives for pickup: yours, or a DoorDash or Uber driver booked automatically. Nobody had to call anybody.</span></span></li>
+        <li><b>7:34 pm</b><span><span class="es">El cliente vio su pedido venir en el mapa y lo recibe. Y usted se queda con su cliente para la próxima.</span><span class="en">The customer watched the order on a live map and gets it. And you keep that customer for next time.</span></span></li>
+      </ol>
+    </div>
+
+    <div class="envio">
+      <div class="op">
+        <p class="op-n">1</p>
+        <h3><span class="es">Retiro en el local</span><span class="en">Pickup</span></h3>
+        <p class="op-costo"><span class="es">Envío: $0</span><span class="en">Delivery cost: $0</span></p>
+        <p><span class="es">El cliente paga en la página y pasa a recoger. Funciona desde el primer día.</span><span class="en">Customers pay on your page and pick up. Works from day one.</span></p>
+        <p class="op-ideal"><span class="es">Ideal para: clientes del barrio y horas pico.</span><span class="en">Best for: neighborhood regulars and rush hours.</span></p>
+      </div>
+      <div class="op">
+        <p class="op-n">2</p>
+        <h3><span class="es">Su propio repartidor</span><span class="en">Your own driver</span></h3>
+        <p class="op-costo"><span class="es">Usted pone la tarifa</span><span class="en">You set the fee</span></p>
+        <p><span class="es">Le llega un link al celular con la dirección, el mapa y cuánto cobrar. El cliente lo ve venir en vivo. Puede aceptar efectivo al entregar.</span><span class="en">They get a link on their phone with the address, the map and how much to collect. The customer watches them come live. Cash on delivery is OK.</span></p>
+        <p class="op-ideal"><span class="es">Ideal para: si ya tiene a alguien que reparte.</span><span class="en">Best for: if you already have someone who delivers.</span></p>
+      </div>
+      <div class="op destacada">
+        <p class="op-n">3</p>
+        <h3><span class="es">Un repartidor que se pide solo</span><span class="en">A driver booked for you</span></h3>
+        <p class="op-costo"><span class="es">Tarifa fija por viaje, sin porcentaje</span><span class="en">Flat fee per trip, no percentage</span></p>
+        <p><span class="es">Cuando la comida está lista, se pide un repartidor de DoorDash o Uber. Usted decide cuánto del envío paga el cliente: todo, una parte o nada, como promoción.</span><span class="en">When the food is ready, a DoorDash or Uber driver is booked. You decide how much of the trip the customer pays: all of it, part of it, or none as a promo.</span></p>
+        <p class="op-ideal"><span class="es">Ideal para: si no tiene repartidores, o en las noches de mucho trabajo.</span><span class="en">Best for: if you have no drivers, or on your busiest nights.</span></p>
+      </div>
+    </div>
+
+    <div class="compara">
+      <h3><span class="es">El mismo pedido de $35, a domicilio a 3 millas</span><span class="en">The same $35 order, delivered 3 miles away</span></h3>
+      <div class="compara-g">
+        <div class="cmp mala">
+          <p class="cmp-t"><span class="es">Por la app de delivery</span><span class="en">Through the delivery app</span></p>
+          <p class="cmp-n">$8.75 – $10.50</p>
+          <p><span class="es">se le van en comisión (25–30 %), y el cliente queda en la app.</span><span class="en">gone in commission (25–30%), and the customer stays with the app.</span></p>
+        </div>
+        <div class="cmp buena">
+          <p class="cmp-t"><span class="es">Por su página, con repartidor de DoorDash</span><span class="en">Through your page, with a DoorDash driver</span></p>
+          <p class="cmp-n">≈ $5.25</p>
+          <p><span class="es">el viaje cuesta $9.75; el cliente paga $5.99 de envío y usted pone el resto más la tarjeta. Y el cliente es suyo.</span><span class="en">the trip costs $9.75; the customer pays a $5.99 delivery fee and you cover the rest plus the card fee. And the customer is yours.</span></p>
+        </div>
+      </div>
+      <p class="nota"><span class="es">Si le cobra al cliente los $9.75 completos, el viaje le sale gratis. Tarifas de DoorDash Drive en octubre de 2026; cambian por ciudad y distancia. Antes de empezar probamos con su dirección y le mostramos el precio real en su zona.</span><span class="en">If you charge the customer the full $9.75, the trip costs you nothing. DoorDash Drive rates as of October 2026; they vary by city and distance. Before you start, we test with your address and show you the real price in your area.</span></p>
+    </div>
+  </div>
+</section>
+
+<section id="como">
   <div class="wrap">
     <div class="titulo">
       <p class="eyebrow"><span class="es">Cómo funciona</span><span class="en">How it works</span></p>
@@ -319,53 +421,29 @@ footer a{color:var(--muted)}
   </div>
 </section>
 
-<section id="incluye">
+<section class="gris" id="incluye">
   <div class="wrap">
     <div class="titulo">
       <p class="eyebrow"><span class="es">Qué incluye</span><span class="en">What's included</span></p>
-      <h2><span class="es">Los pedidos y los clientes, en un solo lugar</span><span class="en">The orders and the customers, in one place</span></h2>
-      <p class="lead"><span class="es">El que le hace las redes no ve sus ventas, y el que le vende la página no le trae clientes. Nosotros hacemos las dos cosas.</span><span class="en">Whoever runs your social media never sees your sales, and whoever sells you an ordering page doesn't bring you customers. We do both.</span></p>
+      <h2><span class="es">Todo lo que hoy tendría que contratar por separado</span><span class="en">Everything you'd otherwise hire separately</span></h2>
+      <p class="lead"><span class="es">El que le hace las redes no ve sus ventas, y el que le vende la página no le trae clientes. Nosotros hacemos las dos cosas, y cada semana le mostramos lo que gastó en anuncios y lo que vendió por su página.</span><span class="en">Whoever runs your social media never sees your sales, and whoever sells you an ordering page doesn't bring you customers. We do both, and every week we show you what you spent on ads and what you sold through your page.</span></p>
     </div>
-    <div class="grid3">
-      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></svg></div>
-        <h3><span class="es">Su página de pedidos</span><span class="en">Your ordering page</span></h3>
-        <p><span class="es">Con su marca y su menú, en inglés y español. El cliente paga con tarjeta y la plata entra directo a su cuenta.</span><span class="en">Your brand and your menu, in English and Spanish. Customers pay by card and the money goes straight to your account.</span></p></div>
-      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><path d="M3 5h18v11H3zM8 20h8M12 16v4"/></svg></div>
-        <h3><span class="es">Pantalla en su cocina</span><span class="en">Kitchen order screen</span></h3>
-        <p><span class="es">Cada pedido suena y aparece completo: platos, dirección y si ya está pagado. Imprime la comanda y le muestra las ventas del día.</span><span class="en">Every order rings in complete: items, address and whether it's paid. It prints the ticket and shows you the day's sales.</span></p></div>
-      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6l-3-7H8M15 6h3l2 6"/></svg></div>
-        <h3><span class="es">Envío a su manera</span><span class="en">Delivery your way</span></h3>
-        <p><span class="es">Retiro en el local, su propio repartidor o uno que se pide solo cuando la comida está lista. El cliente sigue su pedido en vivo.</span><span class="en">Pickup, your own driver, or a driver booked automatically when the food is ready. Customers track their order live.</span></p></div>
-      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="4"/></svg></div>
-        <h3><span class="es">Contenido cada mes</span><span class="en">Content every month</span></h3>
-        <p><span class="es">12 publicaciones y 4 reels al mes con sus platos, listos y publicados en su Facebook e Instagram.</span><span class="en">12 posts and 4 reels a month featuring your dishes, created and published on your Facebook and Instagram.</span></p></div>
-      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg></div>
-        <h3><span class="es">Anuncios que llevan a su página</span><span class="en">Ads that drive to your page</span></h3>
-        <p><span class="es">Armamos y manejamos sus anuncios en Facebook e Instagram. La publicidad la paga usted directo a Meta con su tarjeta, desde $10 al día.</span><span class="en">We create and run your Facebook &amp; Instagram ads. You pay Meta directly with your own card, from $10 a day.</span></p></div>
-      <div class="tarj"><div class="icono"><svg class="ico" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
-        <h3><span class="es">Botón «Pedir» en Google</span><span class="en">"Order" button on Google</span></h3>
-        <p><span class="es">Su ficha de Google y su Instagram llevan a su página, para que el que lo busca le compre a usted.</span><span class="en">Your Google profile and Instagram link to your page, so people who look you up order from you.</span></p></div>
+    <div class="stack">
+      <div class="st-f"><i>✓</i><div><b><span class="es">Su página de pedidos</span><span class="en">Your ordering page</span></b><span><span class="es">Con su marca, sus fotos y su menú, en inglés y español. El cliente paga con tarjeta y la plata entra directo a su cuenta.</span><span class="en">Your brand, your photos and your menu, in English and Spanish. Customers pay by card and the money goes straight to your account.</span></span></div><em><span class="es">otros cobran $249–499/mes</span><span class="en">others charge $249–499/mo</span></em></div>
+      <div class="st-f"><i>✓</i><div><b><span class="es">Pantalla en su cocina</span><span class="en">Kitchen order screen</span></b><span><span class="es">Cada pedido suena y aparece completo. Imprime la comanda y le muestra las ventas del día.</span><span class="en">Every order rings in complete. It prints the ticket and shows you the day's sales.</span></span></div><em><span class="es">incluido</span><span class="en">included</span></em></div>
+      <div class="st-f"><i>✓</i><div><b><span class="es">Delivery a su manera</span><span class="en">Delivery your way</span></b><span><span class="es">Retiro, su propio repartidor con link y mapa, o uno de DoorDash o Uber que se pide solo. El cliente sigue su pedido en vivo.</span><span class="en">Pickup, your own driver with a link and map, or a DoorDash or Uber driver booked for you. Customers track their order live.</span></span></div><em><span class="es">sin porcentaje</span><span class="en">no percentage</span></em></div>
+      <div class="st-f"><i>✓</i><div><b><span class="es">Contenido cada mes</span><span class="en">Content every month</span></b><span><span class="es">12 publicaciones y 4 reels con sus platos, listos y publicados en su Facebook e Instagram.</span><span class="en">12 posts and 4 reels featuring your dishes, created and published on your Facebook and Instagram.</span></span></div><em><span class="es">una agencia cobra $500–2,000</span><span class="en">an agency charges $500–2,000</span></em></div>
+      <div class="st-f"><i>✓</i><div><b><span class="es">Anuncios que llevan a su página</span><span class="en">Ads that drive to your page</span></b><span><span class="es">Los armamos y los manejamos en Facebook e Instagram. La publicidad la paga usted directo a Meta, desde $10 al día.</span><span class="en">We create and run them on Facebook &amp; Instagram. You pay Meta directly, from $10 a day.</span></span></div><em><span class="es">manejo aparte: $500+</span><span class="en">management alone: $500+</span></em></div>
+      <div class="st-f"><i>✓</i><div><b><span class="es">Botón «Pedir» en Google y resumen semanal</span><span class="en">"Order" button on Google and a weekly summary</span></b><span><span class="es">El que lo busca en Google le compra a usted. Y cada semana, un resumen: lo que gastó en anuncios y lo que vendió por su página.</span><span class="en">People who find you on Google order from you. And every week, a summary: what you spent on ads and what you sold through your page.</span></span></div><em><span class="es">incluido</span><span class="en">included</span></em></div>
+      <p class="st-total"><span class="es">Contratado por separado: <b>más de $1,200 al mes</b>, y nadie lo junta ni le mide resultados. Con DEWAN es una sola mensualidad fija; el precio se lo damos por escrito en la llamada.</span><span class="en">Hired separately: <b>over $1,200 a month</b>, and nobody ties it together or measures results. With DEWAN it's one flat monthly fee; we give you the price in writing on the call.</span></p>
     </div>
-  </div>
-</section>
-
-<section class="gris">
-  <div class="wrap">
-    <div class="titulo">
-      <p class="eyebrow"><span class="es">El envío</span><span class="en">Delivery</span></p>
-      <h2><span class="es">No necesita una flota. Elija cómo entrega.</span><span class="en">You don't need a fleet. Choose how you deliver.</span></h2>
-    </div>
-    <div class="envio">
-      <div class="op"><svg class="ico icono" viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5M4 9v11h16V9M9 20v-6h6v6M3 9h18"/></svg>
-        <h3><span class="es">Retiro en el local</span><span class="en">Pickup</span></h3>
-        <p><span class="es">El cliente paga en la página o al retirar. Funciona desde el primer día.</span><span class="en">Customers pay online or at pickup. Works from day one.</span></p></div>
-      <div class="op"><svg class="ico icono" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/></svg>
-        <h3><span class="es">Su propio repartidor</span><span class="en">Your own driver</span></h3>
-        <p><span class="es">Usted pone la tarifa por distancia y hasta dónde llega. Puede aceptar efectivo al entregar.</span><span class="en">You set the fee by distance and how far you go. You can accept cash on delivery.</span></p></div>
-      <div class="op"><svg class="ico icono" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6l-3-7H8M15 6h3l2 6"/></svg>
-        <h3><span class="es">Repartidor pedido automático</span><span class="en">Auto-booked driver</span></h3>
-        <p><span class="es">Cuando la comida está lista, se pide solo un repartidor de las apps grandes por una tarifa fija, sin porcentaje. El cliente ve el seguimiento.</span><span class="en">When the food is ready, a driver from the major apps is booked for a flat fee, no percentage. The customer gets live tracking.</span></p>
-        <ul><li><span class="es">En ciudades con cobertura: lo revisamos con su dirección antes de empezar.</span><span class="en">Where coverage exists: we check your address before you start.</span></li></ul></div>
+    <div class="feed" aria-hidden="true">
+      <p class="feed-t"><span class="es">Así se verían sus publicaciones: sus platos, con fotos de verdad</span><span class="en">What your posts would look like: your dishes, real photos</span></p>
+      <div class="feed-g">
+        <img src="/carta/assets/ejemplo-us/churrasco.jpg" alt="" width="400" height="400" loading="lazy">
+        <img src="/carta/assets/ejemplo-us/empanadas.jpg" alt="" width="400" height="400" loading="lazy">
+        <img src="/carta/assets/ejemplo-us/ceviche.jpg" alt="" width="400" height="400" loading="lazy">
+      </div>
     </div>
   </div>
 </section>
@@ -376,12 +454,17 @@ footer a{color:var(--muted)}
       <p class="eyebrow"><span class="es">Garantía</span><span class="en">Guarantee</span></p>
       <h3><span class="es">50 pedidos directos en 60 días, o el tercer mes es gratis.</span><span class="en">50 direct orders in 60 days, or your third month is free.</span></h3>
       <p><span class="es">Si en sus primeros 60 días no le entran al menos 50 pedidos por su propia página, el tercer mes no lo paga.</span><span class="en">If you don't get at least 50 orders through your own page in your first 60 days, you don't pay for month three.</span></p>
-      <small><span class="es">Condiciones: anuncios encendidos con al menos $10 al día, fotos nuevas de sus platos cada semana y el link de pedidos en su Google y en sus redes.</span><span class="en">Conditions: ads running at $10/day or more, fresh photos of your dishes every week, and your ordering link on Google and your social profiles.</span></small>
+      <small><span class="es">Vale si durante los 60 días se cumplen 3 condiciones: anuncios encendidos con al menos $10 al día, fotos nuevas de sus platos cada semana y el link de pedidos en su Google y en sus redes. Cada pedido queda registrado en su pantalla: no hay nada que discutir.</span><span class="en">It applies when 3 conditions are met during the 60 days: ads running at $10/day or more, fresh photos of your dishes every week, and your ordering link on Google and your social profiles. Every order is recorded on your screen: nothing to argue about.</span></small>
     </div>
     <div class="fundadores">
       <p class="eyebrow"><span class="es">Restaurantes fundadores</span><span class="en">Founding restaurants</span></p>
       <h3><span class="es">5 cupos para empezar</span><span class="en">5 spots to start</span></h3>
-      <p><span class="es">La instalación la hacemos nosotros con usted, por videollamada, y por eso tomamos pocos restaurantes a la vez. Los fundadores no pagan instalación y mantienen su precio mientras sigan con nosotros, a cambio de dejarnos mostrar sus resultados.</span><span class="en">We set everything up with you over video call, so we only take a few restaurants at a time. Founding restaurants pay no setup fee and keep their price for as long as they stay, in exchange for letting us share their results.</span></p>
+      <p><span class="es">La instalación la hacemos nosotros con usted, por videollamada, y por eso tomamos pocos restaurantes a la vez. A cambio de dejarnos mostrar sus resultados, los fundadores reciben:</span><span class="en">We set everything up with you over video call, so we only take a few restaurants at a time. In exchange for letting us share their results, founders get:</span></p>
+      <ul class="bonos">
+        <li><span class="es">Instalación y carga del menú <b>gratis</b> (valor $299)</span><span class="en">Setup and menu upload <b>free</b> ($299 value)</span></li>
+        <li><span class="es">Volante con código QR para su mostrador y sus bolsas, <b>gratis</b></span><span class="en">A QR flyer for your counter and bags, <b>free</b></span></li>
+        <li><span class="es">Su precio de fundador <b>no sube</b> mientras siga con nosotros</span><span class="en">Your founder price <b>never goes up</b> while you stay</span></li>
+      </ul>
       <div class="cupos" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
       <a class="btn btn-p wa" href="https://wa.me/593939647069?text=Hola%2C%20quiero%20uno%20de%20los%205%20cupos%20de%20restaurante%20fundador" data-en="https://wa.me/593939647069?text=Hi%2C%20I%27d%20like%20one%20of%20the%205%20founding%20restaurant%20spots"><span class="es">Quiero un cupo</span><span class="en">I want a spot</span></a>
     </div>
@@ -396,7 +479,7 @@ footer a{color:var(--muted)}
       <p class="lead"><span class="es">DEWAN nació en Ecuador repartiendo pedidos de restaurantes todos los días. Lo que construimos para nuestros locales es lo que le instalamos a usted. Trabajamos 100 % en línea y usted habla directo con David, el fundador.</span><span class="en">DEWAN started in Ecuador delivering restaurant orders every day. What we built for our own restaurants is what we set up for you. We work 100% online, and you deal directly with David, the founder.</span></p>
     </div>
     <div class="cifras">
-      <div class="cifra"><b>3,000+</b><span class="es">pedidos directos de un solo restaurante con el que trabajamos</span><span class="en">direct orders for a single restaurant we work with</span></div>
+      <div class="cifra"><b>5,000+</b><span class="es">pedidos directos de un solo restaurante con el que trabajamos</span><span class="en">direct orders for a single restaurant we work with</span></div>
       <div class="cifra"><b>0 %</b><span class="es">de comisión sobre sus ventas, siempre</span><span class="en">commission on your sales, ever</span></div>
       <div class="cifra"><b><span class="es">7 días</span><span class="en">7 days</span></b><span class="es">de su menú a su página funcionando</span><span class="en">from your menu to a live page</span></div>
       <div class="cifra"><b>ES / EN</b><span class="es">su página y la atención en los dos idiomas</span><span class="en">your page and our support in both languages</span></div>
@@ -415,6 +498,12 @@ footer a{color:var(--muted)}
         <div class="r"><span class="es">No. Puede seguir en ellas. Su página es su canal propio: los clientes que ya lo conocen le piden ahí, sin comisión, y los anuncios llevan clientes nuevos directo a usted.</span><span class="en">No. You can stay on them. Your page is your own channel: customers who already know you order there with no commission, and the ads send new customers straight to you.</span></div></details>
       <details><summary><span class="es">¿Cuánto cuesta?</span><span class="en">How much does it cost?</span></summary>
         <div class="r"><span class="es">Una mensualidad fija, sin porcentaje sobre sus ventas. El precio depende de su volumen y de lo que necesite. En la videollamada de 20 minutos le mostramos su página ya armada con su menú y le damos el precio exacto por escrito.</span><span class="en">A flat monthly fee, never a percentage of your sales. The price depends on your volume and what you need. On the 20-minute video call we show you your page already built with your menu and give you the exact price in writing.</span></div></details>
+      <details><summary><span class="es">¿Quién paga el repartidor?</span><span class="en">Who pays the driver?</span></summary>
+        <div class="r"><span class="es">Depende de cómo entregue. Con retiro en el local, nadie. Con su propio repartidor, usted como siempre, y le cobra al cliente la tarifa de envío que usted ponga. Con DoorDash o Uber, el viaje se cobra a su tarjeta a tarifa fija, y usted decide cuánto de eso paga el cliente. La propina va 100 % al repartidor.</span><span class="en">It depends on how you deliver. With pickup, nobody. With your own driver, you do as always, and you charge the customer the delivery fee you set. With DoorDash or Uber, the trip is charged to your card at a flat rate, and you decide how much of it the customer pays. Tips go 100% to the driver.</span></div></details>
+      <details><summary><span class="es">No tengo repartidores. ¿Igual puedo hacer delivery?</span><span class="en">I don't have drivers. Can I still deliver?</span></summary>
+        <div class="r"><span class="es">Sí, con el repartidor que se pide solo (DoorDash o Uber), donde haya cobertura. Antes de empezar lo probamos con su dirección y le mostramos cuánto cuesta el viaje en su zona.</span><span class="en">Yes, with a driver booked for you (DoorDash or Uber), where there's coverage. Before you start we test it with your address and show you what a trip costs in your area.</span></div></details>
+      <details><summary><span class="es">¿Tengo que comprar algo?</span><span class="en">Do I need to buy anything?</span></summary>
+        <div class="r"><span class="es">No. La pantalla de pedidos funciona en el celular, la tablet o la computadora que ya tiene. Si tiene impresora de tickets, imprime la comanda.</span><span class="en">No. The order screen works on the phone, tablet or computer you already have. If you have a receipt printer, it prints the ticket.</span></div></details>
       <details><summary><span class="es">¿Quién recibe la plata de los pedidos?</span><span class="en">Who receives the money from orders?</span></summary>
         <div class="r"><span class="es">Usted. Los pagos con tarjeta entran directo a su propia cuenta de cobro (Stripe), a su nombre. Nosotros nunca tocamos la plata de sus pedidos.</span><span class="en">You do. Card payments go straight into your own payment account (Stripe), in your name. We never touch the money from your orders.</span></div></details>
       <details><summary><span class="es">¿Hay contrato?</span><span class="en">Is there a contract?</span></summary>
@@ -435,7 +524,7 @@ footer a{color:var(--muted)}
     <p><span class="es">En 20 minutos le mostramos su página armada con su menú, hace un pedido de prueba y lo ve llegar a la pantalla de su cocina.</span><span class="en">In 20 minutes we show you your page built with your menu, you place a test order, and you watch it arrive on your kitchen screen.</span></p>
     <div class="cta">
       <a class="btn btn-p wa" href="https://wa.me/593939647069?text=Hola%2C%20quiero%20ver%20c%C3%B3mo%20quedar%C3%ADa%20la%20p%C3%A1gina%20de%20pedidos%20de%20mi%20restaurante" data-en="https://wa.me/593939647069?text=Hi%2C%20I%27d%20like%20to%20see%20what%20my%20restaurant%27s%20ordering%20page%20would%20look%20like"><span class="es">Agendar videollamada</span><span class="en">Book a video call</span></a>
-      <a class="btn btn-s" href="/carta/p.html?p=demo-us" target="_blank" rel="noopener"><span class="es">Ver una página de ejemplo</span><span class="en">See a sample page</span></a>
+      <a class="btn btn-s ej" href="/carta/p.html?p=demo-us&amp;lang=es" data-en="/carta/p.html?p=demo-us&amp;lang=en" target="_blank" rel="noopener"><span class="es">Ver una página de ejemplo</span><span class="en">See a sample page</span></a>
     </div>
   </div>
 </section>
@@ -460,7 +549,7 @@ footer a{color:var(--muted)}
       var u = new URLSearchParams(location.search); u.set('lang', a.getAttribute('hreflang'));
       a.href = '?' + u.toString();
     });
-    if (l === 'en') document.querySelectorAll('a.wa[data-en]').forEach(function (a) { a.href = a.getAttribute('data-en'); });
+    if (l === 'en') document.querySelectorAll('a.wa[data-en], a.ej[data-en]').forEach(function (a) { a.href = a.getAttribute('data-en'); });
     // ?p=<página de ejemplo armada para este restaurante>
     var p = (q.get('p') || '').replace(/[^a-z0-9-]/gi, '').slice(0, 60);
     if (p) {
