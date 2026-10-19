@@ -550,6 +550,8 @@ footer a{color:var(--muted)}
       a.href = '?' + u.toString();
     });
     if (l === 'en') document.querySelectorAll('a.wa[data-en], a.ej[data-en]').forEach(function (a) { a.href = a.getAttribute('data-en'); });
+    // solo en la PC de pruebas (localhost): el ejemplo sale del archivo local, no de la base publicada
+    if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) document.querySelectorAll('a.ej').forEach(function (a) { a.href += '&json=pruebas/_ejemplo.json'; });
     // ?p=<página de ejemplo armada para este restaurante>
     var p = (q.get('p') || '').replace(/[^a-z0-9-]/gi, '').slice(0, 60);
     if (p) {
