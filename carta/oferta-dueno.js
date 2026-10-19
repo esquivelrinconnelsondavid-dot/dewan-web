@@ -26,11 +26,11 @@
     hola: "Hola",
 
     q1: "¿Qué es?",
-    p1: "Una página con su nombre y su menú donde sus clientes le piden directo a usted. Pagan con tarjeta y la plata va a una cuenta a su nombre. No es una app de delivery: no le cobramos nada por pedido.",
+    p1: "Una página con su nombre y su menú donde sus clientes le piden directo a usted. Pagan con tarjeta y la plata entra a su propia cuenta de Stripe, a su nombre: nosotros nunca la tocamos. No es una app de delivery: no le cobramos nada por pedido.",
 
     q2: "¿Cómo le llega un pedido?",
     pasos: [
-      "El cliente pide en esta página y paga con tarjeta. La plata va a su cuenta y llega a su banco en unos 2 días.",
+      "El cliente pide en esta página y paga con tarjeta. El cobro lo hace Stripe (la empresa de pagos con tarjeta) y la plata entra a su propia cuenta de Stripe, a su nombre. Nosotros nunca la tocamos. Stripe se la deposita en su banco, normalmente en 2 días hábiles.",
       "El pedido suena en la pantalla de su cocina (celular, tablet o computadora) con todo: platos, notas, dirección y «pagado». Si tiene impresora de tickets, sale la comanda.",
       "Usted lo acepta y marca en cuánto tiempo está listo.",
       "Lo entrega su repartidor, uno de DoorDash que se pide solo, o el cliente pasa a retirarlo (vea abajo).",
@@ -102,10 +102,10 @@
     intro: "We built it with your menu and photos so you can see it before you decide. This is how your customers would see it. It's still a preview: it doesn't take real orders. Try it: add dishes and open the order.",
     hola: "Hi",
     q1: "What is it?",
-    p1: "A page with your name and your menu where customers order straight from you. They pay by card and the money goes to an account in your name. It's not a delivery app: we charge nothing per order.",
+    p1: "A page with your name and your menu where customers order straight from you. They pay by card and the money goes into your own Stripe account, in your name: we never touch it. It's not a delivery app: we charge nothing per order.",
     q2: "How does an order reach you?",
     pasos: [
-      "The customer orders on this page and pays by card. The money goes to your account and reaches your bank in about 2 days.",
+      "The customer orders on this page and pays by card. Stripe (the card payment company) processes the payment and the money goes into your own Stripe account, in your name. We never touch it. Stripe deposits it in your bank, usually within 2 business days.",
       "The order rings on your kitchen screen (phone, tablet or computer) with everything: items, notes, address and \"paid\". If you have a receipt printer, the ticket prints.",
       "You accept it and set when it'll be ready.",
       "Your own driver delivers it, a DoorDash driver is booked automatically, or the customer picks it up (see below).",

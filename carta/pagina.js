@@ -177,7 +177,7 @@
       // Solo EE.UU.: la oferta (precios de referencia, Meta, garantía) es la de allá.
       let oferta = null;
       if (fila.pais === "US") {
-        try { await cargarScript("oferta-dueno.js?v=2"); oferta = window.OFERTA_DUENO && window.OFERTA_DUENO.montar(fila, cfg, linkActivar(fila)); }
+        try { await cargarScript("oferta-dueno.js?v=3"); oferta = window.OFERTA_DUENO && window.OFERTA_DUENO.montar(fila, cfg, linkActivar(fila)); }
         catch (e) { console.warn(e); }
       }
       if (!oferta) franjaDemo(fila);
