@@ -74,32 +74,134 @@ async function asegurarAudio() {
   return ctx;
 }
 
-// Sirena: dos tonos alternados durante ~1.2s. Atraviesa ruido de cocina.
-export async function playSirena() {
+// [18-oct-2026] Sonido a elegir en cada PC (Ajustes › Sonido). Super Happy: "la sirena no nos
+// gusta, que sea más suave". Se guarda en ESTA computadora (localStorage). Sin elegir nada queda
+// la sirena de siempre cada 5 s → los demás locales no notan ningún cambio. En la app nativa
+// (Android) no se ofrece: ahí manda el canal de notificaciones.
+const LS_SONIDO = 'dewan_sonido_pedido';
+export const SONIDOS = [
+  { id: 'campana', nombre: 'Campanita', detalle: 'Ding-dong suave, como el timbre de una tienda' },
+  { id: 'marimba', nombre: 'Marimba', detalle: 'Tres notas cortas y alegres' },
+  { id: 'toque', nombre: 'Toque corto', detalle: 'Un solo tono breve, el más discreto' },
+  { id: 'sirena', nombre: 'Sirena', detalle: 'La de siempre: fuerte, para cocinas con mucho ruido' },
+];
+export const REPETICIONES = [
+  { id: 'una', nombre: 'Una sola vez', detalle: 'Suena al llegar el pedido y no vuelve a sonar', seg: 0 },
+  { id: 'cada30', nombre: 'Cada 30 segundos', detalle: 'Recuerda con calma mientras nadie acepte el pedido', seg: 30 },
+  { id: 'cada5', nombre: 'Cada 5 segundos', detalle: 'Insistente, mientras nadie acepte el pedido', seg: 5 },
+];
+export const VOLUMENES = [
+  { id: 'bajo', nombre: 'Bajo', factor: 0.35 },
+  { id: 'medio', nombre: 'Medio', factor: 0.65 },
+  { id: 'alto', nombre: 'Alto', factor: 1 },
+];
+const SONIDO_DE_SIEMPRE = { sonido: 'sirena', repetir: 'cada5', volumen: 'alto', aviso: false };
+export const SONIDO_RECOMENDADO = { sonido: 'campana', repetir: 'cada30', volumen: 'medio', aviso: true };
+
+export function getAjusteSonido() {
+  if (Capacitor.isNativePlatform()) return { ...SONIDO_DE_SIEMPRE };
+  let guardado = {};
+  try { guardado = JSON.parse(localStorage.getItem(LS_SONIDO) || '{}') || {}; } catch {}
+  const a = { ...SONIDO_DE_SIEMPRE, ...guardado };
+  if (!SONIDOS.some((s) => s.id === a.sonido)) a.sonido = SONIDO_DE_SIEMPRE.sonido;
+  if (!REPETICIONES.some((r) => r.id === a.repetir)) a.repetir = SONIDO_DE_SIEMPRE.repetir;
+  if (!VOLUMENES.some((v) => v.id === a.volumen)) a.volumen = SONIDO_DE_SIEMPRE.volumen;
+  a.aviso = a.aviso === true;
+  return a;
+}
+
+export function setAjusteSonido(cambios) {
+  const a = { ...getAjusteSonido(), ...cambios };
+  try { localStorage.setItem(LS_SONIDO, JSON.stringify(a)); } catch {}
+  return a;
+}
+
+// Una nota con ataque corto y caída natural. Senos con armónicos suaves (timbre de
+// campana / marimba); los armónicos altos se apagan antes, como en un instrumento real.
+function nota(ctx, salida, t0, freq, dur, vol, parciales) {
+  parciales.forEach(([mult, nivel]) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    const fin = t0 + dur / Math.sqrt(mult);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq * mult, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol * nivel), t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, fin);
+    osc.connect(g);
+    g.connect(salida);
+    osc.start(t0);
+    osc.stop(fin + 0.05);
+  });
+}
+
+const CAMPANA = [[1, 1], [2, 0.3], [3, 0.1]];
+const MARIMBA = [[1, 1], [3.9, 0.12]];
+
+// Dibuja el sonido en `salida` desde t0. Sirve igual para el parlante (AudioContext) que para
+// grabarlo (OfflineAudioContext). Devuelve la duración en segundos.
+export function dibujarSonido(ctx, salida, t0, sonido, factor) {
+  if (sonido === 'campana') {
+    nota(ctx, salida, t0, 659.25, 1.5, 0.55 * factor, CAMPANA);        // mi
+    nota(ctx, salida, t0 + 0.5, 523.25, 1.8, 0.55 * factor, CAMPANA);  // do
+    return 2.4;
+  }
+  if (sonido === 'marimba') {
+    [523.25, 659.25, 783.99].forEach((f, i) => nota(ctx, salida, t0 + i * 0.13, f, 0.7, 0.6 * factor, MARIMBA));
+    return 1.1;
+  }
+  if (sonido === 'toque') {
+    nota(ctx, salida, t0, 880, 0.9, 0.5 * factor, [[1, 1], [2, 0.18]]);
+    return 1;
+  }
+  // Sirena: dos tonos alternados durante ~1.2s. Atraviesa ruido de cocina.
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'square';
+  osc.connect(gain);
+  gain.connect(salida);
+  // Alterna entre 900Hz y 1500Hz cuatro veces.
+  const pasos = [900, 1500, 900, 1500, 900, 1500];
+  pasos.forEach((freq, i) => {
+    osc.frequency.setValueAtTime(freq, t0 + i * 0.2);
+  });
+  gain.gain.setValueAtTime(0.5 * factor, t0);
+  gain.gain.setValueAtTime(0, t0 + pasos.length * 0.2);
+  osc.start(t0);
+  osc.stop(t0 + pasos.length * 0.2 + 0.05);
+  return 1.25;
+}
+
+// Suena el aviso elegido en esta PC. `prueba` = ajuste a escuchar sin guardarlo (botón Probar).
+export async function playAviso(prueba) {
   try {
     const ctx = await asegurarAudio();
     if (ctx.state !== 'running') return; // Audio bloqueado: nada que hacer (notif nativa cubre)
-
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    // Alterna entre 900Hz y 1500Hz cuatro veces.
-    const pasos = [900, 1500, 900, 1500, 900, 1500];
-    pasos.forEach((freq, i) => {
-      osc.frequency.setValueAtTime(freq, now + i * 0.2);
-    });
-    gain.gain.setValueAtTime(0.5, now);
-    gain.gain.setValueAtTime(0, now + pasos.length * 0.2);
-
-    osc.start(now);
-    osc.stop(now + pasos.length * 0.2 + 0.05);
+    const a = { ...getAjusteSonido(), ...(prueba || {}) };
+    const factor = (VOLUMENES.find((v) => v.id === a.volumen) || VOLUMENES[2]).factor;
+    dibujarSonido(ctx, ctx.destination, ctx.currentTime + 0.02, a.sonido, factor);
   } catch (e) {
     console.warn('[AUDIO] Error:', e);
   }
+}
+
+// Aviso de Windows (abajo a la derecha) para cuando la cajera está en otro programa,
+// por ejemplo facturando. Callado: el sonido ya lo pone el panel.
+function avisoEnPantalla(title, body) {
+  try {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      const n = new Notification(title, { body, silent: true, tag: `pedido-${title}` });
+      n.onclick = () => { try { window.focus(); } catch {} n.close(); };
+      return;
+    }
+    window.electronAPI?.notifyOrder?.({ title, body })?.catch?.(() => {});
+  } catch (e) {
+    console.warn('[AVISO PANTALLA]', e);
+  }
+}
+
+export function probarAvisoEnPantalla() {
+  avisoEnPantalla('🔔 Nuevo pedido (prueba)', 'Así le avisará el panel cuando esté en otro programa');
 }
 
 export function vibrar() {
@@ -163,17 +265,21 @@ export function startAlertLoop(pedidoId, datosNotif = {}) {
   // id → se reemplaza a sí misma y vuelve a sonar, sin apilar notificaciones).
   // La sirena depende del volumen MULTIMEDIA (si está en 0 no se oye); la notif
   // nativa suena por el canal de notificaciones → doble vía en cada tanda.
-  playSirena().catch(() => {});
+  // En la PC el sonido y cada cuánto se repite salen de Ajustes › Sonido.
+  const ajuste = getAjusteSonido();
+  const seg = (REPETICIONES.find((r) => r.id === ajuste.repetir) || REPETICIONES[2]).seg;
+  playAviso().catch(() => {});
   vibrar();
   notifNativa(pedidoId, 0, title, body);
+  if (ajuste.aviso) avisoEnPantalla(title, body);
 
   let tick = 0;
-  const id = setInterval(() => {
-    playSirena().catch(() => {});
+  const id = seg > 0 ? setInterval(() => {
+    playAviso().catch(() => {});
     vibrar();
     tick += 1;
     if (tick % 2 === 0) notifNativa(pedidoId, 0, title, body);
-  }, 5000);
+  }, seg * 1000) : 0; // "Una sola vez": sin repetición, pero queda anotado para no volver a sonar
   alertIntervals.set(pedidoId, id);
   // Tope de vida: si nunca llega el stop (ej. se perdió el UPDATE de aceptación por
   // red zombi), la sirena NO debe sonar para siempre ni acumular nodos de audio.
@@ -182,15 +288,13 @@ export function startAlertLoop(pedidoId, datosNotif = {}) {
 
 export function stopAlertLoop(pedidoId) {
   const id = alertIntervals.get(pedidoId);
-  if (id) {
-    clearInterval(id);
-    alertIntervals.delete(pedidoId);
-  }
+  if (id) clearInterval(id);
+  alertIntervals.delete(pedidoId);
   cancelarNotifs(pedidoId);
 }
 
 export function stopAllAlerts() {
-  alertIntervals.forEach((id) => clearInterval(id));
+  alertIntervals.forEach((id) => { if (id) clearInterval(id); });
   alertIntervals.clear();
   notifIds.forEach((_ids, pedidoId) => cancelarNotifs(pedidoId));
 }

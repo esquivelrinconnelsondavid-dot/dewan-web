@@ -3,6 +3,8 @@ import Menu from './Menu';
 import MiLocal from './MiLocal';
 import ConfigImpresora from './ConfigImpresora';
 import CrecerConDewan from './CrecerConDewan';
+import ConfigSonido, { resumenSonido } from './ConfigSonido';
+import { Capacitor } from '@capacitor/core';
 import { hayImpresion } from '../lib/comanda';
 import { MODO_HP, MODO_SISTEMA, MODO_US, PEDIDOS_TABLE } from '../lib/config';
 import { supabase } from '../lib/supabase';
@@ -17,6 +19,10 @@ const OPCIONES = [
   ...(hayImpresion()
     ? [{ id: 'impresora', label: 'Impresora', icono: '🖨️', descripcion: 'Comanda automática: elegí impresora y tamaño' }]
     : []),
+  // En la PC cada caja elige su sonido; en la app Android manda el canal de notificaciones.
+  ...(Capacitor.isNativePlatform()
+    ? []
+    : [{ id: 'sonido', label: 'Sonido', icono: '🔔', descripcion: null }]),
   ...(MODO_SISTEMA
     ? [{ id: 'sucursal', label: 'Sucursal', icono: '📍', descripcion: `Esta PC atiende: ${getSucursalPanel() || 'todas las sucursales'}` }]
     : []),
@@ -106,6 +112,20 @@ export default function AjustesModal({ restaurante, onCerrar, onActualizarRestau
     );
   }
 
+  if (seccion === 'sonido') {
+    return (
+      <div className="fixed inset-0 z-50 bg-fondo flex flex-col">
+        <header className="sticky top-0 bg-fondo/95 backdrop-blur border-b border-borde px-3 py-2.5 flex items-center gap-2">
+          <button onClick={() => setSeccion(null)} className="text-gray-400 text-2xl px-1">←</button>
+          <h1 className="text-white font-bold">Sonido</h1>
+        </header>
+        <div className="flex-1 overflow-y-auto pb-8">
+          <ConfigSonido />
+        </div>
+      </div>
+    );
+  }
+
   if (seccion === 'sucursal') {
     return (
       <div className="fixed inset-0 z-50 bg-fondo flex flex-col">
@@ -150,7 +170,7 @@ export default function AjustesModal({ restaurante, onCerrar, onActualizarRestau
             <span className="text-3xl shrink-0">{o.icono}</span>
             <div className="flex-1 min-w-0">
               <p className="text-white font-bold">{o.label}</p>
-              <p className="text-[12px] text-gray-400 leading-snug">{o.descripcion}</p>
+              <p className="text-[12px] text-gray-400 leading-snug">{o.id === 'sonido' ? resumenSonido() : o.descripcion}</p>
             </div>
             <span className="text-gray-500 text-xl">›</span>
           </button>

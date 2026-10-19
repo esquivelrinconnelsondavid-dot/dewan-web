@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { estadoAudio, suscribirEstadoAudio, unlockAudio, playSirena } from '../lib/notifications';
+import { estadoAudio, suscribirEstadoAudio, unlockAudio, playAviso } from '../lib/notifications';
 
 export default function AvisoSonido() {
   // Estado inicial real: en la app nativa y en Electron el audio ya viene
@@ -14,8 +14,8 @@ export default function AvisoSonido() {
     <button
       onClick={() => {
         unlockAudio();
-        // sirena corta de confirmación
-        setTimeout(() => playSirena(), 50);
+        // el aviso elegido, de confirmación
+        setTimeout(() => playAviso(), 50);
       }}
       className="w-full bg-nuevo text-white font-bold py-3 px-4 text-sm flex items-center justify-center gap-2 animate-pulse"
     >
