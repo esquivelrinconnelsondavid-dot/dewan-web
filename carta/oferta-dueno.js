@@ -1,5 +1,5 @@
 /* ============================================================
-   carta/oferta-dueno.js — PANEL PARA EL DUEÑO (18-oct-2026, v2)
+   carta/oferta-dueno.js — PANEL PARA EL DUEÑO (18-oct-2026, v2; 19-oct: prueba 14 días)
    Solo en páginas en estado 'demo' de EE.UU. (pagina.js lo carga). El cliente
    final nunca lo ve: una página activa no lo carga.
    v2 (David: «tiene que ser bien explicado, puede confundir; el delivery es muy
@@ -19,11 +19,14 @@
   const usd = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: n < 100 ? 2 : 0, maximumFractionDigits: n < 100 ? 2 : 0 });
 
   const ES = {
-    barra: "👀 Vista previa de la página de pedidos de", barraBtn: "Para el dueño: cómo funciona", pill: "💼 Para el dueño",
+    barra: "👀 Vista previa de la página de pedidos de", barraBtn: "Para el dueño: pruébela 14 días gratis", pill: "💼 Para el dueño",
     kicker: "Para el dueño", cerrar: "Cerrar",
     titulo: "Esta es su página de pedidos, ya armada.",
-    intro: "La armamos con su menú y sus fotos para que la vea antes de decidir. Así la verían sus clientes. Todavía es una vista previa: no recibe pedidos de verdad. Pruébela: agregue platos y abra el pedido.",
+    intro: "La armamos con su menú y sus fotos para que la vea antes de decidir. Así la verían sus clientes. Todavía es una vista previa: no recibe pedidos de verdad. Mírela como un cliente: agregue platos y abra el pedido.",
     hola: "Hola",
+    prT: "Pruébela 14 días gratis, con pedidos de verdad",
+    prP: "La activamos con usted y ponemos su link en Google, en su Instagram y en los anuncios que ya está pagando. Los pedidos y la plata son suyos desde el primer día, directo a su cuenta de Stripe. Si a los 14 días no le convence, la apagamos y no paga nada. No le pedimos tarjeta para empezar.",
+    prC: "Para que la prueba sirva: (1) abre su cuenta de Stripe (gratis, le ayudamos), (2) hacemos una videollamada de 20 minutos para conectar su cocina y (3) nos deja poner el link en sus anuncios y en su Google. Las publicaciones, los reels y los anuncios nuevos empiezan cuando decide seguir. Solo para los 5 restaurantes fundadores.",
 
     q1: "¿Qué es?",
     p1: "Una página con su nombre y su menú donde sus clientes le piden directo a usted. Pagan con tarjeta y la plata entra a su propia cuenta de Stripe, a su nombre: nosotros nunca la tocamos. No es una app de delivery: no le cobramos nada por pedido.",
@@ -72,35 +75,38 @@
     anuncios: "La publicidad se la paga usted directo a Facebook con su tarjeta, desde $10 al día. Nosotros la armamos y la manejamos.",
 
     q6: "¿Cuánto cuesta?",
-    p6: "Una mensualidad fija. Nunca un porcentaje de sus ventas. Mes a mes: si no le sirve, avisa con 30 días y listo. El precio exacto se lo damos por escrito en una videollamada de 20 minutos.",
+    p6: "Los primeros 14 días, nada (vea arriba). Si decide seguir: una mensualidad fija, nunca un porcentaje de sus ventas. Mes a mes: si no le sirve, avisa con 30 días y listo. El precio exacto se lo damos por escrito en la videollamada, antes de empezar la prueba.",
     bonosT: "Plan Fundador: solo para los 5 primeros restaurantes",
-    bonos: [["Instalación y carga del menú", "gratis (vale $299)"], ["Volante con código QR para su mostrador y sus bolsas", "gratis"], ["Su precio de fundador no sube mientras siga con nosotros", ""]],
+    bonos: [["14 días de prueba con pedidos de verdad", "gratis"], ["Instalación y carga del menú", "gratis (vale $299)"], ["Volante con código QR para su mostrador y sus bolsas", "gratis"], ["Su precio de fundador no sube mientras siga con nosotros", ""]],
     cupos: "Son solo 5 porque los instalamos uno por uno, por videollamada.",
 
     q7: "Garantía",
-    garT: "Si en 60 días no le llegan 50 pedidos por su página, el tercer mes no lo paga.",
+    garT: "Y después de la prueba: si en sus primeros 60 días pagados no le llegan 50 pedidos por su página, el tercer mes no lo paga.",
     garC: "Para que valga, durante esos 60 días: (1) los anuncios están encendidos con al menos $10 al día, (2) nos manda fotos nuevas de sus platos cada semana y (3) el link de su página está en su Google y sus redes (se lo ponemos nosotros). Cada pedido queda registrado en su pantalla: no hay nada que discutir.",
 
     q8: "¿Qué tiene que hacer usted?",
     tareas: [
-      "Una videollamada de 20 minutos para conectar la pantalla de su cocina.",
+      "Una videollamada de 20 minutos para conectar la pantalla de su cocina y empezar la prueba.",
       "Abrir su cuenta de cobro con tarjeta a su nombre (Stripe). Es gratis y le ayudamos paso a paso.",
       "Mandarnos fotos de sus platos cada semana por WhatsApp, para las publicaciones y los anuncios.",
     ],
     prueba: "Un restaurante con el que trabajamos ya lleva más de 5.000 pedidos directos.",
-    cta: "Quiero activar mi página", cta2: "Prefiero que me llamen",
+    cta: "Quiero probarla 14 días gratis", cta2: "Prefiero que me llamen",
     pie: "Habla directo con David, el fundador, en español o en inglés.",
-    msgActivar: "Hola David, vi la página de {n} y quiero activarla",
+    msgActivar: "Hola David, vi la página de {n} y quiero probarla 14 días gratis",
     msgLlamar: "Hola, soy de {n}. Prefiero que me llamen. Mi número es: ",
-    finT: "¿Le gusta cómo quedó?", finP: "Vea cómo funciona, quién lleva los pedidos y cuánto se ahorra.", finBtn: "Ver cómo funciona",
+    finT: "¿Le gusta cómo quedó?", finP: "Pruébela 14 días gratis, con pedidos de verdad. Vea cómo funciona, quién lleva los pedidos y cuánto se ahorra.", finBtn: "Ver cómo funciona",
   };
 
   const EN = {
-    barra: "👀 Preview of the ordering page for", barraBtn: "For the owner: how it works", pill: "💼 For the owner",
+    barra: "👀 Preview of the ordering page for", barraBtn: "For the owner: try it free for 14 days", pill: "💼 For the owner",
     kicker: "For the owner", cerrar: "Close",
     titulo: "This is your ordering page, already built.",
-    intro: "We built it with your menu and photos so you can see it before you decide. This is how your customers would see it. It's still a preview: it doesn't take real orders. Try it: add dishes and open the order.",
+    intro: "We built it with your menu and photos so you can see it before you decide. This is how your customers would see it. It's still a preview: it doesn't take real orders. Look around like a customer: add dishes and open the order.",
     hola: "Hi",
+    prT: "Try it free for 14 days, with real orders",
+    prP: "We turn it on with you and put your link on Google, on your Instagram and in the ads you're already paying for. The orders and the money are yours from day one, straight to your Stripe account. If after 14 days you're not convinced, we switch it off and you pay nothing. No card needed to start.",
+    prC: "For the trial to work: (1) you open your Stripe account (free, we help you), (2) we do a 20-minute video call to connect your kitchen and (3) you let us put the link in your ads and on your Google profile. Posts, reels and new ads start when you decide to stay. Only for the 5 founding restaurants.",
     q1: "What is it?",
     p1: "A page with your name and your menu where customers order straight from you. They pay by card and the money goes into your own Stripe account, in your name: we never touch it. It's not a delivery app: we charge nothing per order.",
     q2: "How does an order reach you?",
@@ -143,25 +149,25 @@
     total: "Bought separately: over $1,200 a month, and nobody ties it together.",
     anuncios: "You pay Facebook directly for the ads with your card, from $10 a day. We create and run them.",
     q6: "How much does it cost?",
-    p6: "A flat monthly fee. Never a percentage of your sales. Month to month: if it's not for you, give 30 days' notice. We give you the exact price in writing on a 20-minute video call.",
+    p6: "The first 14 days, nothing (see above). If you decide to stay: a flat monthly fee, never a percentage of your sales. Month to month: if it's not for you, give 30 days' notice. We give you the exact price in writing on the video call, before the trial starts.",
     bonosT: "Founder Plan: only for the first 5 restaurants",
-    bonos: [["Setup and menu upload", "free ($299 value)"], ["QR flyer for your counter and bags", "free"], ["Your founder price never goes up while you stay", ""]],
+    bonos: [["14-day trial with real orders", "free"], ["Setup and menu upload", "free ($299 value)"], ["QR flyer for your counter and bags", "free"], ["Your founder price never goes up while you stay", ""]],
     cupos: "Only 5, because we set each one up personally over video call.",
     q7: "Guarantee",
-    garT: "If you don't get 50 orders through your page in 60 days, you don't pay for month three.",
+    garT: "And after the trial: if you don't get 50 orders through your page in your first 60 paid days, you don't pay for month three.",
     garC: "It applies when, during those 60 days: (1) ads run at $10/day or more, (2) you send us fresh photos of your dishes every week, and (3) your page link is on your Google profile and social media (we add it). Every order is recorded on your screen: nothing to argue about.",
     q8: "What do you need to do?",
     tareas: [
-      "A 20-minute video call to connect your kitchen screen.",
+      "A 20-minute video call to connect your kitchen screen and start the trial.",
       "Open your card payment account in your name (Stripe). It's free and we help you step by step.",
       "Send us photos of your dishes every week by WhatsApp, for posts and ads.",
     ],
     prueba: "A restaurant we work with has passed 5,000 direct orders.",
-    cta: "Activate my page", cta2: "I'd rather get a call",
+    cta: "I want the 14-day free trial", cta2: "I'd rather get a call",
     pie: "You talk directly with David, the founder, in Spanish or English.",
-    msgActivar: "Hi David, I saw the page for {n} and I want to activate it",
+    msgActivar: "Hi David, I saw the page for {n} and I want to try it free for 14 days",
     msgLlamar: "Hi, I'm with {n}. Please call me. My number is: ",
-    finT: "Like how it looks?", finP: "See how it works, who delivers the orders and how much you save.", finBtn: "See how it works",
+    finT: "Like how it looks?", finP: "Try it free for 14 days, with real orders. See how it works, who delivers the orders and how much you save.", finBtn: "See how it works",
   };
 
   const CSS = `
@@ -184,6 +190,10 @@
   .od-h{font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.18;margin:10px 0 8px}
   .od-p{font-size:14px;line-height:1.55;color:#4b5058;margin:0}
   .od-nota-precio{margin:10px 0 0;font-size:12.5px;line-height:1.45;color:#7A4A06;background:#FBF0DC;border-radius:10px;padding:8px 10px}
+  .od-prueba{margin-top:16px;border:2px solid #E8431A;border-radius:16px;padding:14px 16px;background:#FFF8F5}
+  .od-prueba b{display:block;font-size:16px;line-height:1.3;margin-bottom:6px;color:#1C1F26}
+  .od-prueba p{font-size:13.5px;line-height:1.5;color:#4b5058;margin:0}
+  .od-prueba small{display:block;font-size:12px;line-height:1.45;color:#7a7f88;margin-top:8px}
   .od-s{margin-top:22px;padding-top:18px;border-top:1px solid #EEEFF2}
   .od-s h3{font-size:16.5px;font-weight:800;margin:0 0 8px;letter-spacing:-.2px}
   .od-pasos{margin:4px 0 0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:p}
@@ -275,6 +285,7 @@
         <h2 class="od-h">${V.contacto ? esc(T.hola + " " + V.contacto + ". ") : ""}${esc(T.titulo)}</h2>
         <p class="od-p">${esc(T.intro)}</p>
         ${V.nota ? `<p class="od-nota-precio">${esc(V.nota)}</p>` : ""}
+        <div class="od-prueba"><b>🎁 ${esc(T.prT)}</b><p>${esc(T.prP)}</p><small>${esc(T.prC)}</small></div>
 
         <section class="od-s"><h3>1. ${esc(T.q1)}</h3><p class="od-p">${esc(T.p1)}</p></section>
 

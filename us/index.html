@@ -164,6 +164,15 @@ section.gris{background:var(--bg2)}
 .bonos li::before{content:"+";position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;background:var(--brasa);color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;line-height:1}
 .bonos b{color:var(--ink)}
 
+/* prueba de 14 días */
+.prueba{border:2px solid var(--brasa);border-radius:20px;padding:30px 34px;background:var(--brasa-soft);margin-bottom:20px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:center}
+.prueba h3{font-size:clamp(24px,3vw,32px);margin:12px 0 12px}
+.prueba p{color:var(--muted);margin:0}
+.prueba ol{margin:0;padding-left:22px;color:var(--muted);font-size:15px;display:grid;gap:8px}
+.prueba ol b{color:var(--ink)}
+.prueba small{display:block;margin-top:12px;color:var(--muted);font-size:13.5px}
+@media (max-width:820px){.prueba{grid-template-columns:minmax(0,1fr);padding:24px 20px}}
+
 /* garantía y fundadores */
 .dos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .garantia{background:var(--ink);color:#fff;border-radius:20px;padding:34px}
@@ -285,6 +294,7 @@ footer a{color:var(--muted)}
         </a>
       </div>
       <div class="sellos">
+        <span><svg class="ico" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="es">14 días gratis, con pedidos de verdad</span><span class="en">14 days free, with real orders</span></span>
         <span><svg class="ico" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="es">0 % de comisión</span><span class="en">0% commission</span></span>
         <span><svg class="ico" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Inglés y español</span><span class="en">English &amp; Spanish</span></span>
         <span><svg class="ico" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="es">Mes a mes, sin contrato largo</span><span class="en">Month to month, no long contract</span></span>
@@ -449,11 +459,28 @@ footer a{color:var(--muted)}
 </section>
 
 <section id="garantia">
+  <div class="wrap">
+    <div class="prueba" id="prueba">
+      <div>
+        <p class="eyebrow"><span class="es">Prueba gratis</span><span class="en">Free trial</span></p>
+        <h3><span class="es">Pruébela 14 días gratis, con pedidos de verdad.</span><span class="en">Try it free for 14 days, with real orders.</span></h3>
+        <p><span class="es">La activamos con usted y ponemos su link en Google, en su Instagram y en los anuncios que ya está pagando. Los pedidos y la plata son suyos desde el primer día, directo a su cuenta de Stripe. Si a los 14 días no le convence, la apagamos y no paga nada. No le pedimos tarjeta para empezar.</span><span class="en">We turn it on with you and put your link on Google, on your Instagram and in the ads you’re already paying for. The orders and the money are yours from day one, straight to your Stripe account. If after 14 days you’re not convinced, we switch it off and you pay nothing. No card needed to start.</span></p>
+      </div>
+      <div>
+        <ol>
+          <li><span class="es"><b>Abre su cuenta de Stripe</b>, gratis y con nuestra ayuda.</span><span class="en"><b>Open your Stripe account</b>, free and with our help.</span></li>
+          <li><span class="es"><b>Videollamada de 20 minutos</b> para conectar la pantalla de su cocina.</span><span class="en"><b>A 20-minute video call</b> to connect your kitchen screen.</span></li>
+          <li><span class="es"><b>Ponemos su link</b> en sus anuncios y en su Google.</span><span class="en"><b>We add your link</b> to your ads and your Google profile.</span></li>
+        </ol>
+        <small><span class="es">Las publicaciones, los reels y los anuncios nuevos empiezan cuando decide seguir. Solo para los 5 restaurantes fundadores.</span><span class="en">Posts, reels and new ads start when you decide to stay. Only for the 5 founding restaurants.</span></small>
+      </div>
+    </div>
+  </div>
   <div class="wrap dos">
     <div class="garantia">
       <p class="eyebrow"><span class="es">Garantía</span><span class="en">Guarantee</span></p>
       <h3><span class="es">50 pedidos directos en 60 días, o el tercer mes es gratis.</span><span class="en">50 direct orders in 60 days, or your third month is free.</span></h3>
-      <p><span class="es">Si en sus primeros 60 días no le entran al menos 50 pedidos por su propia página, el tercer mes no lo paga.</span><span class="en">If you don't get at least 50 orders through your own page in your first 60 days, you don't pay for month three.</span></p>
+      <p><span class="es">Después de la prueba: si en sus primeros 60 días pagados no le entran al menos 50 pedidos por su propia página, el tercer mes no lo paga.</span><span class="en">After the trial: if you don't get at least 50 orders through your own page in your first 60 paid days, you don't pay for month three.</span></p>
       <small><span class="es">Vale si durante los 60 días se cumplen 3 condiciones: anuncios encendidos con al menos $10 al día, fotos nuevas de sus platos cada semana y el link de pedidos en su Google y en sus redes. Cada pedido queda registrado en su pantalla: no hay nada que discutir.</span><span class="en">It applies when 3 conditions are met during the 60 days: ads running at $10/day or more, fresh photos of your dishes every week, and your ordering link on Google and your social profiles. Every order is recorded on your screen: nothing to argue about.</span></small>
     </div>
     <div class="fundadores">
@@ -461,6 +488,7 @@ footer a{color:var(--muted)}
       <h3><span class="es">5 cupos para empezar</span><span class="en">5 spots to start</span></h3>
       <p><span class="es">La instalación la hacemos nosotros con usted, por videollamada, y por eso tomamos pocos restaurantes a la vez. A cambio de dejarnos mostrar sus resultados, los fundadores reciben:</span><span class="en">We set everything up with you over video call, so we only take a few restaurants at a time. In exchange for letting us share their results, founders get:</span></p>
       <ul class="bonos">
+        <li><span class="es"><b>14 días de prueba gratis</b>, con pedidos de verdad</span><span class="en">A <b>14-day free trial</b>, with real orders</span></li>
         <li><span class="es">Instalación y carga del menú <b>gratis</b> (valor $299)</span><span class="en">Setup and menu upload <b>free</b> ($299 value)</span></li>
         <li><span class="es">Volante con código QR para su mostrador y sus bolsas, <b>gratis</b></span><span class="en">A QR flyer for your counter and bags, <b>free</b></span></li>
         <li><span class="es">Su precio de fundador <b>no sube</b> mientras siga con nosotros</span><span class="en">Your founder price <b>never goes up</b> while you stay</span></li>
@@ -497,7 +525,9 @@ footer a{color:var(--muted)}
       <details><summary><span class="es">¿Tengo que dejar las apps de delivery?</span><span class="en">Do I have to leave the delivery apps?</span></summary>
         <div class="r"><span class="es">No. Puede seguir en ellas. Su página es su canal propio: los clientes que ya lo conocen le piden ahí, sin comisión, y los anuncios llevan clientes nuevos directo a usted.</span><span class="en">No. You can stay on them. Your page is your own channel: customers who already know you order there with no commission, and the ads send new customers straight to you.</span></div></details>
       <details><summary><span class="es">¿Cuánto cuesta?</span><span class="en">How much does it cost?</span></summary>
-        <div class="r"><span class="es">Una mensualidad fija, sin porcentaje sobre sus ventas. El precio depende de su volumen y de lo que necesite. En la videollamada de 20 minutos le mostramos su página ya armada con su menú y le damos el precio exacto por escrito.</span><span class="en">A flat monthly fee, never a percentage of your sales. The price depends on your volume and what you need. On the 20-minute video call we show you your page already built with your menu and give you the exact price in writing.</span></div></details>
+        <div class="r"><span class="es">Una mensualidad fija, sin porcentaje sobre sus ventas. El precio depende de su volumen y de lo que necesite. En la videollamada de 20 minutos le mostramos su página ya armada con su menú y le damos el precio exacto por escrito. Y antes de pagar nada, la prueba 14 días.</span><span class="en">A flat monthly fee, never a percentage of your sales. The price depends on your volume and what you need. On the 20-minute video call we show you your page already built with your menu and give you the exact price in writing. And before you pay anything, you try it for 14 days.</span></div></details>
+      <details><summary><span class="es">¿Puedo probarla antes de pagar?</span><span class="en">Can I try it before I pay?</span></summary>
+        <div class="r"><span class="es">Sí. Los restaurantes fundadores la prueban 14 días gratis, con pedidos de verdad y sin dejar tarjeta. Si no le convence, la apagamos y no paga nada. Si sigue, el día 12 le mandamos sus números de la prueba (pedidos, ventas y cuánto se ahorró en comisiones) y el precio por escrito.</span><span class="en">Yes. Founding restaurants try it free for 14 days, with real orders and no card on file. If you’re not convinced, we switch it off and you pay nothing. If you stay, on day 12 we send you your trial numbers (orders, sales and how much you saved in commissions) and the price in writing.</span></div></details>
       <details><summary><span class="es">¿Quién paga el repartidor?</span><span class="en">Who pays the driver?</span></summary>
         <div class="r"><span class="es">Depende de cómo entregue. Con retiro en el local, nadie. Con su propio repartidor, usted como siempre, y le cobra al cliente la tarifa de envío que usted ponga. Con DoorDash o Uber, el viaje se cobra a su tarjeta a tarifa fija, y usted decide cuánto de eso paga el cliente. La propina va 100 % al repartidor.</span><span class="en">It depends on how you deliver. With pickup, nobody. With your own driver, you do as always, and you charge the customer the delivery fee you set. With DoorDash or Uber, the trip is charged to your card at a flat rate, and you decide how much of it the customer pays. Tips go 100% to the driver.</span></div></details>
       <details><summary><span class="es">No tengo repartidores. ¿Igual puedo hacer delivery?</span><span class="en">I don't have drivers. Can I still deliver?</span></summary>
@@ -521,7 +551,7 @@ footer a{color:var(--muted)}
 <section class="cierre">
   <div class="wrap">
     <h2><span class="es">¿Vemos cómo quedaría la suya?</span><span class="en">Want to see what yours would look like?</span></h2>
-    <p><span class="es">En 20 minutos le mostramos su página armada con su menú, hace un pedido de prueba y lo ve llegar a la pantalla de su cocina.</span><span class="en">In 20 minutes we show you your page built with your menu, you place a test order, and you watch it arrive on your kitchen screen.</span></p>
+    <p><span class="es">En 20 minutos le mostramos su página armada con su menú, hace un pedido de prueba y lo ve llegar a la pantalla de su cocina. Si le gusta, la prueba 14 días gratis, con pedidos de verdad.</span><span class="en">In 20 minutes we show you your page built with your menu, you place a test order, and you watch it arrive on your kitchen screen. If you like it, you try it free for 14 days, with real orders.</span></p>
     <div class="cta">
       <a class="btn btn-p wa" href="https://wa.me/593939647069?text=Hola%2C%20quiero%20ver%20c%C3%B3mo%20quedar%C3%ADa%20la%20p%C3%A1gina%20de%20pedidos%20de%20mi%20restaurante" data-en="https://wa.me/593939647069?text=Hi%2C%20I%27d%20like%20to%20see%20what%20my%20restaurant%27s%20ordering%20page%20would%20look%20like"><span class="es">Agendar videollamada</span><span class="en">Book a video call</span></a>
       <a class="btn btn-s ej" href="/carta/p.html?p=demo-us&amp;lang=es" data-en="/carta/p.html?p=demo-us&amp;lang=en" target="_blank" rel="noopener"><span class="es">Ver una página de ejemplo</span><span class="en">See a sample page</span></a>
