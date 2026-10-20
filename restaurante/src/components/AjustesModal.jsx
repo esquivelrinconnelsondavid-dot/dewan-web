@@ -9,6 +9,7 @@ import { hayImpresion } from '../lib/comanda';
 import { MODO_HP, MODO_SISTEMA, MODO_US, PEDIDOS_TABLE } from '../lib/config';
 import { supabase } from '../lib/supabase';
 import { getSucursalPanel, setSucursalPanel } from '../lib/sucursal';
+import { listarPedidosUs } from '../lib/pedidosUs';
 
 const OPCIONES = [
   // EE.UU.: la carta y los datos del local viven en su página (tabla paginas), no en estas pantallas.
@@ -36,9 +37,13 @@ function SucursalPanel({ restaurante }) {
   useEffect(() => {
     let vivo = true;
     const desde = new Date(Date.now() - 30 * 86400000).toISOString();
-    supabase.from(PEDIDOS_TABLE).select('sucursal_nombre')
-      .eq('restaurante_id', restaurante?.restaurante_id)
-      .gte('fecha_creacion', desde).not('sucursal_nombre', 'is', null).limit(1000)
+    // [19-oct-2026] EE.UU. (SQL 051): la llave pública ya no lee pedidos_us → por la función del Panel.
+    const consulta = MODO_US
+      ? listarPedidosUs({ desde })
+      : supabase.from(PEDIDOS_TABLE).select('sucursal_nombre')
+        .eq('restaurante_id', restaurante?.restaurante_id)
+        .gte('fecha_creacion', desde).not('sucursal_nombre', 'is', null).limit(1000);
+    consulta
       .then(({ data }) => {
         if (!vivo) return;
         const set = new Set((data || []).map((r) => String(r.sucursal_nombre || '').trim()).filter(Boolean));

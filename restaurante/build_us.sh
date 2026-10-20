@@ -20,7 +20,8 @@ export VITE_N8N_RECHAZO_PATH=us-evento
 unset VITE_N8N_TIMER_URL
 npx vite build
 B=$(grep -o -E 'assets/index-[A-Za-z0-9_-]+\.js' ../restaurante-us/web/index.html | head -1)
-for k in pedidos_us us-evento us_login us_sesion locales_us America/New_York; do
+# [19-oct-2026] SQL 051: el Panel EE.UU. lee y cambia los pedidos por us_panel_pedidos / us_panel_accion.
+for k in pedidos_us us-evento us_login us_sesion locales_us America/New_York us_panel_pedidos us_panel_accion; do
   grep -q -- "$k" "../restaurante-us/web/$B" && echo "  ok  $k" || { echo "  FALTA $k en el bundle"; exit 1; }
 done
 echo "build EE.UU. OK -> restaurante-us/web/$B"

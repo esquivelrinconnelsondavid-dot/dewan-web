@@ -21,6 +21,8 @@ export const RECHAZO_PATH = import.meta.env.VITE_N8N_RECHAZO_PATH || '';
 // (us_login / us_sesion, SQL 036) para NO aparecer en la app DEWAN de Riobamba. Sin estado de la tienda,
 // opiniones, menú ni "Mi local": la carta de EE.UU. vive en su página (tabla `paginas`).
 // Sin la variable, todo queda como siempre (restaurantes + verificar_codigo_restaurante).
+// [19-oct-2026] SQL 051: en modo EE.UU. los pedidos se leen y se cambian SOLO por las funciones
+// us_panel_pedidos / us_panel_accion con la sesión del Panel (lib/pedidosUs.js), sin realtime.
 export const MODO_US = String(import.meta.env.VITE_US) === 'true';
 export const TABLA_LOCALES = MODO_US ? 'locales_us' : 'restaurantes';
 export const RPC_LOGIN = MODO_US ? 'us_login' : 'verificar_codigo_restaurante';

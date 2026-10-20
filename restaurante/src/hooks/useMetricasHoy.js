@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
-import { PEDIDOS_TABLE } from '../lib/config';
+import { PEDIDOS_TABLE, MODO_US } from '../lib/config';
 import { marcarDatosOk } from '../lib/conexion';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
+// [19-oct-2026] EE.UU. (SQL 051): lee por la función us_panel_pedidos (solo pedidos de su local) y sin realtime.
+import { listarPedidosUs } from '../lib/pedidosUs';
 
 const HOY = () => inicioDelDiaECisoUtc();
 
@@ -65,28 +67,34 @@ export function useMetricasHoy(restaurante) {
   const cargar = useCallback(async () => {
     if (!restauranteId && !restauranteNombre) return;
 
-    // Mismo patrón de filtro que usePedidosRestaurante: OR sobre restaurante_id
-    // (nuevo) y restaurante (legacy).
-    const condiciones = [];
-    if (restauranteId) condiciones.push(`restaurante_id.eq.${restauranteId}`);
-    if (restauranteNombre) {
-      const safe = restauranteNombre.replace(/,/g, '\\,');
-      condiciones.push(`restaurante.eq.${safe}`);
+    let data;
+    let error;
+    if (MODO_US) {
+      ({ data, error } = await listarPedidosUs({ desde: HOY() }));
+    } else {
+      // Mismo patrón de filtro que usePedidosRestaurante: OR sobre restaurante_id
+      // (nuevo) y restaurante (legacy).
+      const condiciones = [];
+      if (restauranteId) condiciones.push(`restaurante_id.eq.${restauranteId}`);
+      if (restauranteNombre) {
+        const safe = restauranteNombre.replace(/,/g, '\\,');
+        condiciones.push(`restaurante.eq.${safe}`);
+      }
+
+      let query = supabase
+        .from(PEDIDOS_TABLE)
+        .select('*')
+        .eq('intencion', 'pedido_comida')
+        .gte('fecha_creacion', HOY());
+
+      if (condiciones.length > 0) {
+        query = query.or(condiciones.join(','));
+      }
+
+      ({ data, error } = await consultarConTimeout(
+        query.order('fecha_creacion', { ascending: false })
+      ));
     }
-
-    let query = supabase
-      .from(PEDIDOS_TABLE)
-      .select('*')
-      .eq('intencion', 'pedido_comida')
-      .gte('fecha_creacion', HOY());
-
-    if (condiciones.length > 0) {
-      query = query.or(condiciones.join(','));
-    }
-
-    const { data, error } = await consultarConTimeout(
-      query.order('fecha_creacion', { ascending: false })
-    );
 
     if (error) {
       console.error('[METRICAS] Error cargando:', error);
@@ -114,6 +122,7 @@ export function useMetricasHoy(restaurante) {
   // backoff, igual que en usePedidosRestaurante.
   useEffect(() => {
     if (!restauranteId && !restauranteNombre) return;
+    if (MODO_US) return; // EE.UU.: sin realtime (sin permiso de lectura); queda el poll de arriba
 
     let canalActual = null;
     let intentos = 0;

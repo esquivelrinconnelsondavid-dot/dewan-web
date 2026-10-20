@@ -5,8 +5,13 @@ import { marcarDatosOk, tiempoSinDatos } from '../lib/conexion';
 import { startAlertLoop, stopAlertLoop, showPushNotification } from '../lib/notifications';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
 import { esDeMiSucursal } from '../lib/sucursal';
+import { listarPedidosUs, EVENTO_CAMBIO_US } from '../lib/pedidosUs';
 
 const HOY = () => inicioDelDiaECisoUtc();
+
+// [19-oct-2026] EE.UU. (SQL 051): sin permiso de lectura sobre pedidos_us no llega el realtime →
+// el Panel EE.UU. pregunta cada 5 s (Ecuador sigue con realtime + respaldo cada 10 s).
+const POLL_MS = MODO_US ? 5000 : 10000;
 
 // Estados en los que el pedido aún le concierne al restaurante.
 const ESTADOS_ABIERTOS = [
@@ -62,6 +67,8 @@ export function usePedidosRestaurante(restaurante) {
   const [pedidos, setPedidos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const conocidosRef = useRef(new Set());
+  // EE.UU.: ids que se vieron en la última consulta (para apagar la alarma de un pedido que desaparece).
+  const visiblesRef = useRef(new Set());
 
   const restauranteId = restaurante?.restaurante_id;
   const restauranteNombre = restaurante?.nombre;
@@ -69,30 +76,42 @@ export function usePedidosRestaurante(restaurante) {
   const cargar = useCallback(async () => {
     if (!restauranteId && !restauranteNombre) return;
 
-    // Hacemos un OR sobre restaurante_id (futuro) y restaurante (legacy).
-    // El SDK acepta el filtro `or` con sintaxis "campo.op.valor,otro.op.valor".
-    const condiciones = [];
-    if (restauranteId) condiciones.push(`restaurante_id.eq.${restauranteId}`);
-    if (restauranteNombre) {
-      // Escapamos comas en el nombre para no romper el OR.
-      const safe = restauranteNombre.replace(/,/g, '\\,');
-      condiciones.push(`restaurante.eq.${safe}`);
+    let data;
+    let error;
+    if (MODO_US) {
+      // EE.UU.: la base solo devuelve los pedidos de ESTE local (valida la sesión del Panel).
+      // Ventana de las últimas 12 h (no "desde hoy"): HOY() arma el día con la hora de Ecuador
+      // (fecha de Nueva York + T05:00Z) y entre las 00:00 y la 01:00 de Nueva York (21:00–22:00 en
+      // California) apunta al futuro → el tablero quedaba vacío y, sin realtime, un pedido nuevo no
+      // sonaba. Con 12 h, un local que cierra tarde sigue viendo lo de antes de medianoche.
+      const desde = new Date(Date.now() - 12 * 3600 * 1000).toISOString();
+      ({ data, error } = await listarPedidosUs({ desde, estados: ESTADOS_ABIERTOS }));
+    } else {
+      // Hacemos un OR sobre restaurante_id (futuro) y restaurante (legacy).
+      // El SDK acepta el filtro `or` con sintaxis "campo.op.valor,otro.op.valor".
+      const condiciones = [];
+      if (restauranteId) condiciones.push(`restaurante_id.eq.${restauranteId}`);
+      if (restauranteNombre) {
+        // Escapamos comas en el nombre para no romper el OR.
+        const safe = restauranteNombre.replace(/,/g, '\\,');
+        condiciones.push(`restaurante.eq.${safe}`);
+      }
+
+      let query = supabase
+        .from(PEDIDOS_TABLE)
+        .select('*')
+        .eq('intencion', 'pedido_comida')
+        .gte('fecha_creacion', HOY())
+        .in('estado_pedido', ESTADOS_ABIERTOS);
+
+      if (condiciones.length > 0) {
+        query = query.or(condiciones.join(','));
+      }
+
+      ({ data, error } = await consultarConTimeout(
+        query.order('fecha_creacion', { ascending: false })
+      ));
     }
-
-    let query = supabase
-      .from(PEDIDOS_TABLE)
-      .select('*')
-      .eq('intencion', 'pedido_comida')
-      .gte('fecha_creacion', HOY())
-      .in('estado_pedido', ESTADOS_ABIERTOS);
-
-    if (condiciones.length > 0) {
-      query = query.or(condiciones.join(','));
-    }
-
-    const { data, error } = await consultarConTimeout(
-      query.order('fecha_creacion', { ascending: false })
-    );
 
     if (error) {
       console.error('[PEDIDOS] Error cargando:', error);
@@ -103,6 +122,13 @@ export function usePedidosRestaurante(restaurante) {
     // Locales con varias sucursales: esta PC solo ve (y suena con) los pedidos de la suya.
     const visibles = (data || []).filter(esDeMiSucursal);
     setPedidos(visibles);
+    if (MODO_US) {
+      // Sin realtime no llega el UPDATE que apagaba la alarma: si un pedido dejó de estar abierto
+      // (cancelado, entregado…) y ya no viene en la lista, se apaga aquí.
+      const ahora = new Set(visibles.map((p) => p.id));
+      visiblesRef.current.forEach((id) => { if (!ahora.has(id)) stopAlertLoop(id); });
+      visiblesRef.current = ahora;
+    }
     marcarDatosOk(); // fetch OK → reinicia el watchdog/aviso de conexión
     // Para los pedidos que vienen en cargar(): los viejos los marcamos como
     // conocidos (no alarmar) pero los frescos (<2min) sí disparan alarma,
@@ -145,6 +171,9 @@ export function usePedidosRestaurante(restaurante) {
 
     const crearCanal = () => {
       if (cancelado) return;
+      // EE.UU.: sin canal realtime (la llave pública ya no puede leer pedidos_us). Los avisos de abajo
+      // (volver a primer plano, push, internet de vuelta) siguen recargando; el resto lo hace el poll de 5 s.
+      if (MODO_US) return;
       const canal = supabase
       .channel(`pedidos-restaurante-${restauranteId || restauranteNombre}-${Date.now()}`)
       .on(
@@ -287,9 +316,19 @@ export function usePedidosRestaurante(restaurante) {
   }, [restauranteId, restauranteNombre, cargar]);
 
   // Respaldo: recargar cada 10s (antes 30s, gap muy grande para alarmas críticas).
+  // EE.UU.: cada 5 s (es la única vía: no hay realtime).
   useEffect(() => {
-    const id = setInterval(cargar, 10000);
+    const id = setInterval(cargar, POLL_MS);
     return () => clearInterval(id);
+  }, [cargar]);
+
+  // EE.UU.: después de cada botón del Panel (aceptar, listo, salió…) se recarga al instante,
+  // sin esperar al próximo poll.
+  useEffect(() => {
+    if (!MODO_US) return undefined;
+    const onCambio = () => cargar();
+    window.addEventListener(EVENTO_CAMBIO_US, onCambio);
+    return () => window.removeEventListener(EVENTO_CAMBIO_US, onCambio);
   }, [cargar]);
 
   const entrantes = pedidos.filter((p) => p.estado_pedido === 'pendiente_restaurante');

@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
-import { PEDIDOS_TABLE } from '../lib/config';
+import { PEDIDOS_TABLE, MODO_US } from '../lib/config';
 import { marcarDatosOk } from '../lib/conexion';
 import { inicioDelDiaECisoUtc, fechaIsoEC } from '../lib/formato';
+// [19-oct-2026] EE.UU. (SQL 051): lee por la función us_panel_pedidos (solo pedidos de su local) y sin realtime.
+import { listarPedidosUs } from '../lib/pedidosUs';
 
 const ESTADOS_EN_CURSO = [
   'preparando',
@@ -87,28 +89,34 @@ export function useMetricas(restaurante, rango = 'hoy') {
     if (!restauranteId && !restauranteNombre) return;
     if (!silencioso) setCargando(true);
 
-    const condiciones = [];
-    if (restauranteId) condiciones.push(`restaurante_id.eq.${restauranteId}`);
-    if (restauranteNombre) {
-      const safe = restauranteNombre.replace(/,/g, '\\,');
-      condiciones.push(`restaurante.eq.${safe}`);
+    let data;
+    let error;
+    if (MODO_US) {
+      ({ data, error } = await listarPedidosUs({ desde, hasta: hasta || null }));
+    } else {
+      const condiciones = [];
+      if (restauranteId) condiciones.push(`restaurante_id.eq.${restauranteId}`);
+      if (restauranteNombre) {
+        const safe = restauranteNombre.replace(/,/g, '\\,');
+        condiciones.push(`restaurante.eq.${safe}`);
+      }
+
+      let query = supabase
+        .from(PEDIDOS_TABLE)
+        .select('*')
+        .eq('intencion', 'pedido_comida')
+        .gte('fecha_creacion', desde);
+      if (hasta) query = query.lt('fecha_creacion', hasta);
+
+      if (condiciones.length > 0) query = query.or(condiciones.join(','));
+
+      // Timeout: sin esto, un fetch sobre un socket muerto (PC que durmió, Wi-Fi
+      // suspendido) deja `cargando` en true para siempre → spinner infinito en
+      // Ventas ("no carga las ventas"). Al abortar, el poll de abajo reintenta.
+      ({ data, error } = await consultarConTimeout(
+        query.order('fecha_creacion', { ascending: false })
+      ));
     }
-
-    let query = supabase
-      .from(PEDIDOS_TABLE)
-      .select('*')
-      .eq('intencion', 'pedido_comida')
-      .gte('fecha_creacion', desde);
-    if (hasta) query = query.lt('fecha_creacion', hasta);
-
-    if (condiciones.length > 0) query = query.or(condiciones.join(','));
-
-    // Timeout: sin esto, un fetch sobre un socket muerto (PC que durmió, Wi-Fi
-    // suspendido) deja `cargando` en true para siempre → spinner infinito en
-    // Ventas ("no carga las ventas"). Al abortar, el poll de abajo reintenta.
-    const { data, error } = await consultarConTimeout(
-      query.order('fecha_creacion', { ascending: false })
-    );
     if (error) {
       console.error('[METRICAS] Error:', error);
       setCargando(false);
@@ -136,6 +144,7 @@ export function useMetricas(restaurante, rango = 'hoy') {
   useEffect(() => {
     if (rango !== 'hoy') return;
     if (!restauranteId && !restauranteNombre) return;
+    if (MODO_US) return; // EE.UU.: sin realtime (sin permiso de lectura); queda el poll de 30 s
 
     let canalActual = null;
     let intentos = 0;

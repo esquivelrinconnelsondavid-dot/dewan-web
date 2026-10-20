@@ -10,7 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <!--
     SEGUIMIENTO EE.UU. (14-oct-2026) — pedido/us.html?t=<token>&lang=en|es[&pago=ok]
-    Lee pedidos_us por token (SQL 036). Al volver de Stripe (pago=ok) avisa a n8n
+    Lee SU pedido por el código secreto del link con la función us_seguimiento (SQL 051, 19-oct-2026):
+    la llave pública ya no puede leer la tabla pedidos_us, y la función no devuelve datos del cliente
+    (nombre, teléfono, dirección). Al volver de Stripe (pago=ok) avisa a n8n
     `us-evento` para confirmar el pago al instante (el cron lo hace igual cada minuto).
     Muestra el link de seguimiento de DoorDash cuando el repartidor ya está asignado.
   -->
@@ -105,9 +107,9 @@
       try { return new Date(d).toLocaleTimeString(EN ? 'en-US' : 'es-US', { timeZone: (local && local.zona_horaria) || 'America/New_York', hour: 'numeric', minute: '2-digit' }); }
       catch (e) { return ''; }
     }
-    function sb(ruta) {
-      return fetch(SB + ruta, { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY }, cache: 'no-store' })
-        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+    function rpc(fn, cuerpo) {
+      return fetch(SB + '/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo), cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
     }
     function avisar() {
       if (avisado) return; avisado = true;
@@ -232,12 +234,11 @@
         return;
       }
       if (!token) { pedido = null; pintar(); return; }
-      var cols = 'id,token_seguimiento,restaurante,restaurante_id,estado_pedido,restaurante_aceptado,restaurante_motivo_rechazo,tipo_entrega,direccion_retiro,timer_lanzamiento,fecha_listo,items_json,precio_base_productos,impuesto,precio_calculado,propina,monto_total,pago_estado,envio_proveedor,envio_estado,envio_seguimiento_url,nombre_moto';
-      sb('/pedidos_us?token_seguimiento=eq.' + token + '&select=' + cols + '&limit=1').then(function (rows) {
-        pedido = rows && rows[0] ? rows[0] : null;
-        if (pedido && !local) {
-          return sb('/locales_us?id=eq.' + pedido.restaurante_id + '&select=nombre,telefono,zona_horaria&limit=1').then(function (l) { local = (l && l[0]) || {}; });
-        }
+      // us_seguimiento → { pedido: {estado, platos, montos, pago, envío…}, local: {nombre, telefono, zona_horaria} } o null
+      rpc('us_seguimiento', { p_token: token }).then(function (d) {
+        pedido = d && d.pedido ? d.pedido : null;
+        if (d && d.local) local = d.local;
+        else if (pedido && !local) local = {};
       }).then(function () {
         var conMapa = pedido && /propio/.test(pedido.envio_proveedor || '') && (pedido.estado_pedido === 'en_camino' || pedido.estado_pedido === 'llegado');
         return conMapa ? pedirMapa() : null;

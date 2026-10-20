@@ -1,5 +1,8 @@
 import { supabase } from './supabase';
-import { PEDIDOS_TABLE, TIMER_PATH, SALIO_PATH, RECHAZO_PATH, esDomicilio } from './config';
+import { PEDIDOS_TABLE, TIMER_PATH, SALIO_PATH, RECHAZO_PATH, MODO_US, esDomicilio } from './config';
+// [19-oct-2026] EE.UU. (SQL 051): cada botón va por la función us_panel_accion (valida la sesión del
+// Panel y el paso). Ecuador sigue exactamente igual (update directo a su tabla).
+import { accionPedidoUs } from './pedidosUs';
 
 const WEBHOOK_BASE = import.meta.env.VITE_N8N_WEBHOOK_BASE;
 // Happy Pollo: URL directa del webhook de aviso de tiempo. Su instancia de n8n
@@ -92,6 +95,11 @@ async function avisarEvento(path, body) {
 // Cambia el estado (en_camino | listo) y dispara el WhatsApp al cliente.
 export async function marcarSalio(pedido) {
   const domicilio = esDomicilio(pedido);
+  if (MODO_US) {
+    await accionPedidoUs(pedido.id, 'salio');
+    if (SALIO_PATH) avisarEvento(SALIO_PATH, { pedido_id: pedido.id, evento: domicilio ? 'salio' : 'listo' });
+    return;
+  }
   const ahora = new Date().toISOString();
   const cambios = domicilio
     ? { estado_pedido: 'en_camino', fecha_en_camino: ahora }
@@ -125,6 +133,14 @@ export async function aceptarPedido(pedidoIdOrPedido, minutos) {
   const lanzamiento = new Date(ahora.getTime() + Math.max(0, minutos - LEAD_MOTO_MIN) * 60000);
   const pedido = typeof pedidoIdOrPedido === 'object' ? pedidoIdOrPedido : null;
   const pedidoId = pedido ? pedido.id : pedidoIdOrPedido;
+
+  if (MODO_US) {
+    // La base pone preparando + reloj (ahora + minutos) + aceptado. El aviso a n8n (us-evento) sigue igual.
+    const fila = await accionPedidoUs(pedidoId, 'aceptar', { minutos });
+    const datos = pedido || fila;
+    if (datos) avisarClienteTiempo(datos, minutos);
+    return;
+  }
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
@@ -164,6 +180,10 @@ export async function aceptarPedido(pedidoIdOrPedido, minutos) {
 // Happy Pollo (delivery propio, sin motos DEWAN): la cocina cierra el pedido a
 // mano. Pasa a 'entregado' → sale de la vista de cocina y cuenta como venta.
 export async function marcarEntregado(pedidoId) {
+  if (MODO_US) {
+    await accionPedidoUs(pedidoId, 'entregado');
+    return;
+  }
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
   let error;
@@ -180,6 +200,11 @@ export async function marcarEntregado(pedidoId) {
 }
 
 export async function rechazarPedido(pedidoId, motivo) {
+  if (MODO_US) {
+    await accionPedidoUs(pedidoId, 'rechazar', { motivo: motivo || null });
+    if (RECHAZO_PATH) avisarEvento(RECHAZO_PATH, { pedido_id: pedidoId, evento: 'rechazo', motivo: motivo || '' });
+    return;
+  }
   const ahora = new Date().toISOString();
   // Timeout 12s: igual que aceptarPedido. Sin esto, con la red zombi el update
   // se cuelga y la tarjeta queda en "cargando" para siempre.
@@ -212,6 +237,11 @@ export async function rechazarPedido(pedidoId, motivo) {
 // despacho lo vea. Se verifica que cada update haya tocado la fila (con RLS un update bloqueado no da error).
 export async function cancelarPedidoAceptado(pedido, motivo) {
   const txt = String(motivo || 'El cliente canceló').trim();
+  if (MODO_US) {
+    // La base guarda "Cancelado: <motivo>". EE.UU. no tiene pedido gemelo de motos DEWAN.
+    await accionPedidoUs(pedido.id, 'cancelar', { motivo: txt });
+    return;
+  }
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
   let data;
@@ -248,6 +278,14 @@ export async function cancelarPedidoAceptado(pedido, motivo) {
 // llega a esperar con el pedido a medio hacer. El link de seguimiento muestra el
 // tiempo nuevo. No manda ningún mensaje.
 export async function sumarMinutos(pedido, minutos = 5) {
+  if (MODO_US) {
+    // La base corre el reloj desde el que tenga (o desde ahora si ya pasó), igual que aquí abajo.
+    const fila = await accionPedidoUs(pedido.id, 'mas_minutos', { minutos });
+    return {
+      timer_lanzamiento: fila?.timer_lanzamiento ?? null,
+      tiempo_preparacion: fila?.tiempo_preparacion ?? null,
+    };
+  }
   const base = pedido?.timer_lanzamiento ? new Date(pedido.timer_lanzamiento) : new Date();
   const desde = base.getTime() < Date.now() ? new Date() : base;
   const cambios = {
@@ -275,6 +313,11 @@ export async function sumarMinutos(pedido, minutos = 5) {
 // `fecha_listo` deja registro de cuándo estuvo listo de verdad (tiempo real de
 // cocina). El estado sigue `preparando` hasta que una moto lo toma.
 export async function marcarListoDewan(pedido) {
+  if (MODO_US) {
+    // (en EE.UU. el Ticket usa marcarListoSistema; esto queda por si acaso: nada escribe directo)
+    await accionPedidoUs(pedido.id, 'listo');
+    return;
+  }
   const ahora = new Date().toISOString();
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
@@ -297,6 +340,11 @@ export async function marcarListoDewan(pedido) {
 // se adelanta el reloj del pedido GEMELO de DEWAN para que el cron `auto-lanzar` le
 // busque moto enseguida. El estado NO pasa a entregado.
 export async function marcarListoSistema(pedido) {
+  if (MODO_US) {
+    // EE.UU. con DoorDash / Shipday: solo `fecha_listo` (no hay pedido gemelo de motos DEWAN).
+    await accionPedidoUs(pedido.id, 'listo');
+    return;
+  }
   const ahora = new Date().toISOString();
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
