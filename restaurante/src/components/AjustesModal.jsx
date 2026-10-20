@@ -4,6 +4,7 @@ import MiLocal from './MiLocal';
 import ConfigImpresora from './ConfigImpresora';
 import CrecerConDewan from './CrecerConDewan';
 import ConfigSonido, { resumenSonido } from './ConfigSonido';
+import CobroTarjeta from './CobroTarjeta';
 import { Capacitor } from '@capacitor/core';
 import { hayImpresion } from '../lib/comanda';
 import { MODO_HP, MODO_SISTEMA, MODO_US, PEDIDOS_TABLE } from '../lib/config';
@@ -17,6 +18,10 @@ const OPCIONES = [
     { id: 'menu', label: 'Menú', icono: '🍔', descripcion: 'Editar productos, precios y disponibilidad' },
     { id: 'local', label: 'Mi Local', icono: '🏪', descripcion: 'Logo, horario, teléfono' },
   ]),
+  // EE.UU. (SQL 052): el dueño conecta su Stripe pegando su llave restringida.
+  ...(MODO_US
+    ? [{ id: 'tarjeta', label: 'Cobro con tarjeta', icono: '💳', descripcion: 'Conecte su cuenta de Stripe: la plata entra directo a usted' }]
+    : []),
   ...(hayImpresion()
     ? [{ id: 'impresora', label: 'Impresora', icono: '🖨️', descripcion: 'Comanda automática: elegí impresora y tamaño' }]
     : []),
@@ -126,6 +131,20 @@ export default function AjustesModal({ restaurante, onCerrar, onActualizarRestau
         </header>
         <div className="flex-1 overflow-y-auto pb-8">
           <ConfigSonido />
+        </div>
+      </div>
+    );
+  }
+
+  if (seccion === 'tarjeta') {
+    return (
+      <div className="fixed inset-0 z-50 bg-fondo flex flex-col">
+        <header className="sticky top-0 bg-fondo/95 backdrop-blur border-b border-borde px-3 py-2.5 flex items-center gap-2">
+          <button onClick={() => setSeccion(null)} className="text-gray-400 text-2xl px-1">←</button>
+          <h1 className="text-white font-bold">Cobro con tarjeta</h1>
+        </header>
+        <div className="flex-1 overflow-y-auto pb-8">
+          <CobroTarjeta />
         </div>
       </div>
     );

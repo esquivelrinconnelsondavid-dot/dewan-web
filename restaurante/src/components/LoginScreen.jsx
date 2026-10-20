@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MARCA, MODO_SISTEMA } from '../lib/config';
 import { HP_LOGO } from '../lib/hpLogo';
+import { ultimoErrorLogin } from '../lib/auth';
 
 const ES_HP = MARCA.toLowerCase().includes('happy');
 const LOGO_HP = HP_LOGO;
@@ -29,7 +30,9 @@ export default function LoginScreen({ onLogin }) {
     const res = await onLogin(codigo, dispositivo.trim());
     setEnviando(false);
     if (!res) {
-      setError('Código inválido o expirado');
+      setError(ultimoErrorLogin === 'demasiados_intentos'
+        ? 'Demasiados intentos con códigos equivocados. Espere 15 minutos y vuelva a probar.'
+        : 'Código inválido o expirado');
       setCodigo('');
     }
   };

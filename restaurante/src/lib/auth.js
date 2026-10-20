@@ -40,6 +40,9 @@ async function enriquecerConPerfil(restaurante) {
  * Si es válido, guarda el token y los datos del restaurante en localStorage.
  * Retorna el objeto { restaurante_id, nombre, token } o null si falla.
  */
+// Motivo del último ingreso fallido, para que LoginScreen muestre el mensaje correcto.
+export let ultimoErrorLogin = '';
+
 export async function loginConCodigo(codigo, nombreDispositivo) {
   try {
     const { data, error } = await consultarConTimeout(
@@ -49,8 +52,11 @@ export async function loginConCodigo(codigo, nombreDispositivo) {
       })
     );
 
+    ultimoErrorLogin = '';
     if (error || !data) {
       console.error('Error al verificar código:', error);
+      // EE.UU. (SQL 052): 10 códigos errados en 15 min desde la misma conexión → bloqueo de 15 min
+      if (String(error?.message || '').includes('demasiados_intentos')) ultimoErrorLogin = 'demasiados_intentos';
       return null;
     }
 
