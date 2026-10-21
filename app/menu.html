@@ -966,7 +966,7 @@
         #nh-ubic .nh-velo{z-index:130}
         #nh-ubic .nh-hoja{z-index:131;gap:10px}
         .nh-mapa{position:relative;height:min(46vh,340px);border-radius:16px;overflow:hidden;background:#EDE9E3}
-        #nh-mapa-el{position:absolute;inset:0}
+        #nh-mapa-el{position:absolute;inset:0;z-index:0} /* el mapa (Google u OpenStreetMap) siempre debajo del pin fijo */
         .nh-pin-fijo{position:absolute;left:50%;top:50%;width:36px;height:46px;margin:-46px 0 0 -18px;z-index:500;pointer-events:none;transition:transform .15s ease}
         .nh-pin-fijo svg{display:block;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))}
         .nh-pin-fijo::after{content:"";position:absolute;left:50%;bottom:-3px;width:12px;height:5px;margin-left:-6px;border-radius:50%;background:rgba(0,0,0,.28)}
@@ -3293,6 +3293,14 @@
             document.body.appendChild(w); document.body.classList.add('sheet-locked');
             try{history.pushState({v:currentView,r:currentRestIdx,ov:'ubic'},'');}catch(e){}
             window._nhUbic={o:o,lat:null,lng:null,gps:null,info:null,seq:0};
+            // [20-oct] Google Maps (ver gmCargar); si Google no carga, el mapa de antes (OpenStreetMap).
+            gmCargar(function(ok){
+                if(!window._nhUbic||window._nhUbic.o!==o||!document.getElementById('nh-mapa-el')) return; // se cerró mientras cargaba
+                if(ok){try{nhUbicMapaGoogle(o);}catch(e){gmApagar();} return;} // gmApagar ya pone el de OpenStreetMap
+                nhUbicMapaLeaflet(o);
+            });
+        };
+        function nhUbicMapaLeaflet(o){
             opLoadLeaflet(function(){
                 var el=document.getElementById('nh-mapa-el'); if(!el||!window.L) return;
                 var la=Number(o.lat),lo=Number(o.lng),tiene=isFinite(la)&&isFinite(lo)&&Math.abs(la)>0.0001;
@@ -3305,17 +3313,42 @@
                 setTimeout(function(){try{map.invalidateSize();}catch(e){}},160);
                 if(!tiene&&o.gps!==false) nhUbicGPS(); else nhUbicLeer();
             });
-        };
+        }
+        // Google: UN mapa por visita (Google cobra cada mapa nuevo); su div se vuelve a meter cada vez que se abre la hoja.
+        function nhUbicMapaGoogle(o){
+            var el=document.getElementById('nh-mapa-el'); if(!el) return;
+            var la=Number(o.lat),lo=Number(o.lng),tiene=isFinite(la)&&isFinite(lo)&&Math.abs(la)>0.0001;
+            var centro=tiene?{lat:la,lng:lo}:{lat:NH_CENTRO[0],lng:NH_CENTRO[1]};
+            var U=window._gmUbic;
+            if(!U){
+                var div=document.createElement('div'); div.style.cssText='position:absolute;inset:0';
+                el.appendChild(div);
+                var map=new google.maps.Map(div,{center:centro,zoom:tiene?17:14,gestureHandling:'greedy',disableDefaultUI:true,clickableIcons:false,keyboardShortcuts:false});
+                map._dwGoogle=true;
+                U=window._gmUbic={div:div,map:map};
+                map.addListener('dragstart',function(){var p=document.querySelector('#nh-ubic .nh-pin-fijo');if(p)p.classList.add('arriba');});
+                map.addListener('idle',function(){
+                    if(window._nhUbicMap!==map) return; // hoja cerrada
+                    var p=document.querySelector('#nh-ubic .nh-pin-fijo');if(p)p.classList.remove('arriba');
+                    nhUbicLeer();
+                });
+            } else {
+                el.appendChild(U.div);
+                U.map.setCenter(centro); U.map.setZoom(tiene?17:14);
+            }
+            window._nhUbicMap=U.map;
+            if(!tiene&&o.gps!==false) nhUbicGPS(); else nhUbicLeer();
+        }
         window.cerrarUbicacion=function(){
             var w=document.getElementById('nh-ubic'); if(!w) return false;
-            try{if(window._nhUbicMap)window._nhUbicMap.remove();}catch(e){} window._nhUbicMap=null;
+            try{if(window._nhUbicMap&&!window._nhUbicMap._dwGoogle)window._nhUbicMap.remove();}catch(e){} window._nhUbicMap=null; // el de Google no se destruye: se reutiliza
             w.parentNode.removeChild(w);
             if(!document.getElementById('nh-puerta')) document.body.classList.remove('sheet-locked');
             return true;
         };
         function nhUbicLeer(){
             var u=window._nhUbic,map=window._nhUbicMap; if(!u||!map) return;
-            var c=map.getCenter(); u.lat=c.lat; u.lng=c.lng;
+            var c=mapaCentro(map); u.lat=c.lat; u.lng=c.lng;
             if(u.gps&&haversine(c.lat,c.lng,u.gps.coords.latitude,u.gps.coords.longitude)>0.025) u.gps=null; // lo movió: ya es un pin a mano
             var t=document.getElementById('nh-calle-t'),s=document.getElementById('nh-calle-s');
             if(t) t.textContent='Buscando la calle…';
@@ -3339,7 +3372,7 @@
                 var map=window._nhUbicMap; if(!map||!window._nhUbic) return;
                 if(!gpsEnZona(pos)){if(t)t.textContent='Tu GPS te ubica fuera de Riobamba: mueve el mapa';return;}
                 window._nhUbic.gps=pos;
-                map.setView([pos.coords.latitude,pos.coords.longitude],17);
+                mapaIr(map,pos.coords.latitude,pos.coords.longitude,17);
                 nhUbicLeer();
             },function(err){
                 var t2=document.getElementById('nh-calle-t');
@@ -5396,11 +5429,66 @@
             };
             document.head.appendChild(js);
         }
-        // Se llama tras cada render del carrito (showCart → setTimeout): el innerHTML destruye el mapa,
-        // así que SIEMPRE se crea uno nuevo y se restaura el marker desde _clientGPS (venga del mapa o del pin pegado).
+        // ── GOOGLE MAPS donde el cliente MARCA su casa (20-oct-2026, David: "¿no le habíamos colocado el mismo Google Maps?") ──
+        // El mapa del carrito (#op-map, también el de la centralista) y la hoja «¿Dónde te lo llevamos?» (abrirUbicacion: «Entregar
+        // en» y los puntos de Compras/Encomiendas). En Riobamba OpenStreetMap tiene poco detalle y el cliente no reconocía su casa
+        // (pedido #795). Si Google no carga en 8 s o rechaza la llave, queda el mapa de antes (Leaflet + OpenStreetMap): pedir nunca
+        // depende de Google. Costo: Google cuenta cada mapa NUEVO (google.maps.Map) → uno por visita en cada lugar, y se reutiliza.
+        var GM_KEY='AIzaSyBktkFnRg3Lp8h93MktPzQ2XtAcim7lAhs';
+        var _gmEstado='',_gmCbs=[]; // '' | 'cargando' | 'ok' | 'no'
+        function gmCargar(cb){
+            if(_gmEstado==='ok'||_gmEstado==='no'){cb(_gmEstado==='ok');return;}
+            _gmCbs.push(cb);
+            if(_gmEstado==='cargando') return;
+            _gmEstado='cargando';
+            function listo(ok){
+                if(_gmEstado!=='cargando') return;
+                _gmEstado=ok?'ok':'no';
+                var cbs=_gmCbs;_gmCbs=[];
+                cbs.forEach(function(f){try{f(ok)}catch(e){}});
+            }
+            window.__dwGmListo=function(){listo(!!(window.google&&google.maps&&google.maps.Map&&google.maps.Marker));};
+            var js=document.createElement('script');
+            js.src='https://maps.googleapis.com/maps/api/js?key='+GM_KEY+'&callback=__dwGmListo&language=es&region=EC';
+            js.async=true;
+            js.onerror=function(){listo(false);};
+            document.head.appendChild(js);
+            setTimeout(function(){listo(false);},8000);
+        }
+        // Google falló (error al armar el mapa) o rechazó la llave (restringida, sin facturación, API apagada: el mapa saldría
+        // gris; Google llama a gm_authFailure): fuera sus mapas y los que estén abiertos se rehacen con OpenStreetMap.
+        function gmApagar(){
+            if(_gmEstado==='no'&&!window._gmCarrito&&!window._gmUbic) return; // ya se hizo (Google puede avisar más de una vez)
+            _gmEstado='no';
+            var G=window._gmCarrito,U=window._gmUbic;
+            window._gmCarrito=null;window._opMapG=null;window._gmUbic=null;
+            [G,U].forEach(function(x){if(x&&x.div&&x.div.parentNode)x.div.parentNode.removeChild(x.div);});
+            var op=document.getElementById('op-map');
+            if(op&&!window._opMap){op.innerHTML='';opInitMapLeaflet();}
+            var ub=document.getElementById('nh-mapa-el');
+            if(ub&&window._nhUbic&&!(window._nhUbicMap&&!window._nhUbicMap._dwGoogle)){ub.innerHTML='';window._nhUbicMap=null;nhUbicMapaLeaflet(window._nhUbic.o);}
+        }
+        window.gm_authFailure=gmApagar;
+        // Centro y movimiento iguales para los dos mapas (Leaflet: lat/lng son números; Google: son funciones).
+        function mapaCentro(map){var c=map.getCenter();return {lat:typeof c.lat==='function'?c.lat():c.lat,lng:typeof c.lng==='function'?c.lng():c.lng};}
+        function mapaIr(map,lat,lng,z){
+            if(map._dwGoogle){map.setCenter({lat:lat,lng:lng});if(z!=null)map.setZoom(z);}
+            else map.setView([lat,lng],z);
+        }
+        // Se llama tras cada render del carrito (showCart → setTimeout): el innerHTML destruye el div del mapa.
+        // Google: se vuelve a meter el MISMO mapa (opInitMapGoogle). OpenStreetMap (respaldo): se crea uno nuevo y se
+        // restaura el marker desde _clientGPS (venga del mapa o del pin pegado).
         function opInitMap(){
             // Sirve para CLIENTE y centralista: basta con que exista el div del mapa en el carrito.
             if(!document.getElementById('op-map')) return; // no estamos en el carrito (o carrito vacío)
+            gmCargar(function(ok){
+                if(!document.getElementById('op-map')) return; // el carrito se cerró mientras cargaba
+                if(ok){try{opInitMapGoogle();}catch(e){gmApagar();} return;} // gmApagar ya pone el de OpenStreetMap
+                opInitMapLeaflet();
+            });
+        }
+        function opInitMapLeaflet(){
+            window._opMapG=null;
             opLoadLeaflet(function(){
                 var el=document.getElementById('op-map');
                 if(!el) return; // el carrito se re-renderizó/cerró mientras cargaba Leaflet
@@ -5438,11 +5526,82 @@
                 setTimeout(function(){try{map.invalidateSize()}catch(e){}},120); // por si el contenedor se midió tarde
             });
         }
+        // Google: UN mapa por visita; su div se vuelve a meter en el #op-map nuevo tras cada re-pintado del carrito. El pin y el
+        // círculo se rehacen desde _clientGPS SOLO si cambió el punto (así el cliente no pierde el zoom al tocar + / −).
+        function opInitMapGoogle(){
+            var hueco=document.getElementById('op-map'); if(!hueco) return;
+            if(window._opMap){try{window._opMap.remove()}catch(e){} window._opMap=null; window._opMapMarker=null; window._opMapCircle=null;}
+            var G=window._gmCarrito;
+            if(!G){
+                var div=document.createElement('div'); div.style.cssText='width:100%;height:100%';
+                hueco.appendChild(div);
+                var map=new google.maps.Map(div,{center:{lat:NH_CENTRO[0],lng:NH_CENTRO[1]},zoom:14,gestureHandling:'greedy',clickableIcons:false,
+                    mapTypeControl:false,streetViewControl:false,fullscreenControl:false,rotateControl:false,keyboardShortcuts:false});
+                map._dwGoogle=true;
+                G=window._gmCarrito={div:div,map:map,pin:null,circulo:null,aviso:null,ultimo:null};
+                map.addListener('click',function(ev){
+                    if(!ev||!ev.latLng) return;
+                    // Mapa alejado = un dedo tapa cuadras enteras (pedido #795). El primer toque NO pone pin:
+                    // solo acerca a nivel de casas y pide un segundo toque.
+                    if((map.getZoom()||0)<16){
+                        map.setCenter(ev.latLng); map.setZoom(16);
+                        if(!G.aviso) G.aviso=new google.maps.InfoWindow({disableAutoPan:true});
+                        G.aviso.setContent('🔍 Acercamos el mapa — ahora toca justo sobre tu casa');
+                        G.aviso.setPosition(ev.latLng); G.aviso.open({map:map});
+                        return;
+                    }
+                    if(G.aviso) G.aviso.close();
+                    opMapPick(ev.latLng.lat(),ev.latLng.lng());
+                });
+            } else if(G.div.parentNode!==hueco){
+                hueco.appendChild(G.div);
+            }
+            window._opMapG=G;
+            var gp=window._clientGPS,la=gp?parseFloat(gp.lat):NaN,lo=gp?parseFloat(gp.lng):NaN;
+            var clave=(isFinite(la)&&isFinite(lo))?la.toFixed(6)+','+lo.toFixed(6)+','+(Number(gp.acc)||0):'';
+            if(clave===G.ultimo) return; // mismo punto: el mapa se queda como el cliente lo dejó
+            G.ultimo=clave;
+            if(G.aviso) G.aviso.close();
+            if(!clave){
+                if(G.pin) G.pin.setMap(null);
+                if(G.circulo) G.circulo.setMap(null);
+                G.map.setCenter({lat:NH_CENTRO[0],lng:NH_CENTRO[1]}); G.map.setZoom(14);
+                return;
+            }
+            gmCarritoPin(la,lo);
+            var accM=Number(gp.acc)||0;
+            if(accM>150){
+                // GPS impreciso: dibujar el círculo de error para que el cliente VEA la incertidumbre y ajuste el pin.
+                if(!G.circulo) G.circulo=new google.maps.Circle({strokeColor:'#F59E0B',strokeWeight:1.5,fillColor:'#F59E0B',fillOpacity:0.12,clickable:false});
+                G.circulo.setCenter({lat:la,lng:lo}); G.circulo.setRadius(accM); G.circulo.setMap(G.map);
+                G.map.fitBounds(G.circulo.getBounds());
+                google.maps.event.addListenerOnce(G.map,'idle',function(){if((G.map.getZoom()||0)>16)G.map.setZoom(16);});
+            } else {
+                if(G.circulo) G.circulo.setMap(null);
+                G.map.setCenter({lat:la,lng:lo}); G.map.setZoom(16);
+            }
+        }
+        function gmCarritoPin(la,lo){
+            var G=window._gmCarrito; if(!G) return;
+            if(!G.pin){
+                G.pin=new google.maps.Marker({position:{lat:la,lng:lo},map:G.map,draggable:true});
+                G.pin.addListener('dragend',function(ev){if(ev&&ev.latLng)opMapPick(ev.latLng.lat(),ev.latLng.lng());});
+            } else {
+                G.pin.setPosition({lat:la,lng:lo});
+                if(G.pin.getMap()!==G.map) G.pin.setMap(G.map);
+            }
+        }
         // Click/tap en el mapa: mismo flujo post-ubicación que opParseGPS (envíos + saveCart) + re-render diferido.
         // El re-render destruye el mapa, pero opInitMap lo recrea con el marker puesto y centrado (sin loops: render no dispara clicks).
         function opMapPick(lat,lng){
             var la=lat.toFixed(6),lo=lng.toFixed(6);
-            if(window._opMap){ // feedback inmediato al toque (el re-render lo restaura igual desde _clientGPS)
+            var G=window._opMapG;
+            if(G){ // Google: feedback inmediato; el re-render ya no lo mueve (misma clave que opInitMapGoogle)
+                gmCarritoPin(lat,lng);
+                try{if((G.map.getZoom()||0)<16){G.map.setCenter({lat:lat,lng:lng});G.map.setZoom(17);}}catch(e){}
+                if(G.circulo) G.circulo.setMap(null); // ya no hay incertidumbre
+                G.ultimo=la+','+lo+',0';
+            } else if(window._opMap){ // feedback inmediato al toque (el re-render lo restaura igual desde _clientGPS)
                 if(window._opMapMarker) window._opMapMarker.setLatLng([lat,lng]);
                 else{
                     window._opMapMarker=L.marker([lat,lng],{draggable:true}).addTo(window._opMap);
