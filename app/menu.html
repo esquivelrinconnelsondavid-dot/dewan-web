@@ -1052,6 +1052,33 @@
         .nh-seg-det div{display:flex;justify-content:space-between;font-weight:900;margin-bottom:4px}
         .nh-seg-det p{margin:2px 0;color:var(--gris)}
         .nh-seg-det p b{color:var(--texto)}
+        /* 🍱 Almuerzos del día (28-oct-2026): la foto del menú va ENTERA (contain, nunca recortada) */
+        .alm-dia-sub{font-size:.76rem;color:var(--gris);font-weight:600;padding:0 8px 10px;line-height:1.35}
+        .alm-dia-list{display:flex;flex-direction:column;gap:10px;padding:0 4px 4px}
+        .alm-dia-card{display:flex;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px;cursor:pointer;box-shadow:0 4px 14px rgba(74,42,20,0.07);transition:transform .15s,border-color .2s}
+        .alm-dia-card:active{transform:scale(.985);border-color:var(--acc)}
+        .alm-dia-card.cerrada{opacity:.6}
+        .alm-dia-flyer{position:relative;flex:0 0 96px;height:128px;border-radius:12px;overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center}
+        .alm-dia-flyer img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--card2)}
+        .alm-dia-ini{font-size:1.8rem}
+        .alm-dia-lupa{position:absolute;left:6px;right:6px;bottom:6px;background:rgba(27,27,27,.72);color:#fff;font-size:.62rem;font-weight:800;text-align:center;border-radius:999px;padding:3px 0}
+        .alm-dia-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+        .alm-dia-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px}
+        .alm-dia-local{font-size:.95rem;font-weight:900;letter-spacing:-.01em;color:var(--texto);line-height:1.2}
+        .alm-dia-precio{font-size:.92rem;font-weight:900;color:var(--texto);white-space:nowrap}
+        .alm-dia-linea{font-size:.78rem;color:var(--texto);line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+        .alm-dia-linea b{color:var(--acc);font-weight:800;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;margin-right:3px}
+        .alm-dia-pie{margin-top:auto;padding-top:6px}
+        .alm-dia-cta{display:inline-block;background:var(--cta);color:#fff;font-size:.78rem;font-weight:900;border-radius:999px;padding:7px 14px}
+        .alm-dia-cerrado{display:inline-block;background:var(--card2);color:var(--gris);font-size:.74rem;font-weight:800;border-radius:999px;padding:6px 12px}
+        .alm-tira-card{flex:0 0 116px;display:flex;flex-direction:column;gap:3px;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;text-align:left;color:var(--texto);scroll-snap-align:start}
+        .alm-tira-flyer{position:relative;width:116px;height:150px;border-radius:14px;overflow:hidden;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+        .alm-tira-flyer img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--card2)}
+        .alm-tira-local{font-size:.8rem;font-weight:800;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+        .alm-tira-precio{font-size:.78rem;font-weight:900;color:var(--texto)}
+        .alm-tira-todos .alm-tira-flyer{background:var(--acc-soft);border-color:rgba(232,67,26,.25)}
+        .alm-tira-todos .alm-dia-ini{font-size:2.2rem;color:var(--acc);font-weight:900}
+        .alm-opt-extra{font-size:.74rem;font-weight:900;color:var(--acc);margin-left:4px}
     </style>
 </head>
 <body>
@@ -1491,6 +1518,147 @@
             return tieneMenuDelDia(r) && isAlmuerzoHour();
         }
 
+        // ══ 🍱 ALMUERZOS DEL DÍA (28-oct-2026, David: «en la ventana de almuerzo solo los almuerzos que se suben
+        // todos los días, solo almuerzos») ══ La ventana «Almuerzo» y la tira del inicio muestran SOLO los menús que
+        // los locales mandan cada mañana al despacho (vista almuerzos_hoy; los publica el robot lector de n8n con la
+        // foto del menú). Antes se llenaba con platos «ejecutivo» / «combo almuerzo» de cartas que no venden almuerzo.
+        function almuerzosDelDia(){
+            var m=window._almuerzosHoy||{},out=[];
+            Object.keys(m).forEach(function(rid){
+                var a=m[rid];
+                if(!a||!a.opciones||!a.opciones.length) return;
+                var r=getRestById(rid);
+                if(r) out.push({a:a,r:r,precio:applyTierPricing(Number(a.precio)||0,r,'Almuerzo del día')});
+            });
+            out.sort(function(x,y){
+                var cx=isRestOpen(x.r.horario)===false?1:0,cy=isRestOpen(y.r.horario)===false?1:0;
+                if(cx!==cy) return cx-cy;                                              // cerrados al final
+                if(!!x.a.foto_url!==!!y.a.foto_url) return x.a.foto_url?-1:1;          // con la foto del menú primero
+                return (x.precio||99)-(y.precio||99);
+            });
+            return out;
+        }
+        // La ventana existe solo en horario de almuerzo Y si hoy llegó algún menú (sin menús no hay chip ni tira).
+        function ventanaAlmuerzosAbierta(){return isAlmuerzoHour()&&almuerzosDelDia().length>0;}
+        // El «Almuerzo del día» como plato: el mismo en la página del local y en la ventana de almuerzos.
+        // El recargo «para llevar» del local (precio_para_llevar − precio) va como envase, como en los demás platos.
+        function almProductoDelDia(r){
+            var a=r&&window._almuerzosHoy&&window._almuerzosHoy[r.id];
+            if(!a||!a.opciones||!a.opciones.length) return null;
+            var base=Number(a.precio)||0;
+            var fin=applyTierPricing(base,r,'Almuerzo del día');
+            var llevar=Number(a.precio_para_llevar)||0;
+            return {
+                nombre:'Almuerzo del día',
+                precio:fin,
+                precio_regular:precioRegular(base,r,'Almuerzo del día'),
+                precio_base:base,
+                cargo_envase:(base>0&&llevar>base)?Math.round((llevar-base)*100)/100:0,
+                descripcion:'ALMUERZO_OPTS:'+JSON.stringify({precio:fin,opciones:a.opciones}),
+                categoria:'🍱 Almuerzo del día'
+            };
+        }
+        // Sopa / segundo / jugo / postre en renglones cortos para la tarjeta (sin el «($3,50)» del segundo).
+        function _almLineas(a){
+            var por={};
+            (a.opciones||[]).forEach(function(o){(por[o.categoria]=por[o.categoria]||[]).push(String(o.nombre||'').replace(/\s*\(\s*\$[^)]*\)\s*$/,''));});
+            var L=[];
+            if(por.sopa) L.push(['Sopa',por.sopa.join(' o ')]);
+            if(por.segundo) L.push(['Segundo',por.segundo.slice(0,3).join(' · ')+(por.segundo.length>3?' · +'+(por.segundo.length-3)+' más':'')]);
+            var beb=(por.jugo||[]).concat(por.bebida||[]);
+            if(beb.length) L.push([por.jugo?'Jugo':'Bebida',beb.join(' o ')]);
+            if(por.postre) L.push(['Postre',por.postre.join(' o ')]);
+            return L;
+        }
+        function _almPrecioTxt(x){
+            if(!(x.precio>0)) return 'Precio al pedir';
+            var desde=(x.a.opciones||[]).some(function(o){return Number(o.precio_extra)>0;});
+            return (desde?'desde ':'')+'$'+x.precio.toFixed(2);
+        }
+        // La foto del menú va ENTERA (contain, nunca recortada) y sin thumb(): no tiene copia en menu-fotos-640.
+        function _almDiaCard(x){
+            var a=x.a,r=x.r,foto=a.foto_url?String(a.foto_url):'';
+            var cerrado=isRestOpen(r.horario)===false;
+            var h='<div class="alm-dia-card'+(cerrado?' cerrada':'')+'" role="button" tabindex="0" onclick="pedirAlmuerzoDelDia(\''+jsEsc(r.id)+'\')">'+
+                '<div class="alm-dia-flyer"'+(foto?' onclick="event.stopPropagation();zoomFotoRaw(\''+jsEsc(foto)+'\',\'Menú de hoy\',\''+jsEsc(r.nombre)+'\')"':'')+'>'+
+                    '<span class="alm-dia-ini">🍱</span>'+
+                    (foto?'<img src="'+esc(foto)+'" alt="Menú de hoy de '+esc(r.nombre)+'" loading="lazy" onerror="this.remove()"><span class="alm-dia-lupa">Ver menú</span>':'')+
+                '</div>'+
+                '<div class="alm-dia-info">'+
+                    '<div class="alm-dia-top"><span class="alm-dia-local">'+esc(r.nombre)+'</span><span class="alm-dia-precio">'+_almPrecioTxt(x)+'</span></div>';
+            _almLineas(a).forEach(function(l){h+='<div class="alm-dia-linea"><b>'+l[0]+'</b> '+esc(l[1])+'</div>';});
+            h+='<div class="alm-dia-pie">'+(cerrado?'<span class="alm-dia-cerrado">Cerrado ahora</span>':'<span class="alm-dia-cta">Pedir almuerzo</span>')+'</div>'+
+                '</div>'+
+            '</div>';
+            return h;
+        }
+        // Ventana «Almuerzo» (chip de categoría): solo los menús de hoy.
+        function renderAlmuerzosDelDia(){
+            var lista=almuerzosDelDia();
+            if(!lista.length){
+                return '<div class="search-empty-state-v2">'+
+                    '<div class="search-empty-icon">🍱</div>'+
+                    '<div class="search-empty-title">Todavía no llegan los almuerzos de hoy</div>'+
+                    '<div class="search-empty-text">Cada mañana los locales nos mandan su menú del día y aparece aquí. Vuelve en un rato.</div>'+
+                '</div>';
+            }
+            var h='<section class="home-card">'+
+                '<div class="list-section-title">🍱 Almuerzos de hoy · '+lista.length+'</div>'+
+                '<div class="alm-dia-sub">El menú que cada local mandó hoy. Toca para elegir tu sopa y tu segundo.</div>'+
+                '<div class="alm-dia-list">';
+            lista.forEach(function(x){h+=_almDiaCard(x);});
+            return h+'</div></section>';
+        }
+        // Tira del inicio en horario de almuerzo (va en lugar del carril «Hora de almuerzo»).
+        function nhAlmuerzosHoyHTML(){
+            if(!isAlmuerzoHour()) return '';
+            var lista=almuerzosDelDia();
+            if(!lista.length) return '';
+            var precios=lista.map(function(x){return x.precio;}).filter(function(p){return p>0;});
+            var desde=precios.length?Math.min.apply(null,precios):0;
+            var h='<section class="destacados alm-tira"><div class="destacados-head">'+
+                '<span class="destacados-title">🍱 Almuerzos de hoy</span>'+
+                '<span class="destacados-sub">'+lista.length+' local'+(lista.length===1?'':'es')+(desde?' · desde $'+desde.toFixed(2):'')+' · sopa, segundo y jugo</span>'+
+            '</div><div class="destacados-scroll">';
+            lista.forEach(function(x){
+                var foto=x.a.foto_url?String(x.a.foto_url):'';
+                h+='<button class="alm-tira-card" onclick="pedirAlmuerzoDelDia(\''+jsEsc(x.r.id)+'\')">'+
+                    '<span class="alm-tira-flyer"><span class="alm-dia-ini">🍱</span>'+(foto?'<img src="'+esc(foto)+'" alt="Menú de hoy de '+esc(x.r.nombre)+'" loading="lazy" onerror="this.remove()">':'')+'</span>'+
+                    '<span class="alm-tira-local">'+esc(x.r.nombre)+'</span>'+
+                    '<span class="alm-tira-precio">'+_almPrecioTxt(x)+'</span>'+
+                '</button>';
+            });
+            h+='<button class="alm-tira-card alm-tira-todos" onclick="toggleCategoryV2(\'almuerzo\')">'+
+                '<span class="alm-tira-flyer"><span class="alm-dia-ini">›</span></span>'+
+                '<span class="alm-tira-local">Ver los '+lista.length+'</span><span class="alm-tira-precio">con su menú</span></button>';
+            return h+'</div></section>';
+        }
+        // Tocar un almuerzo = elegir sopa y segundo ahí mismo (el mismo modal de la página del local).
+        window.pedirAlmuerzoDelDia=function(rid){
+            var r=getRestById(rid),p=almProductoDelDia(r);
+            if(!r||!p) return;
+            if(isRestOpen(r.horario)===false){avisarCerrado(r);return;}
+            window._almMenuData=window._almMenuData||[];
+            var idx=window._almMenuData.length;
+            window._almMenuData.push({desc:p.descripcion,foto:null,envase:p.cargo_envase||0,base:p.precio_base||0});
+            openAlmuerzoModal(r.nombre,p.nombre,idx,r.precio_delivery||0);
+        };
+        // Los menús llegan durante la mañana: si la página quedó abierta, se vuelven a pedir al regresar a ella
+        // (máximo cada 5 min) y el inicio se vuelve a pintar solo si cambió qué locales tienen almuerzo.
+        function refrescarAlmuerzosHoy(){
+            if(!window._almCargados||Date.now()-window._almCargados<5*60*1000) return;
+            window._almCargados=Date.now();
+            fetch(SB_URL+'/rest/v1/almuerzos_hoy?select=*',{headers:supaHeaders()}).then(function(r){return r.json()}).then(function(rows){
+                if(!Array.isArray(rows)) return;
+                var antes=Object.keys(window._almuerzosHoy||{}).sort().join(',');
+                var m={};
+                rows.forEach(function(a){if(a.restaurante_id) m[a.restaurante_id]=a});
+                window._almuerzosHoy=m;
+                if(Object.keys(m).sort().join(',')!==antes&&currentView==='home') renderHome();
+            }).catch(function(){});
+        }
+        document.addEventListener('visibilitychange',function(){if(!document.hidden) refrescarAlmuerzosHoy();});
+
         // V2: Cargar TODOS los restaurantes activos + (si hay token) la session para tracking/prefill
         function loadSession(){
             var restsReq=fetch(SB_URL+'/rest/v1/restaurantes?select=*&activo=eq.true&order=nombre.asc',{headers:supaHeaders()})
@@ -1522,6 +1690,7 @@
                 // Indexar almuerzos_hoy por restaurante_id para lookup rápido
                 window._almuerzosHoy={};
                 alm.forEach(function(a){if(a.restaurante_id) window._almuerzosHoy[a.restaurante_id]=a});
+                window._almCargados=Date.now();
 
                 sessionData={
                     resultados:raw.map(normalizeRest),
@@ -1661,8 +1830,10 @@
         var MOMENTO_FRANJAS=[
             {desde:6*60,hasta:11*60+30,col:{key:'manana',titulo:'☕ Para empezar el día',sub:'desayunos, empanadas y café',bebidas:true,
                 kw:/desayun|bolon|tigrillo|humita|tamal|quimbolito|empanad|sanduch|sandwich|tostad|\bcafe\b|capuc|latte|mocaccino|batido|jugo|panqueq|waffle|croissant|\bpan\b|huevo|avena|yogur|granola|morocho|chocolate/}},
+            // [28-oct-2026] sin «almuerzo|ejecutivo|menu del dia»: traía combos de locales que no venden almuerzo; los almuerzos
+            // de verdad van en la tira «🍱 Almuerzos de hoy» (nhAlmuerzosHoyHTML), que ocupa este lugar si hay menús del día.
             {desde:11*60+30,hasta:15*60,col:{key:'almuerzo',titulo:'🍱 Hora de almuerzo',sub:'sopa, segundo y de todo',
-                kw:/almuerzo|ejecutivo|menu del dia|\bsopa|caldo|seco de|arroz con|encebollado|guatita|fritada|hornado|ceviche|corvina|churrasco|yapingacho|llapingacho|locro|sancocho|menestra|bandeja|chaulaf|apanado|pescado frito/}},
+                kw:/\bsopa|caldo|seco de|arroz con|encebollado|guatita|fritada|hornado|ceviche|corvina|churrasco|yapingacho|llapingacho|locro|sancocho|menestra|bandeja|chaulaf|apanado|pescado frito/}},
             {desde:15*60,hasta:18*60,col:{key:'tarde',titulo:'🧁 Media tarde',sub:'postres, helados y algo de picar',bebidas:true,
                 kw:/postre|helado|torta|pastel|cheesecake|brownie|waffle|\bdona|crepe|frapp|\bte\b|\bcafe\b|batido|smoothie|milkshake|malteada|mangonada|fresa|salchipapa|papas fritas|empanad|sanduch|nachos|picad|tequen|choclo|humita|pan de yuca|yogur|bubble|boba|mochi|churro/}},
             {desde:18*60,hasta:23*60+30,col:{key:'noche',titulo:'🌙 Para la noche',sub:'pizza, alitas, hamburguesas y chifa',
@@ -2287,7 +2458,7 @@
             {t:['parrilla','parrillada','parrilladas','asadero'], all:['parrilla','asado','churrasco','carne asada','a la brasa','lomo']},
             {t:['sushi','japonesa','japones'], all:['sushi','maki','makis','nigiri','sushi rolls']},
             {t:['mexicana','mexicano','comida mexicana'], all:['mexicana','taco','tacos','burrito','quesadilla','nachos']},
-            {t:['almuerzo','almuerzos','menu del dia'], all:['almuerzo','menu del dia','menu ejecutivo','seco','sopa del dia']},
+            {t:['almuerzo','almuerzos','menu del dia'], all:['almuerzo','menu del dia','seco','sopa del dia']},
             {t:['salchipapa','salchipapas'], all:['salchipapa','salchipapas','papas fritas']},
             {t:['jugo','jugos','batido','batidos'], all:['jugo','batido','frappe','milkshake','malteada','smoothie']},
             {t:['postre','postres','heladeria'], all:['postre','helado','torta','pastel','cheesecake','brownie']},
@@ -2429,9 +2600,11 @@
             partido:{icon:'⚽',label:'Antojos partido',canonica:null,
                 core:['alita','hamburguesa','burger','pizza','salchipapa','picadita','nachos'],
                 kw:['alita','alitas','wing','wings','hambur','burger','pizza','salchipapa','salchipapas','papipollo','papas fritas','papa rellena','picadita','picaditas','nachos','hot dog','choripan','chorihuevo','aros de cebolla','onion ring','tequeño','tequeños','empanada','empanadas','tacos','quesadilla','mozzarella','mollejas','mollejitas','chifles']},
+            // [28-oct-2026] La ventana Almuerzo ya NO busca en las cartas: muestra solo almuerzos_hoy (ver almuerzosDelDia).
+            // Sin «ejecutivo»: traía «Combo Ejecutivo», «Pollo Ejecutivo»… de locales que no venden almuerzo.
             almuerzo:{icon:'🍱',label:'Almuerzo',canonica:null,
-                core:['almuerzo','almuerzos','menú del día','menu del dia','ejecutivo'],
-                kw:['almuerzo','almuerzos','menú del día','menu del dia','menú del dia','menu del día','ejecutivo','ejecutivos']},
+                core:['almuerzo','almuerzos','menú del día','menu del dia'],
+                kw:['almuerzo','almuerzos','menú del día','menu del dia','menú del dia','menu del día']},
             desayunos:{icon:'🥐',label:'Desayunos',canonica:null,
                 core:['desayuno','desayunos','brunch'],
                 kw:['desayuno','desayunos','brunch','pan tostado','tostada francesa','tostadas francesas','huevos revueltos','huevos pericos','panqueque','panqueques','waffle','waffles','bolón','bolon','bolones','tigrillo','humita','humitas','empanada de viento','jugo de naranja','café con leche']},
@@ -2608,6 +2781,14 @@
             }
             window._activeCat=key;
             try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}
+            // 🍱 Almuerzo: solo los menús del día (almuerzos_hoy), sin buscar «almuerzo/ejecutivo» en las cartas.
+            if(key==='almuerzo'){
+                window._catPlatesCache[key]=[];
+                window._catLoading=false;
+                refrescarAlmuerzosHoy();
+                renderHome();
+                return;
+            }
             if(window._catRestsCache[key]){
                 renderHome();
                 return;
@@ -2636,21 +2817,6 @@
             fetchAllMatchingPlates(ors)
                 .then(function(plates){
                     var rests=aggregatePlatesByRest(plates);
-                    if(key==='almuerzo'&&window._almuerzosHoy){
-                        var already={};
-                        rests.forEach(function(r){if(r.id) already[r.id]=true});
-                        Object.keys(window._almuerzosHoy).forEach(function(rid){
-                            if(already[rid]) return;
-                            var rFull=(sessionData.resultados||[]).find(function(x){return x.id===rid});
-                            if(rFull){
-                                var enriched=Object.assign({},rFull,{_matchCount:1,_matchItems:[]});
-                                rests.push(enriched);
-                            }
-                        });
-                        rests.forEach(function(r){
-                            if(window._almuerzosHoy[r.id]) r._hasAlmuerzoHoy=true;
-                        });
-                    }
                     // Desayunos: además de los que matchean por keyword, sumar las CAFETERÍAS
                     // (categoria_canonica "Cafetería / Desayunos", ej. Buuba Té) — sirven desayuno.
                     if(key==='desayunos'){
@@ -3433,7 +3599,9 @@
             }
 
             // Filtro de categoría activo: usar resultado async de menu_items (más completo)
-            if(window._activeCat){
+            if(window._activeCat==='almuerzo'){
+                rests=almuerzosDelDia().map(function(x){return x.r});   // 🍱 solo los locales con menú del día hoy
+            } else if(window._activeCat){
                 if(window._catRestsCache[window._activeCat]){
                     rests=window._catRestsCache[window._activeCat].slice();
                 } else if(window._catLoading){
@@ -3469,11 +3637,13 @@
 
             // Chips de categoría. Mundial: 'partido' solo aparece en período.
             // En horario de almuerzo (12-15h) el chip 🍱 Almuerzo va PRIMERO (al mediodía la gente busca almuerzo, no promos).
+            // [28-oct-2026] y solo si hoy llegó algún menú del día (sin menús, el chip abría una ventana vacía o ajena).
             h+='<div class="cat-chips-wrap"><div class="cat-chips-scroll">';
-            var _catKeysHome=isAlmuerzoHour()?['almuerzo'].concat(CAT_KEYS_V2.filter(function(k){return k!=='almuerzo';})):CAT_KEYS_V2;
+            var _almAbierta=ventanaAlmuerzosAbierta();
+            var _catKeysHome=_almAbierta?['almuerzo'].concat(CAT_KEYS_V2.filter(function(k){return k!=='almuerzo';})):CAT_KEYS_V2;
             _catKeysHome.forEach(function(k){
                 if(k==='partido') return; // [19-jun] David: fuera el chip "Antojos partido". Re-activar: volver a &&!isMundial()
-                if(k==='almuerzo'&&!isAlmuerzoHour()) return; // chip Almuerzo solo 12-15h
+                if(k==='almuerzo'&&!_almAbierta&&window._activeCat!=='almuerzo') return; // chip Almuerzo solo 12-15h y con menús de hoy
                 var c=CAT_MAP_V2[k];
                 var active=window._activeCat===k;
                 h+='<button class="cat-chip'+(active?' active':'')+'" onclick="toggleCategoryV2(\''+k+'\')">'+
@@ -3486,7 +3656,8 @@
             // Promo grande que se desliza + carriles de comida (solo el inicio sin filtro)
             if(!window._activeCat){
                 h+=nhPromosHTML();
-                h+=renderHomeCtxRail('momento'); // HOME VIVA: lo de AHORA (☕ mañana · 🍱 almuerzo · 🧁 tarde · 🌙 noche)
+                // 12-15h con menús del día: la tira «🍱 Almuerzos de hoy» va en lugar del carril «Hora de almuerzo»
+                h+=nhAlmuerzosHoyHTML()||renderHomeCtxRail('momento'); // HOME VIVA: lo de AHORA (☕ mañana · 🍱 almuerzo · 🧁 tarde · 🌙 noche)
                 h+=renderHomeFoodRail();         // 🔥 Los más pedidos (ventas reales)
                 h+=renderHomeCtxRail('tema');    // HOME VIVA: tema del día (🍕 martes de pizza, 🍗 jueves de alitas…)
             }
@@ -3494,7 +3665,7 @@
             // Banner filtro activo
             if(window._activeCat){
                 var cm=CAT_MAP_V2[window._activeCat];
-                var bannerCount=window._catLoading?'…buscando':rests.length+' restaurante'+(rests.length===1?'':'s');
+                var bannerCount=window._catLoading?'…buscando':(window._activeCat==='almuerzo'?rests.length+' menú'+(rests.length===1?'':'s')+' de hoy':rests.length+' restaurante'+(rests.length===1?'':'s'));
                 h+='<div class="filter-banner-v2">'+
                     '<span>'+cm.icon+' '+cm.label+' · '+bannerCount+'</span>'+
                     '<button onclick="toggleCategoryV2(\''+window._activeCat+'\')" aria-label="Quitar filtro">✕</button>'+
@@ -3529,7 +3700,7 @@
                 h+='<div class="grid3-wrap">';
                 for(var sk=0;sk<9;sk++) h+='<div class="grid3-card" style="aspect-ratio:1/1.28;background:linear-gradient(90deg,var(--card) 0%,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:skel-shimmer 1.6s ease-in-out infinite"></div>';
                 h+='</div>';
-            } else if(rests.length===0){
+            } else if(rests.length===0&&window._activeCat!=='almuerzo'){   // el almuerzo tiene su propio aviso
                 // Empty state cuando filtro vacío
                 h+='<div class="search-empty-state-v2">'+
                     '<div class="search-empty-icon">🔎</div>'+
@@ -3540,7 +3711,10 @@
 
             // V3.0: Grilla 3 columnas (con split especialistas/también ofrecen cuando hay categoría)
             if(!(window._activeCat&&window._catLoading)){
-                if(window._activeCat){
+                if(window._activeCat==='almuerzo'){
+                    // 🍱 Ventana Almuerzo: SOLO los menús del día que mandaron los locales (con la foto del menú)
+                    h+=renderAlmuerzosDelDia();
+                } else if(window._activeCat){
                     var cmActive=CAT_MAP_V2[window._activeCat];
                     // V8: 2 secciones -> (aliados primero + cliente_paga, juntos) y "Más opciones" (silenciosos).
                     var aliados=rests.filter(function(r){return r.tipo_acuerdo==='aliado'});
@@ -3549,34 +3723,6 @@
                     var socios=aliados.concat(clientePaga); // aliados primero, luego cliente_paga
                     var gIdx=0;
                     function catCmd(name){return 'openRestCatFiltered(\''+jsEsc(name)+'\',\''+window._activeCat+'\')'}
-                    // 🍱 Categoría Almuerzo: los que tienen menú del día hoy van DE PRIMERO,
-                    // en su propia sección y sin tarifa de servicio. Se sacan del split de abajo.
-                    if(window._activeCat==='almuerzo'){
-                        var conMenu=rests.filter(function(r){return tieneMenuDelDia(r)});
-                        if(conMenu.length){
-                            conMenu.sort(function(a,b){
-                                var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
-                                var va=sa===true?0:sa===null?1:2,vb=sb===true?0:sb===null?1:2;
-                                if(va!==vb) return va-vb;
-                                var ta={aliado:0,cliente_paga:1,silencioso:2}[a.tipo_acuerdo]||2;
-                                var tb={aliado:0,cliente_paga:1,silencioso:2}[b.tipo_acuerdo]||2;
-                                if(ta!==tb) return ta-tb;
-                                return (a.distancia_km||999)-(b.distancia_km||999);
-                            });
-                            h+='<section class="home-card">';
-                            h+='<div class="list-section-title">🍱 Menú del día · '+conMenu.length+'</div>';
-                            h+='<div class="almuerzo-day-banner">🍱 Almuerzo del día listo · sin tarifa de servicio</div>';
-                            h+='<div class="grid3-wrap">';
-                            conMenu.forEach(function(r){h+=renderRestCardGrid(r,gIdx++,catCmd(r.nombre))});
-                            h+='</div>';
-                            h+='</section>';
-                            // quitar del split de abajo para no duplicar
-                            aliados=aliados.filter(function(r){return !tieneMenuDelDia(r)});
-                            clientePaga=clientePaga.filter(function(r){return !tieneMenuDelDia(r)});
-                            silenc=silenc.filter(function(r){return !tieneMenuDelDia(r)});
-                            socios=aliados.concat(clientePaga);
-                        }
-                    }
                     if(socios.length){
                         h+='<section class="home-card">';
                         h+='<div class="list-section-title">'+cmActive.icon+' '+cmActive.label+'</div>';
@@ -3744,19 +3890,9 @@
 
             // V2.5: Si este restaurante tiene almuerzo configurable hoy, inyectarlo al inicio del menú
             // V2.8: solo durante horario de almuerzo (12:00–15:00)
-            var almHoy=window._almuerzosHoy&&window._almuerzosHoy[r.id];
-            if(almHoy&&almHoy.opciones&&almHoy.opciones.length&&!r._almuerzoInjected&&isAlmuerzoHour()){
-                // Pricing v2: aplicar markup + charm también al almuerzo del día
-                var almPrecioBase=Number(almHoy.precio)||0;
-                var almPrecioFinal=applyTierPricing(almPrecioBase,r,'Almuerzo del día');
-                var almProduct={
-                    nombre:'Almuerzo del día',
-                    precio:almPrecioFinal,
-                    precio_regular:precioRegular(almPrecioBase,r,'Almuerzo del día'),
-                    precio_base:almPrecioBase,
-                    descripcion:'ALMUERZO_OPTS:'+JSON.stringify({precio:almPrecioFinal,opciones:almHoy.opciones}),
-                    categoria:'🍱 Almuerzo del día'
-                };
+            // Pricing v2 (markup + charm) y recargo para llevar: los arma almProductoDelDia (el mismo de la ventana de almuerzos)
+            var almProduct=almProductoDelDia(r);
+            if(almProduct&&!r._almuerzoInjected&&isAlmuerzoHour()){
                 r.productos=[almProduct].concat(r.productos||[]);
                 r._almuerzoInjected=true;
             }
@@ -4654,7 +4790,10 @@
             window._lastSearchData={query:query,rests:rests,plates:plates};
             var area=document.getElementById('search-results-area');
             if(!area) return;
+            // 🍱 «almuerzo» en horario de almuerzo: primero los menús del día (esos locales no tienen carta que buscar)
+            var almH=(/^(almuerzos?|men[uú]s? del d[ií]a|corrientazos?)$/i.test(String(query||'').trim())&&ventanaAlmuerzosAbierta())?renderAlmuerzosDelDia():'';
             if(!rests.length&&!plates.length){
+                if(almH){area.innerHTML=almH;return;}
                 area.innerHTML='<div class="search-empty-state-v2">'+
                     '<div class="search-empty-icon">🔎</div>'+
                     '<div class="search-empty-title">No encontramos "'+esc(query)+'"</div>'+
@@ -4665,7 +4804,7 @@
             // Carril de FOTOS de platos (aliados) que matchean la búsqueda — arriba del todo, estilo "Para ti".
             var railSearch=buildPhotoRail(plates,12,_destacadosDe(rests));
             var railKeys={}; railSearch.forEach(function(p){railKeys[p.rest+'|'+p.nombre]=1;});
-            var html='';
+            var html=almH;
             if(railSearch.length){
                 html+=renderCtxPhotoRail(railSearch,'📸 "'+esc(query)+'" con foto','toca para agregar');
             }
@@ -6544,7 +6683,7 @@
                     '<div class="almuerzo-header-icon">🍱</div>'+
                     '<div class="almuerzo-header-title">'+esc(nombre)+'</div>'+
                     '<div class="almuerzo-header-rest">'+esc(rest)+'</div>'+
-                    (precio?'<div class="almuerzo-header-price">$'+Number(precio).toFixed(2)+'</div>':'<div class="almuerzo-header-price" style="color:var(--gris)">Consultar</div>')+
+                    (precio?'<div class="almuerzo-header-price" id="alm-precio">$'+Number(precio).toFixed(2)+'</div>':'<div class="almuerzo-header-price" style="color:var(--gris)">Consultar</div>')+
                     (envaseM>0?'<div style="font-size:0.74rem;color:var(--gris);font-weight:700;margin-top:2px">+ envase $'+Number(envaseM).toFixed(2)+'</div>':'')+
                 '</div>';
 
@@ -6561,15 +6700,19 @@
                     (isSingle?' <span class="almuerzo-cat-badge incluido">Incluido</span>':' <span class="almuerzo-cat-badge elige">ELIGE UNA</span>')+
                     '</div>';
                 opts.forEach(function(o){
+                    // segundo con precio propio (almuerzos del día): data-extra suma al precio; si el nombre no lo dice, se muestra
+                    var ex=Number(o.precio_extra)||0;
+                    var exAttr=ex>0?' data-extra="'+ex+'"':'';
+                    var exTxt=(ex>0&&String(o.nombre).indexOf('$')===-1)?' <span class="alm-opt-extra">+$'+ex.toFixed(2)+'</span>':'';
                     if(isSingle){
-                        h+='<div class="almuerzo-opt single" data-cat="'+cat+'" data-val="'+esc(o.nombre)+'">'+
+                        h+='<div class="almuerzo-opt single" data-cat="'+cat+'" data-val="'+esc(o.nombre)+'"'+exAttr+'>'+
                             '<div class="almuerzo-radio"></div>'+
-                            '<div class="almuerzo-opt-name">'+esc(almOptLabel(o.nombre,tG))+'</div>'+
+                            '<div class="almuerzo-opt-name">'+esc(almOptLabel(o.nombre,tG))+exTxt+'</div>'+
                         '</div>';
                     }else{
-                        h+='<div class="almuerzo-opt" data-cat="'+cat+'" data-val="'+esc(o.nombre)+'" onclick="selectAlmOpt(this)">'+
+                        h+='<div class="almuerzo-opt" data-cat="'+cat+'" data-val="'+esc(o.nombre)+'"'+exAttr+' onclick="selectAlmOpt(this)">'+
                             '<div class="almuerzo-radio"></div>'+
-                            '<div class="almuerzo-opt-name">'+esc(almOptLabel(o.nombre,tG))+'</div>'+
+                            '<div class="almuerzo-opt-name">'+esc(almOptLabel(o.nombre,tG))+exTxt+'</div>'+
                         '</div>';
                     }
                 });
@@ -6587,6 +6730,7 @@
 
             var singles=document.querySelectorAll('.almuerzo-opt.single');
             singles.forEach(function(el){el.classList.add('selected')});
+            _almActualizarPrecio();
 
             document.getElementById('modal-overlay').classList.add('visible');
         };
@@ -6596,7 +6740,23 @@
             siblings.forEach(function(s){s.classList.remove('selected')});
             el.classList.add('selected');
             checkAlmReady();
+            _almActualizarPrecio();
         };
+        // Segundo con precio propio («Fritada ($3,50)» si el almuerzo es $3,00): precio_extra de almuerzo_opciones.
+        function _almExtraSel(){
+            var t=0;
+            document.querySelectorAll('.almuerzo-opt.selected').forEach(function(el){t+=Number(el.getAttribute('data-extra'))||0;});
+            return Math.round(t*100)/100;
+        }
+        function _almPrecioCon(p,extra){
+            if(!(extra>0)) return p.precio;
+            var base=Math.round(((p.precio_base>0?p.precio_base:p.precio)+extra)*100)/100;
+            return applyTierPricing(base,getRestByName(p.rest),'Almuerzo del día');
+        }
+        function _almActualizarPrecio(){
+            var p=window._almPending,el=document.getElementById('alm-precio');
+            if(p&&el&&p.precio) el.textContent='$'+Number(_almPrecioCon(p,_almExtraSel())).toFixed(2);
+        }
         function checkAlmReady(){
             if(!window._almPending)return;
             var ready=true;
@@ -6616,11 +6776,12 @@
             selected.forEach(function(el){
                 choices[el.getAttribute('data-cat')]=el.getAttribute('data-val');
             });
+            var extraSel=_almExtraSel();
             window._cart.push({
                 restaurante:p.rest,
                 nombre:p.nombre,
-                precio:p.precio,
-                precio_base:p.precio_base||0,
+                precio:_almPrecioCon(p,extraSel),
+                precio_base:p.precio_base?Math.round((p.precio_base+extraSel)*100)/100:0,
                 delivery:p.delivery,
                 qty:1,
                 almuerzoChoices:choices,
