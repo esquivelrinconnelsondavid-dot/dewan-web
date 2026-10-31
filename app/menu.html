@@ -43,6 +43,173 @@
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1924288741457770&ev=PageView&noscript=1"/></noscript>
     <!-- End Meta Pixel -->
+    <!-- Contador PROPIO de visitas (31-oct-2026, SQL 068): 1 fila por visita en Supabase `visitas_web`, sin Meta.
+         Lo ve David en dewansas.com/visitas y en el resumen de Telegram de cada noche.
+         Una visita se corta tras 30 min sin actividad. La centralista (?op=1) no cuenta; ?prueba=1, ?simular=1
+         y los robots quedan marcados como prueba y no salen en los números.
+         Etiquetar los links que se comparten: ?o=wa (WhatsApp/estados) · ?o=ig · ?o=fb · ?o=qr · ?o=tiktok
+         (o utm_source / utm_campaign). Si nunca llega una visita, la web sigue igual (todo va en try/catch). -->
+    <script>
+    (function(){
+      'use strict';
+      try{
+        var qs=new URLSearchParams(location.search);
+        if(qs.get('op')==='1') return;
+        var RPC='https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1/rpc/visita_web';
+        var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+        var ua=navigator.userAgent||'';
+        function ls(k){try{return localStorage.getItem(k)}catch(e){return null}}
+        function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+        function uuid(){
+          if(window.crypto&&crypto.randomUUID) return crypto.randomUUID();
+          var h='0123456789abcdef',s='';
+          for(var i=0;i<36;i++) s+=(i===8||i===13||i===18||i===23)?'-':(i===14?'4':h[(Math.random()*16)|0]);
+          return s;
+        }
+        var standalone=false;
+        try{standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true}catch(e){}
+
+        // ¿Este aparato ya había abierto la web? (antes del contador no había marca propia: se mira lo que la web guarda)
+        var yaVino=['dewan_vis','dewan_cliente_uuid','dewan_ubic','dewan_calles','dewan_recent_searches','dewan_last_order',
+                    'dewan_cliente_web','dewan_sellos_tel','dewan_cart_anon_v2','dewan_pay_method','dewan_pedido_web']
+                   .some(function(k){return !!ls(k)});
+        // Mismo id que usa la web en el pedido ("Cliente: …"): así una visita y un pedido son el mismo aparato.
+        var vis=ls('dewan_cliente_uuid');
+        if(!vis){vis=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'c-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); lsSet('dewan_cliente_uuid',vis);}
+
+        function origen(){
+          var o=(qs.get('o')||qs.get('utm_source')||'').toLowerCase().trim();
+          var alias={wa:'whatsapp',whatsapp:'whatsapp',estado:'whatsapp',estados:'whatsapp',fb:'facebook',facebook:'facebook',
+                     ig:'instagram',instagram:'instagram',qr:'qr',tt:'tiktok',tiktok:'tiktok',g:'google',google:'google'};
+          if(o) return alias[o]||o.slice(0,30);
+          if(qs.get('t')) return 'whatsapp'; // link que manda el bot
+          if(/Instagram/i.test(ua)) return 'instagram';
+          if(/FBAN|FBAV|FB_IAB|FBIOS|FB4A/i.test(ua)) return 'facebook';
+          var r=document.referrer||'',h='';
+          if(/^android-app:/i.test(r)){
+            if(/whatsapp/i.test(r)) return 'whatsapp';
+            if(/facebook|katana|orca/i.test(r)) return 'facebook';
+            if(/instagram/i.test(r)) return 'instagram';
+            if(/google/i.test(r)) return 'google';
+            return 'otra app';
+          }
+          try{h=r?new URL(r).hostname.replace(/^www\./,''):''}catch(e){}
+          if(h&&h!==location.hostname){
+            if(/(^|\.)(facebook\.com|fb\.com|fb\.me)$/.test(h)) return 'facebook';
+            if(/(^|\.)instagram\.com$/.test(h)) return 'instagram';
+            if(/(^|\.)(whatsapp\.com|wa\.me)$/.test(h)) return 'whatsapp';
+            if(/(^|\.)google\./.test(h)) return 'google';
+            if(/(^|\.)tiktok\.com$/.test(h)) return 'tiktok';
+            if(/(^|\.)(t\.co|x\.com|twitter\.com)$/.test(h)) return 'x';
+            if(/(^|\.)(youtube\.com|youtu\.be)$/.test(h)) return 'youtube';
+            if(/(^|\.)(bing\.com|yahoo\.com|duckduckgo\.com)$/.test(h)) return 'buscador';
+            if(/(^|\.)dewansas\.com$/.test(h)) return 'página dewan';
+            return 'otro sitio';
+          }
+          if(qs.get('fbclid')) return 'facebook';
+          if(standalone) return 'app';
+          return 'directo';
+        }
+        function campana(){
+          var c=qs.get('utm_campaign')||'';
+          if(!c&&qs.get('r')) c='local '+qs.get('r');
+          if(!c&&qs.get('b')==='1') c='anuncio (bot)';
+          return c.slice(0,80);
+        }
+        function entrada(){
+          var p=new URLSearchParams(location.search);
+          p.delete('fbclid'); if(p.get('t')) p.set('t','…');
+          var s=p.toString();
+          return (location.pathname+(s?'?'+s:'')).slice(0,200);
+        }
+        function navegador(){
+          if(standalone) return 'app instalada';
+          if(/Instagram/i.test(ua)) return 'instagram';
+          if(/FBAN|FBAV|FB_IAB|FBIOS|FB4A/i.test(ua)) return 'facebook';
+          if(/SamsungBrowser/i.test(ua)) return 'samsung';
+          if(/EdgA?\/|EdgiOS/i.test(ua)) return 'edge';
+          if(/OPR\/|Opera/i.test(ua)) return 'opera';
+          if(/Firefox|FxiOS/i.test(ua)) return 'firefox';
+          if(/CriOS|Chrome\//i.test(ua)) return 'chrome';
+          if(/Safari\//i.test(ua)) return 'safari';
+          return 'otro';
+        }
+        var prueba=qs.get('prueba')==='1'||(qs.get('prueba')!=='0'&&ls('dewan_tester')==='1')||qs.get('simular')==='1'||ls('dewan_pd_simular')==='1'
+                   ||navigator.webdriver===true||/HeadlessChrome|bot\b|crawl|spider|facebookexternalhit|WhatsApp\//i.test(ua);
+
+        // La visita sigue si volvió en menos de 30 min y no llegó por otro link.
+        var guardada=null; try{guardada=JSON.parse(ls('dewan_vis')||'null')}catch(e){}
+        var linkNuevo=!!(qs.get('o')||qs.get('utm_source')||qs.get('utm_campaign')||qs.get('r')||qs.get('fbclid')||qs.get('t'));
+        var ses=(guardada&&guardada.s&&Date.now()-guardada.t<30*60*1000&&!(linkNuevo&&guardada.e!==entrada()))?guardada.s:uuid();
+
+        var st={s:ses,v:vis,o:origen(),c:campana(),ref:'',e:entrada(),d:/iPhone|iPad|iPod/i.test(ua)?'iphone':(/Android/i.test(ua)?'android':'pc'),
+                n:navegador(),nuevo:!yaVino,loc:[],lcar:[],lped:[],bus:[],sin:[],car:false,ci:0,cm:0,ubi:false,pid:false,via:null,pt:null,
+                peds:[],tel:'',nom:'',prueba:prueba};
+        try{var rh=document.referrer?new URL(document.referrer).hostname:''; st.ref=(rh&&rh!==location.hostname)?rh.slice(0,120):'';}catch(e){}
+
+        function quien(){
+          var c={}; try{c=JSON.parse(ls('dewan_cliente_web')||'{}')||{}}catch(e){}
+          st.tel=String(c.telefono||ls('dewan_sellos_tel')||'').slice(0,20);
+          st.nom=String(c.nombre||'').slice(0,60);
+        }
+        function poner(arr,x,tope){x=String(x==null?'':x).trim(); if(x&&arr.indexOf(x)===-1&&arr.length<tope) arr.push(x);}
+        var tm=null,sucio=false;
+        function mandar(keep){
+          clearTimeout(tm); tm=null; sucio=false;
+          quien();
+          lsSet('dewan_vis',JSON.stringify({s:st.s,t:Date.now(),e:st.e}));
+          try{
+            fetch(RPC,{method:'POST',keepalive:!!keep,
+              headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},
+              body:JSON.stringify({p:st})}).catch(function(){});
+          }catch(e){}
+        }
+        function luego(ya){sucio=true; clearTimeout(tm); tm=setTimeout(mandar,ya?0:1200);}
+        document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&sucio) mandar(true);});
+
+        var busPend=null,busTm=null;
+        function cerrarBusqueda(){
+          clearTimeout(busTm); busTm=null;
+          if(!busPend) return;
+          var q=busPend.q.toLowerCase().replace(/\s+/g,' ').trim().slice(0,40);
+          if(q.length>=2){poner(st.bus,q,20); if(!busPend.n) poner(st.sin,q,20); luego();}
+          busPend=null;
+        }
+        function localesDelCarrito(){
+          var out=[]; try{(window._cart||[]).forEach(function(c){poner(out,c&&c.restaurante,10)})}catch(e){} return out;
+        }
+        function totalesCarrito(){
+          var it=0,m=0; try{(window._cart||[]).forEach(function(c){var q=Number(c.qty)||1; it+=q; m+=q*(Number(c.precio)||0);})}catch(e){}
+          return {it:it,m:Math.round(m*100)/100};
+        }
+
+        window.dwVis={
+          local:function(nombre){cerrarBusqueda(); poner(st.loc,nombre,30); luego();},
+          busqueda:function(q,n){
+            q=String(q||''); var a=q.toLowerCase().trim(),b=busPend?busPend.q.toLowerCase().trim():'';
+            if(busPend&&a.indexOf(b)!==0&&b.indexOf(a)!==0) cerrarBusqueda(); // otra búsqueda (no la misma que sigue escribiendo)
+            busPend={q:q,n:Number(n)||0}; clearTimeout(busTm); busTm=setTimeout(cerrarBusqueda,2500);
+          },
+          carrito:function(rest){
+            var t=totalesCarrito(); st.car=true; poner(st.lcar,rest,15);
+            st.ci=Math.max(st.ci,t.it); st.cm=Math.max(st.cm,t.m); luego();
+          },
+          ubicacion:function(){if(!st.ubi){st.ubi=true; luego();}},
+          pedido:function(o){
+            o=o||{}; cerrarBusqueda();
+            st.pid=true; st.via=o.via||'web';
+            st.pt=Math.round(((st.pt||0)+(Number(o.total)||0))*100)/100;
+            (o.codigos||[]).forEach(function(c){poner(st.peds,c,10)});
+            (o.locales||localesDelCarrito()).forEach(function(l){poner(st.lped,l,10)});
+            luego(true);
+          }
+        };
+        if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(mandar,600)});
+        else setTimeout(mandar,600);
+      }catch(e){}
+    })();
+    </script>
+    <!-- Fin contador propio de visitas -->
     <meta name="theme-color" content="#FFFFFF">
     <!-- PWA cliente (instalable). OJO: manifest-cliente.json y sw-cliente.js son de ESTA app;
          el manifest.json y sw.js del mismo directorio son de la app del MOTORIZADO. -->
@@ -1301,6 +1468,7 @@
             if(OP_MODE||window._ubicPixelFired)return;
             window._ubicPixelFired=true;
             if(typeof fbq==='function') fbq('track','InitiateCheckout');
+            try{if(window.dwVis)dwVis.ubicacion();}catch(e){}
           }catch(e){}
         }
         restaurarUbic();
@@ -3075,6 +3243,7 @@
             var msg=prueba?'Prueba guardada (no sale una moto real)':'¡Listo! Tu '+(esC?'compra':'encomienda')+' ya salió a los motorizados';
             if(j.transferencia&&!prueba) msg+=' · te pedirán transferir antes de comprar';
             if(!prueba){try{if(typeof fbq==='function')fbq('trackCustom','CarreraWeb',{tipo:P.tipo,value:Number(j.precio)||0,currency:'USD'});}catch(e){}}
+            if(!prueba){try{if(window.dwVis)dwVis.pedido({via:P.tipo,total:j.precio,codigos:j.codigo?[j.codigo]:[],locales:[]});}catch(e){}}
             window._nhP=null;
             nhSeguir(nhTokenDe(j.link),msg); // se queda en la web: estado, mapa y número del motorizado
         }
@@ -3845,6 +4014,7 @@
             for(var i=0;i<rests.length;i++){if(rests[i].nombre===nombre){r=rests[i];ridx=i;break;}}
             if(!r)return;
             try{if(typeof fbq==='function')fbq('track','ViewContent',{content_name:nombre,content_type:'product_group'});}catch(e){}
+            try{if(window.dwVis)dwVis.local(nombre);}catch(e){}
 
             // V2: Si no tenemos los platos cargados, mostrar loading y cargarlos
             if((!r.productos||r.productos.length===0)&&r.id&&!r._loadAttempted){
@@ -4552,6 +4722,7 @@
                     rankRestsByKeywords(combined,[q]);
 
                     saveRecentSearch(q);
+                    try{if(window.dwVis)dwVis.busqueda(q,combined.length);}catch(e){}
                     renderSearchResults(q,combined,plates);
                 }).catch(function(){
                     if(mySeq!==window._searchSeq) return;
@@ -5216,6 +5387,7 @@
             try{if(navigator.vibrate)navigator.vibrate(12)}catch(e){}
             markEtapa('agrego_carrito');
             try{if(typeof fbq==='function')fbq('track','AddToCart',{content_name:nombre,value:p,currency:'USD'});}catch(e){}
+            try{if(window.dwVis)dwVis.carrito(rest);}catch(e){}
             refreshView();
             if(pt)requestAnimationFrame(function(){flyFromPoint(pt.x,pt.y,pickEmojiForFly(nombre))});
         };
@@ -5989,6 +6161,7 @@
             // Persistir el pedido armado: si Android/el webview mata la pestaña al saltar a
             // WhatsApp, al volver ofrecemos reabrirlo (banner de rescate) en vez de perder la venta.
             try{localStorage.setItem('dewan_last_order',JSON.stringify({url:waUrl,resumen:resumen,ts:Date.now()}))}catch(e){}
+            try{if(window.dwVis)dwVis.pedido({via:'whatsapp',total:resumen.total});}catch(e){}
             window._cart=[]; try{clearCartStorage();}catch(e){}
             markEtapa('confirmo');
             var waWin=window.open(waUrl,'_blank');
@@ -6162,6 +6335,7 @@
             if(j.simulado){ pdSimulado(j,exito); return; } // prueba: el carrito se queda para pedir de verdad después
             try{localStorage.setItem('dewan_pedido_web',JSON.stringify({codigos:cods,link:j.link||'',total:Number(j.total)||0,ts:Date.now()}));}catch(e){}
             try{dewanTrackPurchase({uid:'pd-'+((peds[0]&&peds[0].id)||Date.now()),total:j.total,items:t.items});}catch(e){}
+            try{if(window.dwVis)dwVis.pedido({via:'web',total:j.total,codigos:cods});}catch(e){}
             window._pdUlt=null;
             markEtapa('confirmo');
             resetAfterOrder(); // carrito vacío y de vuelta al inicio (queda la barra "Tu pedido …")

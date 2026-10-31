@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Visitas de la web · DEWAN</title>
+<link rel="icon" type="image/png" href="/app/icons-cliente/icon-192.png">
+<!--
+  Panel de VISITAS de pedir.dewansas.com (31-oct-2026). Lee la función visitas_web_panel (SQL 068) con una clave:
+  se abre una vez con dewansas.com/visitas/#k=<clave> y el navegador la recuerda.
+  Los datos los escribe el contador propio de app/menu.html (sin Meta). Nada aquí escribe en la base.
+-->
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f6f5f2; --surface:#fcfcfb; --surface-2:#f1efea; --line:#e6e3dc;
+  --ink:#1c1b19; --ink-2:#55524c; --ink-3:#8a867d;
+  --brand:#E8431A; --brand-ink:#ffffff;
+  --d-tenue:#EC9878; --d-fuerte:#C2370F;    /* datos: personas (tenue) · pidieron (fuerte) — validado ordinal, claro */
+  --up:#1d7a3e; --down:#b3261e; --chip:#ffffff; --sombra:0 1px 2px rgba(0,0,0,.05),0 1px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121211; --surface:#1a1a19; --surface-2:#232321; --line:#2f2f2c;
+    --ink:#f4f3ef; --ink-2:#c3c2b7; --ink-3:#8f8d84;
+    --brand:#F26A40; --brand-ink:#1a1a19;
+    --d-tenue:#8A3A22; --d-fuerte:#F26A40;   /* validado ordinal, oscuro */
+    --up:#5cc37e; --down:#f2867c; --chip:#232321; --sombra:none;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121211; --surface:#1a1a19; --surface-2:#232321; --line:#2f2f2c;
+  --ink:#f4f3ef; --ink-2:#c3c2b7; --ink-3:#8f8d84;
+  --brand:#F26A40; --brand-ink:#1a1a19;
+  --d-tenue:#8A3A22; --d-fuerte:#F26A40;
+  --up:#5cc37e; --down:#f2867c; --chip:#232321; --sombra:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 48px}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.marca{display:flex;align-items:center;gap:10px}
+.marca img{width:36px;height:36px;border-radius:9px}
+h1{font-size:22px;line-height:1.2;margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--ink-2);font-size:13px;margin-top:2px}
+.filtros{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0 18px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface);font-weight:600}
+.chip:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.rango{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2)}
+.rango input{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--chip);color:var(--ink)}
+.estado{font-size:12px;color:var(--ink-3);margin-left:auto}
+.grid{display:grid;gap:14px}
+.g-kpi{grid-template-columns:1.4fr 1fr 1fr 1fr 1fr}
+.g-2{grid-template-columns:1fr 1fr}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--sombra);min-width:0}
+.card h2{font-size:15px;margin:0 0 2px;font-weight:650}
+.card .ayuda{font-size:12.5px;color:var(--ink-2);margin:0 0 12px}
+.kpi .lab{font-size:13px;color:var(--ink-2)}
+.kpi .val{font-size:28px;font-weight:650;line-height:1.15;margin-top:4px}
+.kpi.hero .val{font-size:52px;letter-spacing:-.02em}
+.kpi .nota{font-size:12.5px;color:var(--ink-2);margin-top:4px}
+.delta.up{color:var(--up)} .delta.down{color:var(--down)}
+/* embudo */
+.emb{display:grid;grid-template-columns:150px 1fr 92px;gap:8px 12px;align-items:center}
+.emb .et{font-size:13.5px;color:var(--ink)}
+.emb .pista{height:22px;position:relative}
+.emb .barra{height:22px;background:var(--d-fuerte);border-radius:0 4px 4px 0;min-width:2px}
+.emb .num{font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums}
+.emb .num small{color:var(--ink-3);font-size:12px;margin-left:4px}
+/* columnas */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .eje{font-size:11px;fill:var(--ink-3)}
+.chart .rejilla{stroke:var(--line);stroke-width:1}
+.chart .hit{fill:transparent;cursor:default}
+.chart .col-t{fill:var(--d-tenue)} .chart .col-f{fill:var(--d-fuerte)}
+.chart g.c:hover .col-t,.chart g.c:focus .col-t{filter:brightness(1.08)}
+.leyenda{display:flex;gap:14px;font-size:12.5px;color:var(--ink-2);margin:0 0 8px}
+.leyenda i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);border-radius:8px;padding:7px 10px;font-size:12.5px;line-height:1.35;white-space:nowrap;transform:translate(-50%,-100%);opacity:0;transition:opacity .08s}
+.tip b{font-size:14px}
+.tip .k{display:inline-block;width:10px;height:2px;margin-right:6px;vertical-align:3px}
+/* tablas */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-weight:600;color:var(--ink-2);text-align:left;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.mini{display:flex;align-items:center;gap:8px}
+.mini .b{height:8px;background:var(--d-fuerte);border-radius:0 4px 4px 0;min-width:2px}
+.vacio{color:var(--ink-3);font-size:13.5px;padding:8px 0}
+.lista-chips{display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:999px;padding:4px 10px;font-size:13px}
+.tag b{font-variant-numeric:tabular-nums}
+.ok{color:var(--up);font-weight:600}
+.pill{display:inline-block;font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:1px 7px;color:var(--ink-2);white-space:nowrap}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.quien b{font-weight:600}
+.quien .tel{color:var(--ink-2);font-size:12.5px}
+.gris{color:var(--ink-3)}
+details.tabla{margin-top:10px;font-size:13px}
+details.tabla summary{cursor:pointer;color:var(--ink-2)}
+.mas{margin-top:10px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:10px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer}
+.btn.prim{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
+.puerta{max-width:380px;margin:12vh auto 0}
+.puerta input{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--chip);color:var(--ink);margin:10px 0}
+.aviso{background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink-2)}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:5px}
+.cargando{opacity:.55;transition:opacity .15s}
+.vis{border-top:1px solid var(--line);padding:10px 0;font-size:13.5px}
+.vis:first-of-type{border-top:0}
+.vis .l1{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.vis .h{font-weight:600;font-variant-numeric:tabular-nums}
+.vis .l2{color:var(--ink-2);font-size:12.5px;margin-top:2px}
+.vis .l3{margin-top:4px}
+@media (max-width:900px){.g-kpi{grid-template-columns:1fr 1fr}.kpi.hero{grid-column:1 / -1}.g-2{grid-template-columns:1fr}}
+@media (max-width:520px){.emb{grid-template-columns:110px 1fr 74px}.kpi.hero .val{font-size:48px}.estado{margin-left:0;width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap" id="raiz">
+  <noscript><p class="aviso">Este panel necesita JavaScript para traer los números.</p></noscript>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var RPC='https://wfpdtjmmrhhfuxayvpzu.supabase.co/rest/v1/rpc/visitas_web_panel';
+  var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
+  var LS='dewan_visitas_clave';
+  var raiz=document.getElementById('raiz');
+  var ETQ={whatsapp:'WhatsApp',facebook:'Facebook',instagram:'Instagram',google:'Google',tiktok:'TikTok',qr:'QR',app:'App instalada',
+           directo:'Directo',x:'X (Twitter)',youtube:'YouTube','otra app':'Otra app','otro sitio':'Otro sitio','página dewan':'Página dewansas.com',buscador:'Buscador'};
+  var VIA={web:'en la web',whatsapp:'por WhatsApp',compra:'compra',encomienda:'encomienda'};
+  var DIAS=['dom','lun','mar','mié','jue','vie','sáb'];
+  var MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  // ── utilidades ─────────────────────────────────────────────────────────────
+  function el(tag,attrs){
+    var e=document.createElement(tag);
+    if(attrs) for(var k in attrs){
+      if(k==='text') e.textContent=attrs[k];
+      else if(k==='class') e.className=attrs[k];
+      else if(k==='style') e.setAttribute('style',attrs[k]);
+      else if(k.indexOf('on')===0) e.addEventListener(k.slice(2),attrs[k]);
+      else e.setAttribute(k,attrs[k]);
+    }
+    for(var i=2;i<arguments.length;i++){
+      var c=arguments[i]; if(c==null||c===false) continue;
+      if(Array.isArray(c)) c.forEach(function(x){if(x!=null&&x!==false)e.appendChild(typeof x==='string'||typeof x==='number'?document.createTextNode(String(x)):x)});
+      else e.appendChild(typeof c==='string'||typeof c==='number'?document.createTextNode(String(c)):c);
+    }
+    return e;
+  }
+  var SVG='http://www.w3.org/2000/svg';
+  function sv(tag,attrs){var e=document.createElementNS(SVG,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+  function n(x){return Number(x)||0}
+  function fmt(x){return n(x).toLocaleString('es-EC')}
+  function plata(x){return '$'+n(x).toFixed(2).replace('.',',')}
+  function pct(a,b){return b?Math.round(100*a/b):0}
+  function movil(){return window.innerWidth<700}
+  function etq(o){return ETQ[o]||(o?o.charAt(0).toUpperCase()+o.slice(1):'Directo')}
+  function tel(t){t=String(t||'');return t.indexOf('593')===0?'0'+t.slice(3,5)+' '+t.slice(5,8)+' '+t.slice(8):t}
+  function hoyEC(off){
+    var d=new Date(Date.now()+(off||0)*86400000);
+    return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil'}).format(d);
+  }
+  function horaEC(iso){return new Intl.DateTimeFormat('es-EC',{timeZone:'America/Guayaquil',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(iso))}
+  function fechaEC(iso){var p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guayaquil'}).format(new Date(iso)).split('-');return (+p[2])+'-'+MESES[+p[1]-1]}
+  function diaCorto(ymd){var d=new Date(ymd+'T12:00:00Z');return DIAS[d.getUTCDay()]+' '+d.getUTCDate()}
+  function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+
+  // ── la clave: llega una vez por #k= y se recuerda ───────────────────────────
+  var m=location.hash.match(/k=([^&]+)/);
+  if(m){ls(LS,decodeURIComponent(m[1]));try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
+  var clave=ls(LS)||'';
+
+  var est={p:ls('dewan_visitas_periodo')||'hoy',desde:null,hasta:null,datos:null,verTodas:false};
+  function rangoDe(p){
+    if(p==='hoy') return [hoyEC(0),hoyEC(0)];
+    if(p==='ayer') return [hoyEC(-1),hoyEC(-1)];
+    if(p==='7') return [hoyEC(-6),hoyEC(0)];
+    if(p==='30') return [hoyEC(-29),hoyEC(0)];
+    return [est.desde||hoyEC(0),est.hasta||hoyEC(0)];
+  }
+  function nombrePeriodoAnterior(){
+    return {hoy:'ayer',ayer:'anteayer','7':'los 7 días anteriores','30':'los 30 días anteriores'}[est.p]||'el período anterior';
+  }
+
+  function puerta(msg){
+    raiz.textContent='';
+    var inp=el('input',{type:'password',placeholder:'Clave del panel',autocomplete:'current-password','aria-label':'Clave del panel'});
+    function entrar(){var v=inp.value.trim();if(!v)return;clave=v;ls(LS,v);cargar();}
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter')entrar()});
+    raiz.appendChild(el('div',{class:'puerta card'},
+      el('div',{class:'marca'},el('img',{src:'/app/icons-cliente/icon-192.png',alt:''}),el('h1',{text:'Visitas de la web'})),
+      el('p',{class:'sub',text:'Escriba la clave o abra el link que le llegó (dewansas.com/visitas/#k=…).'}),
+      msg?el('p',{class:'aviso',text:msg}):null,
+      inp,
+      el('button',{class:'btn prim',onclick:entrar,text:'Entrar'})));
+    setTimeout(function(){inp.focus()},50);
+  }
+
+  function cargar(){
+    if(!clave){puerta();return;}
+    var r=rangoDe(est.p); est.desde=r[0]; est.hasta=r[1];
+    var cuerpo=document.getElementById('cuerpo'); if(cuerpo) cuerpo.classList.add('cargando');
+    var st=document.getElementById('estado'); if(st) st.textContent='Actualizando…';
+    fetch(RPC,{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({p_clave:clave,p_desde:r[0],p_hasta:r[1]})})
+      .then(function(res){return res.json().then(function(j){return {ok:res.ok,j:j}})})
+      .then(function(x){
+        if(!x.ok){throw new Error((x.j&&x.j.message)||'Error del servidor');}
+        if(x.j&&x.j.error==='clave'){ls(LS,null);clave='';puerta('Esa clave no es correcta.');return;}
+        if(x.j&&x.j.error==='rango'){throw new Error('El rango puede ser de hasta 120 días.');}
+        est.datos=x.j; pintar();
+      })
+      .catch(function(e){
+        if(!est.datos){raiz.textContent='';raiz.appendChild(el('div',{class:'card'},el('h2',{text:'No se pudo traer los números'}),el('p',{class:'ayuda',text:String(e.message||e)}),el('button',{class:'btn',onclick:cargar,text:'Reintentar'})));return;}
+        var s=document.getElementById('estado'); if(s) s.textContent='Sin conexión · '+String(e.message||e);
+        var c=document.getElementById('cuerpo'); if(c) c.classList.remove('cargando');
+      });
+  }
+
+  // ── pintar ─────────────────────────────────────────────────────────────────
+  function pintar(){
+    var D=est.datos, a=D.actual||{}, ant=D.anterior||{}, e=a.embudo||{};
+    raiz.textContent='';
+
+    var chips=[['hoy','Hoy'],['ayer','Ayer'],['7','7 días'],['30','30 días']].map(function(c){
+      return el('button',{class:'chip','aria-pressed':String(est.p===c[0]),onclick:function(){est.p=c[0];ls('dewan_visitas_periodo',c[0]);est.verTodas=false;cargar();},text:c[1]});
+    });
+    var dIn=el('input',{type:'date',value:est.desde,'aria-label':'Desde',max:hoyEC(0)});
+    var hIn=el('input',{type:'date',value:est.hasta,'aria-label':'Hasta',max:hoyEC(0)});
+    function rangoLibre(){if(dIn.value&&hIn.value){est.p='libre';est.desde=dIn.value<=hIn.value?dIn.value:hIn.value;est.hasta=dIn.value<=hIn.value?hIn.value:dIn.value;cargar();}}
+    dIn.addEventListener('change',rangoLibre); hIn.addEventListener('change',rangoLibre);
+
+    var desdeTxt=D.primera_visita?('Contando desde el '+fechaEC(D.primera_visita)+' '+horaEC(D.primera_visita)):'Todavía no hay visitas';
+    raiz.appendChild(el('header',{class:'top'},
+      el('div',{class:'marca'},el('img',{src:'/app/icons-cliente/icon-192.png',alt:''}),
+        el('div',null,el('h1',{text:'Visitas de la web'}),el('div',{class:'sub',text:'pedir.dewansas.com · contador propio, sin Meta · '+desdeTxt})))));
+    raiz.appendChild(el('div',{class:'filtros',role:'toolbar','aria-label':'Período'},chips,
+      el('span',{class:'rango'},dIn,'a',hIn),
+      el('button',{class:'chip',onclick:cargar,text:'↻ Actualizar'}),
+      el('span',{class:'estado',id:'estado',text:'Actualizado '+horaEC(new Date().toISOString())})));
+
+    var cuerpo=el('div',{id:'cuerpo',class:'grid'});
+    raiz.appendChild(cuerpo);
+
+    // KPIs
+    var per=n(a.personas), perA=n(ant.personas);
+    function delta(act,antes,txt){
+      if(!antes) return el('div',{class:'nota',text:'Sin datos de '+txt});
+      var d=pct(act-antes,antes);
+      return el('div',{class:'nota'},el('span',{class:'delta '+(d>0?'up':d<0?'down':''),text:(d>0?'▲ +':d<0?'▼ ':'')+d+' %'}),' vs '+txt+' ('+fmt(antes)+')');
+    }
+    var reales=a.reales||{}, totReales=n(reales.directos)+n(reales.por_whatsapp);
+    cuerpo.appendChild(el('div',{class:'grid g-kpi'},
+      el('div',{class:'card kpi hero'},el('div',{class:'lab',text:'Personas que entraron'}),el('div',{class:'val',text:fmt(per)}),delta(per,perA,nombrePeriodoAnterior())),
+      el('div',{class:'card kpi'},el('div',{class:'lab',text:'Nuevas'}),el('div',{class:'val',text:fmt(a.nuevas)}),el('div',{class:'nota',text:fmt(per-n(a.nuevas))+' ya habían venido'})),
+      el('div',{class:'card kpi'},el('div',{class:'lab',text:'Pidieron'}),el('div',{class:'val',text:fmt(e.pidieron)}),el('div',{class:'nota',text:pct(n(e.pidieron),per)+' % de los que entraron'})),
+      el('div',{class:'card kpi'},el('div',{class:'lab',text:'Pedidos de la web que llegaron'}),el('div',{class:'val',text:fmt(totReales)}),el('div',{class:'nota',text:fmt(reales.directos)+' directos · '+fmt(reales.por_whatsapp)+' por WhatsApp'})),
+      el('div',{class:'card kpi'},el('div',{class:'lab',text:'Visitas'}),el('div',{class:'val',text:fmt(a.visitas)}),el('div',{class:'nota',text:'≈ '+String(n(a.minutos_promedio)).replace('.',',')+' min cada una'}))
+    ));
+
+    // Embudo + columnas
+    var pasos=[['Entraron',e.entraron],['Vieron un local',e.vieron],['Armaron carrito',e.carrito],['Pusieron su ubicación',e.ubicacion],['Pidieron',e.pidieron]];
+    var maxE=Math.max(1,n(e.entraron));
+    var emb=el('div',{class:'emb'});
+    pasos.forEach(function(p,i){
+      emb.appendChild(el('div',{class:'et',text:p[0]}));
+      emb.appendChild(el('div',{class:'pista'},el('div',{class:'barra',style:'width:'+(100*n(p[1])/maxE).toFixed(1)+'%',title:p[0]+': '+fmt(p[1])})));
+      emb.appendChild(el('div',{class:'num'},fmt(p[1]),i?el('small',{text:pct(n(p[1]),maxE)+' %'}):null));
+    });
+    var unDia=est.desde===est.hasta;
+    cuerpo.appendChild(el('div',{class:'grid g-2'},
+      el('div',{class:'card'},el('h2',{text:'El camino hasta el pedido'}),
+        el('p',{class:'ayuda',text:'Cuántas personas llegan a cada paso. Donde más se caen, ahí hay que mejorar.'}),emb),
+      el('div',{class:'card'},el('h2',{text:unDia?'Personas por hora':'Personas por día'}),
+        el('p',{class:'ayuda',text:unDia?'Sirve para saber a qué hora publicar.':'Cómo va la semana o el mes.'}),
+        columnas(unDia?horas(a.por_hora):dias(a.por_dia,est.desde,est.hasta),unDia))
+    ));
+
+    // De dónde vienen + locales
+    var maxO=Math.max(1,(a.origenes||[]).reduce(function(m,o){return Math.max(m,n(o.personas))},0));
+    var tO=tabla(['De dónde','Personas','Carrito','Pidieron','% pide'],(a.origenes||[]).map(function(o){
+      return [etq(o.origen),miniBarra(o.personas,maxO),fmt(o.carrito),fmt(o.pidieron),pct(n(o.pidieron),n(o.personas))+' %'];
+    }),[0,1,1,1,1]);
+    tO=el('div',{class:'scroll'},tO);
+    var camp=(a.campanas||[]);
+    var maxL=Math.max(1,(a.locales||[]).reduce(function(m,o){return Math.max(m,n(o.vieron))},0));
+    var tL=tabla(['Local','Lo vieron','Carrito','Pidieron'],(a.locales||[]).map(function(o){
+      return [o.local,miniBarra(o.vieron,maxL),fmt(o.carrito),fmt(o.pidieron)];
+    }),[0,1,1,1]);
+    tL=el('div',{class:'scroll'},tL);
+    cuerpo.appendChild(el('div',{class:'grid g-2'},
+      el('div',{class:'card'},el('h2',{text:'De dónde vienen'}),
+        el('p',{class:'ayuda',text:'Por dónde llegó cada persona la primera vez en el período. Aquí se ve qué publicidad trae gente que sí pide.'}),
+        tO,
+        camp.length?el('div',{style:'margin-top:14px'},el('h2',{text:'Campañas y links'}),
+          tabla(['Campaña / link','Personas','Pidieron'],camp.map(function(c){return [c.campana,fmt(c.personas),fmt(c.pidieron)]}),[0,1,1])):null,
+        el('details',{class:'tabla'},el('summary',{text:'Cómo marcar sus links para saber de dónde viene cada uno'}),
+          el('p',{class:'ayuda',style:'margin-top:8px'},'Agregue al final del link: ',el('code',{text:'?o=wa'}),' estados y mensajes de WhatsApp · ',
+            el('code',{text:'?o=ig'}),' Instagram · ',el('code',{text:'?o=fb'}),' Facebook · ',el('code',{text:'?o=qr'}),' códigos QR · ',el('code',{text:'?o=tiktok'}),' TikTok. ',
+            'Ejemplo: ',el('code',{text:'pedir.dewansas.com/?o=qr'}),'. Para una campaña concreta: ',el('code',{text:'?o=fb&utm_campaign=halloween'}),'. ',
+            'Sin marca, WhatsApp suele salir como «Directo».'))),
+      el('div',{class:'card'},el('h2',{text:'Locales que más miran'}),
+        el('p',{class:'ayuda',text:'Personas que abrieron la carta de cada local. Sirve también para mostrárselo al dueño.'}),tL)
+    ));
+
+    // Búsquedas + aparatos
+    function nubes(arr,vacio){
+      if(!arr||!arr.length) return el('div',{class:'vacio',text:vacio});
+      return el('div',{class:'lista-chips'},arr.map(function(b){return el('span',{class:'tag'},b.b,el('b',{text:fmt(b.n)}))}));
+    }
+    var disp=a.dispositivos||{}, nav=a.navegadores||{};
+    function reparto(obj,nombres){
+      var ks=Object.keys(obj).sort(function(x,y){return n(obj[y])-n(obj[x])});
+      if(!ks.length) return el('div',{class:'vacio',text:'—'});
+      var tot=ks.reduce(function(s,k){return s+n(obj[k])},0)||1;
+      return el('div',{class:'lista-chips'},ks.map(function(k){return el('span',{class:'tag'},(nombres[k]||k),el('b',{text:pct(n(obj[k]),tot)+' %'}))}));
+    }
+    cuerpo.appendChild(el('div',{class:'grid g-2'},
+      el('div',{class:'card'},el('h2',{text:'Qué buscan'}),el('p',{class:'ayuda',text:'Lo que escriben en el buscador (personas que lo buscaron).'}),
+        nubes(a.busquedas,'Nadie usó el buscador en este período.'),
+        el('h2',{style:'margin-top:16px',text:'Buscaron y no encontraron'}),
+        el('p',{class:'ayuda',text:'Comida que la gente quiere y la web no tiene: pista de qué locales sumar.'}),
+        nubes(a.sin_resultado,'Todo lo que buscaron apareció.')),
+      el('div',{class:'card'},el('h2',{text:'Desde qué aparato'}),el('p',{class:'ayuda',text:'Personas en el período.'}),
+        reparto(disp,{android:'Android',iphone:'iPhone',pc:'Computadora',otro:'Otro'}),
+        el('h2',{style:'margin-top:16px',text:'Desde qué app o navegador'}),
+        el('p',{class:'ayuda',text:'«Facebook» o «Instagram» = abrió el link dentro de esa app.'}),
+        reparto(nav,{'app instalada':'App instalada',chrome:'Chrome',safari:'Safari',facebook:'Facebook',instagram:'Instagram',samsung:'Samsung',edge:'Edge',firefox:'Firefox',opera:'Opera',otro:'Otro'}))
+    ));
+
+    // Conocidos que no pidieron
+    var con=a.conocidos_sin_pedir||[];
+    cuerpo.appendChild(el('div',{class:'card'},el('h2',{text:'Clientes conocidos que entraron y no pidieron'}),
+      el('p',{class:'ayuda',text:'Personas que ya dieron su nombre y celular en la web antes. Los que entran por primera vez salen como «Nuevo».'}),
+      con.length&&movil()?el('div',null,con.map(function(c){
+        return el('div',{class:'vis'},el('div',{class:'l1'},el('b',{text:c.nombre||'Sin nombre'}),el('span',{class:'gris',text:tel(c.telefono)})),
+          el('div',{class:'l2',text:(unDia?'':fechaEC(c.hasta)+' ')+horaEC(c.hasta)+' · miró '+((c.locales||[]).join(', ')||'—')+(n(c.monto)?' · carrito '+plata(c.monto):'')}));
+      })):
+      con.length?el('div',{class:'scroll'},tabla(['Cliente','Última vez','Miró','Carrito'],con.map(function(c){
+        return [el('span',{class:'quien'},el('b',{text:c.nombre||'Sin nombre'}),el('br'),el('span',{class:'tel',text:tel(c.telefono)})),
+                (unDia?'':fechaEC(c.hasta)+' ')+horaEC(c.hasta),(c.locales||[]).join(', ')||'—',n(c.monto)?plata(c.monto):'—'];
+      }),[0,0,0,1])):el('div',{class:'vacio',text:'Nadie conocido se quedó sin pedir en este período.'})));
+
+    // Lista de visitas
+    var lista=a.lista||[], ver=est.verTodas?lista:lista.slice(0,60);
+    var cont=el('div',{class:'card'},el('h2',{text:'Cada visita'}),
+      el('p',{class:'ayuda',text:'De la más nueva a la más vieja'+(lista.length>=400?' (las últimas 400)':'')+'.'}),
+      lista.length&&movil()?el('div',null,ver.map(function(v){
+        var quien=v.nombre||v.telefono?el('b',{text:(v.nombre||'Sin nombre')+(v.telefono?' · '+tel(v.telefono):'')})
+                 :el('span',null,el('span',{class:'pill',text:v.nuevo?'Nuevo':'Volvió'}),' ',el('span',{class:'gris',text:'#'+String(v.visitante||'').replace(/[^a-z0-9]/gi,'').slice(-4)}));
+        var miro=[(v.locales||[]).join(', ')]; if((v.busquedas||[]).length) miro.push('buscó: '+v.busquedas.join(', '));
+        return el('div',{class:'vis'},
+          el('div',{class:'l1'},el('span',{class:'h',text:(unDia?'':fechaEC(v.inicio)+' ')+horaEC(v.inicio)}),quien),
+          el('div',{class:'l2',text:etq(v.origen)+(v.campana?' · '+v.campana:'')+' · '+((({android:'Android',iphone:'iPhone',pc:'PC'})[v.dispositivo]||v.dispositivo||'')+(v.navegador?' '+v.navegador:''))}),
+          el('div',{class:'l3'},miro.filter(Boolean).join(' · ')||'Solo entró',
+            v.carrito&&n(v.carrito_monto)?el('span',{class:'gris',text:' · carrito '+plata(v.carrito_monto)}):null,
+            v.pidio?el('span',{class:'ok',text:' · ✓ pidió '+(VIA[v.pedido_via]||v.pedido_via||'')+(n(v.pedido_total)?' '+plata(v.pedido_total):'')}):null));
+      })):
+      lista.length?el('div',{class:'scroll'},tabla(['Hora','Quién','De dónde','Aparato','Qué miró','Carrito','Pidió'],ver.map(function(v){
+        var quien=v.nombre||v.telefono?el('span',{class:'quien'},el('b',{text:v.nombre||'Sin nombre'}),v.telefono?el('br'):null,v.telefono?el('span',{class:'tel',text:tel(v.telefono)}):null)
+                 :el('span',null,el('span',{class:'pill',text:v.nuevo?'Nuevo':'Volvió'}),' ',el('span',{class:'gris',text:'#'+String(v.visitante||'').replace(/[^a-z0-9]/gi,'').slice(-4)}));
+        var miro=[(v.locales||[]).join(', ')];
+        if((v.busquedas||[]).length) miro.push('buscó: '+v.busquedas.join(', '));
+        var pid=v.pidio?el('span',{class:'ok',text:'✓ '+(VIA[v.pedido_via]||v.pedido_via||'')+(n(v.pedido_total)?' · '+plata(v.pedido_total):'')}):el('span',{class:'gris',text:'—'});
+        return [(unDia?'':fechaEC(v.inicio)+' ')+horaEC(v.inicio),quien,etq(v.origen)+(v.campana?' · '+v.campana:''),
+                (({android:'Android',iphone:'iPhone',pc:'PC'})[v.dispositivo]||v.dispositivo||'—')+(v.navegador?' · '+v.navegador:''),
+                miro.filter(Boolean).join(' · ')||'—',v.carrito&&n(v.carrito_monto)?plata(v.carrito_monto):(v.carrito?'sí':'—'),pid];
+      }),[0,0,0,0,0,1,0])):el('div',{class:'vacio',text:'Todavía no hay visitas en este período.'}),
+      (!est.verTodas&&lista.length>60)?el('div',{class:'mas'},el('button',{class:'btn',onclick:function(){est.verTodas=true;pintar();},text:'Ver las '+lista.length})):null);
+    cuerpo.appendChild(cont);
+
+    raiz.appendChild(el('p',{class:'sub',style:'margin-top:18px'},'No cuentan: la centralista (?op=1), los probadores (?prueba=1) ni robots. ',
+      'Una visita se corta tras 30 min sin actividad. Los pedidos «por WhatsApp» cuentan cuando la persona toca Enviar.'));
+  }
+
+  function miniBarra(v,max){
+    return el('span',{class:'mini'},el('span',{class:'b',style:'width:'+Math.max(2,Math.round((movil()?36:64)*n(v)/max))+'px'}),el('span',{text:fmt(v)}));
+  }
+  function tabla(cab,filas,num){
+    if(!filas.length) return el('div',{class:'vacio',text:'Sin datos en este período.'});
+    return el('table',null,el('thead',null,el('tr',null,cab.map(function(c,i){return el('th',{class:num[i]?'n':'',text:c})}))),
+      el('tbody',null,filas.map(function(f){return el('tr',null,f.map(function(c,i){return el('td',{class:num[i]?'n':''},c)}))})));
+  }
+
+  // ── gráfico de columnas: personas (tenue) con los que pidieron (fuerte) dentro ──
+  function horas(arr){
+    var m={}; (arr||[]).forEach(function(x){m[x.h]=x});
+    var out=[]; for(var h=0;h<24;h++) out.push({lab:String(h),largo:h+':00 – '+h+':59',p:n(m[h]&&m[h].personas),q:n(m[h]&&m[h].pidieron),eje:h%3===0});
+    return out;
+  }
+  function dias(arr,desde,hasta){
+    var m={}; (arr||[]).forEach(function(x){m[String(x.dia).slice(0,10)]=x});
+    var out=[], d=new Date(desde+'T12:00:00Z'), fin=new Date(hasta+'T12:00:00Z'), total=Math.round((fin-d)/86400000)+1, paso=total>16?Math.ceil(total/10):1, i=0;
+    while(d<=fin){var k=d.toISOString().slice(0,10);out.push({lab:diaCorto(k),largo:diaCorto(k)+' '+MESES[d.getUTCMonth()],p:n(m[k]&&m[k].personas),q:n(m[k]&&m[k].pidieron),eje:i%paso===0});d=new Date(d.getTime()+86400000);i++;}
+    return out;
+  }
+  function columnas(datos,unDia){
+    var W=movil()?Math.max(280,Math.min(640,window.innerWidth-66)):520,H=movil()?190:210,L=30,R=6,T=10,B=24, w=W-L-R, h=H-T-B;
+    var max=Math.max(1,datos.reduce(function(m,d){return Math.max(m,d.p)},0));
+    var paso=Math.max(1,Math.ceil(max/3)); var tope=paso*3;
+    var svg=sv('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':(unDia?'Personas por hora':'Personas por día')});
+    for(var g=0;g<=3;g++){var y=T+h-h*g/3;svg.appendChild(sv('line',{x1:L,x2:W-R,y1:y,y2:y,class:'rejilla'}));var t=sv('text',{x:L-6,y:y+4,'text-anchor':'end',class:'eje'});t.textContent=String(paso*g);svg.appendChild(t);}
+    var banda=w/datos.length, ancho=Math.min(24,Math.max(3,banda-2));
+    var caja=el('div',{class:'chart'}), tip=el('div',{class:'tip',role:'status'});
+    function barra(x,y,ww,hh,cls){
+      if(hh<=0) return null; var r=Math.min(4,hh,ww/2);
+      return sv('path',{class:cls,d:'M'+x+','+(y+hh)+'V'+(y+r)+'Q'+x+','+y+' '+(x+r)+','+y+'H'+(x+ww-r)+'Q'+(x+ww)+','+y+' '+(x+ww)+','+(y+r)+'V'+(y+hh)+'Z'});
+    }
+    datos.forEach(function(d,i){
+      var x=L+banda*i+(banda-ancho)/2, hp=h*d.p/tope, hq=h*d.q/tope;
+      var gr=sv('g',{class:'c',tabindex:'0','aria-label':d.largo+': '+d.p+' personas, '+d.q+' pidieron'});
+      gr.appendChild(sv('rect',{class:'hit',x:L+banda*i,y:T,width:banda,height:h}));
+      var b1=barra(x,T+h-hp,ancho,hp,'col-t'); if(b1) gr.appendChild(b1);
+      var b2=barra(x,T+h-hq,ancho,hq,'col-f'); if(b2) gr.appendChild(b2);
+      function ver(){
+        tip.textContent='';
+        tip.appendChild(el('div',{text:d.largo,style:'opacity:.8'}));
+        tip.appendChild(el('div',null,el('i',{class:'k',style:'background:var(--d-tenue)'}),el('b',{text:String(d.p)}),' personas'));
+        tip.appendChild(el('div',null,el('i',{class:'k',style:'background:var(--d-fuerte)'}),el('b',{text:String(d.q)}),' pidieron'));
+        var bb=svg.getBoundingClientRect(), k=bb.width/W;
+        tip.style.left=Math.min(bb.width-60,Math.max(60,(x+ancho/2)*k))+'px'; tip.style.top=((T+h-hp)*k-8)+'px'; tip.style.opacity='1';
+      }
+      gr.addEventListener('pointerenter',ver); gr.addEventListener('focus',ver);
+      gr.addEventListener('pointerleave',function(){tip.style.opacity='0'}); gr.addEventListener('blur',function(){tip.style.opacity='0'});
+      svg.appendChild(gr);
+      if(d.eje){var t=sv('text',{x:L+banda*i+banda/2,y:H-6,'text-anchor':'middle',class:'eje'});t.textContent=unDia?d.lab+'h':d.lab;svg.appendChild(t);}
+    });
+    caja.appendChild(el('div',{class:'leyenda'},el('span',null,el('i',{style:'background:var(--d-tenue)'}),'Personas'),el('span',null,el('i',{style:'background:var(--d-fuerte)'}),'De ellas, pidieron')));
+    caja.appendChild(svg); caja.appendChild(tip);
+    caja.appendChild(el('details',{class:'tabla'},el('summary',{text:'Ver en tabla'}),
+      tabla([unDia?'Hora':'Día','Personas','Pidieron'],datos.filter(function(d){return d.p||d.q}).map(function(d){return [d.largo,fmt(d.p),fmt(d.q)]}),[0,1,1])));
+    return caja;
+  }
+
+  var eraMovil=movil();
+  window.addEventListener('resize',function(){if(est.datos&&movil()!==eraMovil){eraMovil=movil();pintar();}});
+  cargar();
+  // Se refresca solo cada 2 min mientras la pestaña está a la vista.
+  setInterval(function(){if(document.visibilityState==='visible'&&clave&&est.datos)cargar();},120000);
+})();
+</script>
+</body>
+</html>
