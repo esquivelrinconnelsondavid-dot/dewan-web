@@ -1,0 +1,18 @@
+{
+  "id": "/moto/",
+  "name": "DEWAN Motorizados",
+  "short_name": "DEWAN Moto",
+  "description": "App de los motorizados de DEWAN",
+  "lang": "es",
+  "start_url": "/moto/",
+  "scope": "/moto/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#CF3A12",
+  "theme_color": "#F6F4F1",
+  "icons": [
+    { "src": "/moto/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/moto/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/moto/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

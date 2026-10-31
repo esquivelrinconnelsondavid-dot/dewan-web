@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <title>DEWAN Motorizados</title>
+    <meta name="description" content="App de los motorizados de DEWAN (versión web para iPhone)" />
+    <meta name="theme-color" content="#F6F4F1" />
+    <!-- iPhone: «Agregar a inicio» la abre a pantalla completa, como una app -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="DEWAN Moto" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" href="/moto/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/moto/icons/icon-192.png" />
+    <link rel="manifest" href="/moto/manifest.json" />
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+        touch-action: manipulation;
+        /* Sin esto, deslizar «aceptar» hacia la derecha el navegador lo tomaba como
+           «atrás» y la app quedaba en blanco (probado en Chrome). */
+        overscroll-behavior: none;
+      }
+      body {
+        overflow: hidden;
+        overscroll-behavior: none;
+        background: #cf3a12;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+      /* Pantalla de arranque (la reemplaza la app cuando termina de cargar) */
+      .dw-arranque {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        text-align: center;
+        padding: 24px;
+      }
+      .dw-arranque b {
+        font-size: 44px;
+        letter-spacing: 1px;
+      }
+      .dw-arranque span {
+        font-size: 18px;
+        opacity: 0.9;
+        margin-top: 6px;
+      }
+      .dw-arranque p {
+        display: none;
+        margin-top: 28px;
+        font-size: 15px;
+        line-height: 1.4;
+        max-width: 300px;
+      }
+      .dw-arranque button {
+        margin-top: 14px;
+        border: 0;
+        border-radius: 14px;
+        padding: 14px 22px;
+        font-size: 16px;
+        font-weight: 800;
+        background: #fff;
+        color: #cf3a12;
+      }
+      #dw-instalar {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+        z-index: 2147481000;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 12px 12px 14px;
+        border-radius: 16px;
+        background: #fff;
+        color: #1c1b1a;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        font: 600 14.5px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      #dw-instalar svg {
+        flex: none;
+        vertical-align: -4px;
+      }
+      #dw-instalar button {
+        flex: none;
+        border: 0;
+        background: #efece8;
+        color: #1c1b1a;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-weight: 800;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>Para usar la app de motorizados de DEWAN hay que activar JavaScript en el navegador.</noscript>
+    <div id="root">
+      <div class="dw-arranque">
+        <b>DEWAN</b>
+        <span>Motorizados</span>
+        <p id="dw-lento">La app está tardando en abrir. Revise su internet y toque «Volver a cargar».</p>
+        <button id="dw-recargar" type="button" style="display: none" onclick="location.reload()">Volver a cargar</button>
+      </div>
+    </div>
+
+    <div id="dw-instalar" role="dialog" aria-label="Instalar la app">
+      <div style="flex: 1">
+        Para tenerla como app: en Safari toque
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-label="Compartir"><path fill="none" stroke="#0a7aff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M7.5 7.5 12 3l4.5 4.5M8 11H6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-2"/></svg>
+        y luego <b>«Agregar a inicio»</b>.
+      </div>
+      <button type="button" id="dw-instalar-cerrar">Listo</button>
+    </div>
+
+    <script>
+      // Si la app no termina de abrir (internet lento), ofrecer volver a cargar.
+      setTimeout(function () {
+        var p = document.getElementById('dw-lento');
+        var b = document.getElementById('dw-recargar');
+        if (p && b && document.body.contains(p)) {
+          p.style.display = 'block';
+          b.style.display = 'inline-block';
+        }
+      }, 20000);
+
+      function dwHaySesion() {
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            if (/^sb-.+-auth-token$/.test(localStorage.key(i) || '')) return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+
+      // Pantalla siempre encendida con la sesión iniciada (para oír los pedidos).
+      (function () {
+        if (!('wakeLock' in navigator)) return;
+        var bloqueo = null;
+        function pedir() {
+          if (bloqueo || document.visibilityState !== 'visible' || !dwHaySesion()) return;
+          navigator.wakeLock
+            .request('screen')
+            .then(function (b) {
+              bloqueo = b;
+              b.addEventListener('release', function () {
+                bloqueo = null;
+              });
+            })
+            .catch(function () {});
+        }
+        ['touchend', 'click'].forEach(function (ev) {
+          window.addEventListener(ev, pedir, { capture: true, passive: true });
+        });
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'visible') setTimeout(pedir, 400);
+        });
+        setTimeout(pedir, 3000);
+      })();
+
+      // iPhone en Safari (no instalada): explicar cómo agregarla a la pantalla de inicio.
+      (function () {
+        var ua = navigator.userAgent || '';
+        var esIphone = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var instalada = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+        if (!esIphone || instalada) return;
+        try {
+          var hasta = Number(localStorage.getItem('dw_instalar_hasta') || 0);
+          if (Date.now() < hasta) return;
+        } catch (e) {}
+        var caja = document.getElementById('dw-instalar');
+        var cerrar = document.getElementById('dw-instalar-cerrar');
+        if (!caja || !cerrar) return;
+        var listo = false;
+        var escribiendo = false;
+        var cerrado = false;
+        // Solo antes de iniciar sesión (adentro taparía la barra de deslizar del pedido)
+        // y se esconde mientras escribe (no tapa el teclado ni el botón de ingresar).
+        function pintar() {
+          caja.style.display = listo && !escribiendo && !cerrado && !dwHaySesion() ? 'flex' : 'none';
+        }
+        setTimeout(function () {
+          listo = true;
+          pintar();
+        }, 4000);
+        setInterval(pintar, 2000);
+        document.addEventListener('focusin', function (e) {
+          if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) {
+            escribiendo = true;
+            pintar();
+          }
+        });
+        document.addEventListener('focusout', function () {
+          escribiendo = false;
+          setTimeout(pintar, 200);
+        });
+        cerrar.addEventListener('click', function () {
+          cerrado = true;
+          pintar();
+          try {
+            localStorage.setItem('dw_instalar_hasta', String(Date.now() + 3 * 24 * 3600 * 1000));
+          } catch (e) {}
+        });
+      })();
+    </script>
+  <script src="/moto/_expo/static/js/web/entry-a485de5ec02d461b718da69a2ab9cdce.js" defer></script>
+</body>
+</html>
