@@ -282,7 +282,9 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px
     var unDia=est.desde===est.hasta;
     cuerpo.appendChild(el('div',{class:'grid g-2'},
       el('div',{class:'card'},el('h2',{text:'El camino hasta el pedido'}),
-        el('p',{class:'ayuda',text:'Cuántas personas llegan a cada paso. Donde más se caen, ahí hay que mejorar.'}),emb),
+        el('p',{class:'ayuda',text:'Cuántas personas llegan a cada paso. Donde más se caen, ahí hay que mejorar.'}),emb,
+        n(a.a_play&&a.a_play.personas)?el('p',{class:'ayuda',style:'margin-top:10px'},'Además, ',el('b',{text:n(a.a_play.personas)+(n(a.a_play.personas)===1?' persona tocó':' personas tocaron')}),
+          ' «Descargar la app» y se fue'+(n(a.a_play.personas)===1?'':'ron')+' a Play Store'+(n(a.a_play.sin_pedir)?' ('+n(a.a_play.sin_pedir)+' sin pedir en la web)':'')+'.'):null),
       el('div',{class:'card'},el('h2',{text:unDia?'Personas por hora':'Personas por día'}),
         el('p',{class:'ayuda',text:unDia?'Sirve para saber a qué hora publicar.':'Cómo va la semana o el mes.'}),
         columnas(unDia?horas(a.por_hora):dias(a.por_dia,est.desde,est.hasta),unDia))
@@ -366,14 +368,16 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px
           el('div',{class:'l2',text:etq(v.origen)+(v.campana?' · '+v.campana:'')+' · '+((({android:'Android',iphone:'iPhone',pc:'PC'})[v.dispositivo]||v.dispositivo||'')+(v.navegador?' '+v.navegador:''))}),
           el('div',{class:'l3'},miro.filter(Boolean).join(' · ')||'Solo entró',
             v.carrito&&n(v.carrito_monto)?el('span',{class:'gris',text:' · carrito '+plata(v.carrito_monto)}):null,
-            v.pidio?el('span',{class:'ok',text:' · ✓ pidió '+(VIA[v.pedido_via]||v.pedido_via||'')+(n(v.pedido_total)?' '+plata(v.pedido_total):'')}):null));
+            v.pidio?el('span',{class:'ok',text:' · ✓ pidió '+(VIA[v.pedido_via]||v.pedido_via||'')+(n(v.pedido_total)?' '+plata(v.pedido_total):'')}):null,
+            v.a_play?el('span',{class:'gris',text:' · se fue a Play Store (app)'}):null));
       })):
       lista.length?el('div',{class:'scroll'},tabla(['Hora','Quién','De dónde','Aparato','Qué miró','Carrito','Pidió'],ver.map(function(v){
         var quien=v.nombre||v.telefono?el('span',{class:'quien'},el('b',{text:v.nombre||'Sin nombre'}),v.telefono?el('br'):null,v.telefono?el('span',{class:'tel',text:tel(v.telefono)}):null)
                  :el('span',null,el('span',{class:'pill',text:v.nuevo?'Nuevo':'Volvió'}),' ',el('span',{class:'gris',text:'#'+String(v.visitante||'').replace(/[^a-z0-9]/gi,'').slice(-4)}));
         var miro=[(v.locales||[]).join(', ')];
         if((v.busquedas||[]).length) miro.push('buscó: '+v.busquedas.join(', '));
-        var pid=v.pidio?el('span',{class:'ok',text:'✓ '+(VIA[v.pedido_via]||v.pedido_via||'')+(n(v.pedido_total)?' · '+plata(v.pedido_total):'')}):el('span',{class:'gris',text:'—'});
+        var pid=v.pidio?el('span',{class:'ok',text:'✓ '+(VIA[v.pedido_via]||v.pedido_via||'')+(n(v.pedido_total)?' · '+plata(v.pedido_total):'')}):el('span',{class:'gris',text:v.a_play?'se fue a Play Store (app)':'—'});
+        if(v.pidio&&v.a_play) pid=el('span',null,pid,el('br'),el('span',{class:'gris',text:'y tocó «Descargar la app»'}));
         return [(unDia?'':fechaEC(v.inicio)+' ')+horaEC(v.inicio),quien,etq(v.origen)+(v.campana?' · '+v.campana:''),
                 (({android:'Android',iphone:'iPhone',pc:'PC'})[v.dispositivo]||v.dispositivo||'—')+(v.navegador?' · '+v.navegador:''),
                 miro.filter(Boolean).join(' · ')||'—',v.carrito&&n(v.carrito_monto)?plata(v.carrito_monto):(v.carrito?'sí':'—'),pid];

@@ -156,7 +156,7 @@
 
         var st={s:ses,v:vis,o:origen(),c:campana(),ref:'',e:entrada(),d:/iPhone|iPad|iPod/i.test(ua)?'iphone':(/Android/i.test(ua)?'android':'pc'),
                 n:navegador(),nuevo:!yaVino,loc:[],lcar:[],lped:[],bus:[],sin:[],car:false,ci:0,cm:0,ubi:false,pid:false,via:null,pt:null,
-                peds:[],tel:'',nom:'',prueba:prueba};
+                peds:[],tel:'',nom:'',prueba:prueba,play:false};
         try{var rh=document.referrer?new URL(document.referrer).hostname:''; st.ref=(rh&&rh!==location.hostname)?rh.slice(0,120):'';}catch(e){}
 
         function quien(){
@@ -214,14 +214,48 @@
             (o.codigos||[]).forEach(function(c){poner(st.peds,c,10)});
             (o.locales||localesDelCarrito()).forEach(function(l){poner(st.lped,l,10)});
             luego(true);
-          }
+            clEv('pidio');
+          },
+          // [1-nov] Tocó «Descargar la app»: se va a Play Store, así que se manda ya (no espera).
+          play:function(){if(!st.play){st.play=true; mandar(true); clEv('descargar_app');}}
         };
+        // Grabaciones (Clarity, bloque de abajo): marca para filtrar las que pidieron / se fueron a Play.
+        function clEv(n){try{if(typeof window.clarity==='function') window.clarity('event',n);}catch(e){}}
+        // Cualquier link a Play Store (el fijo del inicio de Android y el de «Sobre DEWAN»).
+        document.addEventListener('click',function(ev){
+          try{var a=ev.target&&ev.target.closest&&ev.target.closest('a[href*="play.google.com"]'); if(a) window.dwVis.play();}catch(e){}
+        },true);
         if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(mandar,600)});
         else setTimeout(mandar,600);
       }catch(e){}
     })();
     </script>
     <!-- Fin contador propio de visitas -->
+    <!-- Grabaciones de visitas con Microsoft Clarity (1-nov-2026): ver qué tocó la gente antes de irse.
+         Cada grabación lleva la etiqueta «codigo» = el mismo #xxxx del panel dewansas.com/visitas, y los
+         eventos «pidio» / «descargar_app». La centralista (?op=1), las pruebas y los robots no se graban.
+         Datos personales tapados con data-clarity-mask (dirección, datos del pedido, seguimiento, motorizado).
+         Sin número de proyecto no carga nada. Se carga aparte (async): si Clarity no responde, la web sigue igual. -->
+    <script>
+    (function(){
+      try{
+        var ID='z71n0bue47';  // proyecto «DEWAN web» en clarity.microsoft.com (cuenta Google de David)
+        if(!ID) return;
+        var qs=new URLSearchParams(location.search), ua=navigator.userAgent||'';
+        function ls(k){try{return localStorage.getItem(k)}catch(e){return null}}
+        if(qs.get('op')==='1'||qs.get('prueba')==='1'||qs.get('simular')==='1'
+           ||(qs.get('prueba')!=='0'&&ls('dewan_tester')==='1')||ls('dewan_pd_simular')==='1'
+           ||navigator.webdriver===true||/HeadlessChrome|bot\b|crawl|spider|facebookexternalhit|WhatsApp\//i.test(ua)) return;
+        (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src='https://www.clarity.ms/tag/'+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window,document,'clarity','script',ID);
+        var cod=String(ls('dewan_cliente_uuid')||'').replace(/[^a-z0-9]/gi,'').slice(-4);
+        if(cod) window.clarity('set','codigo',cod);
+      }catch(e){}
+    })();
+    </script>
     <meta name="theme-color" content="#FFFFFF">
     <!-- PWA cliente (instalable). OJO: manifest-cliente.json y sw-cliente.js son de ESTA app;
          el manifest.json y sw.js del mismo directorio son de la app del MOTORIZADO. -->
@@ -3099,7 +3133,7 @@
                 '<img class="nh-marca" src="/app/icons-cliente/icon-192.png" alt="DEWAN" width="32" height="32">'+
                 '<button class="nh-dir" onclick="pedirUbicacionInicio()" aria-label="Elegir dónde te lo llevamos">'+
                     '<span class="nh-dir-l">Entregar en</span>'+
-                    '<span class="nh-dir-v'+(hasGPS?'':' vacia')+'" id="nh-dir-v"><span class="nh-pin">📍</span> '+esc(val)+' <span class="nh-chev">▾</span></span>'+
+                    '<span class="nh-dir-v'+(hasGPS?'':' vacia')+'" id="nh-dir-v" data-clarity-mask="True"><span class="nh-pin">📍</span> '+esc(val)+' <span class="nh-chev">▾</span></span>'+
                 '</button>'+
                 '<button class="btn-cart'+(window._cart.length?' has-items':'')+'" onclick="showCart()" style="flex-shrink:0">'+(window._cart.length?'🛒 '+cartTotals().items+' items':'🛒')+'</button>'+
             '</div>';
@@ -3312,7 +3346,7 @@
                 '<div class="nh-pasos" id="nh-seg-pasos">'+NH_PASOS.map(function(p,i){return '<div class="nh-paso" data-i="'+i+'"><i></i><span>'+p+'</span></div>';}).join('')+'</div>'+
                 '<div class="nh-mapa nh-mapa-seg"><div id="nh-seg-mapa"></div></div>'+
                 '<div id="nh-seg-moto"></div>'+
-                '<div class="nh-seg-det" id="nh-seg-det"></div>'+
+                '<div class="nh-seg-det" id="nh-seg-det" data-clarity-mask="True"></div>'+
                 '<button class="nh-btn2" onclick="nhCompartirSeg()">Compartir el seguimiento</button>';
             nhSegCargar();
         };
@@ -3381,7 +3415,7 @@
             if((nom||telL)&&ix>=1){
                 var m=S.moto||{},vivo=ix>=1&&ix<3;
                 var info=[m.placa?'Placa '+esc(m.placa):'',Number(m.calificacion_promedio)>0?'⭐ '+Number(m.calificacion_promedio).toFixed(1):'',telL?esc(nhTelBonito(telL)):''].filter(Boolean).join(' · ');
-                mh='<div class="nh-moto">'+(m.foto_perfil_url?'<img src="'+nhAttr(m.foto_perfil_url)+'" alt="" onerror="this.remove()">':'<span class="av" aria-hidden="true">🛵</span>')+
+                mh='<div class="nh-moto" data-clarity-mask="True">'+(m.foto_perfil_url?'<img src="'+nhAttr(m.foto_perfil_url)+'" alt="" onerror="this.remove()">':'<span class="av" aria-hidden="true">🛵</span>')+
                     '<div class="tx"><b>'+esc(nom||'Tu motorizado')+'</b><small>'+info+'</small></div>'+
                     (vivo&&telL?'<a class="nh-llamar" href="tel:'+nhAttr(telL)+'">📞 Llamar</a>':'')+'</div>'+
                     (vivo&&telW?'<a class="nh-wa-moto" href="https://wa.me/'+nhAttr(telW)+'" target="_blank" rel="noopener">Escribirle por WhatsApp</a>':'');
@@ -3477,7 +3511,7 @@
                     '<span class="nh-lb">¿Quién paga la carrera?</span>'+nhChips('paga',[['envia','Yo'],['recibe','Quien recibe']],'envia');
             }
             h+='<span class="nh-lb">Tus datos</span>'+
-                '<div class="nh-dos"><input class="nh-campo" id="nh-nom" maxlength="60" autocomplete="name" placeholder="Tu nombre" value="'+nhAttr(dc.nombre||'')+'">'+
+                '<div class="nh-dos" data-clarity-mask="True"><input class="nh-campo" id="nh-nom" maxlength="60" autocomplete="name" placeholder="Tu nombre" value="'+nhAttr(dc.nombre||'')+'">'+
                 '<input class="nh-campo" id="nh-tel" maxlength="14" inputmode="tel" autocomplete="tel" placeholder="Tu celular" value="'+nhAttr(dc.telefono||'')+'"></div>'+
                 '<div class="nh-precio" id="nh-precio" aria-live="polite"></div>'+
                 '<div class="nh-err" id="nh-err" hidden></div>'+
@@ -3984,7 +4018,7 @@
                    '<img src="/app/icons-cliente/icon-192.png" alt="App DEWAN, la campana roja" style="width:40px;height:40px;border-radius:10px">'+
                    '<span>Descarga la app de DEWAN<br><span style="font-weight:600;font-size:.76rem;color:#cfc7bd">Es la de la campana roja · gratis en Google Play</span></span></a>';
             }
-            h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com</div>';
+            h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com · <a href="https://dewansas.com/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacidad</a></div>';
             app.innerHTML=h;
             bindSortEvents();
             updateCartFloat();
@@ -6237,7 +6271,7 @@
             // carrito todavía no está guardada → se busca una vez por posición (la misma búsqueda del inicio).
             if(g&&g.lat!=null){var kc=Number(g.lat).toFixed(4)+','+Number(g.lng).toFixed(4);
                 if(window._pdCalleK!==kc&&!nhCalleGuardada(g.lat,g.lng)){window._pdCalleK=kc;setTimeout(function(){nhCalle(g.lat,g.lng,function(){});},0);}}
-            return '<div class="pay-section pd-datos" id="pd-datos">'+
+            return '<div class="pay-section pd-datos" id="pd-datos" data-clarity-mask="True">'+
                 '<div class="pay-title">🙋 ¿A nombre de quién va?</div>'+
                 '<div class="nh-dos">'+
                     '<input class="nh-campo" id="pd-nom" maxlength="60" autocomplete="name" placeholder="Tu nombre" value="'+nhAttr(d.nombre)+'" oninput="pdGuardar()">'+
@@ -7314,7 +7348,7 @@
             document.getElementById('pwa-instalar').onclick = function(){
                 // Android: la app NATIVA de Play manda sobre instalar la web (push, pedido
                 // en vivo, mejor rendimiento). La PWA queda para iPhone, que no tiene app.
-                if (modo === 'play') { b.remove(); dormir(30); window.open(URL_PLAY, '_blank'); return; }
+                if (modo === 'play') { try{if(window.dwVis)dwVis.play();}catch(e){} b.remove(); dormir(30); window.open(URL_PLAY, '_blank'); return; }
                 if (modo === 'ios') { hojaIOS(); return; }
                 if (modo === 'chrome') { // salir del in-app browser hacia Chrome (ahí sí se puede instalar)
                     b.remove(); dormir(1);
@@ -7366,7 +7400,7 @@
             window._pwaModo = modoBar;
             window._pwaAccion = function(){
                 var bar = document.getElementById('pwa-bar');
-                if (modoBar === 'play') { if (bar) bar.remove(); window._pwaModo = null; dormir(30); window.open(URL_PLAY, '_blank'); return; }
+                if (modoBar === 'play') { try{if(window.dwVis)dwVis.play();}catch(e){} if (bar) bar.remove(); window._pwaModo = null; dormir(30); window.open(URL_PLAY, '_blank'); return; }
                 if (modoBar === 'ios') { hojaIOS(); return; }
                 if (bar) bar.remove(); window._pwaModo = null; dormir(1);
                 location.href = 'intent://pedir.dewansas.com/#Intent;scheme=https;package=com.android.chrome;end';
