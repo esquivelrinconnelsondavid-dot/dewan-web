@@ -1,0 +1,7 @@
+# pedir.dewansas.com — buscadores e IA bienvenidos (31-oct-2026). nginx lo sirve como /robots.txt
+User-agent: *
+Allow: /
+Disallow: /*?op=1
+Disallow: /*&op=1
+
+Sitemap: https://pedir.dewansas.com/sitemap.xml

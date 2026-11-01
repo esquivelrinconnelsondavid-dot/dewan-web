@@ -1,0 +1,6 @@
+# dewansas.com — buscadores e IA bienvenidos (31-oct-2026)
+User-agent: *
+Allow: /
+Disallow: /visitas/
+
+Sitemap: https://dewansas.com/sitemap.xml

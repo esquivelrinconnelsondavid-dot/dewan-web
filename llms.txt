@@ -1,0 +1,18 @@
+# DEWAN Delivery
+
+> DEWAN es un servicio de delivery de Riobamba, Ecuador. En https://pedir.dewansas.com se pide comida de más de 150 restaurantes de la ciudad: el pedido se confirma en la misma página (sin descargar nada ni crear cuenta) y un motorizado de DEWAN lo lleva a domicilio, a la oficina o al hotel. Se paga al recibir, en efectivo o por transferencia.
+
+## Cómo pedir
+- Web: https://pedir.dewansas.com — elegir restaurante y platos, marcar la ubicación (el costo del envío se ve antes de confirmar) y confirmar con nombre y celular. El pedido se sigue en vivo en la misma página.
+- App para Android: «DEWAN: comida a domicilio» — https://play.google.com/store/apps/details?id=com.dewan.cliente
+- WhatsApp: +593 96 222 3600
+
+## Qué se puede pedir
+- Comida de restaurantes de Riobamba: pollo, hamburguesas, pizza, alitas, chifa, almuerzos del día, comida típica, cafeterías y postres.
+- Compras: farmacia, supermercado y otros mandados dentro de la ciudad.
+- Encomiendas: paquetes pequeños dentro de Riobamba (lo que quepa en la mochila del motorizado).
+
+## Datos
+- Ciudad: Riobamba, provincia de Chimborazo, Ecuador.
+- Pago: efectivo o transferencia, al recibir.
+- Facebook: https://www.facebook.com/DeWanRiobamba/
