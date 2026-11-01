@@ -2191,6 +2191,7 @@
             ])
                 .then(function(_res){
                     var items=_res[0];
+                    try{window._vocabPlatos=(items||[]).map(function(it){return (it.nombre_item||'')+' '+(it.categoria_menu||'');});}catch(e){} // buscador con errores de tipeo
                     var out=[];
                     (items||[]).forEach(function(it){
                         if(!it.foto_url||!String(it.foto_url).trim()) return;
@@ -2717,6 +2718,77 @@
                 if(hit) g.all.forEach(function(term){extra[removeAccents(term.toLowerCase())]=true});
             });
             return Object.keys(extra);
+        }
+        // [1-nov-2026] Buscador que perdona errores de tipeo. Mismo código que va en menu.html (se prueba aquí con datos reales).
+        // Si una búsqueda no encuentra nada, se busca la palabra conocida más parecida (1 error en palabras de 4-8 letras,
+        // 2 en las más largas; también vale si escribió solo el comienzo con un error: «plancj» → «plancha»).
+        var COMIDA_COMUN=['marisqueria','mariscos','ceviche','cebiche','encebollado','hornado','fritada','churrasco','chuleta','plancha',
+            'apanado','apanada','seco','secos','caldo','consome','sopa','locro','llapingacho','tonga','guatita','menestra','cuy','chancho',
+            'cerdo','costilla','costillas','lomo','pechuga','filete','milanesa','tallarin','espagueti','lasagna','burrito','tacos','nachos',
+            'quesadilla','sanduche','sandwich','empanada','empanadas','humita','tamal','bolon','tigrillo','mote','salchipapa','hamburguesa',
+            'pizza','alitas','sushi','shawarma','crepe','crepes','waffle','helado','batido','jugo','cafe','capuchino','pollo','broaster',
+            'asado','parrillada','camaron','camarones','corviche','pescado','tilapia','trucha','arroz','chaulafan','chifa','wantan','bandera',
+            'pastel','torta','postre','brownie','cheesecake','desayuno','almuerzo','merienda','ensalada','vegetariano','papas','chorizo',
+            'carne','res','borrego','chivo','gallina','criollo','tostado','choclo','maduro','patacon','yuca','encocado','sango','sudado',
+            'parrilla','picana','costeno','arepa','pupusa','taco','frappe','milkshake','limonada','cerveza','michelada','gaseosa','agua'];
+        var _vocab=null,_vocabN='';
+        function _vocabBusqueda(){
+            var rs=(typeof sessionData!=='undefined'&&sessionData&&sessionData.resultados)||[],vp=window._vocabPlatos||[];
+            var n=rs.length+'|'+vp.length;
+            if(_vocab&&_vocabN===n) return _vocab;
+            var m={};
+            function add(txt,peso){removeAccents(String(txt||'').toLowerCase()).replace(/[^a-zñ ]/g,' ').split(/\s+/).forEach(function(w){if(w.length>=4)m[w]=(m[w]||0)+peso;});}
+            COMIDA_COMUN.forEach(function(w){add(w,5);});
+            FOOD_SYNONYMS.forEach(function(g){g.t.concat(g.all).forEach(function(w){add(w,5);});});
+            rs.forEach(function(r){add(r.nombre,1);add(r.categoria,2);});
+            vp.forEach(function(t){add(t,1);});
+            _vocab=m;_vocabN=n;return m;
+        }
+        // Distancia de edición con transposición (dos letras al revés = 1 error). Corta apenas pasa de «max».
+        function _distEd(a,b,max){
+            var la=a.length,lb=b.length;if(Math.abs(la-lb)>max)return max+1;
+            var p2=null,p=[],c,i,j;for(j=0;j<=lb;j++)p[j]=j;
+            for(i=1;i<=la;i++){
+                c=[i];var minF=i;
+                for(j=1;j<=lb;j++){
+                    var v=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));
+                    if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])v=Math.min(v,p2[j-2]+1);
+                    c[j]=v;if(v<minF)minF=v;
+                }
+                if(minF>max)return max+1;p2=p;p=c;
+            }
+            return p[lb];
+        }
+        // Varias palabras que no aparecen juntas en ninguna carta («seco de carne»): la primera palabra de comida conocida.
+        function _palabraPrincipal(q){
+            var ws=removeAccents(String(q||'').toLowerCase()).replace(/[^a-zñ ]/g,' ').split(/\s+/).filter(function(w){return w.length>=4;});
+            if(ws.length<2) return null;
+            var V=_vocabBusqueda(),fuerte=null,alguna=null;
+            ws.forEach(function(w){if(V[w]){if(!alguna)alguna=w;if(!fuerte&&V[w]>=5)fuerte=w;}});
+            return fuerte||alguna;
+        }
+        // Devuelve la búsqueda corregida, o null si no hay nada parecido.
+        function _corregirBusqueda(q){
+            var qn=removeAccents(String(q||'').toLowerCase()).replace(/[^a-zñ ]/g,' ').replace(/\s+/g,' ').trim();
+            if(qn.length<4) return null;
+            var V=_vocabBusqueda(),pal=Object.keys(V),cambio=false,varias=qn.indexOf(' ')!==-1;
+            var out=qn.split(' ').map(function(w){
+                // «secos de carne» → «seco de carne» (con una sola palabra, el plural ya lo cubren las variantes)
+                if(varias&&w.length>4&&w.slice(-1)==='s'&&V[w.slice(0,-1)]){cambio=true;return w.slice(0,-1);}
+                if(w.length<4||V[w]) return w;
+                var max=w.length>=9?2:1,mejor=null,mejorS=99;
+                for(var i=0;i<pal.length;i++){
+                    var c=pal[i],d=_distEd(w,c,max),s=d;
+                    if(c.length>w.length){var dp=_distEd(w,c.slice(0,w.length),max);if(dp+0.5<s)s=dp+0.5;} // escribió solo el comienzo
+                    if(s>max+0.5) continue;
+                    if(c.charAt(0)!==w.charAt(0)) s+=0.3;                     // la primera letra casi nunca se equivoca
+                    s-=Math.min(V[c],20)/100;                                 // a igual parecido, la palabra más común
+                    if(s<mejorS){mejorS=s;mejor=c;}
+                }
+                if(mejor){cambio=true;return mejor;}
+                return w;
+            });
+            return cambio?out.join(' '):null;
         }
         function simplify(s){
             s=s.toLowerCase().replace(/[^a-záéíóúñü]/g,'');
@@ -4746,6 +4818,7 @@
         function doSearch(query){
             var q=(query||'').trim();
             if(!q){renderSearchIdle();return}
+            var corr=window._searchCorrNext||null; window._searchCorrNext=null; // [1-nov] viene de corregir un error de tipeo
             window._showSilenciosos=false; // reset al iniciar nueva búsqueda
             var mySeq=++window._searchSeq;
             renderSearchSkeletons();
@@ -4791,9 +4864,22 @@
                     restsByPlates.forEach(function(r){if(!seen[r.id||r.nombre]){seen[r.id||r.nombre]=true;combined.push(r)}});
                     rankRestsByKeywords(combined,[q]);
 
+                    // [1-nov-2026] No encontró nada → probar con la palabra conocida más parecida
+                    // («marosqueria» → «marisqueria», «hamburgesa» → «hamburguesa»). Si tampoco, se muestra lo que escribió.
+                    if(!combined.length&&!(plates||[]).length){
+                        var etapa=corr?corr.etapa:0,yaQ=removeAccents(q.toLowerCase().trim()),sug=null,de=corr?corr.de:q;
+                        if(etapa<1){try{sug=_corregirBusqueda(q);}catch(e){} if(sug&&sug!==yaQ){window._searchCorrNext={de:de,etapa:1}; doSearch(sug); return;}}
+                        if(etapa<2){try{sug=_palabraPrincipal(q);}catch(e){} if(sug&&sug!==yaQ){window._searchCorrNext={de:de,etapa:2}; doSearch(sug); return;}}
+                        if(corr){
+                            try{if(window.dwVis)dwVis.busqueda(corr.de,0);}catch(e){}
+                            renderSearchResults(corr.de,[],[]); return;
+                        }
+                    }
                     saveRecentSearch(q);
-                    try{if(window.dwVis)dwVis.busqueda(q,combined.length);}catch(e){}
+                    try{if(window.dwVis)dwVis.busqueda(corr?corr.de:q,combined.length);}catch(e){}
                     renderSearchResults(q,combined,plates);
+                    if(corr){var area=document.getElementById('search-results-area');
+                        if(area) area.insertAdjacentHTML('afterbegin','<div class="search-corr" style="margin:2px 16px 12px;font-size:.86rem;color:var(--gris)">Mostrando resultados de «<b style="color:inherit">'+esc(q)+'</b>» · escribiste «'+esc(corr.de)+'»</div>');}
                 }).catch(function(){
                     if(mySeq!==window._searchSeq) return;
                     saveRecentSearch(q);
@@ -6680,7 +6766,14 @@
             }
             return false;
         }
-        function _hNowEc(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Guayaquil'})); }
+        // [1-nov-2026] Se recalcula como máximo 1 vez por segundo: toLocaleString con zona horaria es LENTO y
+        // ordenar ~200 locales lo llamaba miles de veces (3,9 s de CPU en un Android barato antes de ver la lista).
+        var _hNowMs=0,_hNowVal=0;
+        function _hNowEc(){
+            var t=Date.now();
+            if(!_hNowVal||t-_hNowMs>=1000||t<_hNowMs){ _hNowMs=t; _hNowVal=new Date(new Date(t).toLocaleString('en-US',{timeZone:'America/Guayaquil'})).getTime(); }
+            return new Date(_hNowVal);
+        }
         // Prefijo que agrega el CIERRE MANUAL (boton del local en su app): manda sobre el horario.
         var _H_CERRADO_MANUAL=/^cerrado por hoy/;
         function isRestOpen(horario){
