@@ -438,7 +438,7 @@
         /* Product card */
         .prod-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:10px;transition:border-color 0.2s,background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
         .prod-card.in-cart{border-color:rgba(232,67,26,0.4);background:rgba(232,67,26,0.025)}
-        .prod-top{display:flex;gap:12px;align-items:flex-start;position:relative}
+        .prod-top{display:flex;gap:12px;align-items:flex-start;position:relative;cursor:pointer}
         .prod-sello{position:absolute;top:-7px;left:-7px;z-index:2;background:#ff3b30;color:#fff;font-size:0.74rem;font-weight:900;min-width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(255,59,48,0.5);border:2.5px solid var(--card);letter-spacing:-0.03em}
         .prod-emoji{width:112px;height:112px;border-radius:16px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:3rem;flex-shrink:0;border:1px solid var(--border);overflow:hidden}
         .prod-info{flex:1;min-width:0}
@@ -1641,6 +1641,8 @@
             return {
                 id:r.id, nombre:r.nombre, direccion:r.direccion, telefono:r.telefono,
                 horario:r.horario, categoria:r.categoria, activo:r.activo,
+                // [1-nov-2026] sin esto el aviso decía «cerrado ahora · abre 12:00 pm» a un local que cerró por hoy
+                _cierreManual:!!r._cierreManual,
                 tipo_restaurante:r.tipo_restaurante,
                 logo_url:r.logo_url, imagen_url:r.imagen_url, foto_url:r.foto_url,
                 productos:[],
@@ -2483,6 +2485,59 @@
             document.body.appendChild(ov);
             try{history.pushState({v:currentView,r:currentRestIdx,ov:'foto'},'');}catch(e){}
         };
+        // [1-nov-2026] FICHA DEL PLATO. Clarity: la gente tocaba el dibujito/nombre/precio del plato y no pasaba
+        // nada (solo el «+» respondía) → tocaba varias veces y se iba. Ahora tocar cualquier parte de la tarjeta
+        // (o su foto) abre la ficha con «Agregar», como Uber Eats. El «Agregar» de la ficha toca el MISMO botón «+»
+        // de la tarjeta: así siguen igual el aviso de local cerrado, las opciones de almuerzo/alitas y el carrito.
+        function abrirFichaPlato(card){
+            var plus=card.querySelector('.btn-agregar')||card.querySelector('.btn-qty-plus');
+            if(!plus) return;
+            var txt=function(sel){var e=card.querySelector(sel);return e?e.textContent.replace(/\s+/g,' ').trim():'';};
+            var nombre=txt('.prod-name'),desc=txt('.prod-desc'),envase=txt('.prod-envase'),precio=txt('.prod-price'),antes=txt('.prod-price-antes');
+            var m=(plus.getAttribute('onclick')||'').match(/\(\s*'((?:[^'\\]|\\.)*)'/);
+            var rest=m?m[1].replace(/\\(.)/g,'$1'):'';
+            var img=card.querySelector('img.prod-emoji'),foto='',mini='';
+            if(img){var mz=(img.getAttribute('onclick')||'').match(/zoomFotoRaw\(\s*'((?:[^'\\]|\\.)*)'/);mini=img.getAttribute('src')||'';foto=mz?mz[1].replace(/\\(.)/g,'$1'):mini;}
+            var emoji=foto?'':txt('div.prod-emoji');
+            var ya=txt('.qty-num')||((txt('.badge-cart').match(/\d+/)||[''])[0]);
+            var rObj=null,cerrado=false,ap=null,hoy=false;
+            try{rObj=getRestByName(rest);if(rObj&&isRestOpen(rObj.horario)===false){cerrado=true;hoy=!!rObj._cierreManual;ap=hoy?null:proximaApertura(rObj.horario);}}catch(e){}
+            var ov=document.createElement('div');
+            ov.className='foto-zoom';
+            ov.onclick=function(e){if(e.target===ov) cerrarZoom();};
+            ov.innerHTML='<div class="foto-zoom-box">'+
+                '<button class="foto-zoom-x" aria-label="Cerrar" onclick="cerrarZoom()">✕</button>'+
+                (foto?'<img class="foto-zoom-img" id="ficha-plato-img" src="'+esc(mini||foto)+'" alt="'+esc(nombre)+'">'
+                     :'<div style="height:190px;display:flex;align-items:center;justify-content:center;font-size:5.2rem;background:var(--card2)">'+esc(emoji||'🍽️')+'</div>')+
+                '<div class="foto-zoom-info">'+
+                    '<div class="foto-zoom-name">'+esc(nombre)+'</div>'+
+                    (rest?'<div class="foto-zoom-sub">'+esc(rest)+'</div>':'')+
+                    (desc?'<div style="font-size:.9rem;color:var(--gris-2);line-height:1.5;margin-top:8px">'+esc(desc)+'</div>':'')+
+                    '<div style="margin-top:10px;font-size:1.15rem;font-weight:900">'+(antes?'<span style="text-decoration:line-through;color:var(--gris);font-weight:700;font-size:.9rem;margin-right:6px">'+esc(antes)+'</span>':'')+esc(precio)+
+                        (envase?'<span style="font-size:.8rem;color:var(--gris);font-weight:700;margin-left:8px">'+esc(envase)+'</span>':'')+'</div>'+
+                '</div>'+
+                (cerrado
+                    ?'<div class="foto-zoom-cta" style="background:var(--card2);color:var(--gris-2);text-align:center;cursor:default">'+(hoy?'🔴 Este local cerró por hoy':'🔴 Cerrado ahora'+(ap?' · abre '+esc(ap):''))+'</div>'
+                    :'<button class="foto-zoom-cta" id="ficha-plato-cta">🛒 Agregar al pedido'+(precio?' · '+esc(precio):'')+'</button>')+
+                (ya&&!cerrado?'<div class="foto-zoom-note">Ya tienes '+esc(ya)+' en el carrito</div>':'')+
+            '</div>';
+            document.body.appendChild(ov);
+            try{history.pushState({v:currentView,r:currentRestIdx,ov:'foto'},'');}catch(e){}
+            // la miniatura (ya en el celular) sale al instante; la foto grande la reemplaza cuando termina de bajar
+            if(foto&&mini&&foto!==mini){var big=new Image();big.onload=function(){var el=document.getElementById('ficha-plato-img');if(el)el.src=foto;};big.src=foto;}
+            var cta=document.getElementById('ficha-plato-cta');
+            if(cta) cta.onclick=function(){cerrarZoom(); try{plus.click();}catch(e){}};
+            try{if(typeof window.clarity==='function')window.clarity('event','ficha_plato');}catch(e){}
+        }
+        // Fase de captura: la foto tiene su propio onclick (abría la foto sin «Agregar»); aquí se adelanta.
+        document.addEventListener('click',function(ev){
+            var t=ev.target; if(!t||!t.closest) return;
+            var card=t.closest('.prod-card'); if(!card) return;
+            if(t.closest('button,a,input,textarea,select,label,.qty-ctrl')) return; // «+», «−» y demás siguen igual
+            if(!card.querySelector('.btn-agregar,.btn-qty-plus')) return;
+            ev.stopPropagation(); ev.preventDefault();
+            abrirFichaPlato(card);
+        },true);
 
         // ── CAMBIO 2: localStorage para carrito ──
         function getCartKey(){return 'dewan_cart_'+(token||'anon_v2')}
