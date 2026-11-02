@@ -848,6 +848,9 @@
         @keyframes loc-hint-pulse{0%{box-shadow:0 0 0 0 rgba(232,67,26,0.7),0 0 0 0 rgba(232,67,26,0)}70%{box-shadow:0 0 0 10px rgba(232,67,26,0),0 0 30px rgba(232,67,26,0.2)}100%{box-shadow:0 0 0 0 rgba(232,67,26,0)}}
         .loc-addr-input.pulse-hint,.btn-gps-main.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
         .loc-section.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
+        .op-map-hint-on{color:var(--cta)!important;font-weight:800!important;font-size:0.84rem!important;border-radius:8px;padding:4px 0;animation:loc-hint-pulse 1.6s ease-out 2}
+        .almuerzo-cat.pulse-hint{border-radius:12px;animation:loc-hint-pulse 1.6s ease-out 2}
+        .btn-almuerzo-add.is-off{opacity:0.4}
 
         /* V4.6: Selector de método de pago — Efectivo / Transferencia */
         .pay-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;margin:10px 0 14px}
@@ -5425,7 +5428,7 @@
                         h+='<div class="loc-gps-ok"><span>✅ ¡Te ubicamos! Mira el mapa: ¿el pin está en tu casa?</span></div>';
                     }
                     h+='<div id="op-map" style="height:240px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:8px"></div>';
-                    h+='<div style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:6px;text-align:center">👆 Si no está exacto, arrastra el pin a tu casa</div>';
+                    h+='<div id="op-map-hint" style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:6px;text-align:center">👆 Si no está exacto, arrastra el pin a tu casa</div>';
                     var _dmUI=distMinCarrito();
                     if(_dmUI!=null&&_dmUI>4){
                         h+='<div style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:0.8rem;font-weight:700;text-align:center">⚠️ Tu entrega queda a ~'+_dmUI.toFixed(1)+' km del local. Revisa que el pin esté en tu casa 👆</div>';
@@ -5438,7 +5441,7 @@
                     h+='<div style="font-size:0.82rem;color:var(--gris-2);font-weight:700;margin-top:8px;text-align:center;line-height:1.4">👆 Un toque y verás tu casa en el mapa para confirmar 🛵</div>';
                     h+='<div style="font-size:0.78rem;color:var(--gris-2);font-weight:700;margin:14px 0 6px;text-align:center">¿el GPS no agarra? marca tu casa en el mapa 👇</div>';
                     h+='<div id="op-map" style="height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>';
-                    h+='<div style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 Toca tu casa en el mapa</div>';
+                    h+='<div id="op-map-hint" style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 Toca tu casa en el mapa</div>';
                 }
             } else if(window._clientGPS){
                 h+='<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>';
@@ -5460,7 +5463,7 @@
                 // Mini-mapa clickeable (Leaflet+OSM): la centralista marca el pin a mano (se sabe Riobamba de memoria).
                 // OJO: innerHTML lo destruye en cada render → opInitMap lo recrea (con marker desde _clientGPS).
                 h+='<div id="op-map" style="height:230px;border-radius:12px;margin-top:10px;overflow:hidden"></div>';
-                h+='<div style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 o toca el punto en el mapa</div>';
+                h+='<div id="op-map-hint" style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 o toca el punto en el mapa</div>';
             }
             h+='</div>';
 
@@ -6001,6 +6004,12 @@
         // Se llama tras cada render del carrito (showCart → setTimeout): el innerHTML destruye el div del mapa.
         // Google: se vuelve a meter el MISMO mapa (opInitMapGoogle). OpenStreetMap (respaldo): se crea uno nuevo y se
         // restaura el marker desde _clientGPS (venga del mapa o del pin pegado).
+        // [2-nov] «Acercamos el mapa…» va DEBAJO del mapa: como globo encima del punto tocado (= su casa) se comía el 2.º toque.
+        function opMapAviso(){
+            var h=document.getElementById('op-map-hint'); if(!h) return;
+            h.textContent='🔍 Acercamos el mapa · ahora toca justo sobre tu casa';
+            h.classList.remove('op-map-hint-on'); void h.offsetWidth; h.classList.add('op-map-hint-on');
+        }
         function opInitMap(){
             // Sirve para CLIENTE y centralista: basta con que exista el div del mapa en el carrito.
             if(!document.getElementById('op-map')) return; // no estamos en el carrito (o carrito vacío)
@@ -6040,7 +6049,7 @@
                     // NO pone pin: solo acerca a nivel de casas y pide un segundo toque.
                     if(map.getZoom()<16){
                         map.setView(ev.latlng,16);
-                        L.popup({closeButton:false,autoClose:true}).setLatLng(ev.latlng).setContent('🔍 Acercamos el mapa — ahora toca justo sobre tu casa').openOn(map);
+                        opMapAviso();
                         return;
                     }
                     opMapPick(ev.latlng.lat,ev.latlng.lng);
@@ -6058,22 +6067,22 @@
             if(!G){
                 var div=document.createElement('div'); div.style.cssText='width:100%;height:100%';
                 hueco.appendChild(div);
-                var map=new google.maps.Map(div,{center:{lat:NH_CENTRO[0],lng:NH_CENTRO[1]},zoom:14,gestureHandling:'greedy',clickableIcons:false,
+                // [2-nov] Cliente: 'cooperative' = con un dedo baja la página y el mapa se mueve con dos (con 'greedy'
+                // el mapa, en medio del carrito, atrapaba el dedo de quien bajaba a «Confirmar» y se iba lejos de su casa).
+                // La centralista (PC) sigue con 'greedy': arrastra con el mouse y hace zoom con la rueda sin Ctrl.
+                var map=new google.maps.Map(div,{center:{lat:NH_CENTRO[0],lng:NH_CENTRO[1]},zoom:14,gestureHandling:OP_MODE?'greedy':'cooperative',clickableIcons:false,
                     mapTypeControl:false,streetViewControl:false,fullscreenControl:false,rotateControl:false,keyboardShortcuts:false});
                 map._dwGoogle=true;
-                G=window._gmCarrito={div:div,map:map,pin:null,circulo:null,aviso:null,ultimo:null};
+                G=window._gmCarrito={div:div,map:map,pin:null,circulo:null,ultimo:null};
                 map.addListener('click',function(ev){
                     if(!ev||!ev.latLng) return;
                     // Mapa alejado = un dedo tapa cuadras enteras (pedido #795). El primer toque NO pone pin:
                     // solo acerca a nivel de casas y pide un segundo toque.
                     if((map.getZoom()||0)<16){
                         map.setCenter(ev.latLng); map.setZoom(16);
-                        if(!G.aviso) G.aviso=new google.maps.InfoWindow({disableAutoPan:true});
-                        G.aviso.setContent('🔍 Acercamos el mapa — ahora toca justo sobre tu casa');
-                        G.aviso.setPosition(ev.latLng); G.aviso.open({map:map});
+                        opMapAviso();
                         return;
                     }
-                    if(G.aviso) G.aviso.close();
                     opMapPick(ev.latLng.lat(),ev.latLng.lng());
                 });
             } else if(G.div.parentNode!==hueco){
@@ -6084,7 +6093,6 @@
             var clave=(isFinite(la)&&isFinite(lo))?la.toFixed(6)+','+lo.toFixed(6)+','+(Number(gp.acc)||0):'';
             if(clave===G.ultimo) return; // mismo punto: el mapa se queda como el cliente lo dejó
             G.ultimo=clave;
-            if(G.aviso) G.aviso.close();
             if(!clave){
                 if(G.pin) G.pin.setMap(null);
                 if(G.circulo) G.circulo.setMap(null);
@@ -7114,7 +7122,8 @@
                 h+='</div>';
             });
 
-            h+='<button class="btn-almuerzo-add" id="btn-alm-add" onclick="confirmAlmuerzo()" '+(needsSelection.length?'disabled':'')+'>🍱 Agregar al pedido</button>'+
+            // [2-nov] Sin elegir todo sale gris pero SÍ se puede tocar: dice qué falta (con disabled el toque no hacía nada).
+            h+='<button class="btn-almuerzo-add'+(needsSelection.length?' is-off':'')+'" id="btn-alm-add" onclick="confirmAlmuerzo()" aria-disabled="'+(needsSelection.length?'true':'false')+'">🍱 Agregar al pedido</button>'+
                 '<button class="btn btn-outline" style="margin-top:8px" onclick="closeModal()">Cancelar</button>'+
             '</div>';
 
@@ -7159,11 +7168,19 @@
                 if(!sel) ready=false;
             });
             var btn=document.getElementById('btn-alm-add');
-            if(btn) btn.disabled=!ready;
+            if(btn){btn.classList.toggle('is-off',!ready); btn.setAttribute('aria-disabled',ready?'false':'true');}
         }
         window.confirmAlmuerzo=function(){
             if(!window._almPending)return;
             var p=window._almPending;
+            var falta=(p.needsSelection||[]).filter(function(cat){return !document.querySelector('.almuerzo-opt.selected[data-cat="'+cat+'"]');})[0];
+            if(falta){
+                var opt=document.querySelector('.almuerzo-opt[data-cat="'+falta+'"]'),caja=opt&&opt.closest('.almuerzo-cat');
+                if(caja){caja.scrollIntoView({behavior:'smooth',block:'center'}); caja.classList.remove('pulse-hint'); void caja.offsetWidth; caja.classList.add('pulse-hint');}
+                _toast('👆 Elige tu '+esc(almCatSingular[falta]||falta),2200);
+                try{if(navigator.vibrate)navigator.vibrate(12)}catch(e){}
+                return;
+            }
             var _rc=getRestByName(p.rest); if(_rc&&isRestOpen(_rc.horario)===false){ avisarCerrado(_rc); closeModal(); return; } // [19-jun]
             var choices={};
             var selected=document.querySelectorAll('.almuerzo-opt.selected');
