@@ -7053,6 +7053,7 @@
             refreshView();
         };
         window.openAlmuerzoModal=function(rest,nombre,almIdx,delivery){
+            try{if(window.dwVis)dwVis.local(rest);}catch(e){} // [2-nov] el almuerzo se abre desde el inicio sin abrir el local
             var descRaw=window._almMenuData[almIdx].desc;
             var fotoM=window._almMenuData[almIdx].foto||null;
             var envaseM=Number(window._almMenuData[almIdx].envase)||0;
@@ -7183,6 +7184,7 @@
                 foto_url:p.foto||null
             });
             saveCart(); // CAMBIO 2
+            try{if(window.dwVis){dwVis.local(p.rest);dwVis.carrito(p.rest);}}catch(e){} // [2-nov] antes el almuerzo no contaba como carrito
             window._almPending=null;
             closeModal();
             refreshView();
@@ -7312,6 +7314,7 @@
             var nombre=p.porUnidad?(p.qty+' Alitas'):p.nombre;
             window._cart.push({restaurante:p.rest,nombre:nombre,precio:precio,delivery:p.delivery,qty:1,cargo_envase:p.envase,wingsChoices:choices,precio_base:precioBase,foto_url:p.foto||null});
             saveCart();
+            try{if(window.dwVis){dwVis.local(p.rest);dwVis.carrito(p.rest);}}catch(e){} // [2-nov] alitas también cuentan como carrito
             window._wingsPending=null;
             closeModal();
             refreshView();
@@ -7385,6 +7388,7 @@
             });
             window._cart.push({restaurante:p.rest,nombre:p.nombre,precio:p.precio,delivery:p.delivery,qty:1,cargo_envase:p.envase,wingsChoices:choices,precio_base:p.precioBase,foto_url:p.foto||null});
             saveCart();
+            try{if(window.dwVis){dwVis.local(p.rest);dwVis.carrito(p.rest);}}catch(e){} // [2-nov] promos con grupos también cuentan como carrito
             window._wingsPending=null;
             closeModal();
             refreshView();
