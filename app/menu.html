@@ -1468,6 +1468,7 @@
             if(window.pdCerrarSeg&&pdCerrarSeg()) return true;
             if(_cartSheetOpen()){ closeCart(); return true; }
             var fz=document.querySelector('.foto-zoom'); if(_isVisible(fz)){fz.parentNode.removeChild(fz);return true;}
+            var si=document.getElementById('sellos-info-modal'); if(_isVisible(si)){si.style.display='none';return true;}
             var sf=document.getElementById('service-fee-modal'); if(_isVisible(sf)){ if(window.closeServiceFeeInfo){closeServiceFeeInfo();}else{sf.style.display='none';} return true;}
             var mo=document.getElementById('modal-overlay'); if(mo&&mo.classList.contains('visible')){ if(window.closeModal){closeModal();}else{mo.classList.remove('visible');} return true;}
             return false;
@@ -7516,6 +7517,34 @@
         var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcGR0am1tcmhoZnV4YXl2cHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNzE1NDksImV4cCI6MjA4ODY0NzU0OX0.Iyeogfs5AIiVrM5agXuMZsgFrud460OYvn0zkYgJH0s';
         var LS_TEL='dewan_sellos_tel';
         function telGuardado(){ try{return localStorage.getItem(LS_TEL)||''}catch(e){return''} }
+        // [1-nov-2026] La tira se tocaba y no pasaba nada (Clarity: «clics fallidos»). Ahora abre cómo funciona.
+        // Reglas = BD viva: sellos_estado (2 de regalo + 1 por pedido entregado, premio cada 6) y
+        // aplicar_premio_envio (cubre hasta $1.30 del envío; el servicio de los sin convenio va aparte).
+        var _ultimoEstado=null;
+        window.dewanSellosInfo=function(){
+            var m=document.getElementById('sellos-info-modal');
+            if(!m){
+                document.body.insertAdjacentHTML('beforeend','<div id="sellos-info-modal" class="sf-modal-overlay" style="display:none">'+
+                    '<div class="sf-modal-card"><div class="sf-modal-header"><span>🎟️ Sellos DEWAN</span><button class="sf-modal-close" type="button" aria-label="Cerrar">×</button></div>'+
+                    '<div class="sf-modal-body"><div id="sellos-info-estado"></div>'+
+                    '<p><b>Cada pedido que te entregamos suma 1 sello.</b> Empiezas con 2 de regalo.</p>'+
+                    '<p>Al completar <b>6 sellos</b> (con tus primeros 4 pedidos), <b>tu siguiente envío va gratis</b>. Después, otro envío gratis cada 6 pedidos.</p>'+
+                    '<p>El premio cubre <b>hasta $1.30 del envío</b>. Si tu envío cuesta más, pagas solo la diferencia. El cargo de servicio de los locales sin convenio va aparte.</p>'+
+                    '<p>Se aplica solo en tu próximo pedido por la app o la web, con el <b>mismo número de celular</b>.</p>'+
+                    '<button class="sf-modal-ok" type="button">Entendido</button></div></div></div>');
+                m=document.getElementById('sellos-info-modal');
+                var cerrar=function(e){if(e)e.stopPropagation();m.style.display='none';};
+                m.addEventListener('click',function(e){if(e.target===m&&Date.now()-(m._abierto||0)>250)cerrar();});
+                m.querySelector('.sf-modal-close').addEventListener('click',cerrar);
+                m.querySelector('.sf-modal-ok').addEventListener('click',cerrar);
+            }
+            var d=_ultimoEstado,box=document.getElementById('sellos-info-estado');
+            box.innerHTML=!d?'':(d.premios_disponibles>0
+                ?'<p style="background:#E8F6EE;border-radius:12px;padding:10px 12px;color:#12703C"><b>🎁 Ya ganaste tu envío gratis.</b> Se aplica solo en tu próximo pedido.</p>'
+                :'<p style="background:#FEF3C7;border-radius:12px;padding:10px 12px;color:#92400E">Llevas <b>'+d.sellos+' de 6</b> — te '+(d.faltan===1?'falta <b>1 pedido</b>':'faltan <b>'+d.faltan+' pedidos</b>')+' para tu envío gratis.</p>');
+            m._abierto=Date.now(); m.style.display='flex';
+            try{if(typeof window.clarity==='function')window.clarity('event','sellos_info');}catch(e){}
+        };
         function pintarCirculos(n){
             var h='';
             for(var i=0;i<6;i++){
@@ -7532,12 +7561,14 @@
             .then(function(d){
                 if(!d||typeof d.sellos==='undefined'){ cont.innerHTML='<div style="font-size:.82rem;color:#8a7a6d">No pudimos consultar ahora, intenta más tarde.</div>'; return; }
                 try{localStorage.setItem(LS_TEL,tel)}catch(e){}
+                _ultimoEstado=d;
                 var premio = d.premios_disponibles>0;
                 cont.innerHTML=
                     '<div style="display:flex;align-items:center;justify-content:center;margin:6px 0 4px">'+pintarCirculos(d.sellos)+'</div>'+
                     (premio
                         ? '<div style="font-weight:800;color:#1F9D55;font-size:.92rem">🎁 ¡Tienes un ENVÍO GRATIS para tu próximo pedido!</div>'
                         : '<div style="font-size:.88rem;color:#4A2C17">Llevas <b>'+d.sellos+' de 6</b> — te '+(d.faltan===1?'falta <b>1 pedido</b>':'faltan <b>'+d.faltan+' pedidos</b>')+' para tu <b>envío GRATIS</b> 🛵</div>')+
+                    '<button onclick="dewanSellosInfo()" style="background:none;border:0;color:#B45309;font-size:.78rem;font-weight:800;margin-top:6px;font-family:inherit">¿Cómo funciona?</button> · '+
                     '<button onclick="dewanSellosCambiarTel()" style="background:none;border:0;color:var(--gris-2);font-size:.72rem;margin-top:4px;text-decoration:underline;font-family:inherit">consultar otro número</button>';
             })
             .catch(function(){ cont.innerHTML='<div style="font-size:.82rem;color:#8a7a6d">Sin conexión — intenta más tarde.</div>'; });
@@ -7550,7 +7581,8 @@
             cont.innerHTML='<div style="font-size:.88rem;color:#4A2C17;margin-bottom:6px">Cada 6 pedidos, tu carrera va <b>GRATIS</b> (¡y ya llevas 2 de regalo!)</div>'+
                 '<div style="display:flex;gap:6px;justify-content:center">'+
                 '<input id="dewan-sellos-tel" type="tel" inputmode="tel" placeholder="Tu número (09...)" style="border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-size:.9rem;width:170px;font-family:inherit">'+
-                '<button onclick="dewanSellosVer()" style="background:#F59E0B;color:#fff;border:0;border-radius:10px;padding:8px 14px;font-weight:800;font-family:inherit;font-size:.88rem">Ver mis sellos</button></div>';
+                '<button onclick="dewanSellosVer()" style="background:#F59E0B;color:#fff;border:0;border-radius:10px;padding:8px 14px;font-weight:800;font-family:inherit;font-size:.88rem">Ver mis sellos</button></div>'+
+                '<button onclick="dewanSellosInfo()" style="background:none;border:0;color:#B45309;font-size:.78rem;font-weight:800;margin-top:8px;font-family:inherit">¿Cómo funciona?</button>';
         }
         window.dewanSellosVer=function(){
             var i=document.getElementById('dewan-sellos-tel');
@@ -7564,6 +7596,7 @@
         function pintarTira(d){
             var t=document.getElementById('dewan-sellos-tira');
             if(!t) return;
+            _ultimoEstado=d;
             var premio=d.premios_disponibles>0;
             var puntos='';
             for(var i=0;i<6;i++){
@@ -7571,13 +7604,17 @@
                 puntos+='<span style="width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;'+
                         (on?'background:#F59E0B;':'border:1.5px solid var(--border);')+'"></span>';
             }
-            t.style.cssText='display:flex;align-items:center;gap:9px;margin:10px 12px 0;padding:9px 12px;border-radius:14px;'+
+            t.setAttribute('role','button'); t.setAttribute('tabindex','0'); t.setAttribute('aria-label','Sellos DEWAN: cómo funciona el envío gratis');
+            t.onclick=window.dewanSellosInfo;
+            t.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();window.dewanSellosInfo();}};
+            t.style.cssText='display:flex;align-items:center;gap:9px;margin:10px 12px 0;padding:9px 12px;border-radius:14px;cursor:pointer;'+
                 'max-width:406px;margin-left:auto;margin-right:auto;font-family:inherit;'+
                 (premio?'background:#E8F6EE;border:1px solid #1F9D55;':'background:#fff;border:1px solid var(--border);');
             t.innerHTML='<span style="flex:0 0 auto;display:flex;align-items:center">'+puntos+'</span>'+
                 '<span style="flex:1;font-size:.8rem;font-weight:800;color:'+(premio?'#12703C':'#7a6a5d')+'">'+
                 (premio?'🎁 ¡Tienes un ENVÍO GRATIS! Úsalo en tu próximo pedido'
-                       :'🎟️ Llevas '+d.sellos+' de 6 — al 6º tu envío va gratis')+'</span>';
+                       :'🎟️ Llevas '+d.sellos+' de 6 — al 6º tu envío va gratis')+'</span>'+
+                '<span aria-hidden="true" style="flex:0 0 auto;font-size:1.15rem;font-weight:800;color:'+(premio?'#12703C':'#B45309')+'">›</span>';
         }
         function montar(){
             if(document.getElementById('dewan-sellos')) return;
