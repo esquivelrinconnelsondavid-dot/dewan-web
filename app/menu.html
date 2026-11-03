@@ -16,6 +16,7 @@
     <meta property="og:title" content="DEWAN Delivery · Comida a domicilio en Riobamba">
     <meta property="og:description" content="Más de 150 restaurantes de Riobamba. Confirmas aquí mismo y pagas al recibir.">
     <meta property="og:url" content="https://pedir.dewansas.com/">
+    <link rel="canonical" href="https://pedir.dewansas.com/">
     <meta property="og:image" content="https://pedir.dewansas.com/app/icons-cliente/icon-512.png">
     <meta name="twitter:card" content="summary">
     <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"LocalBusiness","@id":"https://pedir.dewansas.com/#dewan","name":"DEWAN Delivery","alternateName":"DEWAN","description":"Pide comida a domicilio en Riobamba de más de 150 restaurantes. Confirmas tu pedido aquí mismo, un motorizado de DEWAN te lo lleva a tu casa, oficina u hotel y pagas al recibir. También compras y encomiendas.","url":"https://pedir.dewansas.com/","logo":"https://pedir.dewansas.com/app/icons-cliente/icon-512.png","image":"https://pedir.dewansas.com/app/icons-cliente/icon-512.png","telephone":"+593962223600","address":{"@type":"PostalAddress","addressLocality":"Riobamba","addressRegion":"Chimborazo","addressCountry":"EC"},"areaServed":{"@type":"City","name":"Riobamba"},"paymentAccepted":"Efectivo, Transferencia","currenciesAccepted":"USD","knowsAbout":["Comida a domicilio","Delivery de restaurantes","Compras a domicilio","Encomiendas"],"sameAs":["https://www.facebook.com/DeWanRiobamba/","https://play.google.com/store/apps/details?id=com.dewan.cliente"]},{"@type":"WebSite","@id":"https://pedir.dewansas.com/#web","name":"DEWAN Delivery","url":"https://pedir.dewansas.com/","inLanguage":"es-EC","publisher":{"@id":"https://pedir.dewansas.com/#dewan"}},{"@type":"MobileApplication","name":"DEWAN: comida a domicilio","operatingSystem":"Android","applicationCategory":"LifestyleApplication","url":"https://play.google.com/store/apps/details?id=com.dewan.cliente","installUrl":"https://play.google.com/store/apps/details?id=com.dewan.cliente","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@id":"https://pedir.dewansas.com/#dewan"}}]}</script>
@@ -89,8 +90,14 @@
         var vis=ls('dewan_cliente_uuid');
         if(!vis){vis=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'c-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10); lsSet('dewan_cliente_uuid',vis);}
 
+        // [2-nov] Links CORTOS para compartir (pedir.dewansas.com/ig en vez de ?o=ig&utm_campaign=…, que se ve largo
+        // y sospechoso). Cualquier ruta ya abre esta página (nginx); aquí se lee la etiqueta y la barra vuelve a «/».
+        var CORTOS={wa:'whatsapp',estados:'whatsapp',ig:'instagram',fb:'facebook',tiktok:'tiktok',qr:'qr',maps:'google maps'};
+        var corto=((location.pathname.match(/^\/([a-z]+)\/?$/i)||[])[1]||'').toLowerCase();
+        if(!CORTOS[corto]) corto='';
         function origen(){
           var o=(qs.get('o')||qs.get('utm_source')||'').toLowerCase().trim();
+          if(!o&&corto) return CORTOS[corto];
           var alias={wa:'whatsapp',whatsapp:'whatsapp',estado:'whatsapp',estados:'whatsapp',fb:'facebook',facebook:'facebook',
                      ig:'instagram',instagram:'instagram',qr:'qr',tt:'tiktok',tiktok:'tiktok',g:'google',google:'google'};
           if(o) return alias[o]||o.slice(0,30);
@@ -124,6 +131,7 @@
         }
         function campana(){
           var c=qs.get('utm_campaign')||'';
+          if(!c&&corto==='estados') c='estados';
           if(!c&&qs.get('r')) c='local '+qs.get('r');
           if(!c&&qs.get('b')==='1') c='anuncio (bot)';
           return c.slice(0,80);
@@ -151,13 +159,15 @@
 
         // La visita sigue si volvió en menos de 30 min y no llegó por otro link.
         var guardada=null; try{guardada=JSON.parse(ls('dewan_vis')||'null')}catch(e){}
-        var linkNuevo=!!(qs.get('o')||qs.get('utm_source')||qs.get('utm_campaign')||qs.get('r')||qs.get('fbclid')||qs.get('t'));
+        var linkNuevo=!!(corto||qs.get('o')||qs.get('utm_source')||qs.get('utm_campaign')||qs.get('r')||qs.get('fbclid')||qs.get('t'));
         var ses=(guardada&&guardada.s&&Date.now()-guardada.t<30*60*1000&&!(linkNuevo&&guardada.e!==entrada()))?guardada.s:uuid();
 
         var st={s:ses,v:vis,o:origen(),c:campana(),ref:'',e:entrada(),d:/iPhone|iPad|iPod/i.test(ua)?'iphone':(/Android/i.test(ua)?'android':'pc'),
                 n:navegador(),nuevo:!yaVino,loc:[],lcar:[],lped:[],bus:[],sin:[],car:false,ci:0,cm:0,ubi:false,pid:false,via:null,pt:null,
                 peds:[],tel:'',nom:'',prueba:prueba,play:false};
         try{var rh=document.referrer?new URL(document.referrer).hostname:''; st.ref=(rh&&rh!==location.hostname)?rh.slice(0,120):'';}catch(e){}
+        // Ya anotado de dónde vino: la barra queda en «/» (si lo comparte o lo guarda, no arrastra la etiqueta).
+        if(corto){try{history.replaceState(history.state,'','/'+location.search+location.hash);}catch(e){}}
 
         function quien(){
           var c={}; try{c=JSON.parse(ls('dewan_cliente_web')||'{}')||{}}catch(e){}
