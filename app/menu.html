@@ -637,6 +637,14 @@
         .rest-pill.is-neutral{background:var(--card2);color:var(--gris);border-color:var(--border)}
 
         .app-footer{text-align:center;padding:20px 20px 80px;font-size:0.7rem;color:var(--gris)}
+        /* [2-nov] #app ocupa al menos una pantalla: lo que va DESPUÉS (tarjeta de Sellos) ya no sube a la vista
+           mientras carga la carta de un local para luego salir empujado (Clarity: CLS 0,27; medido 0,45 por local abierto). */
+        #app{min-height:100vh}
+        /* Tira de Sellos (clientes con número guardado): el mismo alto desde que se reserva hasta que se pinta. */
+        .sellos-tira{display:flex;align-items:center;gap:9px;margin:10px auto 0;padding:9px 12px;border-radius:14px;cursor:pointer;max-width:406px;box-sizing:border-box;font-family:inherit;background:#fff;border:1px solid var(--border)}
+        .sellos-tira.premio{background:#E8F6EE;border-color:#1F9D55}
+        .sellos-tira-txt{flex:1;min-height:2.6em;display:flex;align-items:center;line-height:1.3;font-size:.8rem;font-weight:800;color:#7a6a5d}
+        .sellos-tira.premio .sellos-tira-txt{color:#12703C}
         body.has-cart{padding-bottom:80px}
 
         /* Badge abierto/cerrado — CAMBIO 4 */
@@ -1341,6 +1349,9 @@
         <button class="welcome-skip" id="btn-welcome-gps" onclick="welcomeGPS()">📍 Ordenar por cercanía a mí</button>
     </div>
 
+    <script>/* [2-nov] Lugar de la tira de Sellos reservado ANTES de pintar la página: antes aparecía a los ~5 s y bajaba
+       todo justo cuando la persona iba a tocar un local. La pinta el widget de Sellos (al final del body). */
+    try{if(localStorage.getItem('dewan_sellos_tel'))document.currentScript.insertAdjacentHTML('beforebegin','<div id="dewan-sellos-tira" class="sellos-tira"><span class="sellos-tira-txt">🎟️ Revisando tus sellos…</span></div>');}catch(e){}</script>
     <div id="app">
         <div class="state-container">
             <div class="spinner"></div>
@@ -7637,6 +7648,7 @@
             .then(function(d){
                 if(!d||typeof d.sellos==='undefined'){ cont.innerHTML='<div style="font-size:.82rem;color:#8a7a6d">No pudimos consultar ahora, intenta más tarde.</div>'; return; }
                 try{localStorage.setItem(LS_TEL,tel)}catch(e){}
+                guardarUltimo(tel,d);
                 _ultimoEstado=d;
                 var premio = d.premios_disponibles>0;
                 cont.innerHTML=
@@ -7669,39 +7681,63 @@
         // Tira compacta ARRIBA para quien ya dejó su número (27-jul, pedido de David: al
         // pie nadie los veía). Va FUERA de #app a propósito: el home se repinta con
         // innerHTML y se la llevaría por delante.
+        // [2-nov] Antes aparecía a los 2–5 s (cuando respondía sellos_estado) y bajaba TODA la página justo cuando
+        // la persona iba a tocar un local. Ahora sale desde el primer momento con el último estado guardado en el
+        // celular (o «Revisando tus sellos…») y solo cambia el texto; el alto es fijo (2 líneas) para que no salte.
+        var LS_ULT='dewan_sellos_ult';
+        function guardarUltimo(tel,d){
+            try{localStorage.setItem(LS_ULT,JSON.stringify({tel:tel,sellos:d.sellos,faltan:d.faltan,premios_disponibles:d.premios_disponibles}));}catch(e){}
+        }
+        function ultimoGuardado(tel){
+            try{var u=JSON.parse(localStorage.getItem(LS_ULT)||'null'); if(u&&u.tel===tel&&typeof u.sellos==='number') return u;}catch(e){}
+            return null;
+        }
+        // d = estado de sellos_estado · null = todavía consultando · 'error' = no se pudo consultar
         function pintarTira(d){
             var t=document.getElementById('dewan-sellos-tira');
             if(!t) return;
-            _ultimoEstado=d;
-            var premio=d.premios_disponibles>0;
+            var ok=d&&typeof d==='object';
+            if(ok) _ultimoEstado=d;
+            var premio=ok&&d.premios_disponibles>0;
             var puntos='';
             for(var i=0;i<6;i++){
-                var on=premio||i<d.sellos;
+                var on=ok&&(premio||i<d.sellos);
                 puntos+='<span style="width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;'+
                         (on?'background:#F59E0B;':'border:1.5px solid var(--border);')+'"></span>';
             }
             t.setAttribute('role','button'); t.setAttribute('tabindex','0'); t.setAttribute('aria-label','Sellos DEWAN: cómo funciona el envío gratis');
             t.onclick=window.dewanSellosInfo;
             t.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();window.dewanSellosInfo();}};
-            t.style.cssText='display:flex;align-items:center;gap:9px;margin:10px 12px 0;padding:9px 12px;border-radius:14px;cursor:pointer;'+
-                'max-width:406px;margin-left:auto;margin-right:auto;font-family:inherit;'+
-                (premio?'background:#E8F6EE;border:1px solid #1F9D55;':'background:#fff;border:1px solid var(--border);');
+            t.className='sellos-tira'+(premio?' premio':''); t.style.cssText='';
+            var txt=!ok?(d==='error'?'🎟️ Sellos DEWAN — al 6º pedido tu envío va gratis':'🎟️ Revisando tus sellos…')
+                :(premio?'🎁 ¡Tienes un ENVÍO GRATIS! Úsalo en tu próximo pedido'
+                        :'🎟️ Llevas '+d.sellos+' de 6 — al 6º tu envío va gratis');
             t.innerHTML='<span style="flex:0 0 auto;display:flex;align-items:center">'+puntos+'</span>'+
-                '<span style="flex:1;font-size:.8rem;font-weight:800;color:'+(premio?'#12703C':'#7a6a5d')+'">'+
-                (premio?'🎁 ¡Tienes un ENVÍO GRATIS! Úsalo en tu próximo pedido'
-                       :'🎟️ Llevas '+d.sellos+' de 6 — al 6º tu envío va gratis')+'</span>'+
+                '<span class="sellos-tira-txt">'+txt+'</span>'+
                 '<span aria-hidden="true" style="flex:0 0 auto;font-size:1.15rem;font-weight:800;color:'+(premio?'#12703C':'#B45309')+'">›</span>';
+        }
+        // El lugar ya viene reservado desde antes de #app (script chico arriba); aquí se pinta con el último estado
+        // guardado. Si no estaba (número guardado recién en esta visita), se crea igual que antes, encima de #app.
+        // La consulta a la BD sí espera un poco para no competir con la carga.
+        function montarTira(){
+            var t=telGuardado();
+            if(!t) return false;
+            var tira=document.getElementById('dewan-sellos-tira');
+            if(!tira){
+                tira=document.createElement('div');
+                tira.id='dewan-sellos-tira';
+                var app=document.getElementById('app');
+                if(app&&app.parentNode) app.parentNode.insertBefore(tira,app); else document.body.insertBefore(tira,document.body.firstChild);
+            }
+            if(!tira.getAttribute('role')) pintarTira(ultimoGuardado(t));
+            return true;
         }
         function montar(){
             if(document.getElementById('dewan-sellos')) return;
             var t=telGuardado();
             if(t){
                 // ya lo conocemos -> tira arriba, sin formulario ni scroll
-                var tira=document.createElement('div');
-                tira.id='dewan-sellos-tira';
-                tira.style.display='none';
-                var app=document.getElementById('app');
-                if(app&&app.parentNode) app.parentNode.insertBefore(tira,app); else document.body.insertBefore(tira,document.body.firstChild);
+                montarTira();
                 consultarTira(t);
                 return;
             }
@@ -7718,9 +7754,10 @@
                 headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
                 body:JSON.stringify({tel:tel})})
             .then(function(r){return r.json()})
-            .then(function(d){ if(d&&typeof d.sellos!=='undefined') pintarTira(d); })
-            .catch(function(){});
+            .then(function(d){ if(d&&typeof d.sellos!=='undefined'){ guardarUltimo(tel,d); pintarTira(d); } else if(!_ultimoEstado) pintarTira('error'); })
+            .catch(function(){ if(!_ultimoEstado) pintarTira('error'); });
         }
+        try{montarTira();}catch(e){}
         if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(montar,800)});
         else setTimeout(montar,800);
     })();
