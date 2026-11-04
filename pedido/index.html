@@ -284,6 +284,7 @@
   // (en las demos NO se congela: "Volver al inicio" tiene que seguir funcionando)
   var finalizada = false, timerRefresco = null;
   var hermanos = [];   // los otros tickets del mismo carrito (?mas=), uno por local
+  var envioModo = null; // 'propio' = el local reparte con SU motorizado (SQL 076, 3-nov-2026); se lee una vez
   // Mapa vivo (js/dewan-vivo.js): historial de posiciones de la moto (rastro + velocidad real),
   // ruta por calles si Google la da, ficha pública de la moto y canal de tiempo real.
   var historialMoto = [], mapaVivo = null, rutaInfo = null, rutaPedidaEn = 0, rutaTramo = -1, ixActual = 0;
@@ -329,6 +330,9 @@
   function esRetiro() { return pedido.requiere_ubicacion === false; }
   function esDewan() { return !esSistema && /^app(man)?:/.test(String(pedido.conversation_id || '')); }
   function motoAsignada() { return !!(pedido.nombre_moto || pedido.motorizado_id); }
+  // Local que reparte con SU motorizado (Quito): no hay moto DEWAN que buscar ni GPS que seguir.
+  function esPropio() { return esSistema && !esRetiro() && pedido.envio_modo === 'propio'; }
+  function nomLocal() { return (local && local.nombre) || pedido.restaurante || 'el local'; }
 
   // Tipo de carrera: 'comida' (pedido a un local) · 'encomienda' (recoger un paquete en A y
   // entregarlo en B) · 'compra' (el moto compra en un local/súper y entrega). Sale de
@@ -370,6 +374,7 @@
     if (ix === 0) return ['Pedido recibido', 'El local está revisando su pedido. En un momento le confirma el tiempo.'];
     if (ix === 1) {
       if (e === 'preparando') return ['En cocina 👨‍🍳', retiro ? 'Están preparando su pedido. Aquí le avisamos cuando esté listo para retirar.' : 'Están preparando su pedido.'];
+      if (esPropio()) return ['En cocina 👨‍🍳', 'Su pedido está casi listo. Se lo lleva el repartidor de ' + nomLocal() + '.'];
       if (e === 'llego_recogida') return ['En cocina 👨‍🍳', 'El motorizado ya está en el local esperando su pedido.'];
       if (motoAsignada()) return ['En cocina 👨‍🍳', 'Su pedido está casi listo. Un motorizado ya va al local a recogerlo.'];
       return ['En cocina 👨‍🍳', 'Su pedido está casi listo. Estamos asignando un motorizado.'];
@@ -377,6 +382,7 @@
     if (ix === 2) {
       if (retiro) return ['¡Listo para retirar! 🏪', 'Puede pasar por el local a recoger su pedido.'];
       if (e === 'llegado') return ['¡Llegó a su puerta! 🛵', 'El motorizado está en el punto de entrega.'];
+      if (esPropio()) return ['Su pedido va en camino 🛵', 'El repartidor de ' + nomLocal() + ' ya salió hacia usted.'];
       return ['Su pedido va en camino 🛵', 'El motorizado ya salió hacia usted.'];
     }
     return ['¡Entregado!', 'Gracias por su pedido.'];
@@ -551,6 +557,11 @@
     var cont = $('motoCard');
     if (esRetiro() || ix < 1 || ix > 2) { cont.innerHTML = ''; return; }
     var nom = pedido.nombre_moto;
+    if (!nom && esPropio()) {
+      // su motorizado: no se «busca» a nadie; en camino se dice quién lo lleva
+      cont.innerHTML = ix === 2 ? '<div class="moto" style="font-size:14px"><div class="av" style="background:#EDE3D4;color:var(--tinta)">🛵</div><div>Lo lleva el repartidor de ' + esc(nomLocal()) + '</div></div>' : '';
+      return;
+    }
     if (!nom) {
       cont.innerHTML = (ix === 1 && pedido.estado_pedido === 'preparando') ? '' :
         '<div class="moto" style="border-style:dashed;color:var(--gris);font-size:14px"><div class="av" style="background:#EDE3D4;color:var(--tinta)">🛵</div><div>Buscando el motorizado más cercano…</div></div>';
@@ -877,7 +888,7 @@
     el.classList.toggle('mostrar', !!si);
     // El botón de avisos se ofrece mientras el pedido está en curso
     var a = avisador();
-    $('btnAvisar').classList.toggle('mostrar', ix >= 0 && ix <= 2);
+    $('btnAvisar').classList.toggle('mostrar', ix >= 0 && ix <= 2 && !esPropio()); // su motorizado: sin GPS, no hay «llegando»
     if (a) {
       var nom = (local && local.nombre) || pedido.restaurante || 'Su pedido';
       if (ix === 2 && !esRetiro()) a.avisar('encamino', { titulo: '🛵 Su pedido salió', cuerpo: nom + ' · el motorizado va hacia usted', tono: 'suave' });
@@ -1078,7 +1089,14 @@
       // acceso por id: exige los últimos 4 dígitos del teléfono del cliente
       if (!token && String(p.cliente_telefono || '').slice(-4) !== String(kParam)) { if (!pedido) noEncontrado(); return; }
       pedido = p;
+      if (envioModo) pedido.envio_modo = envioModo;
       var tareas = [];
+      // Modo «su motorizado» (SQL 076): fetch APARTE por la misma razón que el recibo de abajo —
+      // sin la columna, sb() devuelve [] y la página sigue como siempre (moto DEWAN).
+      if (esSistema && !esRetiro() && envioModo == null) {
+        tareas.push(sb('/' + TABLA + '?select=envio_modo&id=eq.' + p.id + '&limit=1')
+          .then(function (rr) { envioModo = (rr && rr[0] && rr[0].envio_modo) || ''; pedido.envio_modo = envioModo; }));
+      }
       // los otros tickets del mismo carrito (uno por local), para verlos en el mismo link
       if (masParam.length && !esSistema) {
         tareas.push(sb('/' + TABLA + '?select=' + SEL + '&token_seguimiento=in.(' + masParam.map(encodeURIComponent).join(',') + ')&limit=6')

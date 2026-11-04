@@ -235,7 +235,9 @@ export default function Ticket({ pedido, columna, grande = false, ocupadoMin = 0
   const domicilio = esDomicilio(pedido);
   // EE.UU. (14-oct-2026): a domicilio con el repartidor DEL LOCAL → el local marca "salió" y "entregado".
   // Con DoorDash / Shipday el repartidor llega solo (como la moto DEWAN) y la app marca la entrega.
-  const propio = MODO_US && domicilio && pedido.envio_proveedor === 'propio';
+  // Repartidor PROPIO del local (sin moto DEWAN): EE.UU. = envio_proveedor 'propio' · Ecuador (3-nov-2026, SQL 076) =
+  // envio_modo 'propio' (locales de Quito con su motorizado). Mismo flujo: «Salió con nuestro repartidor» → Entregado.
+  const propio = domicilio && (MODO_US ? pedido.envio_proveedor === 'propio' : MODO_SISTEMA && pedido.envio_modo === 'propio');
   const motoDewan = MODO_SISTEMA && domicilio && !propio;
   // ¿La entrega al cliente la hace una moto DEWAN? Entonces el local NUNCA marca
   // "entregado": él se lo entrega AL MOTORIZADO. (Happy Pollo reparte con su gente.)
