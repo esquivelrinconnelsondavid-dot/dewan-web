@@ -167,6 +167,17 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px
   function pct(a,b){return b?Math.round(100*a/b):0}
   function movil(){return window.innerWidth<700}
   function etq(o){return ETQ[o]||(o?o.charAt(0).toUpperCase()+o.slice(1):'Directo')}
+  // [3-nov] Lo que hizo el que no abrió un local: tiempo con la página a la vista, cuánto bajó y qué tocó.
+  function tiempo(sg){sg=Math.round(n(sg)); if(sg<60) return sg+' s'; var mi=Math.floor(sg/60), r=sg%60; return mi<10&&r?mi+' min '+r+' s':mi+' min';}
+  function hizo(v){
+    var out=[];
+    if(v.segundos!=null) out.push('la tuvo a la vista '+tiempo(v.segundos));
+    if(n(v.pantallas)>=0.5) out.push('bajó '+String(n(v.pantallas)).replace('.',',')+' pantalla'+(n(v.pantallas)===1?'':'s'));
+    var LISTA='llegó a «Todos los locales»', t=(v.toques||[]);
+    if(t.indexOf(LISTA)>=0) out.push(LISTA);
+    t=t.filter(function(x){return x!==LISTA}); if(t.length) out.push('tocó: '+t.join(', '));
+    return out;
+  }
   function tel(t){t=String(t||'');return t.indexOf('593')===0?'0'+t.slice(3,5)+' '+t.slice(5,8)+' '+t.slice(8):t}
   function hoyEC(off){
     var d=new Date(Date.now()+(off||0)*86400000);
@@ -280,11 +291,26 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px
       emb.appendChild(el('div',{class:'num'},fmt(p[1]),i?el('small',{text:pct(n(p[1]),maxE)+' %'}):null));
     });
     var unDia=est.desde===est.hasta;
+    // [3-nov] Los que no abrieron ningún local: ¿se fueron al toque o se quedaron mirando? (solo visitas con tiempo anotado)
+    function sinAbrir(sa){
+      if(!sa||!n(sa.con_dato)) return null;
+      var c=n(sa.con_dato), sin=n(sa.personas)-c;
+      return el('p',{class:'ayuda',style:'margin-top:10px'},
+        'De ',el('b',{text:c+(c===1?' persona que no abrió':' personas que no abrieron')}),' ningún local: ',
+        el('b',{text:n(sa.rapido)+(n(sa.rapido)===1?' se fue':' se fueron')}),' en 5 s o menos y ',
+        el('b',{text:n(sa.miraron)+(n(sa.miraron)===1?' se quedó':' se quedaron')}),' mirando',
+        (n(sa.un_minuto)||n(sa.lista)||n(sa.tocaron))?' ('+[n(sa.un_minuto)?n(sa.un_minuto)+' más de 1 min':'',
+          n(sa.lista)?n(sa.lista)+' bajaron hasta «Todos los locales»':'',
+          n(sa.tocaron)?n(sa.tocaron)+' tocaron filtros, categorías u otros botones':''].filter(Boolean).join(' · ')+')':'',
+        '. La mitad la tuvo a la vista menos de '+tiempo(sa.mediana_seg)+'.',
+        sin>0?el('span',{class:'gris',text:' '+sin+' más sin tiempo anotado (visitas de antes del cambio).'}):null);
+    }
     cuerpo.appendChild(el('div',{class:'grid g-2'},
       el('div',{class:'card'},el('h2',{text:'El camino hasta el pedido'}),
         el('p',{class:'ayuda',text:'Cuántas personas llegan a cada paso. Donde más se caen, ahí hay que mejorar.'}),emb,
         n(a.a_play&&a.a_play.personas)?el('p',{class:'ayuda',style:'margin-top:10px'},'Además, ',el('b',{text:n(a.a_play.personas)+(n(a.a_play.personas)===1?' persona tocó':' personas tocaron')}),
-          ' «Descargar la app» y se fue'+(n(a.a_play.personas)===1?'':'ron')+' a Play Store'+(n(a.a_play.sin_pedir)?' ('+n(a.a_play.sin_pedir)+' sin pedir en la web)':'')+'.'):null),
+          ' «Descargar la app» y se fue'+(n(a.a_play.personas)===1?'':'ron')+' a Play Store'+(n(a.a_play.sin_pedir)?' ('+n(a.a_play.sin_pedir)+' sin pedir en la web)':'')+'.'):null,
+        sinAbrir(a.sin_abrir)),
       el('div',{class:'card'},el('h2',{text:unDia?'Personas por hora':'Personas por día'}),
         el('p',{class:'ayuda',text:unDia?'Sirve para saber a qué hora publicar.':'Cómo va la semana o el mes.'}),
         columnas(unDia?horas(a.por_hora):dias(a.por_dia,est.desde,est.hasta),unDia))
@@ -334,7 +360,10 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px
         nubes(a.busquedas,'Nadie usó el buscador en este período.'),
         el('h2',{style:'margin-top:16px',text:'Buscaron y no encontraron'}),
         el('p',{class:'ayuda',text:'Comida que la gente quiere y la web no tiene: pista de qué locales sumar.'}),
-        nubes(a.sin_resultado,'Todo lo que buscaron apareció.')),
+        nubes(a.sin_resultado,'Todo lo que buscaron apareció.'),
+        a.toques?el('h2',{style:'margin-top:16px',text:'Qué más tocan en el inicio'}):null,
+        a.toques?el('p',{class:'ayuda',text:'Filtros, categorías, buscador, «Entregar en», franja de la app y si llegaron a «Todos los locales» (personas).'}):null,
+        a.toques?nubes(a.toques.map(function(x){return {b:x.t,n:x.n}}),'Nadie tocó filtros ni categorías en este período.'):null),
       el('div',{class:'card'},el('h2',{text:'Desde qué aparato'}),el('p',{class:'ayuda',text:'Personas en el período.'}),
         reparto(disp,{android:'Android',iphone:'iPhone',pc:'Computadora',otro:'Otro'}),
         el('h2',{style:'margin-top:16px',text:'Desde qué app o navegador'}),
@@ -363,6 +392,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px
         var quien=v.nombre||v.telefono?el('b',{text:(v.nombre||'Sin nombre')+(v.telefono?' · '+tel(v.telefono):'')})
                  :el('span',null,el('span',{class:'pill',text:v.nuevo?'Nuevo':'Volvió'}),' ',el('span',{class:'gris',text:'#'+String(v.visitante||'').replace(/[^a-z0-9]/gi,'').slice(-4)}));
         var miro=[(v.locales||[]).join(', ')]; if((v.busquedas||[]).length) miro.push('buscó: '+v.busquedas.join(', '));
+        miro=miro.concat(hizo(v));
         return el('div',{class:'vis'},
           el('div',{class:'l1'},el('span',{class:'h',text:(unDia?'':fechaEC(v.inicio)+' ')+horaEC(v.inicio)}),quien),
           el('div',{class:'l2',text:etq(v.origen)+(v.campana?' · '+v.campana:'')+' · '+((({android:'Android',iphone:'iPhone',pc:'PC'})[v.dispositivo]||v.dispositivo||'')+(v.navegador?' '+v.navegador:''))}),
@@ -376,6 +406,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px
                  :el('span',null,el('span',{class:'pill',text:v.nuevo?'Nuevo':'Volvió'}),' ',el('span',{class:'gris',text:'#'+String(v.visitante||'').replace(/[^a-z0-9]/gi,'').slice(-4)}));
         var miro=[(v.locales||[]).join(', ')];
         if((v.busquedas||[]).length) miro.push('buscó: '+v.busquedas.join(', '));
+        miro=miro.concat(hizo(v));
         var pid=v.pidio?el('span',{class:'ok',text:'✓ '+(VIA[v.pedido_via]||v.pedido_via||'')+(n(v.pedido_total)?' · '+plata(v.pedido_total):'')}):el('span',{class:'gris',text:v.a_play?'se fue a Play Store (app)':'—'});
         if(v.pidio&&v.a_play) pid=el('span',null,pid,el('br'),el('span',{class:'gris',text:'y tocó «Descargar la app»'}));
         return [(unDia?'':fechaEC(v.inicio)+' ')+horaEC(v.inicio),quien,etq(v.origen)+(v.campana?' · '+v.campana:''),

@@ -164,7 +164,7 @@
 
         var st={s:ses,v:vis,o:origen(),c:campana(),ref:'',e:entrada(),d:/iPhone|iPad|iPod/i.test(ua)?'iphone':(/Android/i.test(ua)?'android':'pc'),
                 n:navegador(),nuevo:!yaVino,loc:[],lcar:[],lped:[],bus:[],sin:[],car:false,ci:0,cm:0,ubi:false,pid:false,via:null,pt:null,
-                peds:[],tel:'',nom:'',prueba:prueba,play:false};
+                peds:[],tel:'',nom:'',prueba:prueba,play:false,seg:0,pan:0,toq:[]};
         try{var rh=document.referrer?new URL(document.referrer).hostname:''; st.ref=(rh&&rh!==location.hostname)?rh.slice(0,120):'';}catch(e){}
         // Ya anotado de dónde vino: la barra queda en «/» (si lo comparte o lo guarda, no arrastra la etiqueta).
         if(corto){try{history.replaceState(history.state,'','/'+location.search+location.hash);}catch(e){}}
@@ -175,11 +175,19 @@
           st.nom=String(c.nombre||'').slice(0,60);
         }
         function poner(arr,x,tope){x=String(x==null?'':x).trim(); if(x&&arr.indexOf(x)===-1&&arr.length<tope) arr.push(x);}
+        // [3-nov] Antes el panel decía «0 s» a quien no tocaba nada que se anotara (en Clarity, varios miraban más de
+        // 1 min). Ahora va: tiempo con la página A LA VISTA (seg), cuánto bajó por el inicio en pantallas (pan) y los
+        // toques sueltos (toq: filtros, categorías, buscador, franja…). El tiempo sigue si la misma visita recarga.
+        var visDesde=document.visibilityState==='visible'?Date.now():0;
+        var visAcum=(guardada&&guardada.s===ses&&guardada.seg>0)?guardada.seg*1000:0, segMandado=-1;
+        function segundos(){return Math.min(86400,Math.round((visAcum+(visDesde?Date.now()-visDesde:0))/1000));}
         var tm=null,sucio=false;
+        function toque(t){t=String(t||'').replace(/\s+/g,' ').trim().slice(0,50); if(t&&st.toq.indexOf(t)===-1&&st.toq.length<25){st.toq.push(t); luego();}}
         function mandar(keep){
           clearTimeout(tm); tm=null; sucio=false;
           quien();
-          lsSet('dewan_vis',JSON.stringify({s:st.s,t:Date.now(),e:st.e}));
+          st.seg=segundos(); segMandado=st.seg;
+          lsSet('dewan_vis',JSON.stringify({s:st.s,t:Date.now(),e:st.e,seg:st.seg}));
           try{
             fetch(RPC,{method:'POST',keepalive:!!keep,
               headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},
@@ -187,7 +195,30 @@
           }catch(e){}
         }
         function luego(ya){sucio=true; clearTimeout(tm); tm=setTimeout(mandar,ya?0:1200);}
-        document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&sucio) mandar(true);});
+        // Al irse (otra app, otra pestaña, cerrar) se manda siempre: así queda cuánto rato la tuvo a la vista.
+        function alOcultar(){
+          if(visDesde){visAcum+=Date.now()-visDesde; visDesde=0;}
+          if(sucio||segundos()!==segMandado) mandar(true);
+        }
+        document.addEventListener('visibilitychange',function(){
+          if(document.visibilityState==='hidden') alOcultar(); else if(!visDesde) visDesde=Date.now();
+        });
+        window.addEventListener('pagehide',alOcultar);
+        // Cuánto bajó por el INICIO (el que tiene el buscador arriba) y si llegó a la lista de todos los locales.
+        var scTm=null;
+        window.addEventListener('scroll',function(){
+          if(scTm) return;
+          scTm=setTimeout(function(){
+            scTm=null;
+            try{
+              if(!document.querySelector('#app .nh-busca')) return;
+              var p=Math.min(99,Math.round(10*(window.scrollY||0)/Math.max(1,window.innerHeight))/10);
+              if(p>st.pan){st.pan=p; sucio=true;}
+              var lt=document.getElementById('nh-todos');
+              if(lt&&lt.getBoundingClientRect().top<window.innerHeight) toque('llegó a «Todos los locales»');
+            }catch(e){}
+          },400);
+        },{passive:true});
 
         var busPend=null,busTm=null;
         function cerrarBusqueda(){
@@ -227,13 +258,41 @@
             clEv('pidio');
           },
           // [1-nov] Tocó «Descargar la app»: se va a Play Store, así que se manda ya (no espera).
-          play:function(){if(!st.play){st.play=true; mandar(true); clEv('descargar_app');}}
+          play:function(){if(!st.play){st.play=true; mandar(true); clEv('descargar_app');}},
+          toque:toque,
+          // [3-nov] Franja «Ábrelo en Chrome» (Android dentro de Instagram/Facebook): se anota y se manda ya, y
+          // devuelve la ruta con la MISMA marca (/ig, /fb…) para el link que abre Chrome. Antes Chrome abría el
+          // link pelado y esa persona contaba como «Directo».
+          aChrome:function(){
+            toque('franja: pasó a Chrome'); mandar(true);
+            var r=({instagram:'/ig',facebook:'/fb',tiktok:'/tiktok',qr:'/qr','google maps':'/maps'})[st.o]
+                  ||(st.o==='whatsapp'?(st.c==='estados'?'/estados':'/wa'):'/');
+            var q=location.search||'';
+            if(r==='/'&&st.o&&st.o!=='directo'&&!/[?&](o|utm_source)=/.test(q)) q+=(q?'&':'?')+'o='+encodeURIComponent(st.o);
+            return r+q;
+          }
         };
         // Grabaciones (Clarity, bloque de abajo): marca para filtrar las que pidieron / se fueron a Play.
         function clEv(n){try{if(typeof window.clarity==='function') window.clarity('event',n);}catch(e){}}
         // Cualquier link a Play Store (el fijo del inicio de Android y el de «Sobre DEWAN»).
+        // [3-nov] + los toques del inicio que no abren un local (antes no quedaban en ningún lado).
+        var ORDEN={recomendado:'Recomendado',distancia:'Más cerca',precio:'Menor precio',delivery:'Envío más barato'};
+        var FRANJA={'Abrir':'pasó a Chrome','Ver cómo':'vio cómo instalar (iPhone)','Descargar':'Descargar la app','Instalar':'instalar'};
+        function texto(x){return x?String(x.textContent||'').replace(/\s+/g,' ').trim():'';}
         document.addEventListener('click',function(ev){
-          try{var a=ev.target&&ev.target.closest&&ev.target.closest('a[href*="play.google.com"]'); if(a) window.dwVis.play();}catch(e){}
+          try{
+            var t=ev.target&&ev.target.closest?ev.target:null, b; if(!t) return;
+            if(t.closest('a[href*="play.google.com"]')) window.dwVis.play();
+            else if((b=t.closest('.pill[data-sort]'))) toque('orden: '+(ORDEN[b.getAttribute('data-sort')]||texto(b)));
+            else if(t.closest('.pill-gps')) toque('orden: Más cerca');
+            else if((b=t.closest('.cat-chip'))) toque('categoría: '+texto(b.lastElementChild||b));
+            else if(t.closest('.nh-busca')) toque('abrió el buscador');
+            else if((b=t.closest('.nh-puerta'))) toque('puerta: '+texto(b.querySelector('b')||b));
+            else if(t.closest('.nh-dir')) toque('tocó «Entregar en»');
+            else if(t.closest('.nh-hb-slide')) toque('promo de arriba');
+            else if(t.closest('#dewan-sellos-tira,#dewan-sellos')) toque('sellos');
+            else if((b=t.closest('#pwa-bar button,#pwa-banner button'))) toque('franja: '+(b.classList.contains('no')?'la cerró':(FRANJA[texto(b)]||texto(b))));
+          }catch(e){}
         },true);
         if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(mandar,600)});
         else setTimeout(mandar,600);
@@ -7543,7 +7602,8 @@
                 if (modo === 'ios') { hojaIOS(); return; }
                 if (modo === 'chrome') { // salir del in-app browser hacia Chrome (ahí sí se puede instalar)
                     b.remove(); dormir(1);
-                    location.href = 'intent://pedir.dewansas.com/#Intent;scheme=https;package=com.android.chrome;end';
+                    var ruta='/'; try{ if(window.dwVis&&dwVis.aChrome) ruta=dwVis.aChrome(); }catch(e){} // [3-nov] Chrome abre con la misma marca (/ig, /fb…)
+                    location.href = 'intent://pedir.dewansas.com'+ruta+'#Intent;scheme=https;package=com.android.chrome;end';
                     return;
                 }
                 if (!deferredPrompt) { b.remove(); return; }
@@ -7594,7 +7654,8 @@
                 if (modoBar === 'play') { try{if(window.dwVis)dwVis.play();}catch(e){} if (bar) bar.remove(); window._pwaModo = null; dormir(30); window.open(URL_PLAY, '_blank'); return; }
                 if (modoBar === 'ios') { hojaIOS(); return; }
                 if (bar) bar.remove(); window._pwaModo = null; dormir(1);
-                location.href = 'intent://pedir.dewansas.com/#Intent;scheme=https;package=com.android.chrome;end';
+                var ruta='/'; try{ if(window.dwVis&&dwVis.aChrome) ruta=dwVis.aChrome(); }catch(e){} // [3-nov] Chrome abre con la misma marca (/ig, /fb…)
+                location.href = 'intent://pedir.dewansas.com'+ruta+'#Intent;scheme=https;package=com.android.chrome;end';
             };
             window._pwaCerrar = function(){ var bar = document.getElementById('pwa-bar'); if (bar) bar.remove(); window._pwaModo = null; dormir(7); };
             // Si el inicio ya se pintó antes de este script, la franja se agrega arriba ahora.
