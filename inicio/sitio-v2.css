@@ -428,6 +428,15 @@ section[id]{scroll-margin-top:80px}
 @media (max-width:960px){.sols.cuatro{grid-template-columns:1fr}.sols.cuatro .sol-foto{height:auto;min-height:300px}}
 @media (max-width:640px){.sols.cuatro .sol-foto{height:300px;min-height:0}}
 
+
+/* Fotos reales en catálogo y soluciones */
+.cat-f .cat-img{width:38px;height:38px;border-radius:10px;object-fit:cover;display:block}
+.sol-foto .chip{position:absolute;left:16px;bottom:16px;z-index:2}
+
+.fila-vis.dos.grande .t-a{left:8%;top:36px;width:42%}
+.fila-vis.dos.grande .t-b{right:8%;top:72px;width:42%}
+@media (max-width:640px){.fila-vis.dos.grande .t-a{left:4%;width:50%}.fila-vis.dos.grande .t-b{right:4%;width:50%}}
+
 /* Pantallas medianas y celulares */
 @media (max-width:1060px){
   .nav>a.opcional{display:none}
