@@ -1,449 +1,754 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dewansas — Soluciones Tecnológicas para Empresas | Ecuador</title>
-    <meta name="description" content="dewansas: Integración de WhatsApp Business API, chatbots con IA, automatización de procesos y soluciones de logística para empresas en Ecuador.">
-    <meta name="keywords" content="WhatsApp Business API, automatización empresarial, chatbots, logística, Ecuador, dewansas">
-    <meta name="author" content="dewansas">
-    <meta name="robots" content="index, follow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEWAN · Pedidos por WhatsApp y delivery para restaurantes en Ecuador</title>
+<meta name="description" content="Sus clientes piden con fotos en su mismo WhatsApp o en su propia página, el pedido le llega completo a la cocina y, en Riobamba, nuestras motos lo entregan. Sin comisión sobre sus ventas. Pruébelo 14 días gratis.">
+<link rel="canonical" href="https://dewansas.com/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#E8431A">
+<meta name="color-scheme" content="light">
+<meta name="format-detection" content="telephone=no">
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="dewansas — Soluciones Tecnológicas para Empresas">
-    <meta property="og:description" content="Integración de WhatsApp Business API, chatbots con IA, automatización de procesos y soluciones de logística para empresas en Ecuador.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dewansas.com">
-    <meta property="og:site_name" content="dewansas">
-    <meta property="og:locale" content="es_EC">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dewansas.com/">
+<meta property="og:site_name" content="DEWAN">
+<meta property="og:locale" content="es_EC">
+<meta property="og:title" content="DEWAN · Usted solo prepara y cobra. DEWAN hace el resto.">
+<meta property="og:description" content="Pedidos por WhatsApp, su propia página, la pantalla de la cocina y delivery con motos propias en Riobamba. Pruébelo 14 días gratis.">
+<meta property="og:image" content="https://dewansas.com/inicio/og-v1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="DEWAN: pedidos por WhatsApp y delivery para restaurantes">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DEWAN · Usted solo prepara y cobra. DEWAN hace el resto.">
+<meta name="twitter:description" content="Pedidos por WhatsApp, su propia página, la pantalla de la cocina y delivery con motos propias en Riobamba.">
+<meta name="twitter:image" content="https://dewansas.com/inicio/og-v1.jpg">
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="dewansas — Soluciones Tecnológicas para Empresas">
-    <meta name="twitter:description" content="Integración de WhatsApp Business API, chatbots con IA y automatización empresarial en Ecuador.">
+<link rel="icon" type="image/svg+xml" href="/inicio/icono-v1.svg">
+<link rel="icon" type="image/png" sizes="512x512" href="/inicio/icono-512-v1.png">
+<link rel="apple-touch-icon" href="/inicio/icono-180-v1.png">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231a4731'/><text x='50' y='68' font-family='Arial,sans-serif' font-size='60' font-weight='bold' fill='white' text-anchor='middle'>D</text></svg>">
+<link rel="preload" as="image" href="/inicio/pantalla-chat-v1.webp" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap"></noscript>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"Organization","@id":"https://dewansas.com/#org","name":"DEWAN","legalName":"DEWAN S.A.S.","url":"https://dewansas.com/","logo":"https://dewansas.com/inicio/icono-512-v1.png","foundingDate":"2021-06-15","taxID":"0691782530001","email":"dewan.encomiendas@gmail.com","address":{"@type":"PostalAddress","addressLocality":"Riobamba","addressRegion":"Chimborazo","addressCountry":"EC"},"sameAs":["https://www.facebook.com/DeWanRiobamba","https://www.instagram.com/dewanriobamba/"],"contactPoint":[{"@type":"ContactPoint","contactType":"sales","telephone":"+593939647069","availableLanguage":"es","areaServed":"EC"},{"@type":"ContactPoint","contactType":"customer service","telephone":"+593962223600","availableLanguage":"es"}]},
+{"@type":"WebSite","@id":"https://dewansas.com/#web","url":"https://dewansas.com/","name":"DEWAN","inLanguage":"es","publisher":{"@id":"https://dewansas.com/#org"}},
+{"@type":"Service","name":"Pedidos por WhatsApp, página de pedidos y delivery para restaurantes","serviceType":"Pedidos en línea y delivery para restaurantes","provider":{"@id":"https://dewansas.com/#org"},"areaServed":{"@type":"Country","name":"Ecuador"}},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"¿Tengo que cambiar mi número de WhatsApp?","acceptedAnswer":{"@type":"Answer","text":"No. Usamos su mismo número y WhatsApp sigue funcionando en su celular como siempre."}},
+{"@type":"Question","name":"¿Es un robot que va a contestar por mí?","acceptedAnswer":{"@type":"Answer","text":"No reemplaza a nadie. Su equipo sigue atendiendo; lo que hacemos es que su cliente arme el pedido con su carta y le llegue completo a la cocina."}},
+{"@type":"Question","name":"¿Cobran comisión por cada venta?","acceptedAnswer":{"@type":"Answer","text":"No cobramos un porcentaje de sus ventas. Es un valor fijo al mes más un monto pequeño por pedido; se lo explicamos en la videollamada."}},
+{"@type":"Question","name":"No tengo computadora ni impresora, ¿igual me sirve?","acceptedAnswer":{"@type":"Answer","text":"Sí. La pantalla de pedidos funciona en un celular o una tablet. La impresora es opcional."}},
+{"@type":"Question","name":"¿Quién hace la entrega?","acceptedAnswer":{"@type":"Answer","text":"En Riobamba, las motos de DEWAN. En otras ciudades, su propio motorizado, y los pedidos le llegan igual de completos."}},
+{"@type":"Question","name":"¿Cómo me pagan mis clientes?","acceptedAnswer":{"@type":"Answer","text":"En efectivo, por transferencia o con Deuna. Si lo activa, también con tarjeta, y el dinero va directo a su cuenta."}},
+{"@type":"Question","name":"¿Puedo cambiar precios o platos cuando quiera?","acceptedAnswer":{"@type":"Answer","text":"Sí, sin límite. Nos escribe por WhatsApp y lo cambiamos el mismo día."}},
+{"@type":"Question","name":"¿Emiten factura electrónica?","acceptedAnswer":{"@type":"Answer","text":"Sí, si lo activa: la factura sale sola y autorizada por el SRI cuando se entrega el pedido. Necesita su firma electrónica."}},
+{"@type":"Question","name":"¿En qué ciudades trabajan?","acceptedAnswer":{"@type":"Answer","text":"Instalamos en todo Ecuador. Las motos de DEWAN están en Riobamba. ¿Tiene un restaurante en Estados Unidos? Visite dewansas.com/us."}},
+{"@type":"Question","name":"¿Hay contrato de permanencia?","acceptedAnswer":{"@type":"Answer","text":"No. Puede dejarlo cuando quiera."}}
+]}
+]}
+</script>
 
-    <link rel="stylesheet" href="css/styles.css">
+<style>
+:root{
+  --brasa:#E8431A;--brasa-osc:#CF3A12;--brasa-prof:#B5320A;--brasa-suave:#FDEDE6;
+  --carbon:#1B1B1B;--texto:#3D3935;--texto-2:#5B5550;--gris:#6E6A66;
+  --borde:#ECE5DF;--crema:#F8F3EE;--blanco:#FFFFFF;--verde:#1F9D55;
+  --ancho:1180px;
+  --fuente:Nunito,"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --sombra:0 1px 2px rgba(27,27,27,.05),0 14px 34px -16px rgba(27,27,27,.18);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;font-family:var(--fuente);font-size:17px;line-height:1.55;color:var(--texto);background:var(--blanco);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+h1,h2,h3,h4,p,ul,figure{margin:0}
+ul{padding:0;list-style:none}
+.contenedor{width:100%;max-width:var(--ancho);margin:0 auto;padding:0 24px}
+.saltar{position:absolute;left:-9999px;top:0}
+.saltar:focus{left:16px;top:12px;z-index:100;background:#fff;color:var(--carbon);padding:10px 14px;border-radius:10px;box-shadow:var(--sombra)}
+:focus-visible{outline:3px solid var(--brasa);outline-offset:3px}
+section[id]{scroll-margin-top:84px}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic-lleno{fill:currentColor;stroke:none}
+.caja-ic{width:46px;height:46px;border-radius:14px;background:var(--brasa-suave);color:var(--brasa-prof);display:grid;place-items:center;flex:none}
+.caja-ic .ic{width:24px;height:24px}
+
+/* Aviso para quien busca comida */
+.aviso{background:var(--carbon);color:#F3EEEA;font-size:14.5px;line-height:1.4;text-align:center;padding:9px 0}
+.aviso a{color:#FFC8B4;font-weight:800;text-decoration:none;white-space:nowrap}
+.aviso a:hover{text-decoration:underline}
+
+/* Cabecera */
+.cabecera{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--borde)}
+.cab-fila{display:flex;align-items:center;gap:28px;height:72px}
+.marca{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--carbon)}
+.marca svg{width:40px;height:30px;color:var(--brasa)}
+.marca-nombre{font-weight:900;font-size:23px;letter-spacing:.03em}
+.menu{display:flex;gap:26px;margin-left:auto}
+.menu a{text-decoration:none;font-weight:700;font-size:15.5px;color:#4A4541}
+.menu a:hover{color:var(--brasa-prof)}
+
+/* Botones */
+.boton{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 24px;border-radius:999px;font-family:inherit;font-weight:800;font-size:16.5px;line-height:1.15;text-align:center;text-decoration:none;transition:background-color .15s ease,border-color .15s ease,transform .15s ease}
+.boton:active{transform:translateY(1px)}
+.boton .ic{width:20px;height:20px}
+.boton-brasa{background:var(--brasa-osc);color:#fff;box-shadow:0 10px 22px -12px rgba(207,58,18,.75)}
+.boton-brasa:hover{background:var(--brasa-prof)}
+.boton-claro{background:#fff;color:var(--carbon);border:1.5px solid #D9D1CA}
+.boton-claro:hover{border-color:var(--carbon)}
+.boton-chico{min-height:44px;padding:0 18px;font-size:15px}
+.boton-blanco{background:#fff;color:var(--brasa-prof)}
+.boton-blanco:hover{background:#FFF1EB}
+.boton-borde{border:1.5px solid rgba(255,255,255,.75);color:#fff}
+.boton-borde:hover{background:rgba(255,255,255,.1)}
+
+/* Marcos de celular y tablet (fotos reales de las pantallas) */
+.telefono{margin:0;background:#0F0F10;border:var(--bisel,9px) solid #0F0F10;border-radius:var(--radio-tel,44px);overflow:hidden;box-shadow:0 0 0 1px #3A3A3D,0 26px 46px -20px rgba(45,14,3,.55)}
+.tablet{margin:0;background:#151516;border:var(--bisel-tab,11px) solid #151516;border-radius:var(--radio-tab,28px);overflow:hidden;box-shadow:0 0 0 1px #3A3A3D,0 26px 46px -22px rgba(45,14,3,.5)}
+.telefono img,.tablet img{width:100%;height:auto}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;background:linear-gradient(180deg,#FFF7F2 0%,#FFFFFF 72%)}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center;padding-top:56px;padding-bottom:76px}
+.etiqueta{display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:var(--brasa-prof);background:#fff;border:1px solid #F3D5C8;padding:7px 14px;border-radius:999px}
+.etiqueta i{width:8px;height:8px;border-radius:50%;background:var(--brasa)}
+.hero h1{margin-top:20px;font-size:clamp(2.3rem,1.25rem + 3.3vw,3.75rem);text-wrap:balance;line-height:1.03;font-weight:900;letter-spacing:-.022em;color:var(--carbon)}
+.acento{color:var(--brasa)}
+.hero-sub{margin-top:22px;font-size:clamp(1.06rem,.98rem + .3vw,1.22rem);line-height:1.55;color:#4F4944;max-width:570px}
+.hero-botones{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.hero-nota{margin-top:14px;font-size:14.5px;color:var(--gris);max-width:520px}
+.checks{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:26px}
+.checks li{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15.5px;color:var(--carbon)}
+.checks .ic{width:20px;height:20px;color:var(--verde);stroke-width:2.6}
+.hero-visual{position:relative;width:100%;max-width:560px;aspect-ratio:535/600;justify-self:end}
+.hero-bloque{position:absolute;left:9%;right:0;top:7.5%;bottom:3%;border-radius:44px;background:linear-gradient(155deg,#F57E52 0%,#E8431A 48%,#C3350D 100%);overflow:hidden}
+.hero-bloque::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 50% at 82% 8%,rgba(255,255,255,.22),rgba(255,255,255,0) 70%)}
+.hero-tablet{position:absolute;left:0;top:20%;width:52%;--bisel-tab:10px;--radio-tab:26px}
+.hero-tel{position:absolute;right:7%;top:0;width:50%;--bisel:9px;--radio-tel:44px}
+.chip{position:absolute;z-index:3;display:flex;align-items:center;gap:11px;background:#fff;border-radius:16px;padding:11px 16px 11px 12px;font-size:14px;line-height:1.25;color:var(--carbon);box-shadow:0 14px 32px -14px rgba(27,27,27,.4);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip b{display:block;font-weight:800}
+.chip small{display:block;color:var(--gris);font-size:12.5px;font-weight:600}
+.chip .caja-ic{width:36px;height:36px;border-radius:11px}
+.chip .caja-ic .ic{width:21px;height:21px}
+.chip-1{left:-7%;top:45%}
+.chip-2{right:-2%;bottom:12%}
+.vivo{position:relative;width:11px;height:11px;margin:0 4px 0 6px;border-radius:50%;background:var(--verde);flex:none}
+
+/* Cifras */
+.cifras{border-top:1px solid var(--borde);border-bottom:1px solid var(--borde);background:#fff}
+.cifras-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.cifra{padding:30px 20px;text-align:center}
+.cifra+.cifra{border-left:1px solid var(--borde)}
+.cifra b{display:block;font-size:clamp(2rem,1.45rem + 1.6vw,2.9rem);font-weight:900;line-height:1.05;letter-spacing:-.02em;color:var(--carbon);font-variant-numeric:tabular-nums}
+.cifra span{display:block;margin-top:6px;font-size:15px;font-weight:700;color:var(--gris)}
+
+/* Secciones */
+.seccion{padding:104px 0}
+.crema{background:var(--crema)}
+.cabeza{max-width:780px;margin:0 auto 56px;text-align:center}
+.ojo{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--brasa-prof)}
+.ojo::before{content:"";width:24px;height:3px;border-radius:2px;background:var(--brasa)}
+.titulo{margin-top:14px;font-size:clamp(1.9rem,1.2rem + 2.3vw,2.95rem);text-wrap:balance;line-height:1.08;font-weight:900;letter-spacing:-.018em;color:var(--carbon)}
+.cabeza p{margin-top:16px;font-size:1.13rem;color:var(--texto-2)}
+
+/* Así funciona */
+.pasos{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.paso{background:#fff;border:1px solid var(--borde);border-radius:28px;overflow:hidden;display:flex;flex-direction:column}
+.paso-texto{padding:32px 32px 28px}
+.paso-num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--brasa);color:#fff;font-weight:900;font-size:16px}
+.paso h3{margin-top:16px;font-size:1.45rem;line-height:1.2;font-weight:900;letter-spacing:-.01em;color:var(--carbon)}
+.paso p{margin-top:10px;font-size:16.5px;color:var(--texto-2)}
+.paso-visual{position:relative;margin-top:auto;height:360px;background:linear-gradient(180deg,#FFF4EE 0%,#FBDDCF 100%);overflow:hidden;--bisel:7px;--radio-tel:34px;--bisel-tab:9px;--radio-tab:22px}
+.paso-visual .telefono,.paso-visual .tablet{position:absolute}
+.v-dos .t-atras{left:11%;top:44px;width:40%}
+.v-dos .t-frente{right:11%;top:76px;width:40%}
+.v-tablet .tablet{left:19%;top:40px;width:62%}
+.v-uno .telefono{left:28%;top:40px;width:44%}
+.paso-visual .chip{font-size:13.5px}
+.v-uno .chip{right:5%;top:46%}
+.leyenda{margin-top:18px;text-align:center;font-size:14px;color:var(--gris)}
+.cta-linea{margin-top:36px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px 18px;font-weight:800;font-size:1.08rem;color:var(--carbon)}
+
+/* Qué incluye */
+.incluye{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.pieza{position:relative;background:#fff;border:1px solid var(--borde);border-radius:20px;padding:24px 22px}
+.pieza h3{margin-top:16px;font-size:1.08rem;line-height:1.25;font-weight:800;color:var(--carbon)}
+.pieza p{margin-top:6px;font-size:15.5px;line-height:1.5;color:var(--texto-2)}
+.opc{position:absolute;top:20px;right:18px;padding:3px 8px;border-radius:6px;background:#F2EDE9;color:var(--gris);font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;vertical-align:2px}
+.apps{margin-top:44px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px}
+.apps-titulo{width:100%;text-align:center;font-weight:800;font-size:15px;color:var(--gris);margin-bottom:2px}
+.app{display:inline-flex;align-items:center;gap:12px;min-height:58px;padding:9px 20px 9px 14px;border-radius:14px;background:var(--carbon);color:#fff;text-decoration:none}
+.app:hover{background:#000}
+.app .ic{width:22px;height:22px}
+.app small{display:block;font-size:11.5px;font-weight:700;opacity:.78;line-height:1.2}
+.app b{display:block;font-size:15.5px;font-weight:800;line-height:1.25}
+
+/* Delivery */
+.delivery{display:grid;grid-template-columns:.92fr 1.08fr;gap:64px;align-items:center}
+.foto-moto{position:relative;border-radius:32px;overflow:hidden;aspect-ratio:4/5;background:#d9d3cc;box-shadow:var(--sombra)}
+.foto-moto img{width:100%;height:100%;object-fit:cover}
+.lugar{position:absolute;left:18px;top:18px;display:flex;align-items:center;gap:7px;background:#fff;border-radius:999px;padding:8px 14px 8px 10px;font-weight:800;font-size:14px;color:var(--carbon);box-shadow:0 8px 20px -10px rgba(0,0,0,.4)}
+.lugar .ic{width:18px;height:18px;color:var(--brasa-prof)}
+.seg{position:absolute;left:18px;right:18px;bottom:18px;background:#fff;border-radius:20px;padding:16px 18px;box-shadow:0 16px 34px -16px rgba(0,0,0,.5);font-variant-numeric:tabular-nums}
+.seg-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.seg small{display:block;font-size:12.5px;font-weight:700;color:var(--gris)}
+.seg strong{display:block;font-size:1.45rem;font-weight:900;color:var(--carbon);line-height:1.15}
+.seg .min{background:#F2EDE9;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:900;color:var(--carbon);white-space:nowrap}
+.seg-estado{margin-top:8px;font-weight:900;font-size:1.02rem;color:var(--carbon)}
+.seg-barra{margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.seg-barra i{height:5px;border-radius:3px;background:#EDE7E2}
+.seg-barra i.ok{background:var(--brasa)}
+.seg-barra i.medio{background:#F6B9A4}
+.seg-quien{margin-top:8px;font-size:13.5px;color:var(--texto-2)}
+.delivery .titulo{margin-top:14px}
+.delivery-texto>p{margin-top:16px;font-size:1.1rem;color:var(--texto-2)}
+.lista-ic{margin-top:28px;display:grid;gap:18px}
+.lista-ic li{display:grid;grid-template-columns:46px 1fr;gap:16px;align-items:start}
+.lista-ic b{display:block;color:var(--carbon);font-weight:800;font-size:1.05rem;line-height:1.3}
+.lista-ic p{margin-top:2px;color:var(--texto-2);font-size:15.5px}
+.nota{margin-top:28px;display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--borde);border-radius:18px;padding:18px 20px;font-size:15.5px;color:var(--texto-2)}
+.nota b{color:var(--carbon)}
+.enlace{display:inline-flex;align-items:center;gap:6px;margin-top:22px;font-weight:800;color:var(--brasa-prof);text-decoration:none}
+.enlace:hover{text-decoration:underline}
+.enlace .ic{width:18px;height:18px}
+
+/* Para quienes piden */
+.pedir-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tarjeta{background:#fff;border:1px solid var(--borde);border-radius:24px;padding:30px 28px;display:flex;flex-direction:column;align-items:flex-start}
+.tarjeta h3{margin-top:18px;font-size:1.3rem;line-height:1.2;font-weight:900;color:var(--carbon)}
+.tarjeta p{margin-top:8px;color:var(--texto-2);font-size:16px}
+.tarjeta-pie{margin-top:auto;padding-top:22px;width:100%;display:flex}
+
+/* Historia y confianza */
+.historia{display:grid;grid-template-columns:1.08fr .92fr;gap:56px;align-items:center}
+.cita{margin-top:18px;font-size:clamp(1.22rem,1.02rem + .7vw,1.55rem);line-height:1.5;font-weight:700;color:var(--carbon)}
+.firma{margin-top:24px;display:flex;align-items:center;gap:14px;font-size:15.5px;color:var(--gris)}
+.firma b{display:block;color:var(--carbon);font-weight:900;font-size:1.05rem}
+.firma .sello{width:52px;height:52px;border-radius:50%;background:var(--brasa);display:grid;place-items:center;flex:none}
+.firma .sello svg{width:30px;height:22px;color:#fff}
+.confianza{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.conf{background:#fff;border:1px solid var(--borde);border-radius:20px;padding:22px}
+.conf h3{margin-top:14px;font-size:1.05rem;font-weight:900;color:var(--carbon)}
+.conf p{margin-top:6px;font-size:15px;line-height:1.5;color:var(--texto-2)}
+
+/* Cómo empezar */
+.empezar{border-radius:36px;padding:64px 56px;text-align:center;background:linear-gradient(180deg,#FFF6F1 0%,#FFEDE4 100%);border:1px solid #F5D8CB}
+.empezar .titulo{margin-top:14px}
+.empezar>p{margin-top:14px;font-size:1.12rem;color:var(--texto-2)}
+.pasos-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px;text-align:left}
+.p3{background:#fff;border:1px solid #F1DCD2;border-radius:22px;padding:24px}
+.p3 small{font-size:12.5px;font-weight:900;letter-spacing:.14em;color:var(--brasa-prof)}
+.p3 h3{margin-top:8px;font-size:1.15rem;line-height:1.25;font-weight:900;color:var(--carbon)}
+.p3 p{margin-top:6px;font-size:15.5px;color:var(--texto-2)}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:28px}
+.chips li{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #F1DCD2;border-radius:999px;padding:9px 16px;font-weight:800;font-size:14.5px;color:var(--carbon)}
+.chips .ic{width:18px;height:18px;color:var(--verde);stroke-width:2.6}
+.precio{margin:22px auto 0;max-width:640px;font-size:15px;color:#655D57}
+.empezar .hero-botones{justify-content:center}
+
+/* Preguntas */
+.faq{max-width:860px;margin:0 auto;display:grid;gap:12px}
+.faq details{background:#fff;border:1px solid var(--borde);border-radius:18px;padding:0 22px}
+.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;font-weight:800;font-size:1.06rem;line-height:1.35;color:var(--carbon)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .ic{color:var(--brasa-prof);transition:transform .2s ease}
+.faq details[open] summary .ic{transform:rotate(45deg)}
+.faq details p{padding:0 0 20px;margin-top:-4px;font-size:16px;color:var(--texto-2)}
+.faq details a{color:var(--brasa-prof);font-weight:800}
+
+/* Cierre */
+.final{padding:88px 0 104px}
+.final-caja{position:relative;overflow:hidden;border-radius:40px;padding:76px 48px;text-align:center;color:#fff;background:linear-gradient(150deg,#E9532A 0%,#D93C14 50%,#B5320A 100%)}
+.final-caja h2{position:relative;font-size:clamp(2rem,1.3rem + 2.4vw,3.1rem);line-height:1.06;font-weight:900;letter-spacing:-.02em;color:#fff}
+.final-caja p{position:relative;margin:16px auto 0;max-width:620px;font-size:1.15rem;color:#fff}
+.final-caja .hero-botones{position:relative;justify-content:center}
+.final-caja small{position:relative;display:block;margin-top:20px;font-size:14px;font-weight:700;color:#fff}
+.campana-fondo{position:absolute;right:-70px;bottom:-60px;width:360px;height:264px;color:#fff;opacity:.1}
+
+/* Pie */
+.pie{border-top:1px solid var(--borde);padding:64px 0 32px;background:#fff}
+.pie-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px}
+.pie-grid>div>p{margin-top:14px;max-width:340px;font-size:15.5px;color:var(--texto-2)}
+.pie h4{font-size:13px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--carbon)}
+.pie ul{margin-top:14px;display:grid;gap:10px}
+.pie ul a{text-decoration:none;font-size:15.5px;font-weight:600;color:var(--texto-2)}
+.pie ul a:hover{color:var(--brasa-prof)}
+.redes{display:flex;gap:10px;margin-top:18px}
+.redes a{width:44px;height:44px;border-radius:12px;border:1px solid var(--borde);display:grid;place-items:center;color:var(--carbon)}
+.redes a:hover{border-color:var(--carbon)}
+.redes .ic{width:20px;height:20px}
+.pie-base{margin-top:48px;padding-top:24px;border-top:1px solid var(--borde);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 24px;font-size:14px;color:var(--gris)}
+.pie-base a{color:inherit}
+
+/* Movimiento suave: solo si el navegador lo hace por su cuenta (sin JavaScript) */
+@media (prefers-reduced-motion:no-preference){
+  .vivo::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--verde);opacity:0;animation:pulso 2.2s ease-out infinite}
+  .flota{animation:flota 7s ease-in-out infinite}
+  .flota-2{animation:flota 7s ease-in-out -3.5s infinite}
+  @supports (animation-timeline:view()){
+    .aparece{animation:aparece linear both;animation-timeline:view();animation-range:entry 0% entry 60%}
+  }
+}
+@keyframes pulso{0%{transform:scale(.5);opacity:.85}100%{transform:scale(1.6);opacity:0}}
+@keyframes flota{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes aparece{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* Pantallas medianas y celulares */
+@media (max-width:1080px){
+  .incluye{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:960px){
+  .menu{display:none}
+  .cab-fila .boton{margin-left:auto}
+  .hero-grid{grid-template-columns:1fr;gap:36px;padding-top:40px;padding-bottom:56px}
+  .hero-visual{justify-self:center;max-width:470px}
+  .delivery,.historia{grid-template-columns:1fr;gap:40px}
+  .foto-moto{max-width:520px;aspect-ratio:5/5.4;width:100%;margin:0 auto}
+  .pedir-grid{grid-template-columns:1fr}
+  .pasos-3{grid-template-columns:1fr}
+  .pie-grid{grid-template-columns:1fr 1fr}
+  .pie-grid>div:first-child{grid-column:1/-1}
+}
+@media (max-width:860px){
+  .pasos{grid-template-columns:1fr}
+  .incluye{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .cifras-grid{grid-template-columns:1fr 1fr}
+  .cifra:nth-child(3){border-left:0}
+  .cifra:nth-child(n+3){border-top:1px solid var(--borde)}
+}
+@media (max-width:600px){
+  body{font-size:16.5px}
+  .contenedor{padding:0 18px}
+  .cab-fila{height:64px;gap:12px}
+  .marca svg{width:34px;height:25px}
+  .marca-nombre{font-size:21px}
+  .seccion{padding:72px 0}
+  .cabeza{margin-bottom:40px}
+  .hero-botones .boton{width:100%}
+  .hero-bloque{left:6%;border-radius:32px}
+  .hero-tel{--bisel:7px;--radio-tel:34px}
+  .hero-tablet{--bisel-tab:8px;--radio-tab:20px}
+  .chip{font-size:12.5px;padding:9px 12px 9px 9px;gap:9px;border-radius:14px}
+  .chip small{font-size:11.5px}
+  .chip .caja-ic{width:30px;height:30px;border-radius:9px}
+  .chip .caja-ic .ic{width:18px;height:18px}
+  .chip-1{left:0;top:42%}
+  .chip-2{right:0;bottom:9%}
+  .paso-texto{padding:26px 22px 22px}
+  .paso h3{font-size:1.3rem}
+  .paso-visual{height:310px;--bisel:6px;--radio-tel:28px;--bisel-tab:7px;--radio-tab:18px}
+  .v-dos .t-atras{left:5%;top:36px;width:51%}
+  .v-dos .t-frente{right:5%;top:70px;width:51%}
+  .v-tablet .tablet{left:10%;top:34px;width:80%}
+  .v-uno .telefono{left:22%;top:34px;width:56%}
+  .v-uno .chip{right:3%;top:50%}
+  .incluye{grid-template-columns:1fr}
+  .pieza{display:grid;grid-template-columns:46px 1fr;column-gap:16px;padding:18px}
+  .pieza .caja-ic{grid-row:span 2}
+  .pieza h3{margin-top:0;align-self:end}
+  .opc{position:static;display:inline-block;margin-left:6px;vertical-align:2px}
+  .app{width:100%}
+  .confianza{grid-template-columns:1fr}
+  .empezar{padding:44px 20px;border-radius:28px}
+  .final{padding:56px 0 72px}
+  .final-caja{padding:52px 22px;border-radius:30px}
+  .final-caja .boton{width:100%}
+  .pie-grid{grid-template-columns:1fr}
+  .tarjeta{padding:26px 22px}
+  .chips li{border-radius:14px;text-align:left}
+  .tarjeta .boton{width:100%}
+}
+</style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-        <div class="container nav-container">
-            <a href="#" class="nav-logo">
-                <svg class="logo-icon" viewBox="0 0 40 40" width="40" height="40">
-                    <rect width="40" height="40" rx="8" fill="#1a4731"/>
-                    <text x="20" y="28" font-family="'Plus Jakarta Sans',sans-serif" font-size="24" font-weight="800" fill="white" text-anchor="middle">D</text>
-                </svg>
-                <span>dewansas</span>
-            </a>
-            <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#servicios">Servicios</a></li>
-                <li><a href="#nosotros">Nosotros</a></li>
-                <li><a href="#proceso">Proceso</a></li>
-                <li><a href="#contacto" class="nav-cta">Contáctanos</a></li>
-            </ul>
-        </div>
-    </nav>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="campana" viewBox="0 0 626 459"><path fill="currentColor" fill-rule="evenodd" d="M 307.00,1.00 C 307.00,1.00 317.58,0.75 322.50,2.00 C 327.42,3.25 332.42,5.58 336.50,8.50 C 340.58,11.42 344.42,15.75 347.00,19.50 C 349.58,23.25 351.00,26.25 352.00,31.00 C 353.00,35.75 353.42,43.25 353.00,48.00 C 352.58,52.75 351.08,56.00 349.50,59.50 C 347.92,63.00 346.58,65.75 343.50,69.00 C 340.42,72.25 331.00,79.00 331.00,79.00 C 331.00,79.00 342.50,109.00 342.50,109.00 C 342.50,109.00 361.17,111.58 370.00,113.50 C 378.83,115.42 387.50,117.92 395.50,120.50 C 403.50,123.08 409.17,125.00 418.00,129.00 C 426.83,133.00 439.25,139.17 448.50,144.50 C 457.75,149.83 465.25,154.83 473.50,161.00 C 481.75,167.17 488.50,172.00 498.00,181.50 C 507.50,191.00 521.33,206.00 530.50,218.00 C 539.67,230.00 546.42,241.08 553.00,253.50 C 559.58,265.92 565.50,280.08 570.00,292.50 C 574.50,304.92 577.42,315.08 580.00,328.00 C 582.58,340.92 584.67,358.00 585.50,370.00 C 586.33,382.00 585.00,400.00 585.00,400.00 C 585.00,400.00 554.67,393.92 527.50,390.00 C 500.33,386.08 451.50,379.58 422.00,376.50 C 392.50,373.42 375.33,372.33 350.50,371.50 C 325.67,370.67 295.75,370.92 273.00,371.50 C 250.25,372.08 253.08,370.42 214.00,375.00 C 174.92,379.58 38.50,399.00 38.50,399.00 C 38.50,399.00 38.58,365.17 40.50,349.50 C 42.42,333.83 45.83,319.08 50.00,305.00 C 54.17,290.92 58.92,278.50 65.50,265.00 C 72.08,251.50 81.83,235.42 89.50,224.00 C 97.17,212.58 104.83,204.08 111.50,196.50 C 118.17,188.92 123.50,184.00 129.50,178.50 C 135.50,173.00 139.83,169.17 147.50,163.50 C 155.17,157.83 166.67,149.83 175.50,144.50 C 184.33,139.17 192.42,135.25 200.50,131.50 C 208.58,127.75 215.50,124.92 224.00,122.00 C 232.50,119.08 241.92,116.25 251.50,114.00 C 261.08,111.75 281.50,108.50 281.50,108.50 C 281.50,108.50 292.50,78.50 292.50,78.50 C 292.50,78.50 283.67,72.83 280.50,69.50 C 277.33,66.17 275.17,62.33 273.50,58.50 C 271.83,54.67 270.92,50.58 270.50,46.50 C 270.08,42.42 270.25,38.00 271.00,34.00 C 271.75,30.00 272.83,26.33 275.00,22.50 C 277.17,18.67 280.42,14.17 284.00,11.00 C 287.58,7.83 292.67,5.08 296.50,3.50 C 300.33,1.92 307.00,1.50 307.00,1.50 C 307.00,1.50 307.00,1.00 307.00,1.00 Z M 264.50,408.00 C 264.50,408.00 354.00,407.25 396.00,409.00 C 438.00,410.75 489.50,415.92 516.50,418.50 C 543.50,421.08 542.75,421.75 558.00,424.50 C 573.25,427.25 597.08,429.75 608.00,435.00 C 618.92,440.25 620.92,452.25 623.50,456.00 C 626.08,459.75 623.50,457.50 623.50,457.50 C 623.50,457.50 635.75,459.08 618.50,457.50 C 601.25,455.92 547.67,450.17 520.00,448.00 C 492.33,445.83 479.33,445.50 452.50,444.50 C 425.67,443.50 390.92,442.42 359.00,442.00 C 327.08,441.58 301.17,441.17 261.00,442.00 C 220.83,442.83 161.33,444.42 118.00,447.00 C 74.67,449.58 1.00,457.50 1.00,457.50 C 1.00,457.50 6.17,440.75 15.50,435.50 C 24.83,430.25 34.92,429.58 57.00,426.00 C 79.08,422.42 123.50,416.67 148.00,414.00 C 172.50,411.33 184.58,410.92 204.00,410.00 C 223.42,409.08 264.50,408.50 264.50,408.50 C 264.50,408.50 264.50,408.00 264.50,408.00 Z"/></symbol>
+    <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35m-5.42 7.4h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.88 9.88m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89a11.82 11.82 0 0 0-3.48-8.41z"/></symbol>
+    <symbol id="i-fb" viewBox="0 0 24 24"><path fill="currentColor" d="M24 12.07C24 5.44 18.63.07 12 .07S0 5.44 0 12.07c0 5.99 4.39 10.95 10.13 11.85v-8.38H7.08v-3.47h3.05V9.43c0-3.01 1.79-4.67 4.53-4.67 1.31 0 2.69.24 2.69.24v2.95h-1.51c-1.49 0-1.96.93-1.96 1.87v2.25h3.33l-.53 3.47h-2.8v8.38C19.61 23.03 24 18.06 24 12.07z"/></symbol>
+    <symbol id="i-ig" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M6 3.6c0-.8.86-1.3 1.55-.9l12.3 7.4c.67.4.67 1.38 0 1.78L7.55 19.3C6.86 19.7 6 19.2 6 18.4z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></symbol>
+    <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.5 11.6a8.4 8.4 0 0 1-12.3 7.5L3.5 20.5l1.4-4.6a8.4 8.4 0 1 1 15.6-4.3z"/><path d="M8.5 10.5h7M8.5 13.6h4.5"/></symbol>
+    <symbol id="i-web" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M6.8 6.5h.01M9.6 6.5h.01M7 13h6M7 16h4"/></symbol>
+    <symbol id="i-pantalla" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M8.5 20h7M12 16v4M7 8.5h5M7 11.5h3"/></symbol>
+    <symbol id="i-impresora" viewBox="0 0 24 24"><path d="M7 9V3.5h10V9"/><rect x="3" y="9" width="18" height="8" rx="2.2"/><path d="M7 14h10v6.5H7zM17.5 11.8h.01"/></symbol>
+    <symbol id="i-moto" viewBox="0 0 24 24"><circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M8.5 16.5h5.5l2.8-6.5h-3.3"/><path d="M15 6.5h2.4l1.1 10"/><path d="M3.8 11.5h5.6l2.2 5"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.8-6-6.8-11.3a6.8 6.8 0 0 1 13.6 0C18.8 15 12 21 12 21z"/><circle cx="12" cy="9.6" r="2.5"/></symbol>
+    <symbol id="i-factura" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-1.8-3 1.8-3-1.8L6 21z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/></symbol>
+    <symbol id="i-tarjeta" viewBox="0 0 24 24"><rect x="2.8" y="5.5" width="18.4" height="13" rx="2.5"/><path d="M2.8 10h18.4M6.5 15h4"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2.5v2.5H14zM19.5 14v.01M14 19.5h.01M17 17.5v2.5h3v-3"/></symbol>
+    <symbol id="i-clientes" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20c.6-3.5 3.2-5.8 6.2-5.8s5.6 2.3 6.2 5.8"/><path d="M15.5 4.7a3.5 3.5 0 0 1 0 6.6M17.8 14.4c1.9.8 3 2.7 3.4 5.6"/></symbol>
+    <symbol id="i-editar" viewBox="0 0 24 24"><path d="M4 20h4.2L19.4 8.8a2.1 2.1 0 0 0 0-3L18.2 4.6a2.1 2.1 0 0 0-3 0L4 15.8z"/><path d="M13.6 6.2l4.2 4.2"/></symbol>
+    <symbol id="i-soporte" viewBox="0 0 24 24"><path d="M4.5 14v-2a7.5 7.5 0 0 1 15 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.6"/><rect x="17" y="13" width="4" height="6" rx="1.6"/><path d="M19 19c0 1.4-1.5 2.3-4 2.3h-2"/></symbol>
+    <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.8"/><path d="M12 7.3V12l3.2 2"/></symbol>
+    <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3l7 2.8v5.6c0 4.4-2.9 7.9-7 9.6-4.1-1.7-7-5.2-7-9.6V5.8z"/><path d="M9 12l2.1 2.1L15.2 10"/></symbol>
+    <symbol id="i-edificio" viewBox="0 0 24 24"><path d="M4 21V5.2L12 3v18M12 8.3l8 2.2V21M2.8 21h18.4"/><path d="M7.5 8.5h1.5M7.5 12h1.5M7.5 15.5h1.5M15 13h1.5M15 16.5h1.5"/></symbol>
+    <symbol id="i-plato" viewBox="0 0 24 24"><path d="M7 3v7.5M5 3v4.5a2 2 0 0 0 4 0V3M7 10.5V21M17.5 3c-2 1-3.2 3.6-3.2 7.4h3.2V21"/></symbol>
+    <symbol id="i-celular" viewBox="0 0 24 24"><rect x="6.8" y="2.5" width="10.4" height="19" rx="2.6"/><path d="M10.8 18.6h2.4"/></symbol>
+    <symbol id="i-paquete" viewBox="0 0 24 24"><path d="M20.5 7.8L12 3.3 3.5 7.8v8.4l8.5 4.5 8.5-4.5z"/><path d="M3.5 7.8L12 12.3l8.5-4.5M12 12.3v8.4M7.8 5.6l8.5 4.5"/></symbol>
+    <symbol id="i-regalo" viewBox="0 0 24 24"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v8h14v-8M12 8.5v12M12 8.5c-1.5-3.8-5.5-4-5.5-1.6 0 1.6 3 1.6 5.5 1.6zM12 8.5c1.5-3.8 5.5-4 5.5-1.6 0 1.6-3 1.6-5.5 1.6z"/></symbol>
+  </defs>
+</svg>
 
-    <!-- Hero Section -->
-    <section class="hero" id="hero">
-        <div class="hero-bg">
-            <div class="hero-pattern"></div>
-            <div class="hero-gradient"></div>
-        </div>
-        <div class="container hero-content">
-            <div class="hero-badge animate-on-scroll">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-                Tecnología empresarial desde Ecuador
-            </div>
-            <h1 class="hero-title animate-on-scroll">
-                Soluciones tecnológicas para empresas que quieren <span class="text-gradient">crecer</span>
-            </h1>
-            <p class="hero-subtitle animate-on-scroll">
-                Automatización inteligente, WhatsApp Business API y logística optimizada.
-                Transformamos la manera en que tu empresa se comunica, opera y entrega valor a tus clientes.
-            </p>
-            <div class="hero-actions animate-on-scroll">
-                <a href="#contacto" class="btn btn-primary btn-lg">
-                    Contáctanos
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
-                <a href="#servicios" class="btn btn-outline btn-lg">
-                    Conoce nuestros servicios
-                </a>
-            </div>
-            <div class="hero-stats animate-on-scroll">
-                <div class="stat">
-                    <span class="stat-number">API</span>
-                    <span class="stat-label">WhatsApp Oficial</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat">
-                    <span class="stat-number">24/7</span>
-                    <span class="stat-label">Soporte técnico</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat">
-                    <span class="stat-number">100%</span>
-                    <span class="stat-label">Automatizado</span>
-                </div>
-            </div>
-        </div>
-        <div class="hero-scroll-indicator">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 5v14M5 12l7 7 7-7"/>
-            </svg>
-        </div>
-    </section>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
 
-    <!-- Services Section -->
-    <section class="services" id="servicios">
-        <div class="container">
-            <div class="section-header animate-on-scroll">
-                <span class="section-tag">Nuestros Servicios</span>
-                <h2 class="section-title">Tecnología que impulsa <br>tu negocio</h2>
-                <p class="section-subtitle">Ofrecemos soluciones integrales que conectan, automatizan y optimizan cada punto de contacto con tus clientes.</p>
-            </div>
-            <div class="services-grid">
-                <!-- Service 1 -->
-                <div class="service-card animate-on-scroll">
-                    <div class="service-icon service-icon-whatsapp">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
-                        </svg>
-                    </div>
-                    <h3>Integración WhatsApp Business API</h3>
-                    <p>Conectamos tu negocio con la API oficial de WhatsApp para automatizar comunicación, atención al cliente y notificaciones a escala. Envía mensajes masivos, gestiona conversaciones y ofrece soporte directo desde la plataforma más usada del mundo.</p>
-                    <div class="service-tags">
-                        <span>API Oficial</span>
-                        <span>Mensajería masiva</span>
-                        <span>Notificaciones</span>
-                    </div>
-                </div>
-                <!-- Service 2 -->
-                <div class="service-card animate-on-scroll">
-                    <div class="service-icon service-icon-ai">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M12 2a4 4 0 014 4v1a1 1 0 001 1h1a4 4 0 010 8h-1a1 1 0 00-1 1v1a4 4 0 01-8 0v-1a1 1 0 00-1-1H6a4 4 0 010-8h1a1 1 0 001-1V6a4 4 0 014-4z"/>
-                            <circle cx="12" cy="12" r="2"/>
-                        </svg>
-                    </div>
-                    <h3>Chatbots e Inteligencia Artificial</h3>
-                    <p>Desarrollamos asistentes virtuales inteligentes que atienden a tus clientes 24/7, responden preguntas frecuentes y gestionan pedidos automáticamente. Nuestros chatbots aprenden y mejoran continuamente para brindar la mejor experiencia.</p>
-                    <div class="service-tags">
-                        <span>IA Conversacional</span>
-                        <span>Atención 24/7</span>
-                        <span>Auto-aprendizaje</span>
-                    </div>
-                </div>
-                <!-- Service 3 -->
-                <div class="service-card animate-on-scroll">
-                    <div class="service-icon service-icon-auto">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                    </div>
-                    <h3>Automatización de Procesos</h3>
-                    <p>Diseñamos flujos de trabajo automatizados que conectan WhatsApp con tu CRM, ERP y herramientas de negocio para eliminar tareas repetitivas. Desde la captación de leads hasta el seguimiento post-venta, todo funciona de forma automática.</p>
-                    <div class="service-tags">
-                        <span>n8n</span>
-                        <span>CRM/ERP</span>
-                        <span>Workflows</span>
-                    </div>
-                </div>
-                <!-- Service 4 -->
-                <div class="service-card animate-on-scroll">
-                    <div class="service-icon service-icon-logistics">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M16 3h5v5M4 20L20.2 3.8M21 16v5h-5M15 15l5.1 5.1M4 4l5 5"/>
-                            <rect x="2" y="9" width="6" height="6" rx="1"/>
-                        </svg>
-                    </div>
-                    <h3>Soluciones de Logística y Delivery</h3>
-                    <p>Optimizamos la gestión de entregas, encomiendas y compras con tecnología que conecta a clientes, operadores y sistemas en tiempo real. Rastreo, notificaciones automáticas y coordinación de última milla integrados en una sola plataforma.</p>
-                    <div class="service-tags">
-                        <span>Tracking</span>
-                        <span>Última milla</span>
-                        <span>Tiempo real</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="aviso">
+  <div class="contenedor">¿Busca comida a domicilio en Riobamba? <a href="https://pedir.dewansas.com/?o=dewansas">Pida en DEWAN&nbsp;→</a></div>
+</div>
 
-    <!-- Why Us Section -->
-    <section class="why-us" id="nosotros">
-        <div class="container">
-            <div class="why-us-layout">
-                <div class="why-us-content animate-on-scroll">
-                    <span class="section-tag">¿Por qué dewansas?</span>
-                    <h2 class="section-title">Tu socio tecnológico <br>de confianza</h2>
-                    <p class="section-subtitle">Combinamos experiencia técnica, conocimiento local del mercado ecuatoriano y las mejores prácticas internacionales para entregar soluciones que realmente funcionan.</p>
-                </div>
-                <div class="why-us-grid">
-                    <div class="why-card animate-on-scroll">
-                        <div class="why-card-number">01</div>
-                        <h4>Socios de Tecnología WhatsApp Business</h4>
-                        <p>Como proveedores de tecnología registrados, tenemos acceso directo a la API oficial de WhatsApp Business, garantizando confiabilidad, seguridad y cumplimiento de las políticas de Meta.</p>
-                    </div>
-                    <div class="why-card animate-on-scroll">
-                        <div class="why-card-number">02</div>
-                        <h4>Experiencia en Automatización Empresarial</h4>
-                        <p>Contamos con amplia experiencia implementando soluciones de automatización para empresas en Ecuador y Latinoamérica, adaptándonos a las necesidades específicas de cada industria.</p>
-                    </div>
-                    <div class="why-card animate-on-scroll">
-                        <div class="why-card-number">03</div>
-                        <h4>Soporte Técnico Dedicado</h4>
-                        <p>Nuestro equipo de ingenieros está disponible para garantizar que tus sistemas funcionen sin interrupciones. Monitoreo constante, actualizaciones proactivas y resolución rápida de incidentes.</p>
-                    </div>
-                    <div class="why-card animate-on-scroll">
-                        <div class="why-card-number">04</div>
-                        <h4>Integración con Plataformas Existentes</h4>
-                        <p>Conectamos WhatsApp con herramientas como n8n, Salesforce, HubSpot, sistemas ERP y cualquier plataforma que tu empresa ya utilice. Sin fricciones, sin migrar — solo conectar y potenciar.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Process Section -->
-    <section class="process" id="proceso">
-        <div class="container">
-            <div class="section-header animate-on-scroll">
-                <span class="section-tag">Nuestro Proceso</span>
-                <h2 class="section-title">Cómo trabajamos</h2>
-                <p class="section-subtitle">Un proceso claro y transparente desde el primer contacto hasta la implementación exitosa.</p>
-            </div>
-            <div class="process-steps">
-                <div class="process-step animate-on-scroll">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Análisis de tu negocio</h3>
-                        <p>Estudiamos tus procesos actuales, identificamos oportunidades de mejora y definimos los objetivos de la implementación. Escuchamos antes de proponer.</p>
-                    </div>
-                    <div class="step-visual">
-                        <svg viewBox="0 0 120 120" width="120" height="120">
-                            <circle cx="60" cy="60" r="50" fill="none" stroke="#25D366" stroke-width="1" opacity="0.3"/>
-                            <circle cx="60" cy="60" r="35" fill="none" stroke="#25D366" stroke-width="1" opacity="0.2"/>
-                            <path d="M50 60 L55 65 L70 50" stroke="#25D366" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                            <circle cx="60" cy="40" r="2" fill="#25D366" opacity="0.5"/>
-                            <circle cx="80" cy="60" r="2" fill="#25D366" opacity="0.5"/>
-                            <circle cx="60" cy="80" r="2" fill="#25D366" opacity="0.5"/>
-                            <circle cx="40" cy="60" r="2" fill="#25D366" opacity="0.5"/>
-                        </svg>
-                    </div>
-                </div>
-                <div class="process-connector animate-on-scroll">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="1.5" opacity="0.4">
-                        <path d="M12 5v14M5 12l7 7 7-7"/>
-                    </svg>
-                </div>
-                <div class="process-step animate-on-scroll">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Diseñamos la solución</h3>
-                        <p>Creamos una arquitectura personalizada: flujos de automatización, integraciones API, diseño de chatbots y configuración de plataformas. Todo a la medida de tu operación.</p>
-                    </div>
-                    <div class="step-visual">
-                        <svg viewBox="0 0 120 120" width="120" height="120">
-                            <rect x="25" y="30" width="30" height="25" rx="4" fill="none" stroke="#25D366" stroke-width="1.5" opacity="0.5"/>
-                            <rect x="65" y="30" width="30" height="25" rx="4" fill="none" stroke="#25D366" stroke-width="1.5" opacity="0.5"/>
-                            <rect x="45" y="65" width="30" height="25" rx="4" fill="none" stroke="#25D366" stroke-width="1.5" opacity="0.5"/>
-                            <line x1="55" y1="42" x2="65" y2="42" stroke="#25D366" stroke-width="1" opacity="0.3"/>
-                            <line x1="55" y1="55" x2="60" y2="65" stroke="#25D366" stroke-width="1" opacity="0.3"/>
-                            <line x1="65" y1="55" x2="60" y2="65" stroke="#25D366" stroke-width="1" opacity="0.3"/>
-                        </svg>
-                    </div>
-                </div>
-                <div class="process-connector animate-on-scroll">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="1.5" opacity="0.4">
-                        <path d="M12 5v14M5 12l7 7 7-7"/>
-                    </svg>
-                </div>
-                <div class="process-step animate-on-scroll">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Implementación y soporte continuo</h3>
-                        <p>Desplegamos la solución, capacitamos a tu equipo y nos quedamos contigo. Monitoreo activo, optimización constante y soporte técnico dedicado para que todo funcione perfecto.</p>
-                    </div>
-                    <div class="step-visual">
-                        <svg viewBox="0 0 120 120" width="120" height="120">
-                            <circle cx="60" cy="60" r="25" fill="none" stroke="#25D366" stroke-width="1.5" opacity="0.5"/>
-                            <path d="M60 35 L60 60 L78 60" stroke="#25D366" stroke-width="2" fill="none" stroke-linecap="round"/>
-                            <circle cx="60" cy="60" r="3" fill="#25D366" opacity="0.6"/>
-                            <path d="M60 20 L60 25" stroke="#25D366" stroke-width="1.5" opacity="0.3"/>
-                            <path d="M60 95 L60 100" stroke="#25D366" stroke-width="1.5" opacity="0.3"/>
-                            <path d="M20 60 L25 60" stroke="#25D366" stroke-width="1.5" opacity="0.3"/>
-                            <path d="M95 60 L100 60" stroke="#25D366" stroke-width="1.5" opacity="0.3"/>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="contact" id="contacto">
-        <div class="container">
-            <div class="contact-layout">
-                <div class="contact-info animate-on-scroll">
-                    <span class="section-tag">Contacto</span>
-                    <h2 class="section-title">Hablemos de tu proyecto</h2>
-                    <p>Cuéntanos qué necesita tu negocio y diseñaremos la solución tecnológica ideal. Sin compromiso, sin complicaciones.</p>
-
-                    <div class="contact-details">
-                        <div class="contact-item">
-                            <div class="contact-item-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                                    <polyline points="22,6 12,13 2,6"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <strong>Email</strong>
-                                <a href="mailto:dewan.encomiendas@gmail.com">dewan.encomiendas@gmail.com</a>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-item-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                                    <circle cx="12" cy="10" r="3"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <strong>Ubicación</strong>
-                                <span>Ecuador</span>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-item-icon whatsapp-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <strong>WhatsApp</strong>
-                                <a href="https://wa.me/593999999999" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="contact-form-wrapper animate-on-scroll">
-                    <form class="contact-form" id="contactForm" action="#" method="POST">
-                        <div class="form-group">
-                            <label for="name">Nombre completo</label>
-                            <input type="text" id="name" name="name" required placeholder="Tu nombre">
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" name="email" required placeholder="tu@email.com">
-                            </div>
-                            <div class="form-group">
-                                <label for="phone">Teléfono</label>
-                                <input type="tel" id="phone" name="phone" placeholder="+593 999 999 999">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Mensaje</label>
-                            <textarea id="message" name="message" rows="4" required placeholder="Cuéntanos sobre tu proyecto o necesidad..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-lg btn-full">
-                            Enviar mensaje
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-                            </svg>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-top">
-                <div class="footer-brand">
-                    <a href="#" class="nav-logo">
-                        <svg class="logo-icon" viewBox="0 0 40 40" width="36" height="36">
-                            <rect width="40" height="40" rx="8" fill="#1a4731"/>
-                            <text x="20" y="28" font-family="'Plus Jakarta Sans',sans-serif" font-size="24" font-weight="800" fill="white" text-anchor="middle">D</text>
-                        </svg>
-                        <span>dewansas</span>
-                    </a>
-                    <p>Soluciones tecnológicas para empresas que quieren crecer. WhatsApp Business API, automatización e inteligencia artificial desde Ecuador.</p>
-                </div>
-                <div class="footer-links">
-                    <div class="footer-col">
-                        <h4>Empresa</h4>
-                        <ul>
-                            <li><a href="#servicios">Servicios</a></li>
-                            <li><a href="#nosotros">Nosotros</a></li>
-                            <li><a href="#proceso">Proceso</a></li>
-                            <li><a href="#contacto">Contacto</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Legal</h4>
-                        <ul>
-                            <li><a href="privacy.html">Política de Privacidad</a></li>
-                            <li><a href="terms.html">Términos de Servicio</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Síguenos</h4>
-                        <div class="social-links">
-                            <a href="#" aria-label="LinkedIn" class="social-link">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                                </svg>
-                            </a>
-                            <a href="#" aria-label="Twitter" class="social-link">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                </svg>
-                            </a>
-                            <a href="#" aria-label="Facebook" class="social-link">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024–2026 dewansas. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- WhatsApp Float Button -->
-    <a href="https://wa.me/593999999999" target="_blank" rel="noopener" class="whatsapp-float" aria-label="Contactar por WhatsApp">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-        </svg>
+<header class="cabecera">
+  <div class="contenedor cab-fila">
+    <a class="marca" href="/" aria-label="DEWAN, ir al inicio">
+      <svg viewBox="0 0 626 459" aria-hidden="true"><use href="#campana"/></svg>
+      <span class="marca-nombre">DEWAN</span>
     </a>
+    <nav class="menu" aria-label="Secciones de la página">
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#incluye">Qué incluye</a>
+      <a href="#delivery">Delivery</a>
+      <a href="#preguntas">Preguntas</a>
+    </nav>
+    <a class="boton boton-brasa boton-chico" href="https://wa.me/593939647069?text=demo">Probar la demo</a>
+  </div>
+</header>
 
-    <script src="js/main.js"></script>
+<main id="contenido">
+
+<section class="hero">
+  <div class="contenedor hero-grid">
+    <div class="hero-texto">
+      <p class="etiqueta"><i></i>Para restaurantes de Ecuador</p>
+      <h1>Usted solo prepara y cobra. <span class="acento">DEWAN hace el resto.</span></h1>
+      <p class="hero-sub">Sus clientes piden con fotos en su mismo WhatsApp o en su propia página. El pedido le llega completo a la cocina y, en Riobamba, nuestras motos lo entregan mientras su cliente las sigue en vivo.</p>
+      <div class="hero-botones">
+        <a class="boton boton-brasa" href="https://wa.me/593939647069?text=demo"><svg class="ic ic-lleno" aria-hidden="true"><use href="#i-wa"/></svg>Probar la demo en WhatsApp</a>
+        <a class="boton boton-claro" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20agendar%20una%20videollamada%20de%2015%20minutos.">Agendar una videollamada</a>
+      </div>
+      <p class="hero-nota">Escriba «demo» y haga un pedido de prueba como si fuera su cliente. Toma un minuto.</p>
+      <ul class="checks">
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Su mismo número de WhatsApp</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Sin comisión sobre sus ventas</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>14 días de prueba gratis</li>
+      </ul>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-bloque"></div>
+      <figure class="tablet hero-tablet"><img src="/inicio/pantalla-panel-v1.webp" width="860" height="1304" alt="Pantalla de pedidos de la cocina con un pedido a domicilio: cliente, dirección, platos con extras, total a cobrar y la comanda impresa." decoding="async"></figure>
+      <figure class="telefono hero-tel"><img src="/inicio/pantalla-chat-v1.webp" width="640" height="1339" alt="Chat de WhatsApp de un restaurante de muestra: el cliente escribe «Hola, quiero pedir», recibe la bienvenida con el botón «Hacer mi pedido» y la confirmación con el detalle y el total." fetchpriority="high" decoding="async"></figure>
+      <div class="chip chip-1 flota" aria-hidden="true"><span class="vivo"></span><span><b>Nuevo pedido · $26,50</b><small>2 Doble Smash · Alitas · Limonada</small></span></div>
+      <div class="chip chip-2 flota-2" aria-hidden="true"><span class="caja-ic"><svg class="ic"><use href="#i-moto"/></svg></span><span><b>Va en camino</b><small>Llega en 6 min · Carlos lo lleva</small></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="cifras" aria-label="DEWAN en números">
+  <div class="contenedor cifras-grid">
+    <div class="cifra"><b>+5.000</b><span>pedidos ya se hicieron así</span></div>
+    <div class="cifra"><b>+150</b><span>restaurantes para pedir en la app</span></div>
+    <div class="cifra"><b>50</b><span>motorizados en Riobamba</span></div>
+    <div class="cifra"><b>+100</b><span>entregas cada día</span></div>
+  </div>
+</section>
+
+<section class="seccion crema" id="como-funciona">
+  <div class="contenedor">
+    <div class="cabeza aparece">
+      <span class="ojo">Así funciona</span>
+      <h2 class="titulo">Del primer «hola» a la puerta de su cliente</h2>
+      <p>Su equipo sigue atendiendo como siempre. Lo que cambia es que cada pedido llega completo, sin errores y sin que se pierda ninguno.</p>
+    </div>
+
+    <div class="pasos">
+      <article class="paso">
+        <div class="paso-texto">
+          <span class="paso-num">1</span>
+          <h3>Su cliente le pide por WhatsApp</h3>
+          <p>Escribe a su número de siempre y recibe la bienvenida con su marca. Elige con fotos, cantidades y extras sin salir del chat.</p>
+        </div>
+        <div class="paso-visual v-dos">
+          <figure class="telefono t-atras"><img src="/inicio/pantalla-formulario-v1.webp" width="640" height="1339" alt="Formulario dentro de WhatsApp para elegir platos con foto, precio y cantidad." loading="lazy" decoding="async"></figure>
+          <figure class="telefono t-frente"><img src="/inicio/pantalla-chat-v1.webp" width="640" height="1339" alt="" loading="lazy" decoding="async"></figure>
+        </div>
+      </article>
+
+      <article class="paso">
+        <div class="paso-texto">
+          <span class="paso-num">2</span>
+          <h3>O desde su propia página web</h3>
+          <p>Su carta con fotos en un link para Instagram, Facebook o un QR. Si lo activa, su cliente paga con tarjeta o Deuna antes de que usted cocine.</p>
+        </div>
+        <div class="paso-visual v-dos">
+          <figure class="telefono t-atras"><img src="/inicio/pantalla-web-v1.webp" width="640" height="1339" alt="Página de pedidos de un restaurante de muestra con su logo, horario, formas de entrega y platos destacados con fotos." loading="lazy" decoding="async"></figure>
+          <figure class="telefono t-frente"><img src="/inicio/pantalla-pago-v1.webp" width="640" height="1339" alt="Pantalla de pago seguro con tarjeta del pedido, con el total y el botón Pagar." loading="lazy" decoding="async"></figure>
+        </div>
+      </article>
+
+      <article class="paso">
+        <div class="paso-texto">
+          <span class="paso-num">3</span>
+          <h3>Le llega completo a la cocina</h3>
+          <p>Platos, extras, dirección y forma de pago en una sola pantalla. Lo acepta con un toque y la comanda sale en la impresora.</p>
+        </div>
+        <div class="paso-visual v-tablet">
+          <figure class="tablet"><img src="/inicio/pantalla-panel-v1.webp" width="860" height="1304" alt="" loading="lazy" decoding="async"></figure>
+        </div>
+      </article>
+
+      <article class="paso">
+        <div class="paso-texto">
+          <span class="paso-num">4</span>
+          <h3>Su cliente sigue la moto en vivo</h3>
+          <p>Recibe un link con la hora estimada y el mapa. Ya nadie le llama para preguntar «¿cuánto falta?».</p>
+        </div>
+        <div class="paso-visual v-uno">
+          <figure class="telefono"><img src="/inicio/pantalla-seguimiento-v1.webp" width="640" height="1324" alt="Seguimiento del pedido en vivo: mapa con la moto, hora estimada de entrega y los pasos recibido, preparando, en camino y entregado." loading="lazy" decoding="async"></figure>
+          <div class="chip" aria-hidden="true"><span class="vivo"></span><span><b>En camino</b><small>Llega 13:16 – 13:21</small></span></div>
+        </div>
+      </article>
+    </div>
+
+    <p class="leyenda">Norte 12 es un restaurante de muestra: así se vería con el nombre, las fotos y la carta de su local.</p>
+    <div class="cta-linea">
+      <span>¿Quiere verlo con su carta?</span>
+      <a class="boton boton-brasa" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20verlo%20con%20mi%20carta%20en%20una%20videollamada.">Agendar videollamada de 15 min<svg class="ic" aria-hidden="true"><use href="#i-flecha"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<section class="seccion" id="incluye">
+  <div class="contenedor">
+    <div class="cabeza aparece">
+      <span class="ojo">Todo incluido</span>
+      <h2 class="titulo">Todo lo que necesita para vender a domicilio, en un solo lugar</h2>
+      <p>Nosotros lo instalamos, capacitamos a su equipo y le acompañamos por WhatsApp.</p>
+    </div>
+
+    <ul class="incluye">
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg></span><h3>Pedidos por WhatsApp</h3><p>En su mismo número. WhatsApp sigue en su celular como siempre.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-web"/></svg></span><h3>Su página de pedidos</h3><p>Su carta con fotos en un link para redes, estados o un QR.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-pantalla"/></svg></span><h3>Pantalla de pedidos</h3><p>En la computadora, la tablet o el celular de la caja. Avisa cuando entra un pedido.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-impresora"/></svg></span><h3>Comanda impresa <span class="opc">Opcional</span></h3><p>Sale sola en la impresora de la cocina, con notas y extras.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-moto"/></svg></span><h3>Motos DEWAN</h3><p>En Riobamba retiramos en su local y entregamos a su cliente.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg></span><h3>Seguimiento en vivo</h3><p>Su cliente ve en el mapa por dónde va su pedido.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-factura"/></svg></span><h3>Factura electrónica <span class="opc">Opcional</span></h3><p>Autorizada por el SRI. Sale sola al entregar el pedido.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-tarjeta"/></svg></span><h3>Cobro en línea <span class="opc">Opcional</span></h3><p>Tarjeta o Deuna, con el dinero directo a su cuenta.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-qr"/></svg></span><h3>Pedidos desde la mesa <span class="opc">Opcional</span></h3><p>Un QR en cada mesa y el pedido llega directo a la cocina.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-clientes"/></svg></span><h3>Sus clientes, siempre suyos</h3><p>Cada pedido queda guardado con el nombre y el número de quien compró.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-editar"/></svg></span><h3>Cambios sin límite</h3><p>Precios, platos o fotos: nos escribe y lo cambiamos el mismo día.</p></li>
+      <li class="pieza aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-soporte"/></svg></span><h3>Personas que le responden</h3><p>Soporte por WhatsApp el mismo día, con alguien de DEWAN.</p></li>
+    </ul>
+
+    <div class="apps">
+      <p class="apps-titulo">Nuestras apps en Google Play</p>
+      <a class="app" href="https://play.google.com/store/apps/details?id=com.dewan.cliente"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span><small>Para pedir comida</small><b>DEWAN</b></span></a>
+      <a class="app" href="https://play.google.com/store/apps/details?id=com.dewan.restaurante"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span><small>Para su local</small><b>DEWAN Restaurante</b></span></a>
+      <a class="app" href="https://play.google.com/store/apps/details?id=com.dewan.motorizados"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg><span><small>Para repartidores</small><b>DEWAN Motorizados</b></span></a>
+    </div>
+  </div>
+</section>
+
+<section class="seccion crema" id="delivery">
+  <div class="contenedor delivery">
+    <div class="foto-moto">
+      <img src="/inicio/foto-moto-riobamba-v1.webp" width="880" height="1100" alt="Una calle de Riobamba vista desde la moto de un repartidor de DEWAN." loading="lazy" decoding="async">
+      <span class="lugar"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>Riobamba, Ecuador</span>
+      <div class="seg" aria-hidden="true">
+        <div class="seg-top"><span><small>Hora estimada de entrega</small><strong>13:16 – 13:21</strong></span><span class="min">6 min</span></div>
+        <p class="seg-estado">Su pedido va en camino</p>
+        <div class="seg-barra"><i class="ok"></i><i class="ok"></i><i class="medio"></i><i></i></div>
+        <p class="seg-quien">Carlos lo lleva en moto. Puede ver por dónde va en el mapa.</p>
+      </div>
+    </div>
+
+    <div class="delivery-texto">
+      <span class="ojo">Delivery DEWAN</span>
+      <h2 class="titulo">En Riobamba, las motos son nuestras</h2>
+      <p>No dependa de conseguir un motorizado a última hora. Los nuestros retiran en su local y entregan, mientras su cliente sigue la moto en vivo y usted ve cada paso en su pantalla.</p>
+      <ul class="lista-ic">
+        <li><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-moto"/></svg></span><div><b>50 motorizados con la app DEWAN</b><p>Cada uno recibe el pedido en su celular, con la ruta y el punto de entrega.</p></div></li>
+        <li><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-reloj"/></svg></span><div><b>Más de 100 entregas cada día</b><p>Comida, compras y encomiendas por toda la ciudad.</p></div></li>
+        <li><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-escudo"/></svg></span><div><b>Cada entrega queda registrada</b><p>Quién la llevó, a qué hora salió y a qué hora llegó.</p></div></li>
+      </ul>
+      <p class="nota"><svg class="ic" aria-hidden="true" style="color:var(--brasa-prof);margin-top:2px"><use href="#i-pin"/></svg><span><b>¿Su local está en otra ciudad?</b> Los pedidos le llegan igual de completos y los entrega su propio motorizado.</span></p>
+      <a class="enlace" href="https://play.google.com/store/apps/details?id=com.dewan.motorizados">¿Tiene moto? Trabaje con nosotros<svg class="ic" aria-hidden="true"><use href="#i-flecha"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<section class="seccion" id="pedir">
+  <div class="contenedor">
+    <div class="cabeza aparece">
+      <span class="ojo">Para quienes piden</span>
+      <h2 class="titulo">¿Vive en Riobamba? Pida con DEWAN</h2>
+      <p>Más de 150 restaurantes, compras y encomiendas. Paga al recibir.</p>
+    </div>
+    <div class="pedir-grid">
+      <article class="tarjeta aparece">
+        <span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-plato"/></svg></span>
+        <h3>Comida a domicilio</h3>
+        <p>Elija restaurante y platos, marque su ubicación y siga su pedido en vivo. Sin descargar nada.</p>
+        <div class="tarjeta-pie"><a class="boton boton-brasa" href="https://pedir.dewansas.com/?o=dewansas">Pedir ahora<svg class="ic" aria-hidden="true"><use href="#i-flecha"/></svg></a></div>
+      </article>
+      <article class="tarjeta aparece">
+        <span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-celular"/></svg></span>
+        <h3>App DEWAN para Android</h3>
+        <p>Sus pedidos, sus direcciones y sus sellos de envío gratis en el celular. En iPhone, pida desde la web.</p>
+        <div class="tarjeta-pie"><a class="boton boton-claro" href="https://play.google.com/store/apps/details?id=com.dewan.cliente"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Descargar en Google Play</a></div>
+      </article>
+      <article class="tarjeta aparece">
+        <span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-paquete"/></svg></span>
+        <h3>Compras y encomiendas</h3>
+        <p>Remedios, documentos, llaves o un regalo: si cabe en la mochila, se lo llevamos.</p>
+        <div class="tarjeta-pie"><a class="boton boton-claro" href="https://wa.me/593962223600?text=Hola%20DEWAN%2C%20quiero%20hacer%20una%20compra%20o%20encomienda."><svg class="ic ic-lleno" aria-hidden="true"><use href="#i-wa"/></svg>Escribir al 096 222 3600</a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="seccion crema" id="nosotros">
+  <div class="contenedor historia">
+    <div class="aparece">
+      <span class="ojo">Nuestra historia</span>
+      <p class="cita">«DEWAN empezó repartiendo. Contestábamos a mano cientos de mensajes al día, y un día se nos perdieron 25 pedidos por no responder a tiempo. Ahí entendimos que el problema de un restaurante no es cocinar: es atender todo a la vez. Por eso, todo lo que hoy usan nuestros locales lo probamos primero en la calle, con nuestras propias motos.»</p>
+      <div class="firma">
+        <span class="sello"><svg viewBox="0 0 626 459" aria-hidden="true"><use href="#campana"/></svg></span>
+        <span><b>David Esquivel</b>Fundador de DEWAN</span>
+      </div>
+    </div>
+    <div class="confianza">
+      <div class="conf aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-edificio"/></svg></span><h3>Empresa ecuatoriana</h3><p>DEWAN S.A.S. · RUC 0691782530001. En Riobamba desde 2021.</p></div>
+      <div class="conf aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg></span><h3>WhatsApp oficial</h3><p>Somos Tech Provider registrado en Meta: trabajamos con la plataforma oficial de WhatsApp Business.</p></div>
+      <div class="conf aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-soporte"/></svg></span><h3>Le acompañamos</h3><p>Capacitamos a su equipo y le respondemos por WhatsApp el mismo día.</p></div>
+      <div class="conf aparece"><span class="caja-ic"><svg class="ic" aria-hidden="true"><use href="#i-escudo"/></svg></span><h3>Sin permanencia</h3><p>Si no le sirve, lo deja cuando quiera.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="seccion" id="empezar">
+  <div class="contenedor">
+    <div class="empezar">
+      <span class="ojo">Cómo empezar</span>
+      <h2 class="titulo">Pruébelo 14 días con pedidos reales</h2>
+      <p>En tres pasos, sin cambiar su forma de trabajar.</p>
+      <div class="pasos-3">
+        <div class="p3 aparece"><small>PASO 1</small><h3>Videollamada de 15 minutos</h3><p>Le mostramos cómo quedaría con su carta, sus fotos y su número.</p></div>
+        <div class="p3 aparece"><small>PASO 2</small><h3>Lo dejamos funcionando</h3><p>Armamos su WhatsApp, su página y su pantalla de pedidos, y capacitamos a su equipo.</p></div>
+        <div class="p3 aparece"><small>PASO 3</small><h3>14 días de prueba</h3><p>Recibe pedidos reales sin pagar nada durante 14 días.</p></div>
+      </div>
+      <ul class="chips">
+        <li><svg class="ic" aria-hidden="true"><use href="#i-regalo"/></svg>Instalación de regalo · 4 locales por mes</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Sin permanencia</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Sin comisión sobre sus ventas</li>
+      </ul>
+      <p class="precio">El precio se lo explicamos en la videollamada: un valor fijo al mes más un monto pequeño por pedido. Nunca un porcentaje de sus ventas.</p>
+      <div class="hero-botones">
+        <a class="boton boton-brasa" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20agendar%20una%20videollamada%20de%2015%20minutos.">Agendar mi videollamada</a>
+        <a class="boton boton-claro" href="https://wa.me/593939647069?text=demo"><svg class="ic ic-lleno" aria-hidden="true"><use href="#i-wa"/></svg>Probar la demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="seccion crema" id="preguntas">
+  <div class="contenedor">
+    <div class="cabeza aparece">
+      <span class="ojo">Preguntas frecuentes</span>
+      <h2 class="titulo">Lo que nos preguntan los dueños</h2>
+    </div>
+    <div class="faq">
+      <details><summary>¿Tengo que cambiar mi número de WhatsApp?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>No. Usamos su mismo número y WhatsApp sigue funcionando en su celular como siempre.</p></details>
+      <details><summary>¿Es un robot que va a contestar por mí?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>No reemplaza a nadie. Su equipo sigue atendiendo; lo que hacemos es que su cliente arme el pedido con su carta y le llegue completo a la cocina.</p></details>
+      <details><summary>¿Cobran comisión por cada venta?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>No cobramos un porcentaje de sus ventas. Es un valor fijo al mes más un monto pequeño por pedido; se lo explicamos en la videollamada.</p></details>
+      <details><summary>No tengo computadora ni impresora, ¿igual me sirve?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>Sí. La pantalla de pedidos funciona en un celular o una tablet. La impresora es opcional.</p></details>
+      <details><summary>¿Quién hace la entrega?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>En Riobamba, las motos de DEWAN. En otras ciudades, su propio motorizado, y los pedidos le llegan igual de completos.</p></details>
+      <details><summary>¿Cómo me pagan mis clientes?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>En efectivo, por transferencia o con Deuna. Si lo activa, también con tarjeta, y el dinero va directo a su cuenta.</p></details>
+      <details><summary>¿Puedo cambiar precios o platos cuando quiera?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>Sí, sin límite. Nos escribe por WhatsApp y lo cambiamos el mismo día.</p></details>
+      <details><summary>¿Emiten factura electrónica?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>Sí, si lo activa: la factura sale sola y autorizada por el SRI cuando se entrega el pedido. Necesita su firma electrónica.</p></details>
+      <details><summary>¿En qué ciudades trabajan?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>Instalamos en todo Ecuador. Las motos de DEWAN están en Riobamba. ¿Tiene un restaurante en Estados Unidos? Visite <a href="/us/">dewansas.com/us</a>.</p></details>
+      <details><summary>¿Hay contrato de permanencia?<svg class="ic" aria-hidden="true"><use href="#i-mas"/></svg></summary><p>No. Puede dejarlo cuando quiera.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="seccion final" aria-label="Pruebe DEWAN">
+  <div class="contenedor">
+    <div class="final-caja">
+      <svg class="campana-fondo" viewBox="0 0 626 459" aria-hidden="true"><use href="#campana"/></svg>
+      <h2>Pruébelo como lo vería su cliente</h2>
+      <p>Escriba «demo» a nuestro WhatsApp, haga un pedido de prueba y vea cómo le llega a la cocina.</p>
+      <div class="hero-botones">
+        <a class="boton boton-blanco" href="https://wa.me/593939647069?text=demo"><svg class="ic ic-lleno" aria-hidden="true"><use href="#i-wa"/></svg>Escribir «demo» por WhatsApp</a>
+        <a class="boton boton-borde" href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20tengo%20una%20pregunta.">Hablar con David</a>
+      </div>
+      <small>Le respondemos el mismo día · Riobamba, Ecuador</small>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="pie">
+  <div class="contenedor">
+    <div class="pie-grid">
+      <div>
+        <a class="marca" href="/" aria-label="DEWAN, ir al inicio">
+          <svg viewBox="0 0 626 459" aria-hidden="true"><use href="#campana"/></svg>
+          <span class="marca-nombre">DEWAN</span>
+        </a>
+        <p>Pedidos por WhatsApp, página de pedidos, pantalla de cocina y delivery para restaurantes de Ecuador.</p>
+        <div class="redes">
+          <a href="https://www.facebook.com/DeWanRiobamba" aria-label="DEWAN en Facebook"><svg class="ic ic-lleno" aria-hidden="true"><use href="#i-fb"/></svg></a>
+          <a href="https://www.instagram.com/dewanriobamba/" aria-label="DEWAN en Instagram"><svg class="ic" aria-hidden="true"><use href="#i-ig"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Restaurantes</h4>
+        <ul>
+          <li><a href="#como-funciona">Cómo funciona</a></li>
+          <li><a href="#incluye">Qué incluye</a></li>
+          <li><a href="#preguntas">Preguntas frecuentes</a></li>
+          <li><a href="https://wa.me/593939647069?text=Hola%20David%2C%20vi%20la%20p%C3%A1gina%20de%20DEWAN%20y%20quiero%20agendar%20una%20videollamada%20de%2015%20minutos.">Agendar una videollamada</a></li>
+          <li><a href="/us/" hreflang="en">Restaurants in the U.S.</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Pedir</h4>
+        <ul>
+          <li><a href="https://pedir.dewansas.com/?o=dewansas">Pedir comida en Riobamba</a></li>
+          <li><a href="https://play.google.com/store/apps/details?id=com.dewan.cliente">App DEWAN para Android</a></li>
+          <li><a href="https://wa.me/593962223600?text=Hola%20DEWAN%2C%20quiero%20hacer%20una%20compra%20o%20encomienda.">Compras y encomiendas</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>DEWAN</h4>
+        <ul>
+          <li><a href="https://play.google.com/store/apps/details?id=com.dewan.motorizados">Trabaje con nosotros</a></li>
+          <li><a href="/privacy.html">Política de privacidad</a></li>
+          <li><a href="/terms.html">Términos del servicio</a></li>
+          <li><a href="/eliminar-datos.html">Eliminar mis datos</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pie-base">
+      <span>© 2021–2026 DEWAN S.A.S. · RUC 0691782530001 · Riobamba, Chimborazo, Ecuador</span>
+      <a href="mailto:dewan.encomiendas@gmail.com">dewan.encomiendas@gmail.com</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>
