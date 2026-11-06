@@ -377,6 +377,57 @@ section[id]{scroll-margin-top:80px}
   .fila-vis .p-subida{right:4%;width:58%;top:130px}
 }
 
+
+/* Soluciones en 2×2 */
+.sols.cuatro{grid-template-columns:repeat(2,1fr)}
+.sols.cuatro .sol-foto{aspect-ratio:auto;height:300px}
+.sol-foto.ui{place-items:start center;padding-top:26px}
+/* Dos tarjetas en el bloque de imagen del encabezado */
+.fila-vis .p-izq{position:absolute;left:6%;top:40px;width:56%}
+.fila-vis .p-der{position:absolute;right:6%;bottom:40px;width:54%}
+.bur .bw+.bw{margin-top:5px}
+/* Citas */
+.form-cita{padding:14px;display:grid;gap:12px}
+.fc-l{font-size:12px;color:var(--gris);margin-bottom:6px}
+.fc-sel{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--linea);border-radius:10px;padding:9px 11px;font-size:13.5px}
+.fc-sel .ic{width:15px;height:15px;color:var(--gris)}
+.fc-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fc-chips span{min-width:54px;padding:7px 10px;border:1px solid var(--linea);border-radius:9px;font-size:12.5px;line-height:1.25;text-align:center}
+.fc-chips span small{display:block;font-size:11px;color:var(--gris)}
+.fc-chips .on{border-color:#1DAA61;background:#ECFDF3;color:#14532D}
+.fc-chips .on small{color:#166534}
+.fc-chips .no{color:#A1A1AA;background:var(--suave);text-decoration:line-through}
+.fc-btn{display:flex;align-items:center;justify-content:center;height:38px;border-radius:10px;background:#1DAA61;color:#fff;font-size:13.5px;font-weight:500}
+.agenda{padding:4px 14px 10px}
+.ag-f{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--suave);font-size:13px}
+.ag-f:last-child{border-bottom:0}
+.ag-f .mono{font-size:12.5px;color:var(--gris)}
+.ag-f small{display:block;font-size:11.5px;color:var(--gris)}
+.ag-f.libre span:nth-child(2){color:var(--gris);border:1px dashed #D4D4DA;border-radius:8px;padding:5px 8px;font-size:12.5px}
+.est{font-size:11px;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.est.ok{background:#DCFCE7;color:#166534}.est.pend{background:#FEF3C7;color:#92400E}.est.env{background:var(--suave);color:var(--gris)}
+/* Tiendas */
+.catalogo{padding:10px 12px;display:grid;gap:8px;background:#EFEAE2}
+.cat-f{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;background:#fff;border-radius:12px;padding:8px 10px;box-shadow:0 1px .5px rgba(0,0,0,.1)}
+.cat-f .mi{width:38px;height:38px;border-radius:10px;background:var(--suave);color:var(--tinta)}
+.cat-f b{display:block;font-size:13px;font-weight:500}
+.cat-f small{display:block;font-size:11.5px;color:var(--gris)}
+.cat-p{text-align:right}
+.cat-p .mono{display:block;font-size:13px}
+.cat-p small{color:#027EB5;font-weight:500}
+.cat-p small.en{color:var(--verde)}
+.cat-pie{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;font-size:13px;border-top:1px solid var(--linea)}
+.cat-pie b{color:#027EB5;font-weight:500}
+.ped-t{padding:14px}
+.pagado{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:#DCFCE7;color:#166534;font:500 10.5px/1 var(--mono);letter-spacing:.04em}
+.ped-items{margin-top:10px;display:grid;gap:6px;font-size:13px}
+.ped-items div{display:flex;justify-content:space-between;gap:10px}
+.ped-items .mono{font-size:12.5px}
+.ped-tot{margin-top:10px;padding-top:10px;border-top:1px dashed var(--linea);display:flex;justify-content:space-between;align-items:baseline}
+.ped-tot .mono{font-size:19px}
+@media (max-width:960px){.sols.cuatro{grid-template-columns:1fr}.sols.cuatro .sol-foto{height:auto;min-height:300px}}
+@media (max-width:640px){.sols.cuatro .sol-foto{height:300px;min-height:0}}
+
 /* Pantallas medianas y celulares */
 @media (max-width:1060px){
   .nav>a.opcional{display:none}
