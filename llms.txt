@@ -1,18 +1,35 @@
-# DEWAN Delivery
+# DEWAN
 
-> DEWAN es un servicio de delivery de Riobamba, Ecuador. En https://pedir.dewansas.com se pide comida de más de 150 restaurantes de la ciudad: el pedido se confirma en la misma página (sin descargar nada ni crear cuenta) y un motorizado de DEWAN lo lleva a domicilio, a la oficina o al hotel. Se paga al recibir, en efectivo o por transferencia.
+> DEWAN (DEWAN S.A.S., fundada en 2021 en Riobamba, Ecuador) es una empresa de tecnología y delivery. Ofrece una plataforma para que restaurantes y negocios de cualquier país vendan, atiendan y entreguen por WhatsApp: pedidos con fotos dentro de WhatsApp usando la API oficial de Meta, páginas de pedidos propias, pantalla de pedidos para la cocina o la caja, citas y recordatorios por WhatsApp, tiendas en línea, delivery con seguimiento en vivo y automatización con inteligencia artificial. No cobra un porcentaje de las ventas. En Riobamba también tiene flota propia de motorizados y una app para pedir comida.
 
-## Cómo pedir
-- Web: https://pedir.dewansas.com — elegir restaurante y platos, marcar la ubicación (el costo del envío se ve antes de confirmar) y confirmar con nombre y celular. El pedido se sigue en vivo en la misma página.
+Sitio: https://dewansas.com · Ventas y demos por WhatsApp: +593 93 964 7069 · Correo: dewan.encomiendas@gmail.com
+
+## Para negocios: productos
+- [Pedidos para restaurantes](https://dewansas.com/productos/pedidos/): el cliente pide con fotos en el mismo WhatsApp del restaurante o en su propia página; el pedido llega completo a la pantalla de la cocina, con la comanda impresa, y el cliente sigue la entrega en vivo. Demo en vivo: escribir «demo» al +593 93 964 7069.
+- [WhatsApp Business oficial](https://dewansas.com/productos/whatsapp/): formularios con fotos dentro del chat, botones, respuestas a preguntas frecuentes y avisos automáticos, en el mismo número del negocio (coexistencia: la app de WhatsApp sigue en el celular). DEWAN es Tech Provider registrado en Meta.
+- [Páginas web en minutos](https://dewansas.com/productos/paginas-web/): el restaurante sube la foto de su carta y la inteligencia artificial arma su página de pedidos con platos y precios, en español o inglés. Se crea gratis en https://dewansas.com/carta/crear.html
+- [Delivery y logística](https://dewansas.com/productos/delivery/): app para motorizados (Android y versión web para iPhone), despacho de carreras y seguimiento en vivo para el cliente. Se usa con la flota del negocio o, en Riobamba, con la de DEWAN.
+- [Automatización e IA](https://dewansas.com/productos/automatizacion/): factura electrónica automática al entregar (hoy en Ecuador, SRI), resumen diario de pedidos y ventas, avisos al instante y conexión con los sistemas del negocio.
+
+## Para negocios: soluciones por tipo
+- [Restaurantes y cadenas](https://dewansas.com/productos/pedidos/): pedidos propios por WhatsApp y por su página, sin comisión sobre las ventas.
+- [Citas y agendas](https://dewansas.com/soluciones/citas/): para odontólogos, clínicas, consultorios, peluquerías, barberías, spas, veterinarias, talleres y clases. El paciente o cliente agenda en WhatsApp, recibe el recordatorio un día antes y confirma o cambia la hora con un toque.
+- [Tiendas y comercio en línea](https://dewansas.com/soluciones/tiendas/): catálogo con fotos en WhatsApp y en su propia página, pago con tarjeta o al recibir, y avisos de envío automáticos.
+- [Empresas de delivery](https://dewansas.com/productos/delivery/): la tecnología con la que DEWAN despacha su propio delivery, para otras flotas.
+- [Todas las soluciones](https://dewansas.com/soluciones/) · [Sobre DEWAN](https://dewansas.com/empresa/)
+
+## Datos clave
+- Cobro: un valor fijo al mes más un monto pequeño por pedido; nunca un porcentaje de las ventas. El precio se explica en una videollamada de 15 minutos.
+- Prueba de 14 días con pedidos reales y sin contrato de permanencia.
+- Funciona en cualquier país con WhatsApp. Para restaurantes en Estados Unidos: https://dewansas.com/us/
+- Operación propia: más de 5.000 pedidos procesados con la plataforma, 50 motorizados con la app DEWAN y más de 100 entregas al día en Riobamba.
+
+## Para quienes piden comida en Riobamba (Ecuador)
+- Web: https://pedir.dewansas.com — más de 150 restaurantes de la ciudad. Se elige restaurante y platos, se marca la ubicación (el costo del envío se ve antes de confirmar) y se confirma con nombre y celular, sin descargar nada ni crear cuenta. El pedido se sigue en vivo y un motorizado de DEWAN lo lleva a domicilio, a la oficina o al hotel. Se paga al recibir, en efectivo o por transferencia.
 - App para Android: «DEWAN: comida a domicilio» — https://play.google.com/store/apps/details?id=com.dewan.cliente
-- WhatsApp: +593 96 222 3600
+- Compras y encomiendas pequeñas dentro de Riobamba (lo que quepa en la mochila del motorizado): WhatsApp +593 96 222 3600
+- Qué se puede pedir: pollo, hamburguesas, pizza, alitas, chifa, almuerzos del día, comida típica, cafeterías y postres; compras de farmacia y supermercado.
 
-## Qué se puede pedir
-- Comida de restaurantes de Riobamba: pollo, hamburguesas, pizza, alitas, chifa, almuerzos del día, comida típica, cafeterías y postres.
-- Compras: farmacia, supermercado y otros mandados dentro de la ciudad.
-- Encomiendas: paquetes pequeños dentro de Riobamba (lo que quepa en la mochila del motorizado).
-
-## Datos
-- Ciudad: Riobamba, provincia de Chimborazo, Ecuador.
-- Pago: efectivo o transferencia, al recibir.
+## Redes
 - Facebook: https://www.facebook.com/DeWanRiobamba/
+- Instagram: https://www.instagram.com/dewanriobamba/
