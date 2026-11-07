@@ -31,6 +31,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap"></noscript>
 <link rel="stylesheet" href="/inicio/sitio-v2.css">
+<script>
+/* Clarity «DEWAN sitio» (z9r0sn7knp): no se carga en pruebas (?prueba=1) ni en robots ni en navegadores sin pantalla */
+(function(){try{if(/[?&]prueba=1/.test(location.search)||/HeadlessChrome|bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent))return;
+(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","z9r0sn7knp");}catch(_){}})();
+</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://dewansas.com/#org", "name": "DEWAN", "legalName": "DEWAN S.A.S.", "url": "https://dewansas.com/", "logo": "https://dewansas.com/inicio/icono-512-v1.png", "foundingDate": "2021-06-15", "taxID": "0691782530001", "email": "dewan.encomiendas@gmail.com", "address": {"@type": "PostalAddress", "addressLocality": "Riobamba", "addressRegion": "Chimborazo", "addressCountry": "EC"}, "sameAs": ["https://www.facebook.com/DeWanRiobamba", "https://www.instagram.com/dewanriobamba/"], "contactPoint": [{"@type": "ContactPoint", "contactType": "sales", "telephone": "+593939647069", "availableLanguage": ["es", "en"]}]}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "¿Necesito tener una tienda en línea?", "acceptedAnswer": {"@type": "Answer", "text": "No. Le armamos su página con su catálogo, conectada a su WhatsApp."}}, {"@type": "Question", "name": "¿Puedo cobrar con tarjeta?", "acceptedAnswer": {"@type": "Answer", "text": "Sí, si lo activa, con el dinero directo a su cuenta. También por transferencia o al recibir."}}, {"@type": "Question", "name": "¿Cómo hago los envíos?", "acceptedAnswer": {"@type": "Answer", "text": "Con su courier o su motorizado, y su cliente recibe los avisos por WhatsApp. En Riobamba también puede usar la flota de DEWAN."}}, {"@type": "Question", "name": "¿Cobran comisión por venta?", "acceptedAnswer": {"@type": "Answer", "text": "No cobramos un porcentaje de sus ventas. Se lo explicamos en la videollamada."}}, {"@type": "Question", "name": "¿Sirve para vender en otros países?", "acceptedAnswer": {"@type": "Answer", "text": "Sí. Funciona con WhatsApp en cualquier país."}}]}]}</script>
 </head>
 <body>
@@ -147,5 +152,12 @@
   </div>
   <div class="pie-base"><span>© 2021–2026 DEWAN S.A.S. · RUC 0691782530001</span><span>Tech Provider de WhatsApp Business · <a href="mailto:dewan.encomiendas@gmail.com">dewan.encomiendas@gmail.com</a></span></div>
 </div></footer>
+<script>
+/* Cuenta en Clarity los toques a los botones que importan (agendar, demo, crear página, pedir, apps) */
+(function(){try{document.addEventListener("click",function(e){var a=e.target&&e.target.closest?e.target.closest("a[href]"):null;if(!a||!window.clarity)return;var h=a.getAttribute("href")||"",v="";
+if(h.indexOf("wa.me/593939647069?text=demo")>-1)v="probar_demo";else if(h.indexOf("agendar%20una%20demo")>-1)v="agendar_demo";else if(h.indexOf("agenden%20citas")>-1)v="whatsapp_citas";else if(h.indexOf("tienda%20en%20l")>-1)v="whatsapp_tienda";else if(h.indexOf("wa.me/593939647069")>-1)v="whatsapp_ventas";
+else if(h.indexOf("/carta/crear.html")>-1)v="crear_pagina";else if(h.indexOf("pedir.dewansas.com")>-1)v="pedir_comida";else if(h.indexOf("wa.me/593962223600")>-1)v="encomiendas";else if(h.indexOf("play.google.com")>-1)v="google_play";else if(h.indexOf("/us/")===0)v="ir_eeuu";
+if(v){window.clarity("event",v);}},true);}catch(_){}})();
+</script>
 </body>
 </html>
