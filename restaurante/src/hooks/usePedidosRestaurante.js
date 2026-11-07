@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, consultarConTimeout } from '../lib/supabase';
 import { PEDIDOS_TABLE, MODO_SISTEMA, MODO_US, codigoPedido } from '../lib/config';
-import { marcarDatosOk, tiempoSinDatos } from '../lib/conexion';
+import { marcarDatosOk, ultimoDatosOk } from '../lib/conexion';
 import { startAlertLoop, stopAlertLoop, showPushNotification } from '../lib/notifications';
 import { inicioDelDiaECisoUtc } from '../lib/formato';
 import { esDeMiSucursal } from '../lib/sucursal';
@@ -287,7 +287,9 @@ export function usePedidosRestaurante(restaurante) {
         recrearYRecargar();
         setTimeout(() => {
           if (document.visibilityState !== 'visible') return;
-          if (tiempoSinDatos() <= 15000) return; // ya entraron datos: todo bien
+          // Mira el último dato real (no tiempoSinDatos, que en el celular se
+          // reinicia al volver y acá siempre daría menos de 15 s).
+          if (Date.now() - ultimoDatosOk() <= 15000) return; // ya entraron datos: todo bien
           let ult = 0;
           try { ult = Number(localStorage.getItem('dewan_ultima_recarga_auto') || 0); } catch {}
           if (Date.now() - ult < 90000) return;  // sin bucles de recarga
