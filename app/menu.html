@@ -2612,9 +2612,29 @@
             if(cta) cta.onclick=function(){cerrarZoom(); try{plus.click();}catch(e){}};
             try{if(typeof window.clarity==='function')window.clarity('event','ficha_plato');}catch(e){}
         }
+        // Destacados del local: la tarjeta del mismo plato en la carta (igual nombre; si se repite, igual precio)
+        function _prodCardDeDest(dc){
+            var txt=function(el,sel){var e=el.querySelector(sel);return e?e.textContent.replace(/\s+/g,' ').trim():'';};
+            var nombre=txt(dc,'.dest-name'),precio=txt(dc,'.dest-price'),primera=null;
+            var cs=document.querySelectorAll('#app .prod-card');
+            for(var i=0;i<cs.length;i++){
+                if(txt(cs[i],'.prod-name')!==nombre||!cs[i].querySelector('.btn-agregar,.btn-qty-plus')) continue;
+                if(!primera) primera=cs[i];
+                if(precio&&txt(cs[i],'.prod-price').indexOf(precio)===0) return cs[i];
+            }
+            return primera;
+        }
         // Fase de captura: la foto tiene su propio onclick (abría la foto sin «Agregar»); aquí se adelanta.
         document.addEventListener('click',function(ev){
             var t=ev.target; if(!t||!t.closest) return;
+            // [6-nov] la foto de «Destacados» del local también abría la foto sola (solo «Cerrar»): ahora abre la ficha
+            var dc=t.closest('.dest-card');
+            if(dc&&t.matches('img.dest-emoji')&&/zoomFotoRaw/.test(t.getAttribute('onclick')||'')){
+                ev.stopPropagation(); ev.preventDefault();
+                var pc=_prodCardDeDest(dc);
+                if(pc) abrirFichaPlato(pc); else dc.click(); // sin su tarjeta en la carta: lo mismo que tocar la tarjeta
+                return;
+            }
             var card=t.closest('.prod-card'); if(!card) return;
             if(t.closest('button,a,input,textarea,select,label,.qty-ctrl')) return; // «+», «−» y demás siguen igual
             if(!card.querySelector('.btn-agregar,.btn-qty-plus')) return;
