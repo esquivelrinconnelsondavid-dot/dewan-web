@@ -907,7 +907,7 @@
         /* V2.1: Badge cuenta de platos por restaurante en búsqueda/categoría */
         .rest-compact-meta .badge-count{background:var(--acc-soft);color:var(--acc);font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:0.02em}
 
-        /* HOME VIVA (19-sep): chips de frescura en la tarjeta del local (Nuevo · N pedidos hoy · Cierra en X min) */
+        /* HOME VIVA (19-sep): chips de frescura en la tarjeta del local (Nuevo · N pedidos hoy · Pide hasta las X) */
         .fresh-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
         .fresh-chip{font-size:0.64rem;font-weight:800;padding:2px 7px;border-radius:20px;white-space:nowrap;line-height:1.5}
         .fresh-nuevo{background:rgba(232,67,26,0.10);color:var(--cta-hover)}
@@ -926,6 +926,11 @@
         .loc-addr-input.pulse-hint,.btn-gps-main.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
         .loc-section.pulse-hint{animation:loc-hint-pulse 1.6s ease-out 3;border-color:var(--acc)!important}
         .op-map-hint-on{color:var(--cta)!important;font-weight:800!important;font-size:0.84rem!important;border-radius:8px;padding:4px 0;animation:loc-hint-pulse 1.6s ease-out 2}
+        /* [7-nov] GPS caído en el carrito: el mapa pasa a ser lo principal */
+        .loc-gps-fallo{padding:10px 14px;background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;border-radius:12px;margin-bottom:10px;font-size:0.86rem;font-weight:700;line-height:1.4}
+        .op-map-guia{border:2px solid var(--cta)}
+        .op-map-guia-pulso{animation:loc-hint-pulse 1.6s ease-out 3}
+        .gps-reintentar{display:block;margin:10px auto 0;background:none;border:none;padding:6px 10px;color:var(--gris-2);font-family:inherit;font-size:0.8rem;font-weight:700;text-decoration:underline;cursor:pointer}
         .almuerzo-cat.pulse-hint{border-radius:12px;animation:loc-hint-pulse 1.6s ease-out 2}
         .btn-almuerzo-add.is-off{opacity:0.4}
 
@@ -2187,14 +2192,15 @@
             }).catch(function(){window._pedidosHoy={};return {}});
             return window._hoyPromise;
         }
-        // Chips de frescura del local: "Nuevo" (≤30 días) · "N pedidos hoy" (desde 3) · "Cierra en X min" (≤45)
+        // Chips de frescura del local: "Nuevo" (≤30 días) · "N pedidos hoy" (desde 3) · "Pide hasta las X" (≤45 min para el corte)
         function _freshChips(r){
             var abierto=isRestOpen(r.horario),c=[];
             if(_esNuevoRest(r)) c.push('<span class="fresh-chip fresh-nuevo">🆕 Nuevo</span>');
             var n=(window._pedidosHoy||{})[r.id]||0;
             if(abierto!==false&&n>=3) c.push('<span class="fresh-chip fresh-hoy">🔥 '+n+' pedidos hoy</span>');
-            var m=abierto===true?_minutosParaCerrar(r.horario):null;
-            if(m!=null&&m>0&&m<=45) c.push('<span class="fresh-chip fresh-cierra">⏰ Cierra en '+m+' min</span>');
+            // [7-nov] Con el corte de pedidos, el chip dice HASTA QUÉ HORA se puede pedir (una hora fija no envejece).
+            var m=abierto===true?_minutosParaCerrar(r.horario):null,corte=OP_MODE?0:MIN_ANTES_CIERRE;
+            if(m!=null&&m-corte>0&&m-corte<=45){ var _ah=_hNowEc(); c.push('<span class="fresh-chip fresh-cierra">⏰ Pide hasta las '+_hHoraTxt(_ah.getHours()*60+_ah.getMinutes()+m-corte)+'</span>'); }
             return c.length?'<div class="fresh-chips">'+c.join('')+'</div>':'';
         }
         // Barajado determinístico por FECHA (mismo orden todo el día, cambia mañana)
@@ -2583,8 +2589,8 @@
             if(img){var mz=(img.getAttribute('onclick')||'').match(/zoomFotoRaw\(\s*'((?:[^'\\]|\\.)*)'/);mini=img.getAttribute('src')||'';foto=mz?mz[1].replace(/\\(.)/g,'$1'):mini;}
             var emoji=foto?'':txt('div.prod-emoji');
             var ya=txt('.qty-num')||((txt('.badge-cart').match(/\d+/)||[''])[0]);
-            var rObj=null,cerrado=false,ap=null,hoy=false;
-            try{rObj=getRestByName(rest);if(rObj&&isRestOpen(rObj.horario)===false){cerrado=true;hoy=!!rObj._cierreManual;ap=hoy?null:proximaApertura(rObj.horario);}}catch(e){}
+            var rObj=null,cerrado=false,ap=null,hoy=false,hc=null;
+            try{rObj=getRestByName(rest);if(rObj&&isRestOpen(rObj.horario)===false){cerrado=true;hoy=!!rObj._cierreManual;hc=hoy?null:horaCorteCierre(rObj.horario);ap=(hoy||hc)?null:proximaApertura(rObj.horario);}}catch(e){}
             var ov=document.createElement('div');
             ov.className='foto-zoom';
             ov.onclick=function(e){if(e.target===ov) cerrarZoom();};
@@ -2600,7 +2606,7 @@
                         (envase?'<span style="font-size:.8rem;color:var(--gris);font-weight:700;margin-left:8px">'+esc(envase)+'</span>':'')+'</div>'+
                 '</div>'+
                 (cerrado
-                    ?'<div class="foto-zoom-cta" style="background:var(--card2);color:var(--gris-2);text-align:center;cursor:default">'+(hoy?'🔴 Este local cerró por hoy':'🔴 Cerrado ahora'+(ap?' · abre '+esc(ap):''))+'</div>'
+                    ?'<div class="foto-zoom-cta" style="background:var(--card2);color:var(--gris-2);text-align:center;cursor:default">'+(hoy?'🔴 Este local cerró por hoy':(hc?'🔴 Ya no recibe pedidos por hoy · cierra a las '+esc(hc):'🔴 Cerrado ahora'+(ap?' · abre '+esc(ap):'')))+'</div>'
                     :'<button class="foto-zoom-cta" id="ficha-plato-cta">🛒 Agregar al pedido'+(precio?' · '+esc(precio):'')+'</button>')+
                 (ya&&!cerrado?'<div class="foto-zoom-note">Ya tienes '+esc(ya)+' en el carrito</div>':'')+
             '</div>';
@@ -5535,6 +5541,13 @@
                     }
                     h+='<div class="loc-ref-label" style="margin-top:14px">Referencia para el motorizado (opcional)</div>';
                     h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: casa azul, portón negro, 2do piso, junto a..." value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
+                } else if(window._gpsFallo){
+                    // [7-nov] El GPS ya falló (ver requestGPSCart): el mapa pasa a ser lo principal; reintentar queda chico.
+                    h+='<div class="loc-gps-fallo">'+(window._gpsFallo==='permiso'?'📍 Tu celular no nos deja ver tu ubicación. No pasa nada: <b>marca tu casa en el mapa 👇</b>':(window._gpsFallo==='lejos'?'📍 Tu GPS te ubicó fuera de la ciudad. <b>Marca tu casa en el mapa 👇</b>':'📍 No pudimos ver tu ubicación con el GPS. <b>Marca tu casa en el mapa 👇</b>'))+'</div>';
+                    h+='<div id="op-map" class="op-map-guia" style="height:240px;border-radius:12px;overflow:hidden"></div>';
+                    h+='<div id="op-map-hint" style="font-size:0.84rem;color:var(--cta);font-weight:800;margin-top:6px;text-align:center">👆 Toca tu casa en el mapa</div>';
+                    h+='<button type="button" class="gps-reintentar" id="btn-gps-cart" onclick="requestGPSCart()">o vuelve a intentar con el GPS</button>';
+                    h+='<div class="gps-status" id="gps-status-cart" style="margin-top:4px;text-align:center"></div>';
                 } else {
                     h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación</button>';
                     h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px;text-align:center"></div>';
@@ -5600,12 +5613,12 @@
                     '<div class="loc-missing-icon">⚠️</div>'+
                     '<div class="loc-missing-content">'+
                         '<div class="loc-missing-title">Falta tu ubicación</div>'+
-                        '<div class="loc-missing-text">Usa <strong>📍 mi ubicación (GPS)</strong> o <strong>marca tu casa en el mapa</strong> 👆 para calcular tu envío y confirmar el pedido.</div>'+
+                        '<div class="loc-missing-text">'+(window._gpsFallo&&!OP_MODE?'<strong>Marca tu casa en el mapa</strong> 👆 para calcular tu envío y confirmar el pedido.':'Usa <strong>📍 mi ubicación (GPS)</strong> o <strong>marca tu casa en el mapa</strong> 👆 para calcular tu envío y confirmar el pedido.')+'</div>'+
                     '</div>'+
                 '</div>';
-                foot+='<button class="btn btn-wa btn-wa-need-loc" onclick="(function(){var s=document.getElementById(\'loc-section\');if(s){s.classList.add(\'pulse-hint\');s.scrollIntoView({behavior:\'smooth\',block:\'center\'})}})();return false">'+
+                foot+='<button class="btn btn-wa btn-wa-need-loc" onclick="faltaUbicacion();return false">'+
                     '<span class="btn-wa-need-loc-primary"><span>📍</span><span>Confirmar pedido · $'+totalPagar.toFixed(2)+'</span></span>'+
-                    '<span class="btn-wa-need-loc-hint">👆 Toca arriba para poner tu ubicación y confirmar</span>'+
+                    '<span class="btn-wa-need-loc-hint">'+(window._gpsFallo&&!OP_MODE?'👆 Marca tu casa en el mapa para confirmar':'👆 Toca arriba para poner tu ubicación y confirmar')+'</span>'+
                 '</button>';
             } else if(pedidoDirectoActivo()){
                 foot+='<div class="cta-helper">Confirmas aquí · sin WhatsApp · pagas al recibir 🛵</div>';
@@ -5916,16 +5929,17 @@
         // El primer fix del teléfono suele ser el de RED/IP (error de cientos de metros o km,
         // sobre todo en interiores o con "ubicación precisa" apagada). Escuchamos hasta 8s y nos
         // quedamos con el fix MÁS preciso; si llega uno ≤30m cortamos antes.
+        // [7-nov] errCb recibe el error del navegador (code 1 = sin permiso); antes llegaba vacío.
         function getBestPosition(cb,errCb){
             if(!navigator.geolocation){if(errCb)errCb();return;}
-            var best=null,done=false,wid=null,timer=null;
+            var best=null,done=false,wid=null,timer=null,ultErr=null;
             function cleanup(){try{if(wid!=null)navigator.geolocation.clearWatch(wid)}catch(e){} if(timer)clearTimeout(timer);}
-            function finish(){if(done)return;done=true;cleanup();if(best)cb(best);else if(errCb)errCb();}
+            function finish(){if(done)return;done=true;cleanup();if(best)cb(best);else if(errCb)errCb(ultErr);}
             try{
                 wid=navigator.geolocation.watchPosition(function(pos){
                     if(!best||pos.coords.accuracy<best.coords.accuracy) best=pos;
                     if(pos.coords.accuracy<=30) finish();
-                },function(){ if(!best) finish(); },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+                },function(e){ ultErr=e; if(!best) finish(); },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
             }catch(e){if(errCb)errCb();return;}
             timer=setTimeout(finish,8000);
         }
@@ -5950,7 +5964,7 @@
         // Aplicar un fix de GPS al carrito (lo usan el botón "Usar mi ubicación" y el aviso "¿sigues ahí?").
         window.aplicarFixCliente=function(pos){
             if(!pos)return;
-            window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;window._gpsFixTs=Date.now();window._ubicRestauradaTs=null;guardarUbic();
+            window._clientGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy||0)};window._lastGpsFix=Object.assign({ts:Date.now()},window._clientGPS);window._pinLejosKm=null;window._gpsFixTs=Date.now();window._ubicRestauradaTs=null;window._gpsFallo=null;guardarUbic();
             trackUbicacionPixel();
             // Recalcular delivery en el carrito con nueva ubicación
             var rests=getFilteredRestaurantes();
@@ -5972,18 +5986,36 @@
             if(btn){btn.disabled=true;btn.textContent='🔍 Buscando...';}
             getBestPosition(function(pos){
                 if(!gpsEnZona(pos)){
+                    if(!OP_MODE&&!window._clientGPS){ try{if(window.dwVis)dwVis.toque('GPS: fuera de la ciudad');}catch(e){} window._gpsFallo='lejos'; showCart(); setTimeout(irAlMapaCarrito,150); return; }
                     if(st){st.className='gps-status';st.textContent='⚠️ Tu GPS te ubicó fuera de la ciudad. Marca tu casa en el mapa 👇';}
                     if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}
                     return;
                 }
                 aplicarFixCliente(pos);
-            },function(){
-                if(st){st.className='gps-status';st.textContent='No se pudo obtener GPS';}
-                if(btn){btn.disabled=false;btn.textContent='📍 Toca aquí para poner tu ubicación';}
+            },function(err){
+                try{if(window.dwVis)dwVis.toque(err&&err.code===1?'GPS: sin permiso':'GPS: falló');}catch(e){}
+                // [7-nov] Cliente sin punto: el GPS ya falló una vez → el carrito pasa a «marca tu casa en el mapa».
+                // Antes el botón decía «Toca aquí para poner tu ubicación», volvía a pedir el GPS y fallaba igual:
+                // lo tocaban 2–12 veces sin mirar el mapa (5-nov TikTok; 7-nov LIAH terminó pidiendo por WhatsApp).
+                if(!OP_MODE&&!window._clientGPS){ window._gpsFallo=(err&&err.code===1)?'permiso':'si'; showCart(); setTimeout(irAlMapaCarrito,150); return; }
+                if(st){st.className='gps-status';st.textContent=window._clientGPS?'No pudimos ver tu ubicación ahora. Si no estás ahí, arrastra el pin a tu casa 👇':'No se pudo obtener GPS';}
+                if(btn){btn.disabled=false;btn.textContent=window._clientGPS?'📍 Usar mi ubicación actual':'📍 Toca aquí para poner tu ubicación';}
                 // Mostrar campo de texto automáticamente si falla GPS
                 var wrap=document.getElementById('loc-addr-wrap');
                 if(wrap) wrap.classList.add('visible');
             });
+        };
+        // Lleva al mapa del carrito y lo resalta (tras fallar el GPS o al tocar «Confirmar» sin ubicación).
+        window.irAlMapaCarrito=function(){
+            var m=document.getElementById('op-map'); if(!m) return;
+            try{m.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){m.scrollIntoView();}
+            m.classList.remove('op-map-guia-pulso'); void m.offsetWidth; m.classList.add('op-map-guia-pulso');
+            var h=document.getElementById('op-map-hint'); if(h){h.classList.remove('op-map-hint-on'); void h.offsetWidth; h.classList.add('op-map-hint-on');}
+        };
+        // Botón «Confirmar» gris (falta ubicación): con el GPS caído va al mapa; si no, a «¿Dónde te lo llevamos?».
+        window.faltaUbicacion=function(){
+            if(window._gpsFallo&&!OP_MODE){ irAlMapaCarrito(); return; }
+            var s=document.getElementById('loc-section'); if(s){s.classList.add('pulse-hint');s.scrollIntoView({behavior:'smooth',block:'center'});}
         };
         // OP_MODE: parsear el pin que pega la centralista (link de Maps o "lat,lng").
         // fromBlur=true → re-render inmediato; oninput → re-render diferido para no cortar el tipeo.
@@ -6299,6 +6331,7 @@
             var addrInputCheck=document.getElementById('loc-addr');
             var addrVal=addrInputCheck?addrInputCheck.value.trim():(window._clientAddr||'').trim();
             if(!window._clientGPS){
+                if(window._gpsFallo&&!OP_MODE&&document.getElementById('op-map')){ irAlMapaCarrito(); return; }
                 // Scroll + pulso visual hacia la sección de ubicación
                 var locSection=document.getElementById('loc-section');
                 if(locSection){
@@ -6930,6 +6963,41 @@
             }
             return false;
         }
+        // [7-nov-2026] Los pedidos se cierran MIN_ANTES_CIERRE min ANTES de que cierre el local (DW-2399: pidió a las
+        // 21:54 en un local que cierra a las 22:00; nadie lo aceptó y se canceló). En ese tramo isRestOpen = false, así
+        // el «+», los almuerzos, «Confirmar» y la lista lo tratan como cerrado; los avisos dicen «ya no recibe pedidos»
+        // (horaCorteCierre). La centralista (?op=1) no tiene el corte: ella puede llamar al local.
+        var MIN_ANTES_CIERRE=15;
+        // Minutos hasta que termina el tramo abierto que contiene nowMin; une rangos pegados («8:00-12:00, 12:00-16:00»,
+        // «00:00-23:59») para no cortar a mitad del día. null si ahora no está en ningún rango.
+        function _hRestante(ranges,nowMin){
+            var fin=null,i,o,c,f;
+            for(i=0;i<ranges.length;i++){
+                o=ranges[i][0];c=ranges[i][1];f=null;
+                if(c<=o){ if(nowMin>=o) f=c+1440-nowMin; else if(nowMin<c) f=c-nowMin; } // cruza medianoche
+                else if(nowMin>=o&&nowMin<c) f=c-nowMin;
+                if(f!==null&&(fin===null||f>fin)) fin=f;
+            }
+            for(var k=0;fin!==null&&k<ranges.length&&fin<1440;k++){
+                var finAbs=(nowMin+fin)%1440,mas=0;
+                for(i=0;i<ranges.length;i++){
+                    o=ranges[i][0];c=ranges[i][1];
+                    var gap=(o-finAbs+1440)%1440; if(gap>1) continue;
+                    var largo=((c-o+1440)%1440)||1440; if(gap+largo>mas) mas=gap+largo;
+                }
+                if(!mas) break;
+                fin=Math.min(1440,fin+mas);
+            }
+            return fin;
+        }
+        function _hEnCorte(ranges,nowMin){ if(OP_MODE) return false; var q=_hRestante(ranges,nowMin); return q!==null&&q<=MIN_ANTES_CIERRE; }
+        function _hHoraTxt(min){ min=((min%1440)+1440)%1440; var h=Math.floor(min/60),m=min%60,h12=h%12||12; return h12+':'+(m<10?'0'+m:m)+' '+(h<12?'am':'pm'); }
+        // En los últimos MIN_ANTES_CIERRE min del local: la hora a la que cierra («10:00 pm»). Si no, null.
+        function horaCorteCierre(horario){
+            if(OP_MODE) return null;
+            var q=_minutosParaCerrar(horario); if(q===null||q>MIN_ANTES_CIERRE) return null;
+            var n=_hNowEc(); return _hHoraTxt(n.getHours()*60+n.getMinutes()+q);
+        }
         // [1-nov-2026] Se recalcula como máximo 1 vez por segundo: toLocaleString con zona horaria es LENTO y
         // ordenar ~200 locales lo llamaba miles de veces (3,9 s de CPU en un Android barato antes de ver la lista).
         var _hNowMs=0,_hNowVal=0;
@@ -6947,17 +7015,18 @@
             if(pr.multi){ // horario por dia: solo cuentan los segmentos de HOY
                 var hoy=pr.multi.filter(function(p){return !p.days||p.days.indexOf(dow)!==-1;});
                 if(!hoy.length) return false; // hoy no atiende
-                var sinHora=false,abierto=false;
-                hoy.forEach(function(p){ if(!p.ranges.length){sinHora=true;} else if(_hEnRango(p.ranges,nowMin)){abierto=true;} });
-                return abierto?true:(sinHora?null:false);
+                var sinHora=false,abierto=false,rs=[];
+                hoy.forEach(function(p){ if(!p.ranges.length){sinHora=true;} else { rs=rs.concat(p.ranges); if(_hEnRango(p.ranges,nowMin)){abierto=true;} } });
+                return abierto?!_hEnCorte(rs,nowMin):(sinHora?null:false);
             }
             if(pr.days&&pr.days.indexOf(dow)===-1) return false; // hoy cerrado por dia de la semana
             if(!pr.ranges.length) return null; // no se pudo leer la hora -> permitir
-            return _hEnRango(pr.ranges,nowMin)?true:false;
+            return _hEnRango(pr.ranges,nowMin)?!_hEnCorte(pr.ranges,nowMin):false;
         }
         function openBadge(horario){
             var st=isRestOpen(horario);
             if(st===null) return '';
+            if(st===false&&horaCorteCierre(horario)) return '<span class="badge-closed">🔴 Ya no recibe pedidos</span>';
             return st?'<span class="badge-open">🟢 Abierto</span>':'<span class="badge-closed">🔴 Cerrado</span>';
         }
         // Hora de apertura legible (am/pm). Prefiere el proximo turno de HOY; si no, el 1er rango. null si no hay hora.
@@ -6978,6 +7047,7 @@
         }
         // HOME VIVA (19-sep): minutos para que cierre el turno ABIERTO ahora; null si cerrado, sin hora o
         // cierre manual. Espejo de minutosParaCerrar de la nativa, con soporte del horario por día (multi).
+        // [7-nov] Une turnos pegados (_hRestante): es la misma cuenta que usa el corte de pedidos.
         function _minutosParaCerrar(horario){
             if(!horario||!String(horario).trim()) return null;
             if(_H_CERRADO_MANUAL.test(_hNorm(horario))) return null;
@@ -6986,14 +7056,7 @@
                 var hoy=pr.multi.filter(function(p){return (!p.days||p.days.indexOf(dow)!==-1)&&p.ranges.length;});
                 ranges=[]; hoy.forEach(function(p){ranges=ranges.concat(p.ranges);});
             } else if(pr.days&&pr.days.indexOf(dow)===-1) return null;
-            var best=null;
-            ranges.forEach(function(r){
-                var o=r[0],c=r[1],f=null;
-                if(c<=o){ if(nowMin>=o) f=c+1440-nowMin; else if(nowMin<c) f=c-nowMin; }
-                else if(nowMin>=o&&nowMin<c) f=c-nowMin;
-                if(f!=null&&(best===null||f<best)) best=f;
-            });
-            return best;
+            return _hRestante(ranges,nowMin);
         }
         // ── AVISO DE LOCAL CERRADO (toast) — 2026-06-19 ──
         function _toast(html,ms){
@@ -7010,6 +7073,12 @@
                 try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
                 return;
             }
+            var hc=restObj?horaCorteCierre(restObj.horario):null;
+            if(hc){ // [7-nov] últimos MIN_ANTES_CIERRE min antes de que cierre
+                _toast('🔴 <strong>'+esc(nombre)+'</strong> ya no recibe pedidos por hoy<br><span style="opacity:.85;font-size:.9em">Cierra a las '+esc(hc)+' · recibimos pedidos hasta '+MIN_ANTES_CIERRE+' min antes</span>');
+                try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
+                return;
+            }
             var ap=restObj?proximaApertura(restObj.horario):null;
             _toast('🔴 <strong>'+esc(nombre)+'</strong> está cerrado ahora'+(ap?' · abre '+esc(ap):'')+'<br><span style="opacity:.85;font-size:.9em">No se puede pedir hasta que abra</span>');
             try{if(navigator.vibrate)navigator.vibrate([8,40,8])}catch(e){}
@@ -7017,11 +7086,12 @@
         // El carrito tiene locales cerrados (cerraron mientras los items esperaban): avisar y ofrecer quitarlos.
         function mostrarCarritoCerrado(restObjs){
             try{ if(typeof currentView!=='undefined'&&currentView!=='cart'&&typeof showCart==='function') showCart(); }catch(e){}
-            var nombres=restObjs.map(function(r){ var ap=proximaApertura(r.horario); return '<strong>'+esc(r.nombre||'Local')+'</strong>'+(ap?' (abre '+esc(ap)+')':''); }).join(', ');
+            var todosCorte=true;
+            var nombres=restObjs.map(function(r){ var hc=horaCorteCierre(r.horario); if(!hc) todosCorte=false; var ap=hc?null:proximaApertura(r.horario); return '<strong>'+esc(r.nombre||'Local')+'</strong>'+(hc?' (cierra a las '+esc(hc)+')':(ap?' (abre '+esc(ap)+')':'')); }).join(', ');
             var t=document.getElementById('_toast');
             if(!t){ t=document.createElement('div'); t.id='_toast'; t.className='dewan-toast'; document.body.appendChild(t); }
             t.style.pointerEvents='auto';
-            t.innerHTML='🔴 '+(restObjs.length>1?'Estos locales están cerrados':'Este local está cerrado')+' ahora: '+nombres+
+            t.innerHTML='🔴 '+(todosCorte?(restObjs.length>1?'Estos locales ya no reciben pedidos por hoy':'Este local ya no recibe pedidos por hoy'):(restObjs.length>1?'Estos locales están cerrados ahora':'Este local está cerrado ahora'))+': '+nombres+
                 '<div style="margin-top:11px"><button onclick="quitarCerradosDelCarrito()" style="pointer-events:auto;background:#D93A0B;color:#fff;border:none;border-radius:10px;padding:9px 18px;font-weight:700;font-size:.9rem;cursor:pointer">Quitar y seguir</button></div>';
             t.classList.add('show');
             clearTimeout(window._toastTimer); // este aviso requiere acción: no se auto-oculta
