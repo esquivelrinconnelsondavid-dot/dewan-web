@@ -933,6 +933,12 @@
         .op-map-guia{border:2px solid var(--cta)}
         .op-map-guia-pulso{animation:loc-hint-pulse 1.6s ease-out 3}
         .gps-reintentar{display:block;margin:10px auto 0;background:none;border:none;padding:6px 10px;color:var(--gris-2);font-family:inherit;font-size:0.8rem;font-weight:700;text-decoration:underline;cursor:pointer}
+        /* [13-nov] Mapa GRANDE del carrito (como Uber/Rappi): botón que lo abre; el texto bajo el mapa chico también lo abre
+           (antes era texto suelto y lo tocaban sin que pasara nada: 12-nov, 2 toques y se fue) */
+        .btn-mapa-grande{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card);color:var(--cta-hover);border:2px solid var(--cta);border-radius:14px;padding:13px 16px;font-family:inherit;font-weight:900;font-size:0.95rem;cursor:pointer;margin-bottom:10px}
+        .btn-mapa-grande.principal{background:var(--cta);color:#fff;font-size:1rem;padding:15px 18px;box-shadow:0 8px 22px rgba(232,67,26,0.30)}
+        .op-map-hint-btn{display:block;width:100%;background:none;border:none;font-family:inherit;cursor:pointer;padding:6px 4px;line-height:1.35}
+        .op-map-hint-btn u{color:var(--cta-hover);text-underline-offset:2px}
         .almuerzo-cat.pulse-hint{border-radius:12px;animation:loc-hint-pulse 1.6s ease-out 2}
         .btn-almuerzo-add.is-off{opacity:0.4}
 
@@ -1281,6 +1287,8 @@
         .nh-calle b{display:block;font-size:.98rem;font-weight:900;letter-spacing:-.01em;line-height:1.25}
         .nh-calle span{display:block;font-size:.72rem;color:var(--gris);font-weight:600}
         #nh-ubic .nh-aqui{margin-top:0}
+        /* [13-nov] la del carrito: el mapa ocupa casi toda la hoja (como Uber/Rappi); lo de abajo mide ~290 px */
+        #nh-ubic .nh-hoja-grande .nh-mapa{height:max(240px,calc(92vh - 290px));height:max(240px,calc(92dvh - 290px))}
         .pwa-bar img{width:40px!important;height:40px!important;border-radius:10px!important;box-shadow:0 2px 6px rgba(0,0,0,.18)}
         /* hojas de Compras / Encomiendas dentro de la web */
         .nh-punto{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--card2);border:1.5px dashed rgba(232,67,26,.45);border-radius:14px;padding:10px 12px;font-family:inherit;color:var(--texto);cursor:pointer;min-height:54px}
@@ -3926,9 +3934,9 @@
             o=o||{};
             var w=document.createElement('div'); w.id='nh-ubic';
             w.innerHTML='<div class="nh-velo" onclick="cerrarUbicacion()"></div>'+
-                '<div class="nh-hoja nh-hoja-mapa" role="dialog" aria-modal="true" aria-labelledby="nh-ubic-t">'+
+                '<div class="nh-hoja nh-hoja-mapa'+(o.grande?' nh-hoja-grande':'')+'" role="dialog" aria-modal="true" aria-labelledby="nh-ubic-t">'+
                     '<div class="nh-asa"></div>'+
-                    '<div class="nh-hh"><div><b id="nh-ubic-t">'+esc(o.titulo||'¿Dónde te lo llevamos?')+'</b><span>Mueve el mapa hasta que el pin quede en la puerta</span></div><button class="nh-x" onclick="cerrarUbicacion()" aria-label="Cerrar">✕</button></div>'+
+                    '<div class="nh-hh"><div><b id="nh-ubic-t">'+esc(o.titulo||'¿Dónde te lo llevamos?')+'</b><span id="nh-ubic-s">'+esc(o.sub||'Mueve el mapa hasta que el pin quede en la puerta')+'</span></div><button class="nh-x" onclick="cerrarUbicacion()" aria-label="Cerrar">✕</button></div>'+
                     '<div class="nh-mapa"><div id="nh-mapa-el"></div><div class="nh-pin-fijo" aria-hidden="true">'+NH_SVG_PIN+'</div></div>'+
                     '<div class="nh-calle"><span class="ic" aria-hidden="true">📍</span><div><b id="nh-calle-t">Buscando…</b><span id="nh-calle-s">Riobamba</span></div></div>'+
                     '<button type="button" class="nh-aqui" onclick="nhUbicGPS()">📍 Usar mi ubicación actual</button>'+
@@ -3955,6 +3963,7 @@
                 map.on('movestart',function(){var p=document.querySelector('#nh-ubic .nh-pin-fijo');if(p)p.classList.add('arriba');});
                 map.on('moveend',function(){var p=document.querySelector('#nh-ubic .nh-pin-fijo');if(p)p.classList.remove('arriba');nhUbicLeer();});
                 setTimeout(function(){try{map.invalidateSize();}catch(e){}},160);
+                nhUbicBoton();
                 if(!tiene&&o.gps!==false) nhUbicGPS(); else nhUbicLeer();
             });
         }
@@ -3981,17 +3990,30 @@
                 U.map.setCenter(centro); U.map.setZoom(tiene?17:14);
             }
             window._nhUbicMap=U.map;
+            nhUbicBoton();
             if(!tiene&&o.gps!==false) nhUbicGPS(); else nhUbicLeer();
         }
         window.cerrarUbicacion=function(){
             var w=document.getElementById('nh-ubic'); if(!w) return false;
             try{if(window._nhUbicMap&&!window._nhUbicMap._dwGoogle)window._nhUbicMap.remove();}catch(e){} window._nhUbicMap=null; // el de Google no se destruye: se reutiliza
             w.parentNode.removeChild(w);
-            if(!document.getElementById('nh-puerta')) document.body.classList.remove('sheet-locked');
+            // [13-nov] la hoja también se abre ENCIMA del carrito (mapa grande): si el carrito sigue abierto, la página sigue quieta
+            if(!document.getElementById('nh-puerta')&&!_cartSheetOpen()) document.body.classList.remove('sheet-locked');
             return true;
         };
+        // [13-nov] Mapa alejado = el pin tapa cuadras enteras (pedido #795). Con el mapa lejos el botón dice «Acercar el mapa»
+        // y solo acerca (a nivel de casas); recién ahí dice «Confirmar». Vale para todos los que usan esta hoja.
+        function nhUbicLejos(){
+            var m=window._nhUbicMap; if(!m) return false;
+            var z=Number(m.getZoom()); return isFinite(z)&&z>0&&z<16;
+        }
+        function nhUbicBoton(){
+            var b=document.getElementById('nh-ubic-ok'),u=window._nhUbic; if(!b||!u) return;
+            b.textContent=nhUbicLejos()?'🔍 Acercar el mapa':(u.o.boton||'Confirmar esta ubicación');
+        }
         function nhUbicLeer(){
             var u=window._nhUbic,map=window._nhUbicMap; if(!u||!map) return;
+            nhUbicBoton();
             var c=mapaCentro(map); u.lat=c.lat; u.lng=c.lng;
             if(u.gps&&haversine(c.lat,c.lng,u.gps.coords.latitude,u.gps.coords.longitude)>0.025) u.gps=null; // lo movió: ya es un pin a mano
             var t=document.getElementById('nh-calle-t'),s=document.getElementById('nh-calle-s');
@@ -4025,6 +4047,11 @@
         };
         window.nhUbicOk=function(){
             var u=window._nhUbic; if(!u||u.lat==null) return;
+            if(nhUbicLejos()){
+                mapaIr(window._nhUbicMap,u.lat,u.lng,16);
+                var s=document.getElementById('nh-ubic-s'); if(s) s.textContent='🔍 Acercamos el mapa: muévelo hasta que el pin quede justo en tu puerta y confirma';
+                return;
+            }
             var o=u.o,lat=u.lat,lng=u.lng,info=u.info,gps=u.gps;
             cerrarUbicacion();
             try{o.onOk&&o.onOk(lat,lng,info,gps);}catch(e){}
@@ -5536,7 +5563,7 @@
                         h+='<div class="loc-gps-ok"><span>✅ ¡Te ubicamos! Mira el mapa: ¿el pin está en tu casa?</span></div>';
                     }
                     h+='<div id="op-map" style="height:240px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:8px"></div>';
-                    h+='<div id="op-map-hint" style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:6px;text-align:center">👆 Si no está exacto, arrastra el pin a tu casa</div>';
+                    h+='<button type="button" id="op-map-hint" class="op-map-hint-btn" onclick="abrirMapaCarrito(\'ajustar\')" style="font-size:0.78rem;color:var(--gris);font-weight:700;margin-top:2px;text-align:center">👆 Si no está exacto, arrastra el pin a tu casa · <u>o ábrelo en grande</u></button>';
                     var _dmUI=distMinCarrito();
                     if(_dmUI!=null&&_dmUI>4){
                         h+='<div style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:0.8rem;font-weight:700;text-align:center">⚠️ Tu entrega queda a ~'+_dmUI.toFixed(1)+' km del local. Revisa que el pin esté en tu casa 👆</div>';
@@ -5545,18 +5572,22 @@
                     h+='<input type="text" class="loc-addr-input" id="loc-addr" placeholder="Ej: casa azul, portón negro, 2do piso, junto a..." value="'+esc(window._clientAddr)+'" oninput="window._clientAddr=this.value;guardarUbic()">';
                 } else if(window._gpsFallo){
                     // [7-nov] El GPS ya falló (ver requestGPSCart): el mapa pasa a ser lo principal; reintentar queda chico.
+                    // [13-nov] Lo principal es el mapa GRANDE (como Uber/Rappi; se abre solo al fallar el GPS). El mapa chico
+                    // sigue funcionando igual y el texto de abajo también abre el grande.
                     h+='<div class="loc-gps-fallo">'+(window._gpsFallo==='permiso'?'📍 Tu celular no nos deja ver tu ubicación. No pasa nada: <b>marca tu casa en el mapa 👇</b>':(window._gpsFallo==='lejos'?'📍 Tu GPS te ubicó fuera de la ciudad. <b>Marca tu casa en el mapa 👇</b>':'📍 No pudimos ver tu ubicación con el GPS. <b>Marca tu casa en el mapa 👇</b>'))+'</div>';
+                    h+='<button type="button" class="btn-mapa-grande principal" id="btn-mapa-grande" onclick="abrirMapaCarrito(\'botón\')">🗺️ Marcar mi casa en el mapa</button>';
                     h+='<div id="op-map" class="op-map-guia" style="height:240px;border-radius:12px;overflow:hidden"></div>';
-                    h+='<div id="op-map-hint" style="font-size:0.84rem;color:var(--cta);font-weight:800;margin-top:6px;text-align:center">👆 Toca tu casa en el mapa</div>';
+                    h+='<button type="button" id="op-map-hint" class="op-map-hint-btn" onclick="abrirMapaCarrito(\'texto\')" style="font-size:0.84rem;color:var(--cta);font-weight:800;margin-top:2px;text-align:center">👆 Toca tu casa en el mapa · <u>ábrelo en grande</u></button>';
                     h+='<button type="button" class="gps-reintentar" id="btn-gps-cart" onclick="requestGPSCart()">o vuelve a intentar con el GPS</button>';
                     h+='<div class="gps-status" id="gps-status-cart" style="margin-top:4px;text-align:center"></div>';
                 } else {
                     h+='<button class="btn-gps-main" id="btn-gps-cart" onclick="requestGPSCart()">📍 Usar mi ubicación</button>';
                     h+='<div class="gps-status" id="gps-status-cart" style="margin-top:6px;text-align:center"></div>';
                     h+='<div style="font-size:0.82rem;color:var(--gris-2);font-weight:700;margin-top:8px;text-align:center;line-height:1.4">👆 Un toque y verás tu casa en el mapa para confirmar 🛵</div>';
-                    h+='<div style="font-size:0.78rem;color:var(--gris-2);font-weight:700;margin:14px 0 6px;text-align:center">¿el GPS no agarra? marca tu casa en el mapa 👇</div>';
+                    h+='<div style="font-size:0.78rem;color:var(--gris-2);font-weight:700;margin:14px 0 6px;text-align:center">¿el GPS no agarra?</div>';
+                    h+='<button type="button" class="btn-mapa-grande" id="btn-mapa-grande" onclick="abrirMapaCarrito(\'botón\')">🗺️ Marcar mi casa en el mapa</button>';
                     h+='<div id="op-map" style="height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>';
-                    h+='<div id="op-map-hint" style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:5px;text-align:center">👆 Toca tu casa en el mapa</div>';
+                    h+='<button type="button" id="op-map-hint" class="op-map-hint-btn" onclick="abrirMapaCarrito(\'texto\')" style="font-size:0.74rem;color:var(--gris);font-weight:600;margin-top:1px;text-align:center">👆 Toca tu casa en el mapa · <u>ábrelo en grande</u></button>';
                 }
             } else if(window._clientGPS){
                 h+='<div class="loc-gps-ok"><span>✅ Ubicación GPS compartida</span></div>';
@@ -5988,7 +6019,7 @@
             if(btn){btn.disabled=true;btn.textContent='🔍 Buscando...';}
             getBestPosition(function(pos){
                 if(!gpsEnZona(pos)){
-                    if(!OP_MODE&&!window._clientGPS){ try{if(window.dwVis)dwVis.toque('GPS: fuera de la ciudad');}catch(e){} window._gpsFallo='lejos'; showCart(); setTimeout(irAlMapaCarrito,150); return; }
+                    if(!OP_MODE&&!window._clientGPS){ try{if(window.dwVis)dwVis.toque('GPS: fuera de la ciudad');}catch(e){} window._gpsFallo='lejos'; showCart(); setTimeout(function(){abrirMapaCarrito('GPS falló');},150); return; }
                     if(st){st.className='gps-status';st.textContent='⚠️ Tu GPS te ubicó fuera de la ciudad. Marca tu casa en el mapa 👇';}
                     if(btn){btn.disabled=false;btn.textContent='📍 Intentar de nuevo';}
                     return;
@@ -5999,7 +6030,9 @@
                 // [7-nov] Cliente sin punto: el GPS ya falló una vez → el carrito pasa a «marca tu casa en el mapa».
                 // Antes el botón decía «Toca aquí para poner tu ubicación», volvía a pedir el GPS y fallaba igual:
                 // lo tocaban 2–12 veces sin mirar el mapa (5-nov TikTok; 7-nov LIAH terminó pidiendo por WhatsApp).
-                if(!OP_MODE&&!window._clientGPS){ window._gpsFallo=(err&&err.code===1)?'permiso':'si'; showCart(); setTimeout(irAlMapaCarrito,150); return; }
+                // [13-nov] …y se abre solo el mapa GRANDE con el pin al centro (como Uber/Rappi): el 12-nov 2 personas con el GPS
+                // caído no tocaron el mapa chico (una tocó 2 veces el texto «Toca tu casa en el mapa») y se fueron.
+                if(!OP_MODE&&!window._clientGPS){ window._gpsFallo=(err&&err.code===1)?'permiso':'si'; showCart(); setTimeout(function(){abrirMapaCarrito('GPS falló');},150); return; }
                 if(st){st.className='gps-status';st.textContent=window._clientGPS?'No pudimos ver tu ubicación ahora. Si no estás ahí, arrastra el pin a tu casa 👇':'No se pudo obtener GPS';}
                 if(btn){btn.disabled=false;btn.textContent=window._clientGPS?'📍 Usar mi ubicación actual':'📍 Toca aquí para poner tu ubicación';}
                 // Mostrar campo de texto automáticamente si falla GPS
@@ -6014,9 +6047,32 @@
             m.classList.remove('op-map-guia-pulso'); void m.offsetWidth; m.classList.add('op-map-guia-pulso');
             var h=document.getElementById('op-map-hint'); if(h){h.classList.remove('op-map-hint-on'); void h.offsetWidth; h.classList.add('op-map-hint-on');}
         };
-        // Botón «Confirmar» gris (falta ubicación): con el GPS caído va al mapa; si no, a «¿Dónde te lo llevamos?».
+        // [13-nov] Mapa GRANDE del carrito = la hoja de «Entregar en» (pin fijo al centro + la calle + «Usar mi ubicación
+        // actual» + «Confirmar»), encima del carrito. Al confirmar queda igual que si marcara el mapa chico (pin a mano,
+        // acc 0) o, si usó el GPS adentro, como el botón del GPS. El botón «📍 Usar mi ubicación» del carrito sigue igual.
+        window.abrirMapaCarrito=function(origen){
+            if(OP_MODE){ irAlMapaCarrito(); return; }
+            var g=window._clientGPS,f=window._gpsFallo;
+            try{if(window.dwVis)dwVis.toque('mapa grande: '+(origen||'botón'));}catch(e){}
+            try{if(typeof window.clarity==='function')window.clarity('event','mapa_grande');}catch(e){}
+            var addr=document.getElementById('loc-addr'); if(addr) window._clientAddr=addr.value;
+            abrirUbicacion({titulo:'¿Dónde te lo llevamos?',grande:true,
+                sub:f==='permiso'?'Tu celular no nos deja ver tu ubicación. Mueve el mapa hasta que el pin quede en tu puerta':
+                    (f==='lejos'?'Tu GPS te ubicó fuera de la ciudad. Mueve el mapa hasta que el pin quede en tu puerta':
+                    (f?'No pudimos ver tu ubicación con el GPS. Mueve el mapa hasta que el pin quede en tu puerta':null)),
+                lat:g?g.lat:null,lng:g?g.lng:null,
+                gps:f?false:undefined, // el GPS ya falló: no se vuelve a pedir solo (queda «Usar mi ubicación actual» adentro)
+                onOk:function(lat,lng,info,gps){
+                    nhAplicarEntrega(lat,lng,info,gps);
+                    if(gps) window._gpsFallo=null;
+                    try{if(window.dwVis)dwVis.toque('mapa grande: confirmó');}catch(e){}
+                    try{if(typeof window.clarity==='function')window.clarity('event','mapa_grande_ok');}catch(e){}
+                    if(currentView==='cart') showCart();
+                }});
+        };
+        // Botón «Confirmar» gris (falta ubicación): con el GPS caído abre el mapa grande; si no, a «¿Dónde te lo llevamos?».
         window.faltaUbicacion=function(){
-            if(window._gpsFallo&&!OP_MODE){ irAlMapaCarrito(); return; }
+            if(window._gpsFallo&&!OP_MODE){ abrirMapaCarrito('Confirmar gris'); return; }
             var s=document.getElementById('loc-section'); if(s){s.classList.add('pulse-hint');s.scrollIntoView({behavior:'smooth',block:'center'});}
         };
         // OP_MODE: parsear el pin que pega la centralista (link de Maps o "lat,lng").
@@ -6333,7 +6389,7 @@
             var addrInputCheck=document.getElementById('loc-addr');
             var addrVal=addrInputCheck?addrInputCheck.value.trim():(window._clientAddr||'').trim();
             if(!window._clientGPS){
-                if(window._gpsFallo&&!OP_MODE&&document.getElementById('op-map')){ irAlMapaCarrito(); return; }
+                if(window._gpsFallo&&!OP_MODE){ abrirMapaCarrito('Confirmar gris'); return; }
                 // Scroll + pulso visual hacia la sección de ubicación
                 var locSection=document.getElementById('loc-section');
                 if(locSection){
