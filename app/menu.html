@@ -2965,6 +2965,47 @@
             });
             return cambio?out.join(' '):null;
         }
+        // [15-nov] NOMBRE de local con errores de tipeo. Antes «pinocho» se corregía a «pincho» (pinchos) y no salía
+        // Pinocchio's (Belén terminó pidiéndolo por la operadora) y «de hugos» daba «No encontramos» (Hugos Merced).
+        // Cada palabra que escribió (sin «de/el/la…») tiene que parecerse a una palabra del nombre: igual, el comienzo,
+        // o 1 letra de diferencia (2 si es larga) sin contar letras dobles. Las palabras de comida («hornado») solo valen
+        // iguales o como comienzo (de esas se encargan los platos). Solo se usa cuando la búsqueda no encontró NADA
+        // (ni locales ni platos), antes de corregir a una palabra de plato: lo que hoy da resultados no cambia.
+        var _NOMBRE_RELLENO={de:1,del:1,el:1,la:1,los:1,las:1,y:1,en:1,al:1,restaurante:1,restaurant:1,local:1};
+        function _palabrasNombre(s){
+            return removeAccents(String(s||'').toLowerCase()).replace(/[^a-zñ ]/g,' ').split(/\s+/)
+                .filter(function(w){return w&&!_NOMBRE_RELLENO[w];});
+        }
+        // Solo la lista FIJA de comidas (no lo frecuente en las cartas: «pincho» sale mucho y se comía a «pinocho»).
+        var _comidaFija=null;
+        function _palabrasComida(){
+            if(_comidaFija) return _comidaFija;
+            var m={}; function add(t){removeAccents(String(t||'').toLowerCase()).replace(/[^a-zñ ]/g,' ').split(/\s+/).forEach(function(w){if(w.length>=4)m[w]=1;});}
+            COMIDA_COMUN.forEach(add); FOOD_SYNONYMS.forEach(function(g){g.t.concat(g.all).forEach(add);});
+            return (_comidaFija=m);
+        }
+        function _localesParecidos(q,rs){
+            var qs=_palabrasNombre(q);
+            if(!qs.length||!qs.some(function(w){return w.length>=4;})) return [];
+            var C=_palabrasComida(),sd=function(w){return w.replace(/(.)\1+/g,'$1');},comida={};
+            function deComida(w){ // «crepp», «paste», «marosqueria»: comida mal escrita o a medias → la corrige la búsqueda de platos
+                if(comida[w]!=null) return comida[w];
+                if(C[w]) return (comida[w]=true);
+                for(var c in C){if(c.indexOf(w)===0||_distEd(w,c,1)<=1) return (comida[w]=true);}
+                return (comida[w]=false);
+            }
+            function pega(w,n){
+                if(n===w||(w.length>=3&&n.indexOf(w)===0)) return true;
+                if(w.length<5||C[n]||deComida(w)) return false; // corta o de comida: solo igual o comienzo
+                var a=sd(w),b=sd(n),max=a.length>=8?2:1;
+                if(a===b||_distEd(a,b,max)<=max) return true;
+                return a.length>=6&&b.length>a.length&&_distEd(a,b.slice(0,a.length),1)<=1; // escribió solo el comienzo, con un error
+            }
+            return (rs||[]).filter(function(r){
+                var ns=_palabrasNombre(r.nombre); if(!ns.length) return false;
+                return qs.every(function(w){return ns.some(function(n){return pega(w,n);});});
+            });
+        }
         function simplify(s){
             s=s.toLowerCase().replace(/[^a-záéíóúñü]/g,'');
             var r='';for(var i=0;i<s.length;i++){if(i===0||s[i]!==s[i-1])r+=s[i]}return r;
@@ -4007,9 +4048,13 @@
             var m=window._nhUbicMap; if(!m) return false;
             var z=Number(m.getZoom()); return isFinite(z)&&z>0&&z<16;
         }
+        // [15-nov] …pero el botón ya NO se esconde: el 14-nov Karen alejó el mapa para buscar su casa, «Confirmar» volvió a
+        // «Acercar el mapa» y estuvo 3 min sin poder confirmar. Ahora siempre dice «Confirmar»; con el mapa lejos, tocarlo
+        // acerca al pin y pregunta «¿Es aquí?» (el botón pasa a «Sí, es aquí») y el 2.º toque confirma. Cerca confirma directo.
         function nhUbicBoton(){
             var b=document.getElementById('nh-ubic-ok'),u=window._nhUbic; if(!b||!u) return;
-            b.textContent=nhUbicLejos()?'🔍 Acercar el mapa':(u.o.boton||'Confirmar esta ubicación');
+            if(nhUbicLejos()) u.esAqui=false; // volvió a alejar: otra vez «Confirmar» (y otra vez acerca y pregunta)
+            b.textContent=u.esAqui?'✅ Sí, es aquí':(u.o.boton||'Confirmar esta ubicación');
         }
         function nhUbicLeer(){
             var u=window._nhUbic,map=window._nhUbicMap; if(!u||!map) return;
@@ -4049,7 +4094,11 @@
             var u=window._nhUbic; if(!u||u.lat==null) return;
             if(nhUbicLejos()){
                 mapaIr(window._nhUbicMap,u.lat,u.lng,16);
-                var s=document.getElementById('nh-ubic-s'); if(s) s.textContent='🔍 Acercamos el mapa: muévelo hasta que el pin quede justo en tu puerta y confirma';
+                u.esAqui=true; // el texto del botón lo pone acá (en OpenStreetMap el zoom recién cambia al terminar la animación)
+                var b=document.getElementById('nh-ubic-ok'); if(b) b.textContent='✅ Sí, es aquí';
+                var s=document.getElementById('nh-ubic-s'); if(s) s.textContent='🔍 ¿Es aquí? Acercamos el mapa: si el pin no está justo en la puerta, muévelo un poco';
+                try{if(window.dwVis)dwVis.toque((u.o.grande?'mapa grande':'ubicación')+': ¿es aquí?');}catch(e){}
+                try{if(typeof window.clarity==='function')window.clarity('event','mapa_es_aqui');}catch(e){}
                 return;
             }
             var o=u.o,lat=u.lat,lng=u.lng,info=u.info,gps=u.gps;
@@ -4082,6 +4131,17 @@
             guardarUbic();
             try{trackUbicacionPixel();}catch(e){}
             nhRecalcCarrito();
+        }
+        // [15-nov] Con algo en el carrito NO se ofrece bajar la app (ni la franja de arriba ni «Descarga la app de DEWAN»
+        // de abajo): el 15-nov una persona (TikTok, Android) agregó un almuerzo, 3 s después tocó «Descarga la app», se fue
+        // a Play Store y no volvió ni pidió por la app. Si ya estaba en pantalla al agregar, se queda invisible en su lugar
+        // (nada se mueve); al volver al inicio ya no sale. Con el carrito vacío vuelve con las reglas de siempre.
+        function _promoAppHTML(cual,html){
+            if(!html||!(window._cart&&window._cart.length)) return html;
+            if(!document.querySelector(cual==='pwa-bar'?'#pwa-bar':'.dw-app-fija')) return '';
+            var tag=(html.match(/^<[^>]+>/)||[''])[0],oculta='visibility:hidden;pointer-events:none';
+            return html.replace(tag,tag.indexOf(' style="')>=0?tag.replace(' style="',' aria-hidden="true" tabindex="-1" style="'+oculta+';')
+                :tag.replace(/^<(\w+) /,'<$1 aria-hidden="true" tabindex="-1" style="'+oculta+'" '));
         }
         window.renderHome=function(){
             currentView='home';
@@ -4135,7 +4195,7 @@
             // NUEVO INICIO (4-oct-2026): el orden de las apps grandes. Arriba, DÓNDE te lo llevamos;
             // luego el buscador, las puertas (Compras/Encomiendas) y las categorías; después la promo
             // que se desliza y los carriles de comida (la comida sigue en la primera pantalla).
-            var h=(window._pwaModo&&!window._activeCat&&!OP_MODE&&window.pwaBarHTML?window.pwaBarHTML():'')+
+            var h=_promoAppHTML('pwa-bar',window._pwaModo&&!window._activeCat&&!OP_MODE&&window.pwaBarHTML?window.pwaBarHTML():'')+
                 nhHeaderHTML(hasGPS)+(window._activeCat?'':pdPedidoActivoHTML()+nhCarreraActivaHTML())+
                 '<button class="nh-busca" onclick="showSearch()">'+NH_SVG_BUSCA+'<span>'+(searchPrefill?esc(searchPrefill):'Buscar locales o platos')+'</span></button>'+
                 (window._activeCat?'':'<div class="nh-confia">🛵 Todo Riobamba · 💵 Pagas al recibir · ✓ Sin registro</div>'+nhPuertasHTML());
@@ -4278,11 +4338,11 @@
             // Enlace FIJO a la app (el banner se puede cerrar o no llegar a salir).
             // Solo en Android: en iPhone todavía no hay app y mandarlos a Play es un callejón.
             if (/android/i.test(navigator.userAgent)) {
-                h+='<a href="https://play.google.com/store/apps/details?id=com.dewan.cliente" target="_blank" rel="noopener" '+
+                h+=_promoAppHTML('dw-app-fija','<a class="dw-app-fija" href="https://play.google.com/store/apps/details?id=com.dewan.cliente" target="_blank" rel="noopener" '+
                    'style="display:flex;align-items:center;gap:10px;justify-content:center;margin:18px 16px 0;padding:13px 16px;'+
                    'background:#1f1a17;color:#fff;border-radius:14px;text-decoration:none;font-weight:800;font-size:.92rem">'+
                    '<img src="/app/icons-cliente/icon-192.png" alt="App DEWAN, la campana roja" style="width:40px;height:40px;border-radius:10px">'+
-                   '<span>Descarga la app de DEWAN<br><span style="font-weight:600;font-size:.76rem;color:#cfc7bd">Es la de la campana roja · gratis en Google Play</span></span></a>';
+                   '<span>Descarga la app de DEWAN<br><span style="font-weight:600;font-size:.76rem;color:#cfc7bd">Es la de la campana roja · gratis en Google Play</span></span></a>');
             }
             h+='<div class="app-footer">DEWAN Delivery · Riobamba, Ecuador<br>dewansas.com · <a href="https://dewansas.com/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacidad</a></div>';
             app.innerHTML=h;
@@ -4865,7 +4925,7 @@
 
         // V2.2: Score de relevancia por keywords (nombre > categoría > platos)
         // Devuelve un score para rankear, y flagea al restaurante como especialista o no.
-        function scoreRestRelevance(r,keywords){
+        function scoreRestRelevance(r,keywords,parecidos){
             var n=removeAccents((r.nombre||'').toLowerCase());
             var c=removeAccents((r.categoria||'').toLowerCase());
             var t=removeAccents((r.tipo_restaurante||'').toLowerCase());
@@ -4876,6 +4936,7 @@
                 if(n.indexOf(k)!==-1) nameMatch=true;
                 if(c.indexOf(k)!==-1||t.indexOf(k)!==-1) catMatch=true;
             }
+            if(parecidos&&parecidos[r.id||r.nombre]) nameMatch=true; // [15-nov] nombre parecido («pinocho» → Pinocchio's): abre su carta completa
             var score=0;
             if(nameMatch) score+=10000;
             if(catMatch) score+=3000;
@@ -4888,8 +4949,8 @@
             return score;
         }
 
-        function rankRestsByKeywords(rests,keywords){
-            rests.forEach(function(r){scoreRestRelevance(r,keywords)});
+        function rankRestsByKeywords(rests,keywords,parecidos){
+            rests.forEach(function(r){scoreRestRelevance(r,keywords,parecidos)});
             rests.sort(function(a,b){
                 var sa=isRestOpen(a.horario),sb=isRestOpen(b.horario);
                 var va=sa===true?0:sa===null?1:2;
@@ -5060,6 +5121,11 @@
 
                     // [1-nov-2026] No encontró nada → probar con la palabra conocida más parecida
                     // («marosqueria» → «marisqueria», «hamburgesa» → «hamburguesa»). Si tampoco, se muestra lo que escribió.
+                    // [15-nov] …pero antes, si se parece al NOMBRE de un local («pinocho», «de hugos», «hapoy»), ese local.
+                    if(!combined.length&&!(plates||[]).length&&!corr){
+                        var par=[]; try{par=_localesParecidos(q,sessionData.resultados);}catch(e){par=[];}
+                        if(par.length){var parecidos={};par.forEach(function(r){parecidos[r.id||r.nombre]=1;});combined=par.slice();rankRestsByKeywords(combined,[q],parecidos);}
+                    }
                     if(!combined.length&&!(plates||[]).length){
                         var etapa=corr?corr.etapa:0,yaQ=removeAccents(q.toLowerCase().trim()),sug=null,de=corr?corr.de:q;
                         if(etapa<1){try{sug=_corregirBusqueda(q);}catch(e){} if(sug&&sug!==yaQ){window._searchCorrNext={de:de,etapa:1}; doSearch(sug); return;}}
@@ -7808,7 +7874,7 @@
             window._pwaCerrar = function(){ var bar = document.getElementById('pwa-bar'); if (bar) bar.remove(); window._pwaModo = null; dormir(7); };
             // Si el inicio ya se pintó antes de este script, la franja se agrega arriba ahora.
             var app0 = document.getElementById('app');
-            if (app0 && !document.getElementById('pwa-bar') && document.querySelector('.nh-top') && !/[?&]op=1/.test(location.search)) app0.insertAdjacentHTML('afterbegin', window.pwaBarHTML());
+            if (app0 && !document.getElementById('pwa-bar') && document.querySelector('.nh-top') && !/[?&]op=1/.test(location.search) && !(window._cart && window._cart.length)) app0.insertAdjacentHTML('afterbegin', window.pwaBarHTML()); // [15-nov] con carrito, no
         }
     })();
     </script>
