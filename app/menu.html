@@ -4053,7 +4053,9 @@
         // acerca al pin y pregunta «¿Es aquí?» (el botón pasa a «Sí, es aquí») y el 2.º toque confirma. Cerca confirma directo.
         function nhUbicBoton(){
             var b=document.getElementById('nh-ubic-ok'),u=window._nhUbic; if(!b||!u) return;
-            if(nhUbicLejos()) u.esAqui=false; // volvió a alejar: otra vez «Confirmar» (y otra vez acerca y pregunta)
+            if(u.esAqui&&nhUbicLejos()){ // volvió a alejar: otra vez «Confirmar» (y otra vez acerca y pregunta) y el texto de arriba vuelve al de siempre
+                u.esAqui=false; var s0=document.getElementById('nh-ubic-s'); if(s0) s0.textContent=u.o.sub||'Mueve el mapa hasta que el pin quede en la puerta';
+            }
             b.textContent=u.esAqui?'✅ Sí, es aquí':(u.o.boton||'Confirmar esta ubicación');
         }
         function nhUbicLeer(){
