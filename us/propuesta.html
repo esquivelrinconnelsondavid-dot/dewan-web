@@ -227,7 +227,8 @@ h1{font-size:34px;font-weight:800;margin:8px 0 10px}
   var $ = function (id) { return document.getElementById(id); };
   var P = null, L = 'es';
 
-  var T = {
+  // Textos de las propuestas creadas antes del 17-nov-2026 (oferta vieja: prueba de 14 días, garantía de 50 pedidos)
+  var T_V1 = {
     es: {
       cargando: 'Cargando su propuesta…', noHay: 'No encontramos esta propuesta', noHayP: 'Revise el link o escríbanos por WhatsApp y se la volvemos a enviar.',
       error: 'No pudimos cargar la propuesta', errorP: 'Revise su conexión e intente de nuevo, o escríbanos por WhatsApp.',
@@ -364,6 +365,141 @@ h1{font-size:34px;font-weight:800;margin:8px 0 10px}
     }
   };
 
+  var T = {
+    es: {
+      cargando: 'Cargando su propuesta…', noHay: 'No encontramos esta propuesta', noHayP: 'Revise el link o escríbanos por WhatsApp y se la volvemos a enviar.',
+      error: 'No pudimos cargar la propuesta', errorP: 'Revise su conexión e intente de nuevo, o escríbanos por WhatsApp.',
+      pdf: 'Descargar PDF', otro: 'English',
+      fecha: 'Fecha', valida: 'Válida hasta', codigo: 'Propuesta',
+      tipoPres: 'Presentación', tipoFormal: 'Propuesta comercial',
+      titulo: function (r) { return 'Pedidos directos, sin comisión, para ' + r; },
+      intro: function (p) { return (p.contacto ? p.contacto + ', g' : 'G') + 'racias por su tiempo. Aquí está, por escrito, lo que haríamos por ' + p.restaurante + (p.ciudad ? ' en ' + p.ciudad : '') + '.'; },
+      hLogra: 'Lo que va a lograr',
+      logra: [['Pedidos directos, sin comisión', 'Sus clientes le piden en su propia página y la plata entra a su cuenta, sin el 15–30 % de las apps.'],
+              ['Lo encuentran fácil', 'Su link en su Google, su Instagram y su WhatsApp, y un volante con código QR para su mostrador y sus bolsas.'],
+              ['Menos trabajo en el mostrador', 'Cada pedido llega completo y pagado a la pantalla de su cocina: nada de copiar mensajes ni llamar para confirmar.']],
+      hIncluye: 'Qué incluye',
+      incluye: [['Su página de pedidos', 'Con su marca y su menú, en inglés y español. Cobro con tarjeta directo a su cuenta (Stripe, a su nombre).'],
+                ['Pantalla de pedidos en su cocina', 'Suena con cada pedido, imprime la comanda y muestra las ventas del día.'],
+                ['Botón «Pedir» en Google', 'Su ficha de Google, su Instagram y su WhatsApp llevan a su página.'],
+                ['Volante con código QR', 'Para su mostrador y sus bolsas: el cliente lo escanea y le pide directo.'],
+                ['Soporte en español', 'Por WhatsApp, con David. Cambios de menú y de precios cuando los necesite.'],
+                ['Instalación y capacitación', 'Cargamos todo nosotros y le enseñamos a su personal en 15 minutos.']],
+      verPagina: 'Ver cómo se vería su página →',
+      hEnvio: 'El envío',
+      envio: [['Retiro en el local', 'El cliente paga en la página o al retirar.'],
+              ['Su propio repartidor', 'Usted pone la tarifa por distancia y el radio. Puede aceptar efectivo al entregar.'],
+              ['Repartidor pedido automático', 'Cuando la comida está lista se pide un repartidor de las apps grandes por una tarifa fija, sin porcentaje. Sujeto a cobertura en su zona.']],
+      hCalendario: 'Calendario: de su menú a su página en 7 días',
+      dias: [['Día 1', 'Nos manda su menú, sus precios y fotos (o las tomamos con usted).'],
+             ['Días 2–3', 'Su página queda armada; la revisa y nos pide cambios.'],
+             ['Día 4', 'Conectamos el cobro con tarjeta a su cuenta y el botón en su ficha de Google.'],
+             ['Día 5', 'Instalamos la pantalla de su cocina y hacemos pedidos de prueba reales.'],
+             ['Días 6–7', 'Ponemos su link en Google, Instagram y WhatsApp, le mandamos el volante con QR y su página queda al aire.']],
+      hNecesita: 'Lo que necesitamos de usted',
+      necesita: ['Su menú con precios y fotos de sus platos (si no tiene, le decimos cómo tomarlas con el celular).',
+                 'Una cuenta de cobro de Stripe a nombre del restaurante (le ayudamos a crearla en 10 minutos).',
+                 'Acceso a su ficha de Google, o lo hacemos juntos, para poner el botón de pedir.'],
+      hInversion: 'Inversión',
+      mensual: 'Mensualidad', mensualD: 'Todo lo de la sección 02. Sin cobro por pedido ni porcentaje sobre sus ventas.',
+      instal: 'Instalación (una sola vez)', instalD: 'Página, pantalla de cocina, Google y capacitación.',
+      fundador: 'Restaurante fundador: instalación a mitad de precio, y su mensualidad no sube mientras siga con nosotros.',
+      primerPago: 'Primer pago', alMes: '/mes',
+      aparte: 'Aparte, y directo a cada proveedor: la comisión de la tarjeta a Stripe (2.9 % + 30¢ por pedido) y, si usa repartidor pedido automático, la tarifa de cada envío. Las publicaciones y los anuncios, si los quiere, se cotizan aparte.',
+      hGarantia: 'Garantía',
+      gT: 'Si en 30 días no le llega ningún pedido, le devolvemos la instalación.',
+      gP: 'Cuando su página ya está funcionando: si en los primeros 30 días no le entra ni un pedido por ella, le devolvemos lo que pagó de instalación.',
+      gC: 'Condición: su link en su Google, su Instagram y su WhatsApp (se lo ponemos nosotros).',
+      hCondiciones: 'Condiciones',
+      condiciones: function (p) { return ['<b>Sin contrato, mes a mes.</b> Si un mes no le sirve, nos avisa antes del siguiente pago y la apagamos.',
+        '<b>Pago por adelantado</b> cada mes, en dólares, por Payoneer (tarjeta o transferencia bancaria). La instalación' + (p.fundador ? ', si aplica,' : '') + ' se paga junto con el primer mes. Si prefiere, paga el año por adelantado: 12 meses por el precio de 10.',
+        '<b>Su información es suya:</b> menú, fotos, clientes y pedidos. Si se va, se lo entregamos.',
+        '<b>La plata de sus pedidos</b> entra directo a su cuenta de Stripe. DEWAN nunca la toca.',
+        '<b>Esta propuesta vale</b> hasta el ' + fechaLarga(p.valida_hasta) + '.']; },
+      hSiguiente: 'El siguiente paso',
+      pSiguiente: 'Una videollamada de 20 minutos: le mostramos su página armada con su menú, hace un pedido de prueba y lo ve llegar a la pantalla de su cocina. Si le gusta, la dejamos funcionando esa misma semana.',
+      agendar: 'Agendar la videollamada',
+      waAgendar: function (p) { return 'Hola David, vi la propuesta para ' + p.restaurante + ' y quiero agendar la videollamada.'; },
+      acT: 'Aceptar la propuesta', acP: 'Al aceptar, le enviamos el cobro del primer mes y arrancamos con el día 1.',
+      acNombre: 'Su nombre', acCargo: 'Cargo', acEmail: 'Correo',
+      acChk: 'Leí y acepto esta propuesta y sus condiciones.', acBtn: 'Acepto la propuesta',
+      acFalta: 'Escriba su nombre y un correo válido.', acVencida: 'Esta propuesta venció. Escríbanos y se la renovamos.', acError: 'No se pudo guardar. Intente de nuevo.',
+      okT: '¡Listo! Propuesta aceptada', okP: function (p) { return 'Aceptada por ' + p.aceptada_nombre + ' el ' + fechaLarga(p.aceptada_at) + '. Hoy mismo le enviamos el cobro del primer mes y le escribimos para empezar.'; },
+      avisar: 'Avisarle a David por WhatsApp',
+      waAvisar: function (p) { return 'Hola David, acabo de aceptar la propuesta ' + p.codigo + ' para ' + p.restaurante + '.'; },
+      firmaCliente: function (p) { return 'Aceptada electrónicamente el ' + fechaLarga(p.aceptada_at); },
+      firmaDewan: 'Fundador',
+      meses: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
+      fecha2: function (d, m, y) { return d + ' de ' + m + ' de ' + y; }
+    },
+    en: {
+      cargando: 'Loading your proposal…', noHay: "We couldn't find this proposal", noHayP: 'Check the link or message us on WhatsApp and we will send it again.',
+      error: "We couldn't load the proposal", errorP: 'Check your connection and try again, or message us on WhatsApp.',
+      pdf: 'Download PDF', otro: 'Español',
+      fecha: 'Date', valida: 'Valid until', codigo: 'Proposal',
+      tipoPres: 'Overview', tipoFormal: 'Proposal',
+      titulo: function (r) { return 'Direct orders and new customers for ' + r; },
+      intro: function (p) { return (p.contacto ? p.contacto + ', t' : 'T') + 'hank you for your time. Here is, in writing, what we would do for ' + p.restaurante + (p.ciudad ? ' in ' + p.ciudad : '') + '.'; },
+      hLogra: 'What you get',
+      logra: [['Direct orders, no commission', 'Customers order on your own page and the money goes to your account, without the apps’ 15–30% cut.'],
+              ['Easy to find', 'Your link on your Google profile, your Instagram and your WhatsApp, plus a QR flyer for your counter and bags.'],
+              ['Less work at the counter', 'Every order arrives complete and paid on your kitchen screen: no copying messages or calling to confirm.']],
+      hIncluye: "What's included",
+      incluye: [['Your ordering page', 'Your brand and menu, in English and Spanish. Card payments straight to your account (Stripe, in your name).'],
+                ['Kitchen order screen', 'Rings on every order, prints the ticket and shows the day’s sales.'],
+                ['"Order" button on Google', 'Your Google profile, your Instagram and your WhatsApp link to your page.'],
+                ['QR flyer', 'For your counter and bags: customers scan it and order straight from you.'],
+                ['Support in Spanish and English', 'On WhatsApp, with David. Menu and price changes whenever you need them.'],
+                ['Setup and training', 'We load everything and train your staff in 15 minutes.']],
+      verPagina: 'See what your page would look like →',
+      hEnvio: 'Delivery',
+      envio: [['Pickup', 'Customers pay online or at pickup.'],
+              ['Your own driver', 'You set the fee by distance and the radius. You can accept cash on delivery.'],
+              ['Auto-booked driver', 'When the food is ready, a driver from the major apps is booked for a flat fee, no percentage. Subject to coverage in your area.']],
+      hCalendario: 'Timeline: from your menu to a live page in 7 days',
+      dias: [['Day 1', 'You send us your menu, prices and photos (or we take them with you).'],
+             ['Days 2–3', 'Your page is built; you review it and request changes.'],
+             ['Day 4', 'We connect card payments to your account and the button on your Google profile.'],
+             ['Day 5', 'We set up your kitchen screen and run real test orders.'],
+             ['Days 6–7', 'We add your link to Google, Instagram and WhatsApp, send you the QR flyer, and your page is open for business.']],
+      hNecesita: 'What we need from you',
+      necesita: ['Your menu with prices and photos of your dishes (if you don’t have them, we’ll show you how to take them with your phone).',
+                 'A Stripe payment account in the restaurant’s name (we help you set it up in 10 minutes).',
+                 'Access to your Google profile, or we do it together, to add the order button.'],
+      hInversion: 'Investment',
+      mensual: 'Monthly fee', mensualD: 'Everything in section 02. No per-order fees and no percentage of your sales.',
+      instal: 'Setup (one time)', instalD: 'Page, kitchen screen, Google and training.',
+      fundador: 'Founding restaurant: setup at half price, and your monthly fee never goes up while you stay.',
+      primerPago: 'First payment', alMes: '/mo',
+      aparte: 'Separately, paid directly to each provider: card processing to Stripe (2.9% + 30¢ per order) and, if you use auto-booked drivers, the fee for each delivery. Posts and ads, if you want them, are quoted separately.',
+      hGarantia: 'Guarantee',
+      gT: 'No orders in 30 days? We refund your setup.',
+      gP: 'Once your page is live: if not a single order comes through it in the first 30 days, we refund what you paid for setup.',
+      gC: 'Condition: your link on your Google profile, your Instagram and your WhatsApp (we add it for you).',
+      hCondiciones: 'Terms',
+      condiciones: function (p) { return ['<b>No contract, month to month.</b> If a month doesn’t work for you, tell us before the next payment and we switch it off.',
+        '<b>Paid in advance</b> each month, in US dollars, via Payoneer (card or bank transfer). Setup' + (p.fundador ? ', if any,' : '') + ' is paid with the first month. If you prefer, pay the year upfront: 12 months for the price of 10.',
+        '<b>Your data is yours:</b> menu, photos, customers and orders. If you leave, we hand it over.',
+        '<b>Order payments</b> go straight to your Stripe account. DEWAN never touches that money.',
+        '<b>This proposal is valid</b> until ' + fechaLarga(p.valida_hasta) + '.']; },
+      hSiguiente: 'Next step',
+      pSiguiente: 'A 20-minute video call: we show you your page built with your menu, you place a test order and watch it arrive on your kitchen screen. If you like it, we set it live that same week.',
+      agendar: 'Book the video call',
+      waAgendar: function (p) { return 'Hi David, I saw the proposal for ' + p.restaurante + " and I'd like to book the video call."; },
+      acT: 'Accept the proposal', acP: 'Once you accept, we send the invoice for the first month and start on day 1.',
+      acNombre: 'Your name', acCargo: 'Title', acEmail: 'Email',
+      acChk: 'I have read and accept this proposal and its terms.', acBtn: 'I accept the proposal',
+      acFalta: 'Enter your name and a valid email.', acVencida: 'This proposal has expired. Message us and we will renew it.', acError: "Couldn't save. Please try again.",
+      okT: 'Done! Proposal accepted', okP: function (p) { return 'Accepted by ' + p.aceptada_nombre + ' on ' + fechaLarga(p.aceptada_at) + ". We'll send the first month's invoice today and reach out to get started."; },
+      avisar: 'Let David know on WhatsApp',
+      waAvisar: function (p) { return 'Hi David, I just accepted proposal ' + p.codigo + ' for ' + p.restaurante + '.'; },
+      firmaCliente: function (p) { return 'Accepted electronically on ' + fechaLarga(p.aceptada_at); },
+      firmaDewan: 'Founder',
+      meses: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+      fecha2: function (d, m, y) { return m + ' ' + d + ', ' + y; }
+    }
+  };
+
   function fechaLarga(v) {
     if (!v) return '';
     var s = String(v), d;
@@ -379,8 +515,10 @@ h1{font-size:34px;font-weight:800;margin:8px 0 10px}
   function wa(m) { return 'https://wa.me/' + WA + '?text=' + encodeURIComponent(m); }
   function falla(t, p) { $('cargando').classList.add('oculto'); $('doc').classList.add('oculto'); txt('falla-t', t); txt('falla-p', p); $('falla').classList.remove('oculto'); }
 
+  function esV1(p) { return !!(p && p.creada_at && String(p.creada_at) < '2026-11-17'); }
+
   function pintar() {
-    var t = T[L], p = P, formal = p.etapa === 'formal';
+    var t = (esV1(P) ? T_V1 : T)[L], p = P, formal = p.etapa === 'formal';
     document.documentElement.lang = L;
     document.title = (formal ? t.tipoFormal : t.tipoPres) + ' · ' + p.restaurante + ' · DEWAN';
     txt('b-pdf', t.pdf); txt('b-idioma', t.otro);
@@ -408,11 +546,12 @@ h1{font-size:34px;font-weight:800;margin:8px 0 10px}
     if (formal) {
       txt('h-inversion', t.hInversion);
       var inst = Number(p.instalacion) || 0, mes = Number(p.mensual) || 0;
-      var primero = mes + (p.fundador ? 0 : inst);
+      var v1 = esV1(p), instF = v1 ? 0 : Math.round(inst / 2);   // fundador: antes $0 de instalación; desde 17-nov, a mitad
+      var primero = mes + (p.fundador ? instF : inst);
       $('t-inversion').innerHTML =
         '<tr><td>' + esc(t.mensual) + '<small>' + esc(t.mensualD) + '</small></td><td>' + dinero(mes) + esc(t.alMes) + '</td></tr>' +
         '<tr><td>' + esc(t.instal) + '<small>' + esc(t.instalD) + '</small>' + (p.fundador ? '<small style="color:var(--ok);font-weight:700">' + esc(t.fundador) + '</small>' : '') + '</td><td>' +
-          (p.fundador ? '<span class="tachado">' + dinero(inst) + '</span><span class="cero">$0</span>' : dinero(inst)) + '</td></tr>' +
+          (p.fundador ? '<span class="tachado">' + dinero(inst) + '</span>' + (v1 ? '<span class="cero">$0</span>' : dinero(instF)) : dinero(inst)) + '</td></tr>' +
         '<tr class="total"><td>' + esc(t.primerPago) + '</td><td>' + dinero(primero) + '</td></tr>' +
         '<tr><td colspan="2"><small>' + esc(t.aparte) + '</small></td></tr>';
       txt('h-condiciones', t.hCondiciones);
@@ -451,7 +590,7 @@ h1{font-size:34px;font-weight:800;margin:8px 0 10px}
   function revisar() { $('b-acepto').disabled = !($('i-chk').checked && $('i-nombre').value.trim().length >= 3 && /.+@.+\..+/.test($('i-email').value.trim())); }
   $('f-acepto').addEventListener('submit', function (e) {
     e.preventDefault();
-    var t = T[L], nombre = $('i-nombre').value.trim(), email = $('i-email').value.trim();
+    var t = (esV1(P) ? T_V1 : T)[L], nombre = $('i-nombre').value.trim(), email = $('i-email').value.trim();
     if (nombre.length < 3 || !/.+@.+\..+/.test(email) || !$('i-chk').checked) { txt('ac-err', t.acFalta); return; }
     $('b-acepto').disabled = true; txt('ac-err', '');
     rpc('us_propuesta_aceptar', { p_codigo: codigo, p_nombre: nombre, p_cargo: $('i-cargo').value.trim(), p_email: email })
