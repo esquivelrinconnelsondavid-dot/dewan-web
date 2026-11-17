@@ -1,3 +1,3 @@
-app: 1.5.24 (web)
-commit: 7dcb3e4
-compilada: 2026-10-31 01:07
+app: 1.5.27 (web)
+commit: 7559dc9
+compilada: 2026-11-16 20:28
