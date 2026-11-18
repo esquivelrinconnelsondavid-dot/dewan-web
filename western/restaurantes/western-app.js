@@ -1,7 +1,8 @@
 window.RESTAURANTES = window.RESTAURANTES || {};
 /* Western Pizzería (Quito, 4 locales) · PÁGINA REAL de pedidos, 17-nov-2026. Carta = su carta impresa (3 fotos del dueño por
    WhatsApp, 17-nov): nombres, precios y tamaños Mini / Mediana / Grande reales; sin bebidas (no venían). Fotos = las de su sesión
-   (ficha de Rappi) + alitas y lasagna separadas de su carta impresa. El pedido sale por WhatsApp al número del local.
+   (ficha de Rappi) + alitas y lasagna separadas de su carta impresa. El pedido entra a la cocina en vivo de Western
+   (pedido.js, 18-nov); WhatsApp al número del local solo si la cocina no responde.
    Sale de appweb-restaurantes/restaurantes/western-app.js (wp_carta.py) con _receta-presentacion/wp_real.py. */
 (function () {
   const F = (n) => "assets/western/" + n;
@@ -16,6 +17,7 @@ window.RESTAURANTES = window.RESTAURANTES || {};
     marca: "#B5531A", tinta: "#2A1A10", crema: "#F8F4F0", acento: "#3B2416",
     whatsapp: "593984924221",       // ⏳ confirmar con Raúl
     pagos: "Efectivo o transferencia",
+    envioFijo: 2.00,           // ⏳ su tarifa: hoy $2,00, la misma del bot
     titulo: "Western Pizzería · Pedidos en Quito",
     restauranteId: "",
     logo: "assets/western/logo-redondo.png",
