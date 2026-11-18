@@ -25,6 +25,19 @@
   };
   const DESDE = LOCALES["Portugal"];                     // el domicilio sale del local de la Portugal (el del 098 492 4221)
   const GUARDADO = "wp_ultimo_pedido";
+  // HORARIO (18-nov): fuera de horario la página deja ver la carta pero no confirmar. ?prueba=1 = sin horario (pruebas de David)
+  const HOR = (R.horarioPedidos && typeof R.horarioPedidos === "object") ? R.horarioPedidos : null;                        // { abre: "17:00", cierra: "23:00", dias: [0..6] } (0 = domingo) · ⏳ el de Raúl
+  const PRUEBA = /[?&]prueba=1/.test(location.search);
+  const aMin = (t) => { const x = String(t || "0:0").split(":"); return Number(x[0]) * 60 + Number(x[1] || 0); };
+  function abierto() {
+    if (!HOR || PRUEBA) return true;
+    try {
+      const d = new Date(new Date(Date.now()).toLocaleString("en-US", { timeZone: "America/Guayaquil" }));
+      const m = d.getHours() * 60 + d.getMinutes();
+      return (HOR.dias || [0, 1, 2, 3, 4, 5, 6]).indexOf(d.getDay()) !== -1 && m >= aMin(HOR.abre) && m < aMin(HOR.cierra);
+    } catch (e) { return true; }
+  }
+  const textoHorario = () => HOR ? "Atendemos de " + HOR.abre + " a " + HOR.cierra + ((HOR.dias || []).length === 7 ? ", todos los días" : "") + "." : "";
 
   const $ = (s, el) => (el || document).querySelector(s);
   const plata = (n) => "$" + Number(n || 0).toFixed(2);
@@ -86,6 +99,8 @@
   .pd-ultimo{display:flex;align-items:center;gap:10px;background:var(--tinta);color:#fff;padding:10px 14px;font:600 14px/1.3 'Inter',-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;}
   .pd-ultimo span{flex:1;}
   .pd-ultimo a{flex:0 0 auto;background:#fff;color:var(--tinta);font-weight:800;text-decoration:none;border-radius:999px;padding:7px 12px;}
+  .pd-cerrado{background:#FEF3C7;color:#78350F;padding:11px 16px;font:600 14px/1.4 'Inter',-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;text-align:center;}
+  .pd-cerrado b{font-weight:800;}
   .pd-ultimo button{flex:0 0 auto;background:none;border:none;color:#fff;font-size:20px;line-height:1;cursor:pointer;padding:0 2px;}
   `;
   document.head.appendChild(css);
@@ -140,8 +155,18 @@
   }
   function etiqueta() {
     pintarSuma();
-    if (!enviando) btn.textContent = `Confirmar pedido · ${plata(aPagar())}`;
+    if (!enviando) btn.textContent = abierto() ? `Confirmar pedido · ${plata(aPagar())}` : `Cerrado ahora · abrimos a las ${HOR.abre}`;
   }
+  function pintarCerrado() {
+    const viejo = $(".pd-cerrado");
+    if (abierto()) { if (viejo) viejo.remove(); return; }
+    if (viejo) return;
+    const b = document.createElement("div");
+    b.className = "pd-cerrado";
+    b.innerHTML = `<b>${esc(nombreLocal)} está cerrado ahora.</b> ${esc(textoHorario())} Puede ver la carta y hacer su pedido en ese horario.`;
+    document.body.insertBefore(b, document.body.firstChild);
+  }
+  setInterval(() => { pintarCerrado(); etiqueta(); }, 60000);
   let enviando = false;
   new MutationObserver(() => etiqueta()).observe($("#cart-total"), { childList: true, characterData: true, subtree: true });
   $("#cli-entrega").addEventListener("change", () => { pintarPago(); etiqueta(); });
@@ -243,6 +268,7 @@
     if (!e.target.closest || !e.target.closest("#enviar")) return;
     e.stopPropagation(); e.preventDefault();
     if (enviando) return;
+    if (!abierto()) { err.textContent = `${nombreLocal} está cerrado ahora. ${textoHorario()}`; err.classList.add("on"); return; }
     const p = armar();
     if (p) enviar(p);
   }, true);
@@ -324,4 +350,5 @@
     document.body.insertBefore(b, document.body.firstChild);
   }
   mostrarUltimo();
+  pintarCerrado();
 })();

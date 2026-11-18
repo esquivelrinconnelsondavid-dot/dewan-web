@@ -18,6 +18,7 @@ window.RESTAURANTES = window.RESTAURANTES || {};
     whatsapp: "593984924221",       // ⏳ confirmar con Raúl
     pagos: "Efectivo o transferencia",
     envioFijo: 2.00,           // ⏳ su tarifa: hoy $2,00, la misma del bot
+    horarioPedidos: { abre: "17:00", cierra: "23:00", dias: [0, 1, 2, 3, 4, 5, 6] },   // ⏳ el horario real de Raúl (0 = domingo); «horario» es el texto de la portada
     titulo: "Western Pizzería · Pedidos en Quito",
     restauranteId: "",
     logo: "assets/western/logo-redondo.png",
