@@ -96,7 +96,6 @@
   .s-cierre .ctas{flex-direction:row;align-items:center}
 }
 @media (max-width:640px){
-  .s-hero .hero-in{padding-top:36px;padding-bottom:48px}
   .s-vis{height:540px;--bisel:6px;--radio-tel:28px}
   .s-vis .s-tel{left:5%;top:28px;width:56%}
   .s-vis .s-panel{right:4%;top:150px;width:66%;font-size:12.5px}
