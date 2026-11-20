@@ -1,0 +1,137 @@
+/* DEWAN · página de locales aliados (/socios/) · 19-nov-2026
+   Se carga DESPUÉS de /inicio/sitio-v3.css y solo agrega lo propio de esta página.
+   Todo se ve sin JavaScript. nginx guarda este archivo 1 año: si cambia, súbalo con otro nombre (socios-v2.css). */
+
+/* Portada: el teléfono con la carta real, el panel del local y la moto */
+.s-hero .hero-in{grid-template-columns:1fr 1fr}
+.s-vis{position:relative;height:600px;border-radius:28px;background:linear-gradient(180deg,#FFF5EF 0%,#FBE3D6 100%);overflow:hidden;--bisel:7px;--radio-tel:34px}
+.s-vis .s-tel{position:absolute;left:8%;top:40px;width:250px}
+.s-vis .s-panel{position:absolute;right:5%;top:128px;width:300px}
+.s-vis .s-chip{position:absolute;left:6%;bottom:30px;z-index:2}
+.s-panel .nuevo{letter-spacing:.04em;background:var(--brasa);color:#fff}
+.s-min{margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.s-min span{display:flex;align-items:center;justify-content:center;height:30px;border-radius:8px;border:1px solid #33333A;color:#A1A1AA;font:500 11.5px/1 var(--mono)}
+.s-min .on{background:#fff;border-color:#fff;color:var(--tinta)}
+.s-acc{grid-template-columns:1fr}
+.s-acc .si{gap:7px}
+.s-acc .ic{width:15px;height:15px;stroke-width:2.4}
+
+/* Muro de logos: 9 × 3 en PC; en el celular, tres filas que corren solas */
+.s-marcas{padding-top:8px}
+.s-marcas .cabeza{margin-bottom:40px}
+.s-marcas .cabeza p .enlace{white-space:nowrap}
+.s-logos{display:grid;grid-template-columns:repeat(9,1fr);gap:16px}
+.s-carril,.s-fila{display:contents}
+.s-logos img{width:100%;height:auto;aspect-ratio:1;border-radius:20px;border:1px solid var(--linea);box-shadow:0 1px 2px rgba(17,17,19,.05),0 14px 24px -18px rgba(17,17,19,.35);background:#fff}
+.s-logos .dup{display:none}
+
+/* Recibo de retiro (la cuenta clara) */
+.s-tk{display:grid;place-items:center;padding:64px 28px}
+.ticket-sombra{width:100%;max-width:380px;filter:drop-shadow(0 26px 30px rgba(120,40,10,.18)) drop-shadow(0 2px 3px rgba(17,17,19,.08))}
+.ticket{position:relative;background:#fff;padding:26px 26px 24px;color:var(--tinta);font-size:15.5px}
+.ticket::before,.ticket::after{content:"";position:absolute;left:0;right:0;height:10px;background-size:16px 10px;background-repeat:repeat-x}
+.ticket::before{top:-10px;background-image:radial-gradient(circle at 8px 0,transparent 6.5px,#fff 7px)}
+.ticket::after{bottom:-10px;background-image:radial-gradient(circle at 8px 10px,transparent 6.5px,#fff 7px)}
+.tk-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:16px;border-bottom:1px dashed #D4D4DA}
+.tk-logo{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15px;letter-spacing:.07em}
+.tk-logo svg{width:26px;height:19px;color:var(--brasa)}
+.tk-cab .mono{font-size:12px;color:var(--gris)}
+.tk-f{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:15px 0;border-bottom:1px dashed #E4E4E7}
+.tk-f .mono{font-size:17px}
+.tk-f.menos .mono{color:var(--gris)}
+.tk-tot{margin-top:18px;padding:16px 18px;border-radius:14px;background:#ECFDF3;display:flex;justify-content:space-between;align-items:center;gap:14px;color:#14532D}
+.tk-tot span:first-child{font-size:14px;line-height:1.35;max-width:150px}
+.tk-tot .mono{font-size:34px;line-height:1;color:#166534;letter-spacing:-.04em}
+.tk-pie{margin-top:18px;text-align:center;font-size:11px;color:var(--gris);letter-spacing:.08em;text-transform:uppercase}
+
+/* Lo que ve el cliente: tres pantallas reales */
+.s-tres{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;max-width:1000px;margin:0 auto;--bisel:8px;--radio-tel:36px}
+.s-tres figure{margin:0}
+.s-tres figcaption{margin-top:18px;text-align:center;font-size:15px;line-height:1.5}
+.s-tres figcaption b{display:block;font-weight:500;color:var(--tinta);font-size:1.02rem}
+
+/* Panel del local: pedidos de hoy */
+.s-pv{display:grid;place-items:center;padding:48px 28px}
+.s-hoy{width:100%;max-width:440px}
+.s-hoy .dfila{grid-template-columns:76px 1fr auto}
+.s-monto{font-size:14px!important;color:#fff!important}
+.s-monto small{display:block;margin-top:2px;font-family:var(--sans);font-size:11.5px;color:#8B8B94;letter-spacing:0}
+.e-nuevo{background:var(--brasa);color:#fff}
+.s-ventas{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 12px 12px;padding:12px 14px;border-radius:12px;background:#1F1F23;font-size:13px;color:#A1A1AA}
+.s-ventas .mono{font-size:18px;color:#fff}
+
+/* Hecho en Riobamba */
+.fila-txt>p+p{margin-top:12px}
+.s-cifras{margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--linea)}
+.s-cifras div{padding-top:18px}
+.s-cifras div+div{padding-left:18px;border-left:1px solid var(--linea)}
+.s-cifras .mono{display:block;font-size:clamp(1.6rem,1.2rem + 1vw,2.1rem);line-height:1.1;color:var(--tinta);letter-spacing:-.04em}
+.s-cifras span:not(.mono){display:block;margin-top:6px;font-size:14px;color:var(--gris)}
+
+/* Verlo antes de decidir */
+.s-verlo{padding:0}
+.s-verlo .banda{background:var(--brasa-suave);border-color:#F8D5C6}
+.s-verlo .banda>div{max-width:640px}
+
+/* Cierre: los dos botones del mismo ancho, uno sobre otro */
+.s-cierre .ctas{flex-direction:column;align-items:stretch}
+
+/* Botón fijo abajo, solo en el celular */
+.s-barra{display:none}
+
+/* Movimiento (solo si el navegador lo permite; sin él todo se ve igual) */
+@media (prefers-reduced-motion:no-preference){
+  .s-tel{animation:entra .6s ease-out .1s both}
+  .s-panel{animation:llega .7s cubic-bezier(.2,.8,.2,1) .7s both}
+  .s-panel .nuevo{animation:aviso 1.3s ease-out 1.5s 5}
+  .s-chip{animation:entra .5s ease-out 1.5s both}
+}
+
+@media (max-width:960px){
+  .s-hero .hero-in{grid-template-columns:1fr}
+  .s-vis{max-width:560px;width:100%;margin:0 auto}
+  .s-logos{grid-template-columns:repeat(9,1fr);gap:10px}
+  .s-logos img{border-radius:14px}
+  .s-tres{gap:20px}
+  .s-cierre .ctas{flex-direction:row;align-items:center}
+}
+@media (max-width:640px){
+  .s-hero .hero-in{padding-top:36px;padding-bottom:48px}
+  .s-vis{height:540px;--bisel:6px;--radio-tel:28px}
+  .s-vis .s-tel{left:5%;top:28px;width:56%}
+  .s-vis .s-panel{right:4%;top:150px;width:66%;font-size:12.5px}
+  .s-vis .s-panel .orden{padding:12px}
+  .s-vis .s-panel .o-items .mono{font-size:12px}
+  .s-vis .s-panel .o-tot .mono{font-size:17px}
+  .s-vis .s-chip{left:4%;bottom:22px;font-size:12.5px}
+  .s-min span{height:28px;font-size:10.5px}
+  .s-marcas{padding-top:24px}
+  /* tres filas que corren (la copia .dup hace que no se note el salto) */
+  .s-logos{display:grid;grid-template-columns:1fr;gap:10px;margin:0 -18px}
+  .s-carril{display:block;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+  .s-fila{display:flex;gap:10px;width:max-content}
+  .s-logos img{width:72px;flex:none;border-radius:16px}
+  .s-logos .dup{display:block}
+  .s-tk{padding:48px 18px}
+  .tk-tot .mono{font-size:30px}
+  .s-tres{grid-template-columns:repeat(3,76%);overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -18px;padding:0 18px 8px;scrollbar-width:none}
+  .s-tres::-webkit-scrollbar{display:none}
+  .s-tres figure{scroll-snap-align:center}
+  .s-pv{padding:28px 14px}
+  .s-hoy .dfila{grid-template-columns:64px 1fr auto;gap:8px;padding:9px 10px}
+  .s-cifras div+div{padding-left:12px}
+  .s-barra{display:block;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--linea)}
+  .s-barra .btn{width:100%}
+  body{padding-bottom:72px}
+}
+@media (max-width:640px) and (prefers-reduced-motion:no-preference){
+  .s-fila{animation:corre 46s linear infinite}
+  .s-carril:nth-child(2) .s-fila{animation-direction:reverse;animation-duration:52s}
+  .s-carril:nth-child(3) .s-fila{animation-duration:40s}
+}
+@media (max-width:640px) and (prefers-reduced-motion:reduce){
+  .s-carril{overflow-x:auto;-webkit-mask-image:none;mask-image:none;padding:0 18px}
+  .s-logos .dup{display:none}
+}
+@keyframes aviso{0%{box-shadow:0 0 0 0 rgba(232,67,26,.6)}100%{box-shadow:0 0 0 10px rgba(232,67,26,0)}}
+@keyframes corre{to{transform:translateX(calc(-50% - 5px))}}
