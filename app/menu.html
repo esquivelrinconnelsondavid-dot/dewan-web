@@ -2717,13 +2717,31 @@
         // Motivo: con el 5% DEWAN se queda con ~$0.38 por pedido, menos que los $0.40 de una
         // carrera simple. Se retira solo cuando el local suba al 10% (pct_comision_local en BD).
         var SERVICIO_SIN_CONVENIO=0.75, SERVICIO_ALIADO_BAJO=0.45, ALIADO_PCT_MIN=8;
-        function servicioRest(r){
+        function servicioRest1(r){
             if(!r) return SERVICIO_SIN_CONVENIO;
             var ta=r.tipo_acuerdo;
             if(ta==='aliado') return (Number(r.pct_comision_local)||0)>=ALIADO_PCT_MIN?0:SERVICIO_ALIADO_BAJO;
             if(ta==='cliente_paga') return 0;
             return SERVICIO_SIN_CONVENIO;
         }
+        // ── TARIFA 2 (SQL 102, 23-nov-2026) — DORMIDA mientras get_recargos().tarifa.version y .aliados_version = 1 ──
+        // version 2: moto $1,50 + servicio DEWAN $0,50 en local sin convenio (corta $2,00). aliados_version 2: aliado y
+        // cliente_paga moto $1,50 + $0,10 (corta $1,60). calcular-precio sigue mandando la base de $1,30: aquí se suma el
+        // corrimiento de la base y el servicio nuevo, y al pedir se avisa tarifa_version 2 (el servidor no vuelve a
+        // convertir). Sin RPC o con tarifa 1 → todo igual que antes.
+        window._tarifaT=window._tarifaT||{version:1,aliados_version:1};
+        function tarifaDeWeb(t){
+            var T={version:1,aliados_version:1};
+            if(!t||typeof t!=='object') return T;
+            var ok=function(x,lo,hi){return isFinite(x)&&x>=lo&&x<=hi;};
+            if(Number(t.version)===2&&ok(Number(t.moto_base),1,3)&&ok(Number(t.servicio),0,2)){T.version=2;T.moto_base=Number(t.moto_base);T.servicio=Number(t.servicio);}
+            if(Number(t.aliados_version)===2&&ok(Number(t.aliado_moto_base),1,3)&&ok(Number(t.aliado_servicio),0,2)){T.aliados_version=2;T.aliado_moto_base=Number(t.aliado_moto_base);T.aliado_servicio=Number(t.aliado_servicio);}
+            return T;
+        }
+        function esSocioWeb(r){return !!(r&&(r.tipo_acuerdo==='aliado'||r.tipo_acuerdo==='cliente_paga'));}
+        function tarifaAplicaWeb(r){var T=window._tarifaT;return esSocioWeb(r)?T.aliados_version===2:T.version===2;}
+        function corrimientoWeb(r){var T=window._tarifaT;if(!tarifaAplicaWeb(r))return 0;return Math.round(((esSocioWeb(r)?T.aliado_moto_base:T.moto_base)-1.30)*100)/100;}
+        function servicioRest(r){var T=window._tarifaT;if(!tarifaAplicaWeb(r))return servicioRest1(r);return esSocioWeb(r)?T.aliado_servicio:T.servicio;}
         // serv = $ de servicio DEWAN (servicioRest). Acepta true por compatibilidad = sin convenio.
         function precioEnvioCliente(d, serv){
             var b = d<3?1.30 : 1.30 + Math.ceil((d-3)/0.5)*0.25;
@@ -2755,12 +2773,16 @@
         function cargarModoLluvia(){
             if(Date.now()-window._modoLluviaTs<10*60*1000)return;
             window._modoLluviaTs=Date.now();
-            fetch(SB_URL+'/rest/v1/rpc/get_modo_lluvia',{
+            // 23-nov: get_recargos trae la lluvia Y la tarifa vigente (si falla: sin aviso y tarifa 1)
+            fetch(SB_URL+'/rest/v1/rpc/get_recargos',{
                 method:'POST',
                 headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
                 body:'{}'
             }).then(function(x){return x.json()}).then(function(j){
-                window._modoLluvia=!!(j&&j.lluvia_activa);
+                window._modoLluvia=!!(j&&j.lluvia);
+                var antes=JSON.stringify(window._tarifaT);
+                window._tarifaT=tarifaDeWeb(j&&j.tarifa);
+                if(JSON.stringify(window._tarifaT)!==antes){try{cotizarEnvioReal();}catch(e){}}
             }).catch(function(){});
         }
         function avisoLluviaHTML(){
@@ -2788,7 +2810,7 @@
                     r.distancia_km=Math.round(distRuta*10)/10;
                     r.tiempo_estimado_min=Math.round(15+distRuta*3);
                     var serv=servicioRest(r);
-                    r.precio_delivery=precioEnvioCliente(distRuta, serv);
+                    r.precio_delivery=r2(precioEnvioCliente(distRuta, serv)+corrimientoWeb(r));   // TARIFA 2: + corrimiento de la base (0 con tarifa 1)
                     // [8-jul] La cotización REAL (webhook Google, ver cotizarEnvioReal) manda sobre este
                     // estimado. Sin esto, cada llamada (render home, re-sync de sendWA, etc.) PISABA la
                     // cotización real y el mensaje de WhatsApp salía con el estimado (dif ±$0.30 en carreras).
@@ -2797,7 +2819,7 @@
                        _e.gpsKey===r.nombre+'|'+Number(window._clientGPS.lat).toFixed(4)+','+Number(window._clientGPS.lng).toFixed(4)){
                         // El server trae el precio base de ruta; el servicio DEWAN ($0.75 sin convenio,
                         // $0.45 aliado al 5%) se agrega aquí para que el cliente lo vea/pague.
-                        r.precio_delivery=r2(Number(_e.precio)+serv);
+                        r.precio_delivery=r2(Number(_e.precio)+corrimientoWeb(r)+serv);
                         if(_e.km)r.distancia_km=Math.round(Number(_e.km)*10)/10;
                     }
                 }
@@ -3409,7 +3431,7 @@
             var t=Number(r.tiempo_estimado_min)||25;
             var envio=(window._clientGPS&&Number(r.precio_delivery)>0)
                 ?'Envío $'+Number(r.precio_delivery).toFixed(2)
-                :'Envío desde $'+Number(precioEnvioCliente(0,servicioRest(r))).toFixed(2);
+                :'Envío desde $'+Number(r2(precioEnvioCliente(0,servicioRest(r))+corrimientoWeb(r))).toFixed(2);
             return (t+5)+'–'+(t+20)+' min · '+envio;
         }
         // Encabezado: lo primero es DÓNDE te lo llevamos (antes: logo D + "Riobamba, Ecuador" + saludo).
@@ -5479,7 +5501,7 @@
             // El server devuelve el precio base de la ruta; el servicio DEWAN ($0.75 sin convenio,
             // $0.45 aliado al 5%) se agrega aquí para que el carrito (lo que PAGA el cliente) lo incluya.
             var r=getRestByName(nombre);
-            var pc=r2(Number(precio)+servicioRest(r));
+            var pc=r2(Number(precio)+corrimientoWeb(r)+servicioRest(r));   // TARIFA 2: + corrimiento (0 con tarifa 1)
             var cambio=false;
             window._cart.forEach(function(c){
                 if(c.restaurante===nombre&&Math.abs(parsePrice(c.delivery)-pc)>0.005){c.delivery=pc;cambio=true;}
@@ -5506,6 +5528,7 @@
                     signal:ctl?ctl.signal:undefined
                 }).then(function(x){return x.json()}).then(function(j){
                     if(j&&j.ok&&Number(j.precio)>0){
+                        window._tarifaT=tarifaDeWeb(j.tarifa);   // TARIFA 2: el server la manda solo cuando hay tarifa 2
                         window._envioReal[nombre]={precio:Number(j.precio),km:j.distancia_km,ts:Date.now(),gpsKey:gpsKey};
                         aplicarEnvioReal(nombre,Number(j.precio));
                     }else{delete window._envioReal[nombre];}
@@ -6773,6 +6796,7 @@
             var locales=Object.keys(byRest).map(function(nombre){
                 var r=getRestByName(nombre)||{};
                 return {restaurante_id:r.id||'',restaurante_nombre:nombre,
+                    tarifa_version:tarifaAplicaWeb(r)?2:undefined,   // TARIFA 2: el envío ya viene con ella (el servidor no lo convierte otra vez)
                     envio:r2(deliveryConPromo(parsePrice(byRest[nombre][0].delivery),t.subtotal,nombre)), // lo que ve el cliente por local (ya con el servicio)
                     items:byRest[nombre].map(function(c){
                         var p=parsePrice(c.precio),pb=parsePrice(c.precio_base);
