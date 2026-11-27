@@ -249,7 +249,7 @@ input,textarea{font:inherit}
 /* ===== Carta de El Rey del Ceviche (de su carta en FlipHTML5, nov-2026) ===== */
 const F = {
   encebollado:'fotos/encebollado.jpg', encebolladoRey:'fotos/encebollado-rey.jpg',
-  concha:'fotos/ceviche-concha.jpg', conchas:'fotos/conchas-asadas.jpg', conchas2x1:'fotos/conchas-2x1.jpg', bandera:'fotos/bandera-rey.jpg', cevCam:'fotos/ceviche-camaron.jpg', cevPes:'fotos/ceviche-pescado.jpg', arroz:'fotos/arroz-mixto.jpg', encocado:'fotos/encocado.jpg',
+  concha:'fotos/ceviche-concha.jpg', conchas:'fotos/conchas-asadas.jpg', conchas2x1:'fotos/conchas-2x1.jpg', bandera:'fotos/bandera-rey.jpg', sango:'fotos/sango-pescado.jpg', chicharron:'fotos/chicharron-pescado.jpg', filete:'fotos/filete-apanado.jpg', superEnc:'fotos/super-encebollado.jpg', arrozMar:'fotos/arroz-marinero.jpg', cevCam:'fotos/ceviche-camaron.jpg', cevPes:'fotos/ceviche-pescado.jpg', arroz:'fotos/arroz-mixto.jpg', encocado:'fotos/encocado.jpg',
   apanado:'fotos/camaron-apanado.jpg', brujo:'fotos/brujo.jpg', logo:'fotos/logo.jpg'
 };
 const COMBO5 = ['Ceviche de concha','Ceviche de camarón','Camarón apanado','Arroz mixto','Arroz con camarón'];
@@ -271,13 +271,13 @@ const CARTA = [
   {id:'enc-nor', n:'Encebollado normal', d:'Albacora + yuca.', p:3.50, f:F.encebollado},
   {id:'enc-mix', n:'Encebollado mixto', d:'Albacora + camarón.', p:6.99},
   {id:'enc-rey', n:'Encebollado Rey', d:'Albacora + camarones + almeja + calamar + pescado.', p:7.75, f:F.encebolladoRey},
-  {id:'enc-sup', n:'Súper encebollado Rey', d:'Albacora + camarones + almeja + calamar + concha + pescado + carne de cangrejo.', p:10.75}
+  {id:'enc-sup', n:'Súper encebollado Rey', d:'Albacora + camarones + almeja + calamar + concha + pescado + carne de cangrejo.', p:10.75, f:F.superEnc}
  ]},
  {id:'arroces', cat:'Arroces', items:[
   {id:'arr-cam', n:'Arroz con camarón', d:'Camarón + maduro.', p:7.99},
   {id:'arr-mix', n:'Arroz mixto', d:'Calamar, camarón, pescado, mejillón y almeja.', p:8.99, f:F.arroz},
   {id:'arr-con', n:'Arroz con concha', d:'Concha + maduro.', p:9.75},
-  {id:'arr-mar', n:'Arroz marinero', d:'Concha + camarón + pescado + calamar + carne de cangrejo + maduro.', p:11.99}
+  {id:'arr-mar', n:'Arroz marinero', d:'Concha + camarón + pescado + calamar + carne de cangrejo + maduro.', p:11.99, f:F.arrozMar}
  ]},
  {id:'asados', cat:'Asados', items:[
   {id:'as-mar', n:'Asado marinero', d:'Conchas + camarón + pescado, porción de arroz y patacones.', p:9.99},
@@ -289,13 +289,13 @@ const CARTA = [
   {id:'es-ecc', n:'Encocado de camarón', d:'Arroz + patacones.', p:8.99},
   {id:'es-ecp', n:'Encocado de pescado', d:'Arroz + patacones.', p:7.99, f:F.encocado},
   {id:'es-sac', n:'Sango de camarón', d:'Arroz + patacones.', p:8.99},
-  {id:'es-sap', n:'Sango de pescado', d:'Albacora + arroz + patacones.', p:7.75},
-  {id:'es-chi', n:'Chicharrón de pescado', d:'Pescado, papas y ensalada.', p:7.99},
+  {id:'es-sap', n:'Sango de pescado', d:'Albacora + arroz + patacones.', p:7.75, f:F.sango},
+  {id:'es-chi', n:'Chicharrón de pescado', d:'Pescado, papas y ensalada.', p:7.99, f:F.chicharron},
   {id:'es-jr', n:'Rey Jr. niñ@s', d:'Papas fritas + pollo o pescado + huevo Kinder y pulpín.', p:5.00, op:[{t:'Con',o:['Pollo','Pescado']}]},
   {id:'es-bru', n:'Brujo de Galápagos', d:'Con patacones. Pescado de 40 a 60 cm.', p:null, tag:'Solo domingos', f:F.brujo}
  ]},
  {id:'apanados', cat:'Apanados', items:[
-  {id:'ap-fil', n:'Filete de pescado', d:'Asado o apanado. Porción de arroz, ensalada y maduro.', p:6.99, op:[{t:'¿Cómo lo prefiere?',o:['Apanado','Asado']}]},
+  {id:'ap-fil', n:'Filete de pescado', d:'Asado o apanado. Porción de arroz, ensalada y maduro.', p:6.99, f:F.filete, op:[{t:'¿Cómo lo prefiere?',o:['Apanado','Asado']}]},
   {id:'ap-cam', n:'Camarón apanado', d:'Porción de arroz, ensalada y maduro.', p:7.75, f:F.apanado},
   {id:'ap-ent', n:'Pescado entero', d:'Ensalada, arroz y papas fritas.', p:6.50, tag:'Solo viernes'}
  ]},
