@@ -249,14 +249,14 @@ input,textarea{font:inherit}
 /* ===== Carta de El Rey del Ceviche (de su carta en FlipHTML5, nov-2026) ===== */
 const F = {
   encebollado:'fotos/encebollado.jpg', encebolladoRey:'fotos/encebollado-rey.jpg',
-  concha:'fotos/ceviche-concha.jpg', conchas:'fotos/conchas-asadas.jpg', cevCam:'fotos/ceviche-camaron.jpg', cevPes:'fotos/ceviche-pescado.jpg', arroz:'fotos/arroz-mixto.jpg', encocado:'fotos/encocado.jpg',
+  concha:'fotos/ceviche-concha.jpg', conchas:'fotos/conchas-asadas.jpg', conchas2x1:'fotos/conchas-2x1.jpg', bandera:'fotos/bandera-rey.jpg', cevCam:'fotos/ceviche-camaron.jpg', cevPes:'fotos/ceviche-pescado.jpg', arroz:'fotos/arroz-mixto.jpg', encocado:'fotos/encocado.jpg',
   apanado:'fotos/camaron-apanado.jpg', brujo:'fotos/brujo.jpg', logo:'fotos/logo.jpg'
 };
 const COMBO5 = ['Ceviche de concha','Ceviche de camarón','Camarón apanado','Arroz mixto','Arroz con camarón'];
 const CARTA = [
  {id:'promos', cat:'Promociones', items:[
   {id:'arma', n:'Arma tu combo', d:'Dos platos a elección. Incluye 2 limonadas.', p:12, op:[{t:'Primer plato',o:COMBO5},{t:'Segundo plato',o:COMBO5}]},
-  {id:'conchas2x1', n:'Conchas asadas 2x1', d:'Conchas + salsa de la casa y patacones.', p:15, f:F.conchas},
+  {id:'conchas2x1', n:'Conchas asadas 2x1', d:'Conchas + salsa de la casa y patacones.', p:15, f:F.conchas2x1},
   {id:'chevere', n:'Combo chévere', d:'Un plato de mar + un arroz o apanado.', p:7.99, op:[{t:'Plato de mar',o:['Encebollado','Ceviche de camarón','Ceviche de concha']},{t:'Acompáñelo con',o:['Arroz mixto','Arroz con camarón','Camarón apanado']}]},
   {id:'oficina', n:'Combo oficina', d:'Guata + encebollado + arroz + bebida.', p:3.25, tag:'Lun a mié'}
  ]},
@@ -302,7 +302,7 @@ const CARTA = [
  {id:'guatas', cat:'Guatas', items:[
   {id:'gu-sol', n:'Guata sola', d:'Maduro + huevo.', p:3.50},
   {id:'gu-ban', n:'Bandera simple', d:'Albacora + guatita + maduro.', p:6.50},
-  {id:'gu-rey', n:'Bandera del Rey', d:'Albacora + guatita + ceviche de camarón + ceviche de concha + maduro.', p:8.99}
+  {id:'gu-rey', n:'Bandera del Rey', d:'Albacora + guatita + ceviche de camarón + ceviche de concha + maduro.', p:8.99, f:F.bandera}
  ]},
  {id:'porciones', cat:'Picaditas y porciones', items:[
   {id:'pi-cam', n:'Picadita de camarón', d:'', p:3.50},
@@ -460,7 +460,7 @@ function renderA(){
   return '<div class="mA">' +
     '<header class="top"><img src="' + F.logo + '" alt="Logo El Rey del Ceviche"><div><h1>El Rey del Ceviche</h1><p>Mariscos · Av. 11 de Noviembre, Riobamba</p></div><div class="rate"><b>' + ICON.star + ' ' + LOCAL.rating + '</b>' + LOCAL.resenas + ' opiniones</div></header>' +
     '<div class="modes"><button type="button" data-modo-top="dom" aria-pressed="true">A domicilio<small>Hasta la puerta de su casa</small></button><button type="button" data-modo-top="ret" aria-pressed="false">Retiro en el local<small>Sin costo de envío</small></button></div>' +
-    '<div class="hero"><img src="' + F.conchas + '" alt="Conchas asadas con patacones"><div><div><em>Promoción</em><h2>Conchas asadas 2x1</h2><p>Con salsa de la casa y patacones · $15,00</p></div><button type="button" data-add="conchas2x1">Agregar</button></div></div>' +
+    '<div class="hero"><img src="' + F.conchas2x1 + '" alt="Conchas asadas 2x1 con patacones"><div><div><em>Promoción</em><h2>Conchas asadas 2x1</h2><p>Con salsa de la casa y patacones · $15,00</p></div><button type="button" data-add="conchas2x1">Agregar</button></div></div>' +
     '<label class="search">' + ICON.search + '<input id="qA" type="search" placeholder="Buscar: ceviche, encebollado, arroz…" aria-label="Buscar en la carta"></label>' +
     '<nav class="chips" aria-label="Secciones">' + CARTA.map((c, k) => '<button type="button" data-go="s-' + c.id + '" class="' + (k ? '' : 'on') + '">' + esc(c.cat) + '</button>').join('') + '</nav>' +
     '<div id="secA">' + sec + '</div>' +
