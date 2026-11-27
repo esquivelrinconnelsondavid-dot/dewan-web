@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rey del Ceviche · Modelos</title>
+<meta name="robots" content="noindex">
+<meta property="og:title" content="El Rey del Ceviche · 3 modelos de su página de pedidos">
+<meta property="og:description" content="Toque y pruebe cada modelo: carta completa, fotos de sus platos y pedido a domicilio o retiro.">
+<meta property="og:image" content="https://dewansas.com/rey-del-ceviche/modelos/fotos/portada.jpg">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Barlow+Condensed:ital,wght@0,600;0,700;1,700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#DDE4EC;font:15px/1.45 Onest,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#0F2137;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+input,textarea{font:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid #F39A1E;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* ---------- Selector de modelos (no es parte de la página del local) ---------- */
+.picker{position:sticky;top:0;z-index:60;background:#111A24;color:#fff;padding:8px 12px calc(8px);display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap}
+.picker b{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9FB0C3;font-weight:600}
+.picker nav{display:flex;gap:6px}
+.picker button{padding:7px 12px;border-radius:999px;background:#223142;font-size:13px;font-weight:600;color:#D6E0EA}
+.picker button[aria-pressed=true]{background:#fff;color:#111A24}
+.stage{max-width:460px;margin:0 auto;min-height:100vh;position:relative;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 20px 60px rgba(15,33,55,.18);overflow:clip}
+@media (max-width:480px){.stage{box-shadow:none}}
+
+/* ---------- Piezas comunes: hojas, aviso ---------- */
+.veil{position:fixed;inset:0;background:rgba(6,14,24,.55);z-index:80}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(460px,100%);max-height:88vh;overflow:auto;z-index:90;background:var(--s-bg);color:var(--s-ink);border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));font-family:var(--s-font)}
+.sheet h3{margin:0 0 4px;font-size:20px;font-family:var(--s-head);font-weight:var(--s-headw,700);text-wrap:balance}
+.sheet .sub{margin:0 0 14px;color:var(--s-muted);font-size:14px}
+.sheet .grip{width:40px;height:4px;border-radius:4px;background:var(--s-line);margin:-6px auto 12px}
+.sheet .grp{margin:14px 0}
+.sheet .grp>p{margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--s-muted)}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{padding:9px 13px;border-radius:10px;border:1.5px solid var(--s-line);font-size:14px;font-weight:500}
+.opt[aria-pressed=true]{border-color:var(--s-btn);background:var(--s-chip);font-weight:700}
+.bigbtn{width:100%;padding:15px 18px;border-radius:var(--s-rad,12px);background:var(--s-btn);color:var(--s-btn-ink);font-weight:700;font-size:16px;display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.bigbtn:disabled{opacity:.45;cursor:not-allowed}
+.line{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:10px 0;border-bottom:1px solid var(--s-line)}
+.line small{color:var(--s-muted);grid-column:1}
+.qty{display:flex;align-items:center;gap:10px;grid-row:span 2;align-self:center}
+.qty button{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--s-line);font-weight:700;font-size:16px;line-height:1}
+.qty span{min-width:14px;text-align:center;font-variant-numeric:tabular-nums;font-weight:700}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--s-chip);padding:4px;border-radius:12px}
+.seg button{padding:10px;border-radius:9px;font-weight:600;font-size:14px;color:var(--s-muted)}
+.seg button[aria-pressed=true]{background:var(--s-bg);color:var(--s-ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.fld{display:block;margin:10px 0}
+.fld span{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
+.fld input,.fld textarea{width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--s-line);background:var(--s-field,transparent);color:var(--s-ink)}
+.fld textarea{min-height:56px;resize:vertical}
+.err{color:#B3261E;font-size:13px;margin:6px 0 0;font-weight:600}
+.sum{margin-top:12px;font-variant-numeric:tabular-nums}
+.sum div{display:flex;justify-content:space-between;padding:3px 0;color:var(--s-muted)}
+.sum div.t{color:var(--s-ink);font-weight:700;font-size:17px;padding-top:8px}
+.note{font-size:12.5px;color:var(--s-muted);margin:8px 0 0}
+.ok{text-align:center;padding:8px 0}
+.ok .code{display:inline-block;margin:6px 0 14px;padding:6px 12px;border-radius:8px;background:var(--s-chip);font-weight:700;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.steps{list-style:none;padding:0;margin:8px 0 0;text-align:left;display:grid;gap:10px}
+.steps li{display:flex;gap:10px;align-items:center;color:var(--s-muted)}
+.steps li i{width:12px;height:12px;border-radius:50%;border:2px solid var(--s-line);flex:none}
+.steps li.on{color:var(--s-ink);font-weight:600}
+.steps li.on i{background:#1E8E4E;border-color:#1E8E4E}
+.demo{font-size:12px;color:var(--s-muted);margin-top:16px}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:95;background:#0F2137;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+
+/* =================================================================
+   MODELO 1 · "Muelle" — claro, tipo app de pedidos, lista con fotos
+   ================================================================= */
+.mA{--bg:#FFFFFF;--soft:#F1F5F9;--ink:#0F2137;--muted:#5A6A7D;--line:#E2E8EF;--brand:#02569E;--brand-d:#014177;
+  --s-bg:#fff;--s-ink:#0F2137;--s-muted:#5A6A7D;--s-line:#DCE3EB;--s-btn:#02569E;--s-btn-ink:#fff;--s-chip:#EAF1F8;--s-font:Onest,system-ui,sans-serif;--s-head:Onest,system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);font-family:Onest,system-ui,sans-serif;padding-bottom:96px}
+.mA .top{display:flex;align-items:center;gap:12px;padding:16px 16px 10px}
+.mA .top img{width:52px;height:52px;border-radius:50%;object-fit:cover}
+.mA .top h1{margin:0;font-size:19px;line-height:1.15;font-weight:700}
+.mA .top p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.mA .rate{margin-left:auto;text-align:right;font-size:12px;color:var(--muted);line-height:1.2}
+.mA .rate b{display:block;font-size:16px;color:var(--ink)}
+.mA .modes{margin:4px 16px 14px;display:grid;grid-template-columns:1fr 1fr;background:var(--soft);padding:4px;border-radius:12px}
+.mA .modes button{padding:9px;border-radius:9px;font-weight:600;font-size:14px;color:var(--muted)}
+.mA .modes button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,33,55,.14)}
+.mA .modes small{display:block;font-weight:500;font-size:11.5px}
+.mA .hero{margin:0 16px;border-radius:16px;overflow:hidden;position:relative;background:#000}
+.mA .hero img{width:100%;aspect-ratio:16/10;object-fit:cover;opacity:.92}
+.mA .hero>div{position:absolute;left:0;right:0;bottom:0;padding:40px 16px 14px;background:linear-gradient(transparent,rgba(0,0,0,.78));color:#fff;display:flex;align-items:flex-end;gap:12px}
+.mA .hero em{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#FFD39A}
+.mA .hero h2{margin:2px 0 0;font-size:20px;line-height:1.15}
+.mA .hero p{margin:2px 0 0;font-size:13px;opacity:.85}
+.mA .hero button{margin-left:auto;flex:none;background:#fff;color:var(--ink);font-weight:700;padding:9px 14px;border-radius:999px;font-size:14px}
+.mA .search{display:block;margin:14px 16px 0;position:relative}
+.mA .search input{width:100%;padding:12px 14px 12px 40px;border-radius:12px;border:1px solid var(--line);background:var(--soft);color:var(--ink)}
+.mA .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.mA .chips{position:sticky;top:44px;z-index:5;background:var(--bg);display:flex;gap:8px;overflow-x:auto;padding:12px 16px;border-bottom:1px solid var(--line);scrollbar-width:none}
+.mA .chips::-webkit-scrollbar{display:none}
+.mA .chips button{flex:none;padding:8px 13px;border-radius:999px;border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--muted)}
+.mA .chips button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.mA section{padding:6px 16px 4px;scroll-margin-top:104px}
+.mA section h2{font-size:19px;margin:18px 0 2px}
+.mA section>p{margin:0 0 4px;font-size:13px;color:var(--muted)}
+.mA .row{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.mA .row:last-child{border-bottom:0}
+.mA .row .tx{flex:1;min-width:0}
+.mA .row h4{margin:0;font-size:15.5px;font-weight:600}
+.mA .row .d{margin:3px 0 6px;font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mA .row .p{font-weight:700;font-variant-numeric:tabular-nums}
+.mA .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:#FFF1DE;color:#8A4B00;margin-left:6px;vertical-align:1px}
+.mA .ph{position:relative;flex:none;width:96px;height:96px}
+.mA .ph img{width:96px;height:96px;border-radius:12px;object-fit:cover}
+.mA .plus{width:34px;height:34px;border-radius:50%;background:#fff;color:var(--brand);border:1.5px solid var(--line);display:grid;place-items:center;flex:none;box-shadow:0 2px 6px rgba(15,33,55,.12)}
+.mA .ph .plus{position:absolute;right:-6px;bottom:-6px}
+.mA .bar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(460px,100%);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));z-index:20;background:linear-gradient(transparent,#fff 30%)}
+.mA .bar button{width:100%;display:flex;align-items:center;gap:12px;background:var(--brand);color:#fff;padding:14px 16px;border-radius:14px;font-weight:700;font-size:16px;box-shadow:0 8px 20px rgba(2,86,158,.3)}
+.mA .bar .n{background:rgba(255,255,255,.2);border-radius:8px;padding:2px 9px;font-variant-numeric:tabular-nums}
+.mA .bar .t{margin-left:auto;font-variant-numeric:tabular-nums}
+.mA .foot{padding:22px 16px 8px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);margin-top:14px}
+.mA .foot b{color:var(--ink)}
+
+/* =================================================================
+   MODELO 2 · "Noche de mar" — oscuro, foto primero, cuadrícula
+   ================================================================= */
+.mB{--bg:#07121E;--s1:#0E1D2E;--s2:#152a41;--ink:#EEF3F8;--muted:#93A5B9;--line:#21374F;--acc:#F39A1E;--acc-ink:#1C1100;
+  --s-bg:#0E1D2E;--s-ink:#EEF3F8;--s-muted:#93A5B9;--s-line:#2A425C;--s-btn:#F39A1E;--s-btn-ink:#1C1100;--s-chip:#183049;--s-field:#0A1726;--s-font:Onest,system-ui,sans-serif;--s-head:"Bricolage Grotesque",Onest,system-ui,sans-serif;--s-headw:800;--s-rad:999px;
+  background:var(--bg);color:var(--ink);font-family:Onest,system-ui,sans-serif;padding-bottom:110px;color-scheme:dark}
+.mB .hero{position:relative;background:#000}
+.mB .hero>img{width:100%;aspect-ratio:4/4.6;object-fit:cover;object-position:50% 0%}
+.mB .hero .ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,18,30,.55) 0%,rgba(7,18,30,0) 22%,rgba(7,18,30,.15) 38%,rgba(7,18,30,.82) 62%,var(--bg) 100%)}
+.mB .hero header{position:absolute;top:14px;left:16px;right:16px;display:flex;align-items:center;gap:10px}
+.mB .hero header img{width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.7)}
+.mB .hero header span{font-weight:700;font-size:15px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.mB .hero header small{margin-left:auto;font-size:12.5px;background:rgba(7,18,30,.6);padding:5px 10px;border-radius:999px;backdrop-filter:blur(6px)}
+.mB .hero .cp{position:absolute;left:16px;right:16px;bottom:18px}
+.mB .hero h1{font-family:"Bricolage Grotesque",Onest,sans-serif;font-weight:800;font-size:clamp(30px,8.6vw,40px);line-height:1.02;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.mB .hero h1 span{color:var(--acc)}
+.mB .hero p{margin:8px 0 0;color:#C8D4E1;font-size:14px}
+.mB .cta{display:flex;gap:8px;margin-top:14px}
+.mB .cta button{padding:11px 16px;border-radius:999px;font-weight:700;font-size:14px;background:var(--acc);color:var(--acc-ink)}
+.mB .cta button+button{background:rgba(255,255,255,.1);color:var(--ink);border:1px solid rgba(255,255,255,.2)}
+.mB h2{font-family:"Bricolage Grotesque",Onest,sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em;margin:0}
+.mB .kick{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:0 0 4px}
+.mB .best{padding:18px 0 6px}
+.mB .best .hd{padding:0 16px 12px}
+.mB .rail{display:flex;gap:12px;overflow-x:auto;padding:0 16px 6px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.mB .rail::-webkit-scrollbar{display:none}
+.mB .card{flex:none;width:72%;scroll-snap-align:start;border-radius:18px;overflow:hidden;background:var(--s1);position:relative}
+.mB .card img{width:100%;aspect-ratio:4/3.4;object-fit:cover}
+.mB .card .in{padding:12px 14px 14px;display:flex;align-items:flex-end;gap:10px}
+.mB .card h4{margin:0;font-size:16px}
+.mB .card .p{font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums}
+.mB .add{width:40px;height:40px;border-radius:50%;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;flex:none;margin-left:auto}
+.mB .tabs{position:sticky;top:44px;z-index:5;background:rgba(7,18,30,.94);backdrop-filter:blur(8px);display:flex;gap:4px;overflow-x:auto;padding:12px 16px;scrollbar-width:none;border-bottom:1px solid var(--line)}
+.mB .tabs::-webkit-scrollbar{display:none}
+.mB .tabs button{flex:none;padding:8px 12px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.mB .tabs button.on{background:var(--s2);color:var(--ink)}
+.mB section{padding:20px 16px 4px;scroll-margin-top:104px}
+.mB section>.hd{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.mB section>.hd span{color:var(--muted);font-size:13px}
+.mB section>.nt{margin:-6px 0 12px;font-size:13px;color:var(--muted)}
+.mB .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.mB .tile{background:var(--s1);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line)}
+.mB .tile.big{grid-column:1/-1}
+.mB .tile img{width:100%;aspect-ratio:1/1;object-fit:cover}
+.mB .tile.big img{aspect-ratio:16/10}
+.mB .tile .in{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.mB .tile h4{margin:0;font-size:14.5px;line-height:1.25}
+.mB .tile .d{margin:0;font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mB .tile .ft{margin-top:auto;padding-top:8px;display:flex;align-items:center}
+.mB .tile .p{font-weight:700;font-variant-numeric:tabular-nums}
+.mB .tile .add{width:34px;height:34px}
+.mB .tag{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--acc)}
+.mB .fab{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:min(428px,calc(100% - 32px));z-index:20;display:flex;align-items:center;gap:12px;background:var(--acc);color:var(--acc-ink);padding:8px 8px 8px 18px;border-radius:999px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.mB .fab .t{font-variant-numeric:tabular-nums}
+.mB .fab .go{margin-left:auto;background:var(--acc-ink);color:var(--acc);border-radius:999px;padding:10px 16px}
+.mB .foot{padding:26px 16px 0;font-size:13px;color:var(--muted)}
+.mB .foot b{color:var(--ink)}
+
+/* =================================================================
+   MODELO 3 · "La Carta del Rey" — su carta impresa, hecha página
+   ================================================================= */
+.mC{--bg:#EAF1F8;--paper:#FFFFFF;--ink:#0B2D5B;--blue:#02569E;--muted:#4D6585;--line:#C9D7E6;--or:#D9750F;
+  --s-bg:#fff;--s-ink:#0B2D5B;--s-muted:#4D6585;--s-line:#C9D7E6;--s-btn:#02569E;--s-btn-ink:#fff;--s-chip:#E3EDF8;--s-font:Barlow,system-ui,sans-serif;--s-head:"Barlow Condensed",Barlow,sans-serif;--s-rad:6px;
+  background:var(--bg);color:var(--ink);font-family:Barlow,system-ui,sans-serif;padding-bottom:96px}
+.mC .cover{background:radial-gradient(120% 90% at 50% 0%,#1C76C4 0%,#02569E 45%,#03386A 100%);color:#fff;text-align:center;padding:22px 16px 20px}
+.mC .cover img{width:168px;height:168px;margin:0 auto;border-radius:50%;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.mC .cover p{margin:12px 0 0;font-size:14px;color:#D4E5F6}
+.mC .cover .rw{display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.mC .cover .rw span{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:15px;letter-spacing:.04em;text-transform:uppercase;border:1px solid rgba(255,255,255,.35);padding:5px 11px;border-radius:4px}
+.mC .ttl{font-family:"Barlow Condensed",sans-serif;font-style:italic;font-weight:700;color:var(--or);font-size:30px;line-height:1;margin:0;display:flex;align-items:center;gap:12px}
+.mC .ttl::before,.mC .ttl::after{content:"";height:2px;background:var(--line);flex:1}
+.mC .combo{margin:18px 14px 0;background:var(--paper);border-radius:6px;padding:18px 16px;border:1px solid var(--line)}
+.mC .combo h3{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:26px;text-transform:uppercase;margin:12px 0 0;line-height:1.05}
+.mC .combo .pr{float:right;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:26px;color:var(--blue)}
+.mC .combo p{margin:4px 0 12px;color:var(--muted);font-size:14px}
+.mC .pick{display:flex;flex-wrap:wrap;gap:7px}
+.mC .pick button{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:.02em;padding:8px 11px;border:1.5px solid var(--line);border-radius:4px;color:var(--ink)}
+.mC .pick button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.mC .pick button .n{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;color:var(--blue);font-size:12px;margin-left:6px;vertical-align:1px}
+.mC .combo .go{margin-top:14px;width:100%;padding:13px;border-radius:4px;background:var(--blue);color:#fff;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase}
+.mC .combo .go:disabled{background:#9DB3CB}
+.mC .dir{margin:22px 14px 0}
+.mC .dir .ttl{font-size:24px;margin-bottom:12px}
+.mC .dir nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mC .dir button{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:10px 8px;text-align:left;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;line-height:1.05;color:var(--ink);min-height:58px;display:flex;flex-direction:column;justify-content:space-between}
+.mC .dir button small{font-family:Barlow,sans-serif;font-weight:500;font-size:11.5px;text-transform:none;color:var(--muted)}
+.mC section{margin:26px 14px 0;scroll-margin-top:56px}
+.mC section .ttl{margin-bottom:6px}
+.mC section .nt{text-align:center;font-size:13px;color:var(--muted);margin:0 0 8px}
+.mC .feat{border-radius:6px;overflow:hidden;margin:10px 0 4px;background:#fff}
+.mC .feat img{width:100%;aspect-ratio:16/9;object-fit:cover}
+.mC .feat figcaption{font-size:12px;color:var(--muted);padding:6px 10px}
+.mC .it{display:grid;grid-template-columns:1fr auto;gap:0 10px;padding:12px 2px;border-bottom:1px dashed var(--line);align-items:center}
+.mC .it .nm{display:flex;align-items:baseline;gap:8px;min-width:0}
+.mC .it h4{margin:0;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.01em;line-height:1.1}
+.mC .it .ld{flex:1;border-bottom:2px dotted #A9BED6;transform:translateY(-4px);min-width:12px}
+.mC .it .p{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:19px;color:var(--blue);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mC .it .d{grid-column:1;margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+.mC .it .tg{font-family:Barlow,sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--or);white-space:nowrap}
+.mC .it .ad{grid-column:2;grid-row:1/span 2;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--blue);color:var(--blue);display:grid;place-items:center;align-self:center}
+.mC .it .ad.done{background:var(--blue);color:#fff}
+.mC .bar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(460px,100%);z-index:20;padding:0 0 env(safe-area-inset-bottom,0px);background:var(--ink)}
+.mC .bar button{width:100%;display:flex;align-items:center;gap:12px;color:#fff;padding:15px 16px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:20px;letter-spacing:.03em;text-transform:uppercase}
+.mC .bar .t{margin-left:auto;font-variant-numeric:tabular-nums;color:#FFC985}
+.mC .foot{margin:30px 0 0;background:var(--blue);color:#fff;text-align:center;padding:20px 16px;font-family:"Barlow Condensed",sans-serif;font-size:17px;letter-spacing:.02em;text-transform:uppercase;line-height:1.3}
+.mC .foot b{display:block;font-size:24px}
+</style>
+</head>
+<body>
+
+<div class="picker" role="group" aria-label="Elegir modelo">
+  <b>Elija su modelo</b>
+  <nav>
+    <button type="button" data-m="A" aria-pressed="true">1 · Claro</button>
+    <button type="button" data-m="B" aria-pressed="false">2 · Noche de mar</button>
+    <button type="button" data-m="C" aria-pressed="false">3 · Su carta</button>
+  </nav>
+</div>
+
+<main class="stage" id="app"></main>
+<div id="layer"></div>
+
+<script>
+/* ===== Carta de El Rey del Ceviche (de su carta en FlipHTML5, nov-2026) ===== */
+const F = {
+  encebollado:'fotos/encebollado.jpg', encebolladoRey:'fotos/encebollado-rey.jpg',
+  concha:'fotos/ceviche-concha.jpg', conchas:'fotos/conchas-asadas.jpg', cevCam:'fotos/ceviche-camaron.jpg', cevPes:'fotos/ceviche-pescado.jpg', arroz:'fotos/arroz-mixto.jpg', encocado:'fotos/encocado.jpg',
+  apanado:'fotos/camaron-apanado.jpg', brujo:'fotos/brujo.jpg', logo:'fotos/logo.jpg'
+};
+const COMBO5 = ['Ceviche de concha','Ceviche de camarón','Camarón apanado','Arroz mixto','Arroz con camarón'];
+const CARTA = [
+ {id:'promos', cat:'Promociones', items:[
+  {id:'arma', n:'Arma tu combo', d:'Dos platos a elección. Incluye 2 limonadas.', p:12, op:[{t:'Primer plato',o:COMBO5},{t:'Segundo plato',o:COMBO5}]},
+  {id:'conchas2x1', n:'Conchas asadas 2x1', d:'Conchas + salsa de la casa y patacones.', p:15, f:F.conchas},
+  {id:'chevere', n:'Combo chévere', d:'Un plato de mar + un arroz o apanado.', p:7.99, op:[{t:'Plato de mar',o:['Encebollado','Ceviche de camarón','Ceviche de concha']},{t:'Acompáñelo con',o:['Arroz mixto','Arroz con camarón','Camarón apanado']}]},
+  {id:'oficina', n:'Combo oficina', d:'Guata + encebollado + arroz + bebida.', p:3.25, tag:'Lun a mié'}
+ ]},
+ {id:'ceviches', cat:'Ceviches', items:[
+  {id:'cev-cam', n:'Ceviche de camarón', d:'', p:6.25, f:F.cevCam},
+  {id:'cev-con', n:'Ceviche de concha', d:'', p:7.50, f:F.concha},
+  {id:'cev-pes', n:'Ceviche de pescado', d:'', p:6.75, f:F.cevPes},
+  {id:'cev-mix', n:'Ceviche Mix 2', d:'Concha + camarón.', p:7.99},
+  {id:'cev-can', n:'Ceviche de cangrejo', d:'', p:9.99}
+ ]},
+ {id:'encebollados', cat:'Encebollados', nt:'Todos con porción de canguil, chifles y tostado.', items:[
+  {id:'enc-nor', n:'Encebollado normal', d:'Albacora + yuca.', p:3.50, f:F.encebollado},
+  {id:'enc-mix', n:'Encebollado mixto', d:'Albacora + camarón.', p:6.99},
+  {id:'enc-rey', n:'Encebollado Rey', d:'Albacora + camarones + almeja + calamar + pescado.', p:7.75, f:F.encebolladoRey},
+  {id:'enc-sup', n:'Súper encebollado Rey', d:'Albacora + camarones + almeja + calamar + concha + pescado + carne de cangrejo.', p:10.75}
+ ]},
+ {id:'arroces', cat:'Arroces', items:[
+  {id:'arr-cam', n:'Arroz con camarón', d:'Camarón + maduro.', p:7.99},
+  {id:'arr-mix', n:'Arroz mixto', d:'Calamar, camarón, pescado, mejillón y almeja.', p:8.99, f:F.arroz},
+  {id:'arr-con', n:'Arroz con concha', d:'Concha + maduro.', p:9.75},
+  {id:'arr-mar', n:'Arroz marinero', d:'Concha + camarón + pescado + calamar + carne de cangrejo + maduro.', p:11.99}
+ ]},
+ {id:'asados', cat:'Asados', items:[
+  {id:'as-mar', n:'Asado marinero', d:'Conchas + camarón + pescado, porción de arroz y patacones.', p:9.99},
+  {id:'as-rey', n:'Asado Rey', d:'Conchas + camarón + porción de arroz + patacones.', p:11.99},
+  {id:'as-con', n:'Conchas asadas', d:'Conchas + porción de arroz + patacones.', p:9.99, f:F.conchas},
+  {id:'as-pin', n:'Pincho de camarón', d:'Camarones + patacones.', p:4.75}
+ ]},
+ {id:'especiales', cat:'Platos especiales', items:[
+  {id:'es-ecc', n:'Encocado de camarón', d:'Arroz + patacones.', p:8.99},
+  {id:'es-ecp', n:'Encocado de pescado', d:'Arroz + patacones.', p:7.99, f:F.encocado},
+  {id:'es-sac', n:'Sango de camarón', d:'Arroz + patacones.', p:8.99},
+  {id:'es-sap', n:'Sango de pescado', d:'Albacora + arroz + patacones.', p:7.75},
+  {id:'es-chi', n:'Chicharrón de pescado', d:'Pescado, papas y ensalada.', p:7.99},
+  {id:'es-jr', n:'Rey Jr. niñ@s', d:'Papas fritas + pollo o pescado + huevo Kinder y pulpín.', p:5.00, op:[{t:'Con',o:['Pollo','Pescado']}]},
+  {id:'es-bru', n:'Brujo de Galápagos', d:'Con patacones. Pescado de 40 a 60 cm.', p:null, tag:'Solo domingos', f:F.brujo}
+ ]},
+ {id:'apanados', cat:'Apanados', items:[
+  {id:'ap-fil', n:'Filete de pescado', d:'Asado o apanado. Porción de arroz, ensalada y maduro.', p:6.99, op:[{t:'¿Cómo lo prefiere?',o:['Apanado','Asado']}]},
+  {id:'ap-cam', n:'Camarón apanado', d:'Porción de arroz, ensalada y maduro.', p:7.75, f:F.apanado},
+  {id:'ap-ent', n:'Pescado entero', d:'Ensalada, arroz y papas fritas.', p:6.50, tag:'Solo viernes'}
+ ]},
+ {id:'guatas', cat:'Guatas', items:[
+  {id:'gu-sol', n:'Guata sola', d:'Maduro + huevo.', p:3.50},
+  {id:'gu-ban', n:'Bandera simple', d:'Albacora + guatita + maduro.', p:6.50},
+  {id:'gu-rey', n:'Bandera del Rey', d:'Albacora + guatita + ceviche de camarón + ceviche de concha + maduro.', p:8.99}
+ ]},
+ {id:'porciones', cat:'Picaditas y porciones', items:[
+  {id:'pi-cam', n:'Picadita de camarón', d:'', p:3.50},
+  {id:'po-pap', n:'Papas fritas', d:'', p:1.25},
+  {id:'po-pat', n:'Patacones', d:'', p:1.25},
+  {id:'po-arr', n:'Arroz', d:'', p:1.25},
+  {id:'po-mad', n:'Maduro', d:'', p:1.25}
+ ]},
+ {id:'bebidas', cat:'Bebidas', items:[
+  {id:'be-lim', n:'Vaso de limonada', d:'', p:1.25},
+  {id:'be-ros', n:'Limonada rosada', d:'', p:1.75},
+  {id:'be-jar', n:'Jarra de limonada', d:'', p:2.75},
+  {id:'be-tam', n:'Vaso de tamarindo', d:'', p:1.50},
+  {id:'be-coc', n:'Vaso de coco', d:'', p:1.75},
+  {id:'be-te', n:'Té negro', d:'', p:1.25},
+  {id:'be-te1', n:'Té negro 1 litro', d:'', p:1.75},
+  {id:'be-gap', n:'Gaseosa personal', d:'', p:0.75},
+  {id:'be-ga1', n:'Gaseosa 1 litro', d:'', p:1.75},
+  {id:'be-ags', n:'Agua sin gas', d:'', p:0.70},
+  {id:'be-agm', n:'Agua mineral', d:'', p:0.85}
+ ]},
+ {id:'cervezas', cat:'Cervezas', items:[
+  {id:'ce-clu', n:'Club', d:'', p:3}, {id:'ce-pil', n:'Pilsener', d:'', p:3}, {id:'ce-cor', n:'Corona', d:'', p:3}
+ ]}
+];
+const LOCAL = {nombre:'El Rey del Ceviche', dir:'Av. 11 de Noviembre y José de la Cuadra', ref:'A 50 m de la iglesia Sagrado Corazón de Jesús (ECU 911)', tel:'098 346 5053', rating:'4,4', resenas:34};
+
+/* ===== Motor común ===== */
+const byId = {}; CARTA.forEach(c => c.items.forEach(i => byId[i.id] = i));
+const money = n => '$' + n.toFixed(2).replace('.', ',');
+const priceTxt = i => i.p == null ? 'Según peso' : money(i.p);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ICON = {
+  plus:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  search:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  pin:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  star:'<svg width="13" height="13" viewBox="0 0 24 24" fill="#F39A1E" aria-hidden="true" style="vertical-align:-1px"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>'
+};
+let modelo = 'A', modo = 'dom', cart = [], comboPick = [];
+
+function addItem(it, opts){
+  opts = opts || [];
+  const key = it.id + '|' + opts.join('|');
+  const f = cart.find(x => x.key === key);
+  if (f) f.q++; else cart.push({key, id:it.id, n:it.n, p:it.p, opts, q:1});
+  paintCart(); toast(it.n + ' · agregado');
+}
+function tap(id){ const it = byId[id]; if (it.op) openOptions(it); else addItem(it); }
+const count = () => cart.reduce((a, x) => a + x.q, 0);
+const subtotal = () => cart.reduce((a, x) => a + (x.p || 0) * x.q, 0);
+
+function paintCart(){
+  const n = count(), t = money(subtotal());
+  document.querySelectorAll('[data-cart]').forEach(el => el.hidden = n === 0);
+  document.querySelectorAll('[data-n]').forEach(el => el.textContent = n === 1 ? '1 plato' : n + ' platos');
+  document.querySelectorAll('[data-num]').forEach(el => el.textContent = n);
+  document.querySelectorAll('[data-t]').forEach(el => el.textContent = t);
+  document.querySelectorAll('[data-add]').forEach(el => {
+    const inCart = cart.some(x => x.id === el.dataset.add);
+    el.classList.toggle('done', inCart);
+  });
+}
+let tt;
+function toast(msg){
+  let el = document.querySelector('.toast');
+  if (!el){ el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role','status'); document.body.appendChild(el); }
+  el.textContent = msg; el.hidden = false; clearTimeout(tt); tt = setTimeout(() => el.hidden = true, 1600);
+}
+const layer = document.getElementById('layer');
+function sheet(html){
+  layer.className = 'm' + modelo;
+  layer.innerHTML = '<div class="veil" data-close></div><div class="sheet" role="dialog" aria-modal="true"><div class="grip"></div>' + html + '</div>';
+  const first = layer.querySelector('.sheet button, .sheet input'); if (first) first.focus({preventScroll:true});
+}
+function closeSheet(){ layer.innerHTML = ''; }
+
+function openOptions(it){
+  const sel = it.op.map(() => null);
+  const draw = () => {
+    sheet(
+      '<h3>' + esc(it.n) + '</h3><p class="sub">' + esc(it.d) + '</p>' +
+      it.op.map((g, gi) => '<div class="grp"><p>' + esc(g.t) + '</p><div class="opts">' +
+        g.o.map(o => '<button type="button" class="opt" data-g="' + gi + '" data-o="' + esc(o) + '" aria-pressed="' + (sel[gi] === o) + '">' + esc(o) + '</button>').join('') +
+      '</div></div>').join('') +
+      '<button type="button" class="bigbtn" id="optAdd"' + (sel.includes(null) ? ' disabled' : '') + '><span>Agregar</span><span>' + priceTxt(it) + '</span></button>'
+    );
+    layer.querySelectorAll('.opt').forEach(b => b.onclick = () => { sel[+b.dataset.g] = b.dataset.o; draw(); });
+    layer.querySelector('#optAdd').onclick = () => { if (sel.includes(null)) return; closeSheet(); addItem(it, sel); };
+  };
+  draw();
+}
+
+function openCart(){
+  if (!cart.length) return;
+  const form = {nombre:'', cel:'', dir:'', ref:'', pago:'efectivo'};
+  const draw = (err) => {
+    const peso = cart.some(x => x.p == null);
+    sheet(
+      '<h3>Su pedido</h3><p class="sub">' + esc(LOCAL.nombre) + ' · ' + esc(LOCAL.dir) + '</p>' +
+      cart.map((x, i) => '<div class="line"><b>' + esc(x.n) + '</b><div class="qty"><button type="button" data-q="' + i + '" data-d="-1" aria-label="Quitar uno">−</button><span>' + x.q + '</span><button type="button" data-q="' + i + '" data-d="1" aria-label="Agregar uno">+</button></div><small>' + (x.opts.length ? esc(x.opts.join(' · ')) + ' · ' : '') + (x.p == null ? 'según peso' : money(x.p * x.q)) + '</small></div>').join('') +
+      '<div class="grp"><p>¿Cómo lo recibe?</p><div class="seg"><button type="button" data-modo="dom" aria-pressed="' + (modo === 'dom') + '">A domicilio</button><button type="button" data-modo="ret" aria-pressed="' + (modo === 'ret') + '">Retiro en el local</button></div></div>' +
+      '<label class="fld"><span>Su nombre</span><input id="fNom" autocomplete="name" value="' + esc(form.nombre) + '"></label>' +
+      '<label class="fld"><span>Celular</span><input id="fCel" inputmode="tel" autocomplete="tel" placeholder="09…" value="' + esc(form.cel) + '"></label>' +
+      (modo === 'dom'
+        ? '<label class="fld"><span>Dirección de entrega</span><input id="fDir" autocomplete="street-address" placeholder="Calle principal y secundaria" value="' + esc(form.dir) + '"></label><label class="fld"><span>Referencia (opcional)</span><input id="fRef" placeholder="Casa, color, piso…" value="' + esc(form.ref) + '"></label>'
+        : '<p class="note">' + ICON.pin + ' Retira en ' + esc(LOCAL.dir) + '. ' + esc(LOCAL.ref) + '.</p>') +
+      '<div class="grp"><p>Pago</p><div class="seg"><button type="button" data-pago="efectivo" aria-pressed="' + (form.pago === 'efectivo') + '">Efectivo</button><button type="button" data-pago="transferencia" aria-pressed="' + (form.pago === 'transferencia') + '">Transferencia</button></div></div>' +
+      '<div class="sum"><div><span>Subtotal</span><span>' + money(subtotal()) + '</span></div>' +
+      (modo === 'dom' ? '<div><span>Envío</span><span>Según su ubicación</span></div>' : '') +
+      '<div class="t"><span>' + (modo === 'dom' ? 'Total de la comida' : 'Total') + '</span><span>' + money(subtotal()) + '</span></div></div>' +
+      (modo === 'dom' ? '<p class="note">El envío se suma al confirmar, según la distancia a su casa.</p>' : '') +
+      (peso ? '<p class="note">El Brujo de Galápagos se cobra según el peso; el local le confirma el precio.</p>' : '') +
+      (err ? '<p class="err">' + err + '</p>' : '') +
+      '<button type="button" class="bigbtn" id="go"><span>Confirmar pedido</span><span>' + money(subtotal()) + '</span></button>'
+    );
+    const keep = () => { const g = id => (layer.querySelector(id) || {}).value; form.nombre = g('#fNom') || ''; form.cel = g('#fCel') || ''; if (modo === 'dom'){ form.dir = g('#fDir') || ''; form.ref = g('#fRef') || ''; } };
+    layer.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { keep(); const x = cart[+b.dataset.q]; x.q += +b.dataset.d; if (x.q <= 0) cart.splice(+b.dataset.q, 1); paintCart(); if (!cart.length) return closeSheet(); draw(); });
+    layer.querySelectorAll('[data-modo]').forEach(b => b.onclick = () => { keep(); modo = b.dataset.modo; syncModo(); draw(); });
+    layer.querySelectorAll('[data-pago]').forEach(b => b.onclick = () => { keep(); form.pago = b.dataset.pago; draw(); });
+    layer.querySelector('#go').onclick = () => {
+      keep();
+      if (!form.nombre.trim()) return draw('Escriba su nombre para el pedido.');
+      if (form.cel.replace(/\D/g, '').length < 9) return draw('Escriba su celular (10 dígitos) para avisarle cuando salga.');
+      if (modo === 'dom' && !form.dir.trim()) return draw('Escriba la dirección de entrega.');
+      done(form);
+    };
+  };
+  draw();
+}
+function done(form){
+  const code = 'RC-' + (140 + Math.floor(Math.random() * 60));
+  sheet(
+    '<div class="ok"><h3>¡Pedido recibido!</h3><p class="sub">Gracias, ' + esc(form.nombre.split(' ')[0]) + '. El Rey del Ceviche ya lo tiene en su pantalla.</p>' +
+    '<span class="code">' + code + '</span>' +
+    '<ol class="steps"><li class="on"><i></i>Pedido recibido</li><li><i></i>En cocina</li><li><i></i>' + (modo === 'dom' ? 'En camino' : 'Listo para retirar') + '</li></ol>' +
+    '<p class="note">' + (form.pago === 'transferencia' ? 'Le enviamos los datos de la cuenta por WhatsApp.' : 'Paga en efectivo al recibir.') + '</p>' +
+    '<button type="button" class="bigbtn" data-close><span>Volver a la carta</span><span></span></button>' +
+    '<p class="demo">Modelo de muestra: este pedido no se envía al local.</p></div>'
+  );
+  cart = []; paintCart();
+}
+function syncModo(){ document.querySelectorAll('[data-modo-top]').forEach(b => b.setAttribute('aria-pressed', b.dataset.modoTop === modo)); }
+
+/* ===== Modelo 1 · Claro ===== */
+function renderA(){
+  const sec = CARTA.map(c =>
+    '<section id="s-' + c.id + '"><h2>' + esc(c.cat) + '</h2>' + (c.nt ? '<p>' + esc(c.nt) + '</p>' : '') +
+    c.items.map(i =>
+      '<div class="row"><div class="tx"><h4>' + esc(i.n) + (i.tag ? '<span class="tag">' + esc(i.tag) + '</span>' : '') + '</h4>' +
+      (i.d ? '<p class="d">' + esc(i.d) + '</p>' : '<p class="d"></p>') + '<span class="p">' + priceTxt(i) + '</span></div>' +
+      (i.f ? '<div class="ph"><img src="' + i.f + '" alt="' + esc(i.n) + '" loading="lazy"><button type="button" class="plus" data-add="' + i.id + '" aria-label="Agregar ' + esc(i.n) + '">' + ICON.plus + '</button></div>'
+           : '<button type="button" class="plus" data-add="' + i.id + '" aria-label="Agregar ' + esc(i.n) + '">' + ICON.plus + '</button>') +
+      '</div>').join('') + '</section>').join('');
+  return '<div class="mA">' +
+    '<header class="top"><img src="' + F.logo + '" alt="Logo El Rey del Ceviche"><div><h1>El Rey del Ceviche</h1><p>Mariscos · Av. 11 de Noviembre, Riobamba</p></div><div class="rate"><b>' + ICON.star + ' ' + LOCAL.rating + '</b>' + LOCAL.resenas + ' opiniones</div></header>' +
+    '<div class="modes"><button type="button" data-modo-top="dom" aria-pressed="true">A domicilio<small>Hasta la puerta de su casa</small></button><button type="button" data-modo-top="ret" aria-pressed="false">Retiro en el local<small>Sin costo de envío</small></button></div>' +
+    '<div class="hero"><img src="' + F.conchas + '" alt="Conchas asadas con patacones"><div><div><em>Promoción</em><h2>Conchas asadas 2x1</h2><p>Con salsa de la casa y patacones · $15,00</p></div><button type="button" data-add="conchas2x1">Agregar</button></div></div>' +
+    '<label class="search">' + ICON.search + '<input id="qA" type="search" placeholder="Buscar: ceviche, encebollado, arroz…" aria-label="Buscar en la carta"></label>' +
+    '<nav class="chips" aria-label="Secciones">' + CARTA.map((c, k) => '<button type="button" data-go="s-' + c.id + '" class="' + (k ? '' : 'on') + '">' + esc(c.cat) + '</button>').join('') + '</nav>' +
+    '<div id="secA">' + sec + '</div>' +
+    '<footer class="foot"><b>' + esc(LOCAL.nombre) + '</b><br>' + esc(LOCAL.dir) + '<br>' + esc(LOCAL.ref) + '<br>Pedidos: ' + LOCAL.tel + '</footer>' +
+    '<div class="bar" data-cart hidden><button type="button" data-open-cart><span class="n" data-num>0</span>Ver mi pedido<span class="t" data-t>$0,00</span></button></div>' +
+    '</div>';
+}
+
+/* ===== Modelo 2 · Noche de mar ===== */
+function renderB(){
+  const best = ['cev-cam','as-con','enc-rey','cev-con','arr-mix','ap-cam'].map(id => byId[id]);
+  const tiles = c => c.items.map((i, k) => {
+    const big = i.f && (k === 0 || c.items.length % 2 === 1 && k === c.items.findIndex(x => x.f));
+    return '<article class="tile' + (big ? ' big' : '') + '">' + (i.f ? '<img src="' + i.f + '" alt="' + esc(i.n) + '" loading="lazy">' : '') +
+      '<div class="in">' + (i.tag ? '<span class="tag">' + esc(i.tag) + '</span>' : '') + '<h4>' + esc(i.n) + '</h4>' + (i.d ? '<p class="d">' + esc(i.d) + '</p>' : '') +
+      '<div class="ft"><span class="p">' + priceTxt(i) + '</span><button type="button" class="add" data-add="' + i.id + '" aria-label="Agregar ' + esc(i.n) + '">' + ICON.plus + '</button></div></div></article>';
+  }).join('');
+  return '<div class="mB">' +
+    '<div class="hero"><img src="' + F.cevCam + '" alt="Ceviche de camarón de El Rey del Ceviche"><div class="ov"></div>' +
+    '<header><img src="' + F.logo + '" alt=""><span>El Rey del Ceviche</span><small>' + ICON.star + ' ' + LOCAL.rating + ' · ' + LOCAL.resenas + ' opiniones</small></header>' +
+    '<div class="cp"><h1>El sabor de la Costa, <span>en la 11 de Noviembre.</span></h1><p>Ceviches, encebollados y arroces marineros. A domicilio en Riobamba.</p>' +
+    '<div class="cta"><button type="button" data-go="b-ceviches">Ver la carta</button><button type="button" data-go="b-promos">Promociones</button></div></div></div>' +
+    '<div class="best"><div class="hd"><p class="kick">Lo que más piden</p><h2>Los del Rey</h2></div><div class="rail">' +
+    best.map(i => '<article class="card"><img src="' + i.f + '" alt="' + esc(i.n) + '" loading="lazy"><div class="in"><div><h4>' + esc(i.n) + '</h4><span class="p">' + money(i.p) + '</span></div><button type="button" class="add" data-add="' + i.id + '" aria-label="Agregar ' + esc(i.n) + '">' + ICON.plus + '</button></div></article>').join('') +
+    '</div></div>' +
+    '<nav class="tabs" aria-label="Secciones">' + CARTA.map((c, k) => '<button type="button" data-go="b-' + c.id + '" class="' + (k ? '' : 'on') + '">' + esc(c.cat) + '</button>').join('') + '</nav>' +
+    CARTA.map(c => '<section id="b-' + c.id + '"><div class="hd"><h2>' + esc(c.cat) + '</h2><span>' + c.items.length + '</span></div>' + (c.nt ? '<p class="nt">' + esc(c.nt) + '</p>' : '') + '<div class="grid">' + tiles(c) + '</div></section>').join('') +
+    '<footer class="foot"><b>' + esc(LOCAL.nombre) + '</b> · ' + esc(LOCAL.dir) + ', Riobamba. ' + esc(LOCAL.ref) + '. Pedidos: ' + LOCAL.tel + '</footer>' +
+    '<button type="button" class="fab" data-cart data-open-cart hidden><span data-n>0</span><span class="t" data-t>$0,00</span><span class="go">Ver pedido</span></button>' +
+    '</div>';
+}
+
+/* ===== Modelo 3 · Su carta ===== */
+function renderC(){
+  const items = c => c.items.map(i =>
+    '<div class="it"><div class="nm"><h4>' + esc(i.n) + '</h4><span class="ld"></span>' + (i.tag ? '<span class="tg">' + esc(i.tag) + '</span>' : '') + '<span class="p">' + priceTxt(i) + '</span></div>' +
+    '<button type="button" class="ad" data-add="' + i.id + '" aria-label="Agregar ' + esc(i.n) + '">' + ICON.plus + '</button>' +
+    (i.d ? '<p class="d">' + esc(i.d) + '</p>' : '') + '</div>').join('');
+  const rest = CARTA.filter(c => c.id !== 'promos');
+  const promos = CARTA[0].items.filter(i => i.id !== 'arma');
+  const feat = c => { const i = c.items.find(x => x.f); return i ? '<figure class="feat"><img src="' + i.f + '" alt="' + esc(i.n) + '" loading="lazy"><figcaption>' + esc(i.n) + ' · ' + priceTxt(i) + '</figcaption></figure>' : ''; };
+  return '<div class="mC">' +
+    '<header class="cover"><img src="' + F.logo + '" alt="El Rey del Ceviche · mar y tierra"><p>' + ICON.pin + ' ' + esc(LOCAL.dir) + ' · Riobamba</p>' +
+    '<div class="rw"><span>A domicilio</span><span>Retiro en el local</span><span>' + ICON.star + ' ' + LOCAL.rating + ' en Google</span></div></header>' +
+    '<div class="combo" id="c-arma"><p class="ttl">Promoción arma tu combo</p>' +
+    '<h3>Elija 2 platos <span class="pr">$12,00</span></h3><p>Incluye 2 limonadas. Toque dos platos:</p>' +
+    '<div class="pick" id="pick">' + COMBO5.map(o => '<button type="button" data-pick="' + esc(o) + '" aria-pressed="false">' + esc(o) + '</button>').join('') + '</div>' +
+    '<button type="button" class="go" id="comboGo" disabled>Elija 2 platos</button></div>' +
+    '<div class="dir"><p class="ttl">La carta</p><nav>' + rest.map(c => '<button type="button" data-go="c-' + c.id + '">' + esc(c.cat) + '<small>' + c.items.length + ' opciones</small></button>').join('') +
+    '<button type="button" data-go="c-promos">Promos<small>' + promos.length + ' opciones</small></button></nav></div>' +
+    rest.map(c => '<section id="c-' + c.id + '"><p class="ttl">' + esc(c.cat) + '</p>' + (c.nt ? '<p class="nt">' + esc(c.nt) + '</p>' : '') + feat(c) + items(c) + '</section>').join('') +
+    '<section id="c-promos"><p class="ttl">Promociones</p>' + items({items:promos}) + '</section>' +
+    '<footer class="foot">' + esc(LOCAL.dir) + '<br><small>' + esc(LOCAL.ref) + '</small><b>Pedidos a domicilio ' + LOCAL.tel + '</b></footer>' +
+    '<div class="bar" data-cart hidden><button type="button" data-open-cart>Su pedido · <span data-n>0</span><span class="t" data-t>$0,00</span></button></div>' +
+    '</div>';
+}
+function paintCombo(){
+  document.querySelectorAll('[data-pick]').forEach(b => {
+    const idx = comboPick.indexOf(b.dataset.pick);
+    const twice = comboPick.filter(x => x === b.dataset.pick).length;
+    b.setAttribute('aria-pressed', idx > -1);
+    b.innerHTML = esc(b.dataset.pick) + (twice ? '<span class="n">' + twice + '</span>' : '');
+  });
+  const go = document.getElementById('comboGo'); if (!go) return;
+  go.disabled = comboPick.length < 2;
+  go.textContent = comboPick.length < 2 ? (comboPick.length ? 'Elija 1 plato más' : 'Elija 2 platos') : 'Agregar combo · $12,00';
+}
+
+/* ===== Montaje y eventos ===== */
+const R = {A:renderA, B:renderB, C:renderC};
+function mount(m){
+  modelo = m; comboPick = [];
+  document.getElementById('app').innerHTML = R[m]();
+  document.querySelectorAll('.picker [data-m]').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === m));
+  syncModo(); paintCart(); paintCombo(); spy();
+  try { localStorage.setItem('rey-modelo', m); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('button,[data-close]'); if (!t) return;
+  if (t.matches('[data-close]')) return closeSheet();
+  if (t.dataset.m) return mount(t.dataset.m);
+  if (t.dataset.add) return tap(t.dataset.add);
+  if (t.hasAttribute('data-open-cart')) return openCart();
+  if (t.dataset.modoTop){ modo = t.dataset.modoTop; return syncModo(); }
+  if (t.dataset.go){ const s = document.getElementById(t.dataset.go); if (s) s.scrollIntoView({behavior:'smooth', block:'start'}); return; }
+  if (t.dataset.pick){
+    const o = t.dataset.pick, i = comboPick.lastIndexOf(o);
+    if (comboPick.length < 2) comboPick.push(o); else if (i > -1) comboPick.splice(i, 1); else { comboPick.shift(); comboPick.push(o); }
+    return paintCombo();
+  }
+  if (t.id === 'comboGo' && comboPick.length === 2){ addItem(byId.arma, comboPick.slice()); comboPick = []; paintCombo(); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('input', e => {
+  if (e.target.id !== 'qA') return;
+  const q = e.target.value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  document.querySelectorAll('#secA .row').forEach(r => r.hidden = q && !r.textContent.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(q));
+  document.querySelectorAll('#secA section').forEach(s => s.hidden = q && !s.querySelector('.row:not([hidden])'));
+});
+let io;
+function spy(){
+  if (io) io.disconnect();
+  const nav = document.querySelector('.chips, .tabs'); if (!nav || !('IntersectionObserver' in window)) return;
+  io = new IntersectionObserver(es => es.forEach(en => {
+    if (!en.isIntersecting) return;
+    nav.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.go === en.target.id));
+    const on = nav.querySelector('.on'); if (on) nav.scrollTo({left: on.offsetLeft - 16, behavior:'smooth'});
+  }), {rootMargin:'-120px 0px -70% 0px'});
+  document.querySelectorAll('.mA section, .mB section').forEach(s => io.observe(s));
+}
+let start = 'A';
+const h = (location.hash || '').replace('#', '').toUpperCase();
+if (R[h]) start = h; else { try { const s = localStorage.getItem('rey-modelo'); if (R[s]) start = s; } catch (e) {} }
+mount(start);
+window.addEventListener('hashchange', () => { const k = location.hash.replace('#', '').toUpperCase(); if (R[k] && k !== modelo) mount(k); });
+</script>
+</body>
+</html>
